@@ -52,6 +52,7 @@
   .panel button.secondary{background:linear-gradient(180deg,#7ff0ff,#25b6d8);color:#04121a;
     box-shadow:0 0 24px rgba(60,224,255,.5)}
   .panel button.gray{background:#2a3a2a;color:#e0e8e0;box-shadow:none}
+  .panel button:disabled{opacity:.4;cursor:not-allowed}
   .legend{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:8px 0}
   .lg{font-size:9px;padding:3px 7px;border-radius:12px;border:1px solid #2a4a2a;background:#0a150a}
   input.mp-input{width:100%;padding:11px;background:#0a120a;color:#7fff7f;
@@ -65,7 +66,8 @@
     text-align:left}
   .note b{color:#7fff7f}
   .status-conn{font-size:11px;color:#7ff0ff;padding:8px;
-    background:#0a1a2a;border-radius:6px;margin-top:8px;text-align:center}
+    background:#0a1a2a;border-radius:6px;margin-top:8px;text-align:center;
+    line-height:1.5;white-space:pre-line;text-align:left}
   .status-conn.err{color:#ff5a5a;background:#1a0a0a}
   .status-conn.ok{color:#7fff7f;background:#0a1a0a}
   #loading{position:fixed;inset:0;background:#0a0f0a;
@@ -80,7 +82,6 @@
   #netHud{position:absolute;top:6px;left:50%;transform:translateX(-50%);
     font-size:10px;color:#7ff0ff;background:rgba(0,0,0,.6);padding:3px 10px;
     border-radius:10px;z-index:5;pointer-events:none;display:none}
-  /* Time badge */
   #timeBadge{position:absolute;top:6px;left:50%;transform:translateX(-50%);
     font-size:11px;color:#ffd54a;background:rgba(0,0,0,.7);padding:3px 12px;
     border-radius:10px;z-index:5;pointer-events:none;display:none;font-weight:bold;
@@ -136,6 +137,7 @@
       </div>
       <div id="joinView" style="display:none">
         <div class="status-conn" id="joinStatus">Đang kết nối...</div>
+        <button id="retryJoinBtn" class="gray" style="margin-top:10px;display:none">🔄 THỬ LẠI</button>
       </div>
       <button id="backMenuBtn" class="gray" style="margin-top:14px">← QUAY LẠI</button>
     </div>
@@ -155,6 +157,17 @@
 
 <script>
 "use strict";
+
+/* ============================================================
+   CẤU HÌNH PEERJS SERVER (RENDER)
+   ============================================================
+   ⚠️ THAY URL SAU KHI DEPLOY SERVER RENDER:
+   Ví dụ: 'my-peerjs-server.onrender.com'
+   ============================================================ */
+const PEER_HOST = 'sukidepzai-peerjs.onrender.com';  // ← ĐỔI THÀNH URL RENDER CỦA BẠN
+const PEER_PATH = '/myapp';
+const PEER_PORT = 443;      // HTTPS
+const PEER_SECURE = true;
 
 /* ============================================================
    DEVICE DETECTION
@@ -284,7 +297,7 @@ function updateUIPositions(){
   UI.joy.r = Math.max(50, Math.min(80, baseR*0.14));
   UI.joy.knobR = UI.joy.r*0.48;
   UI.joy.x = UI.joy.r + 30;
-  UI.joy.y = VH - UI.joy.r - 70;   // Nhích lên để chừa hotbar
+  UI.joy.y = VH - UI.joy.r - 70;
   UI.action.r = Math.max(38, Math.min(52, baseR*0.1));
   UI.action.x = VW - UI.action.r - 30;
   UI.action.y = VH - UI.action.r - 70;
@@ -294,7 +307,6 @@ function updateUIPositions(){
   UI.tool.r = UI.action.r;
   UI.tool.x = UI.action.x;
   UI.tool.y = UI.place.y - UI.action.r*2 - 14;
-  // Hotbar
   UI.hotbar = {
     w: 42, h: 42, gap: 4,
     y: VH - 56,
@@ -308,7 +320,7 @@ addEventListener('orientationchange', () => setTimeout(() => { resizeCanvas(); c
 if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { if (DEVICE.isMobile) resizeCanvas(); });
 
 /* ============================================================
-   TILE SYSTEM (Minecraft-style blocks)
+   TILE SYSTEM
    ============================================================ */
 const TILE = 40;
 const TILE_TYPES = {
@@ -325,7 +337,6 @@ const TILE_TYPES = {
 };
 const AIR = -1;
 
-/* Tools */
 const TOOLS = [
   { id:'hand',    name:'✋ Tay',   reach: 3, mult: 1.0 },
   { id:'pickaxe', name:'⛏ Cuốc',  reach: 3.5, mult: 4.0 },
@@ -337,7 +348,7 @@ const TOOLS = [
 /* ============================================================
    GAME STATE
    ============================================================ */
-const WORLD_W = 80, WORLD_H = 80;   // 80x80 tiles = 3200x3200 px
+const WORLD_W = 80, WORLD_H = 80;
 
 const G = {
   state:'menu', mode:'solo',
@@ -346,22 +357,16 @@ const G = {
   players:[], myId:'me',
   enemies:[], particles:[], texts:[],
   cam:{x:0,y:0},
-  // ⏰ Day/Night
-  dayTime: 0.25,     // 0=midnight, 0.25=morning, 0.5=noon, 0.75=evening
-  dayLength: 360,    // 6 phút / ngày (real seconds)
+  dayTime: 0.25,
+  dayLength: 360,
   dayCount: 1,
-  // 🌍 World
   world: null,
-  // ⛏ Player tools & inventory
   currentTool: 0,
   inv: { 0:0, 1:0, 2:0, 3:0, 4:0, 6:0, 7:0, 8:0, 9:0 },
-  hotbar: [0, 1, 2, 3, 7, 8],   // 6 slot: grass, dirt, stone, wood, torch, plank
+  hotbar: [0, 1, 2, 3, 7, 8],
   hotbarSel: 0,
-  // Mining state
   mining: { tx:-1, ty:-1, progress:0 },
-  // Build mode
   buildMode: false,
-  // Net
   netSeed: Math.floor(Math.random()*1e9)
 };
 
@@ -373,14 +378,14 @@ const input = { joyId:null, joyVec:{x:0,y:0}, actionId:null, actionHeld:false, k
   placeId:null, toolId:null };
 const UI = {
   joy:{x:120,y:480,r:70,knobR:34},
-  action:{x:850,y:480,r:52},   // Mine button
-  place:{x:850,y:400,r:52},    // Place button (toggle build mode)
-  tool:{x:850,y:320,r:52},     // Tool cycle
+  action:{x:850,y:480,r:52},
+  place:{x:850,y:400,r:52},
+  tool:{x:850,y:320,r:52},
   hotbar:{x:480,y:540,w:42,h:42,gap:4}
 };
 
 /* ============================================================
-   WORLD GENERATION (seed-based, deterministic)
+   WORLD GENERATION
    ============================================================ */
 function makeRng(seed){
   let s = seed >>> 0;
@@ -401,33 +406,28 @@ function generateWorld(seed){
     w.push(row);
   }
 
-  // Simple noise for biome
   function noise2D(x, y, scale){
     const n = Math.sin(x*0.3 + y*0.7 + seed*0.001) +
               Math.cos(x*0.15 - y*0.2 + seed*0.002) * 0.5;
     return (n + 1.5) / 3;
   }
 
-  // Terrain patches
   for (let y = 0; y < WORLD_H; y++){
     for (let x = 0; x < WORLD_W; x++){
       const n = noise2D(x, y, 0.1);
-      if (n < 0.25) w[y][x] = 5; // water
-      else if (n < 0.35) w[y][x] = 6; // sand
-      else if (n < 0.7) w[y][x] = 0; // grass
-      else if (n < 0.85) w[y][x] = 4; // leaves (forest)
+      if (n < 0.25) w[y][x] = 5;
+      else if (n < 0.35) w[y][x] = 6;
+      else if (n < 0.7) w[y][x] = 0;
+      else if (n < 0.85) w[y][x] = 4;
       else w[y][x] = 0;
     }
   }
 
-  // Trees (single block wood + leaves around)
   for (let i = 0; i < 180; i++){
     const tx = Math.floor(rng() * WORLD_W);
     const ty = Math.floor(rng() * WORLD_H);
     if (w[ty][tx] !== 0 && w[ty][tx] !== 4) continue;
-    // Trunk
     w[ty][tx] = 3;
-    // Leaves xung quanh 1 ô
     for (let dy = -2; dy <= 2; dy++){
       for (let dx = -2; dx <= 2; dx++){
         const nx = tx + dx, ny = ty + dy;
@@ -438,7 +438,6 @@ function generateWorld(seed){
     }
   }
 
-  // Stone patches (ngẫu nhiên)
   for (let i = 0; i < 40; i++){
     const tx = Math.floor(rng() * WORLD_W);
     const ty = Math.floor(rng() * WORLD_H);
@@ -456,7 +455,7 @@ function generateWorld(seed){
 }
 
 function getTile(tx, ty){
-  if (tx < 0 || ty < 0 || tx >= WORLD_W || ty >= WORLD_H) return 2; // ngoài rìa = đá
+  if (tx < 0 || ty < 0 || tx >= WORLD_W || ty >= WORLD_H) return 2;
   return G.world[ty][tx];
 }
 function setTile(tx, ty, type){
@@ -506,7 +505,6 @@ function spawnEnemy(type){
   const range = rand(450, 700);
   let x = clamp(target.x + Math.cos(angle)*range, 40, WORLD_W*TILE - 40);
   let y = clamp(target.y + Math.sin(angle)*range, 40, WORLD_H*TILE - 40);
-  // Tìm chỗ không solid
   const tx = Math.floor(x/TILE), ty = Math.floor(y/TILE);
   if (isSolid(tx, ty)){ x = target.x + 200; y = target.y + 200; }
   G.enemies.push({
@@ -529,37 +527,28 @@ function updateDayNight(dt){
     G.dayCount++;
   }
 }
-
-// Trả về 0-1: 0 = sáng nhất (noon), 1 = tối nhất (midnight)
 function getDarkness(){
-  // dayTime: 0=midnight, 0.25=morning, 0.5=noon, 0.75=evening
-  // darkness = cos wave
   const t = G.dayTime * Math.PI * 2;
-  const val = -Math.cos(t);  // -1 at midnight, 1 at noon
-  return clamp((1 - val) / 2 * 0.9, 0, 0.9);  // 0=noon, 0.9=midnight
+  const val = -Math.cos(t);
+  return clamp((1 - val) / 2 * 0.9, 0, 0.9);
 }
-
 function isNight(){
   return G.dayTime < 0.2 || G.dayTime > 0.75;
 }
-
 function getClockString(){
-  // Convert dayTime 0-1 to 0-24 hour
   const h = Math.floor(G.dayTime * 24);
   const m = Math.floor((G.dayTime * 24 - h) * 60);
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
 /* ============================================================
-   LIGHT SOURCES
+   LIGHTS
    ============================================================ */
 function getLightSources(){
   const lights = [];
-  // Player torch aura
   for (const p of G.players){
     lights.push({ x: p.x, y: p.y, r: 120, intensity: 0.85 });
   }
-  // Torch blocks
   const camTX0 = Math.max(0, Math.floor(G.cam.x / TILE) - 3);
   const camTY0 = Math.max(0, Math.floor(G.cam.y / TILE) - 3);
   const camTX1 = Math.min(WORLD_W, Math.ceil((G.cam.x + VW) / TILE) + 3);
@@ -585,11 +574,9 @@ function update(dt){
   const p = G.players[0];
   if (!p) return;
 
-  // Day/night (client follow host)
   if (!isClient) updateDayNight(dt);
   updateTimeBadge();
 
-  /* ---- CLIENT: prediction + smooth ---- */
   if (isClient){
     for (const pl of G.players){
       if (!pl.isLocal && pl.hasTarget){
@@ -610,10 +597,8 @@ function update(dt){
     return;
   }
 
-  /* ---- HOST / SOLO ---- */
   G.time += dt;
 
-  // Remote input
   if (G.mode === 'host'){
     const remote = G.players.find(pl => !pl.isLocal);
     if (remote && remote.netInput){
@@ -643,13 +628,9 @@ function update(dt){
     }
   }
 
-  // Local player
   handleLocalPlayer(p, dt, false);
-
-  // Mining
   updateMining(dt);
 
-  // Spawn enemies (đêm nhiều hơn)
   const nightBoost = isNight() ? 1 : 0.35;
   G.spawnTimer -= dt * nightBoost;
   if (G.spawnTimer <= 0){
@@ -663,7 +644,6 @@ function update(dt){
     const baseRate = Math.max(0.5, 2 - G.dayCount * 0.1);
     G.spawnTimer = baseRate * rand(0.7, 1.3);
   }
-  // Boss ban đêm
   if (isNight()){
     G.bossTimer -= dt;
     if (G.bossTimer <= 0){
@@ -673,7 +653,6 @@ function update(dt){
     }
   }
 
-  // Enemies
   for (const e of G.enemies){
     if (e.dead){ e.deathTimer -= dt; continue; }
     if (e.hitFlash > 0) e.hitFlash -= dt;
@@ -681,7 +660,6 @@ function update(dt){
     if (e.attackCd > 0) e.attackCd -= dt;
     if (e.attackAnimT > 0) e.attackAnimT -= dt;
 
-    // Nếu trời sáng → quái "cháy" dần (Minecraft zombie burn)
     if (!isNight() && e.type !== 'imp' && !e.dead){
       e.hp -= dt * 5;
       if (Math.random() < dt*4){
@@ -721,7 +699,6 @@ function update(dt){
     if (e.state === 'walk'){
       const nx = e.x + ex/ed * e.speed*dt;
       const ny = e.y + ey/ed * e.speed*dt;
-      // Collision với block solid
       const etx = Math.floor(nx / TILE), ety = Math.floor(e.y / TILE);
       if (!isSolid(etx, ety)) e.x = nx;
       const etx2 = Math.floor(e.x / TILE), ety2 = Math.floor(ny / TILE);
@@ -747,9 +724,6 @@ function update(dt){
   sendState();
 }
 
-/* ============================================================
-   LOCAL PLAYER HANDLER
-   ============================================================ */
 function handleLocalPlayer(p, dt, isClient){
   let dx=0, dy=0;
   if (input.joyId !== null){ dx = input.joyVec.x; dy = input.joyVec.y; }
@@ -767,7 +741,6 @@ function handleLocalPlayer(p, dt, isClient){
   if (p.hitFlash > 0) p.hitFlash -= dt;
   if (p.attackCd > 0) p.attackCd -= dt;
 
-  // Attack (dùng làm "đào" khi không trong build mode)
   const wantAction = input.actionHeld || input.keys[' '];
   const wantPlace = input.placeId !== null || input.keys['e'];
 
@@ -808,21 +781,18 @@ function updateMining(dt){
   const td = TILE_TYPES[tileType];
   if (!td){ m.tx = -1; return; }
 
-  // Kiểm tra reach
   const px = p.x / TILE, py = p.y / TILE;
   const d = Math.hypot(tx + 0.5 - px, ty + 0.5 - py);
   if (d > tool.reach){ m.tx = -1; m.progress = 0; return; }
 
-  // Tính tốc độ đào
   let speed = 1;
   if (td.tool && td.tool === tool.id) speed = tool.mult;
-  else if (td.tool) speed = 0.5; // sai tool
+  else if (td.tool) speed = 0.5;
   else speed = 1.5;
 
   m.progress += dt * speed / td.hardness;
 
   if (m.progress >= 1){
-    // Phá block
     breakBlock(tx, ty);
     m.tx = -1; m.progress = 0;
   }
@@ -833,20 +803,18 @@ function breakBlock(tx, ty){
   if (tileType === AIR) return;
   const td = TILE_TYPES[tileType];
   if (!td) return;
-  // Đổ block
   setTile(tx, ty, AIR);
-  // Thêm vào inventory
   if (td.drops !== null && td.drops !== undefined){
-    const drop = tileType;
-    G.inv[drop] = (G.inv[drop] || 0) + 1;
+    G.inv[tileType] = (G.inv[tileType] || 0) + 1;
   }
   burstVFX(tx*TILE + TILE/2, ty*TILE + TILE/2, td.color, 8, 120, 0.5);
   addText(tx*TILE + TILE/2, ty*TILE + TILE/2 - 10, '+1', '#7fff7f');
+  // Đồng bộ với client
+  if (G.mode === 'host' && Net.connected && Net.conn && Net.conn.open){
+    try { Net.conn.send({ type:'block', tx, ty, t: AIR }); } catch(e){}
+  }
 }
 
-/* ============================================================
-   PLACING
-   ============================================================ */
 function tryPlaceBlock(screenX, screenY){
   const p = G.players[0];
   const wx = screenX + G.cam.x;
@@ -859,12 +827,10 @@ function tryPlaceBlock(screenX, screenY){
   if (d > tool.reach + 1) return;
 
   const existing = getTile(tx, ty);
-  // Chỉ đặt vào ô trống (grass, dirt, water, sand, leaves - walkable tiles)
   const td = existing === AIR ? null : TILE_TYPES[existing];
   const canPlaceOn = existing === AIR || (td && td.walkable && !td.solid);
   if (!canPlaceOn) return;
 
-  // Lấy block từ hotbar
   const blockType = G.hotbar[G.hotbarSel];
   if (!G.inv[blockType] || G.inv[blockType] <= 0){
     addText(p.x, p.y-40, 'Hết block!', '#ff5a5a');
@@ -874,10 +840,13 @@ function tryPlaceBlock(screenX, screenY){
   setTile(tx, ty, blockType);
   G.inv[blockType]--;
   burstVFX(tx*TILE + TILE/2, ty*TILE + TILE/2, TILE_TYPES[blockType].color, 6, 100, 0.35);
+  if (G.mode === 'host' && Net.connected && Net.conn && Net.conn.open){
+    try { Net.conn.send({ type:'block', tx, ty, t: blockType }); } catch(e){}
+  }
 }
 
 /* ============================================================
-   COMBAT (attack monsters)
+   COMBAT
    ============================================================ */
 function attackHit(p){
   const reach = 65;
@@ -892,7 +861,7 @@ function attackHit(p){
     while (diff >  Math.PI) diff -= Math.PI*2;
     while (diff < -Math.PI) diff += Math.PI*2;
     if (Math.abs(diff) < halfAngle){
-      const dmg = G.currentTool === 4 ? 25 : 15; // sword mạnh hơn
+      const dmg = G.currentTool === 4 ? 25 : 15;
       e.hp -= dmg; e.hitFlash = 0.2; e.hitThisSwing = true; e.hurtTimer = 0.3;
       burstVFX(e.x, e.y, '#ffd54a', 8, 150, 0.4);
       addText(e.x, e.y-e.size-8, '-'+dmg, '#ffd54a');
@@ -912,18 +881,14 @@ function attackHit(p){
    ============================================================ */
 function moveWithCollision(obj, dx, dy){
   const nr = obj.radius;
-  // Try X
   const newX = obj.x + dx;
   if (!tileCollide(newX, obj.y, nr)) obj.x = newX;
-  // Try Y
   const newY = obj.y + dy;
   if (!tileCollide(obj.x, newY, nr)) obj.y = newY;
-  // Bounds
   obj.x = clamp(obj.x, nr, WORLD_W*TILE - nr);
   obj.y = clamp(obj.y, nr, WORLD_H*TILE - nr);
 }
 function tileCollide(cx, cy, r){
-  // Check 4 corners + center
   const corners = [
     [cx - r, cy - r*0.7], [cx + r, cy - r*0.7],
     [cx - r, cy + r*0.7], [cx + r, cy + r*0.7],
@@ -969,7 +934,7 @@ function addText(x, y, text, color){
 }
 
 /* ============================================================
-   RENDER — WORLD (tiles)
+   RENDER
    ============================================================ */
 function drawTiles(){
   const t0x = Math.max(0, Math.floor(G.cam.x / TILE) - 1);
@@ -984,20 +949,16 @@ function drawTiles(){
       if (!td) continue;
       const sx = tx*TILE - G.cam.x;
       const sy = ty*TILE - G.cam.y;
-      // Base
       ctx.fillStyle = td.color;
       ctx.fillRect(sx, sy, TILE, TILE);
-      // Top highlight
       ctx.fillStyle = td.top;
       ctx.fillRect(sx, sy, TILE, 4);
-      // Detail giả pixel (deterministic từ vị trí)
       const h = (tx * 73856093 ^ ty * 19349663) >>> 0;
       const dot = h % 5;
       ctx.fillStyle = 'rgba(0,0,0,0.08)';
       ctx.fillRect(sx + 6 + dot*3, sy + 12 + (dot%3)*5, 4, 4);
       ctx.fillRect(sx + 22 - (dot%4)*3, sy + 24 + (dot%4)*2, 4, 4);
 
-      // Torch vẽ khác
       if (t === 7){
         ctx.fillStyle = '#6a3a1a';
         ctx.fillRect(sx + 16, sy + 14, 8, 22);
@@ -1014,9 +975,6 @@ function drawTiles(){
   }
 }
 
-/* ============================================================
-   RENDER — PLAYER
-   ============================================================ */
 const PAL_KNIGHT = { k:'#0a0a0a', b:'#4a7ab8', d:'#2a4a78', w:'#ffffff', s:'#d0d8e0',
   g:'#ffd54a', r:'#c03030', f:'#8a6a4a', h:'#6a3a1a' };
 const PAL_KNIGHT2 = { k:'#0a0a0a', b:'#b84a4a', d:'#782828', w:'#ffffff', s:'#d0d8e0',
@@ -1109,9 +1067,6 @@ function drawPlayer(p){
   }
 }
 
-/* ============================================================
-   RENDER — ENEMY
-   ============================================================ */
 function drawEnemy(e){
   const sx = e.x - G.cam.x, sy = e.y - G.cam.y;
   if (sx < -120 || sx > VW+120 || sy < -120 || sy > VH+120) return;
@@ -1165,28 +1120,20 @@ function drawEnemy(e){
   }
 }
 
-/* ============================================================
-   RENDER — LIGHTING (darkness overlay)
-   ============================================================ */
 function drawDarkness(){
   const darkness = getDarkness();
   if (darkness < 0.05) return;
 
   const lights = getLightSources();
-
-  // Vẽ overlay tối lên toàn màn hình
-  const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
   ctx.fillStyle = `rgba(5, 8, 25, ${darkness})`;
   ctx.fillRect(0, 0, VW, VH);
 
-  // "Đục lỗ" sáng bằng cách vẽ radial gradient với 'lighter'
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
   for (const l of lights){
     const lx = l.x - G.cam.x, ly = l.y - G.cam.y;
     if (lx < -l.r || lx > VW + l.r || ly < -l.r || ly > VH + l.r) continue;
     const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, l.r);
-    // Màu ánh sáng ấm (đuốc) hoặc mát (player)
     const isTorch = l.intensity >= 1;
     const col = isTorch ? '255, 180, 90' : '150, 180, 255';
     g.addColorStop(0, `rgba(${col}, ${darkness * l.intensity * 0.95})`);
@@ -1200,9 +1147,6 @@ function drawDarkness(){
   ctx.restore();
 }
 
-/* ============================================================
-   RENDER — UI
-   ============================================================ */
 function drawParticles(){
   for (const p of G.particles){
     const a = Math.max(0, p.life/p.maxLife);
@@ -1246,9 +1190,8 @@ function drawBuildGhost(){
   const p = G.players[0];
   const tool = TOOLS[G.currentTool];
   const px = p.x / TILE, py = p.y / TILE;
-  // Hiển thị ô gần tâm màn hình
-  const mx = G.mouse ? G.mouse.x : VW/2;
-  const my = G.mouse ? G.mouse.y : VH/2;
+  const mx = (G.mouse ? G.mouse.x : VW/2);
+  const my = (G.mouse ? G.mouse.y : VH/2);
   const wx = mx + G.cam.x, wy = my + G.cam.y;
   const tx = Math.floor(wx / TILE), ty = Math.floor(wy / TILE);
   const d = Math.hypot(tx + 0.5 - px, ty + 0.5 - py);
@@ -1277,7 +1220,6 @@ function drawUI(){
   const hpW = 200*scale, hpH = 18*scale;
   const hpX = 20*scale, hpY = 20*scale;
 
-  // HP bar
   ctx.fillStyle = 'rgba(0,0,0,0.6)';
   ctx.fillRect(hpX-2, hpY-2, hpW+4, hpH+4);
   ctx.fillStyle = '#2a0a0a'; ctx.fillRect(hpX, hpY, hpW, hpH);
@@ -1294,7 +1236,6 @@ function drawUI(){
   ctx.fillText(`${Math.ceil(p.hp)} / ${p.maxHp}`, hpX+hpW/2, hpY+13*scale);
   ctx.textAlign = 'left';
 
-  // Tool hiện tại + kills
   ctx.fillStyle = '#fff';
   ctx.font = `bold ${Math.round(12*scale)}px monospace`;
   ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
@@ -1306,9 +1247,7 @@ function drawUI(){
   ctx.strokeText(`☠ ${G.kills}`, 20*scale, 76*scale);
   ctx.fillText(`☠ ${G.kills}`, 20*scale, 76*scale);
 
-  // Mobile buttons
   if (DEVICE.isMobile){
-    // Joystick
     ctx.beginPath();
     ctx.arc(UI.joy.x, UI.joy.y, UI.joy.r, 0, Math.PI*2);
     ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill();
@@ -1321,7 +1260,6 @@ function drawUI(){
     ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2; ctx.stroke();
 
-    // Action button (Mine)
     const actPressed = input.actionHeld;
     ctx.beginPath();
     ctx.arc(UI.action.x, UI.action.y, UI.action.r, 0, Math.PI*2);
@@ -1335,7 +1273,6 @@ function drawUI(){
     ctx.fillText('⛏', UI.action.x, UI.action.y);
     ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
 
-    // Place button (toggle)
     ctx.beginPath();
     ctx.arc(UI.place.x, UI.place.y, UI.place.r, 0, Math.PI*2);
     ctx.fillStyle = G.buildMode ? 'rgba(60,224,255,0.85)' : 'rgba(60,224,255,0.3)';
@@ -1348,7 +1285,6 @@ function drawUI(){
     ctx.fillText('🔨', UI.place.x, UI.place.y);
     ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
 
-    // Tool cycle button
     ctx.beginPath();
     ctx.arc(UI.tool.x, UI.tool.y, UI.tool.r, 0, Math.PI*2);
     ctx.fillStyle = 'rgba(180,120,255,0.35)';
@@ -1362,27 +1298,23 @@ function drawUI(){
     ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
   }
 
-  // HOTBAR
   const hb = UI.hotbar;
   for (let i = 0; i < 6; i++){
     const bx = hb.startX + i * (hb.w + hb.gap);
     const by = hb.y;
     const bt = G.hotbar[i];
     const sel = i === G.hotbarSel;
-    // Khung
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(bx, by, hb.w, hb.h);
     ctx.strokeStyle = sel ? '#ffd54a' : '#3a5a3a';
     ctx.lineWidth = sel ? 3 : 2;
     ctx.strokeRect(bx+0.5, by+0.5, hb.w-1, hb.h-1);
-    // Block preview
     if (TILE_TYPES[bt]){
       ctx.fillStyle = TILE_TYPES[bt].color;
       ctx.fillRect(bx+6, by+6, hb.w-12, hb.h-12);
       ctx.fillStyle = TILE_TYPES[bt].top;
       ctx.fillRect(bx+6, by+6, hb.w-12, 4);
     }
-    // Số lượng
     const cnt = G.inv[bt] || 0;
     ctx.fillStyle = cnt > 0 ? '#fff' : '#666';
     ctx.font = 'bold 11px monospace';
@@ -1391,13 +1323,11 @@ function drawUI(){
     ctx.strokeText(cnt, bx + hb.w - 3, by + hb.h - 3);
     ctx.fillText(cnt, bx + hb.w - 3, by + hb.h - 3);
     ctx.textAlign = 'left';
-    // Số slot
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
     ctx.font = 'bold 9px monospace';
     ctx.fillText(i+1, bx + 3, by + 10);
   }
 
-  // HP remote
   if (G.mode !== 'solo'){
     const rem = G.players.find(pl => !pl.isLocal);
     if (rem){
@@ -1416,7 +1346,6 @@ function drawUI(){
     }
   }
 
-  // Low HP flash
   if (p.hp/p.maxHp < 0.3 && p.state !== 'dead'){
     const a = 0.15 + Math.abs(Math.sin(G.time*4))*0.15;
     ctx.fillStyle = `rgba(255,0,0,${a})`;
@@ -1425,10 +1354,8 @@ function drawUI(){
 }
 
 function render(){
-  // Draw tiles
   drawTiles();
 
-  // Entities sorted by Y
   const all = [
     ...G.enemies.map(e => ({ y: e.y, draw: () => drawEnemy(e) })),
     ...G.players.map(p => ({ y: p.y, draw: () => drawPlayer(p) }))
@@ -1437,11 +1364,7 @@ function render(){
   for (const a of all) a.draw();
 
   drawParticles();
-
-  // Darkness overlay (sau entities để làm tối cả quái)
   drawDarkness();
-
-  // UI on top of darkness
   drawTexts();
   drawMiningProgress();
   drawBuildGhost();
@@ -1460,7 +1383,7 @@ function loop(now){
 }
 
 /* ============================================================
-   INPUT — Touch
+   INPUT
    ============================================================ */
 function toCanvasXY(cx, cy){
   const r = cv.getBoundingClientRect();
@@ -1494,7 +1417,6 @@ function handleTouchStart(e){
       addText(G.players[0].x, G.players[0].y-50, TOOLS[G.currentTool].name, '#c890ff');
       continue;
     }
-    // Hotbar
     const hb = UI.hotbar;
     if (p.y >= hb.y - 4 && p.y <= hb.y + hb.h + 4){
       for (let i = 0; i < 6; i++){
@@ -1506,11 +1428,9 @@ function handleTouchStart(e){
       }
       continue;
     }
-    // World tap
     if (G.buildMode){
       tryPlaceBlock(p.x, p.y);
     } else {
-      // Set mining target
       const wx = p.x + G.cam.x;
       const wy = p.y + G.cam.y;
       G.mining.tx = Math.floor(wx / TILE);
@@ -1538,7 +1458,6 @@ function handleTouchEnd(e){
     if (t.identifier === input.joyId){ input.joyId = null; input.joyVec = {x:0,y:0}; }
     if (t.identifier === input.actionId){
       input.actionId = null; input.actionHeld = false;
-      // Reset mining khi thả
       G.mining.tx = -1; G.mining.progress = 0;
     }
   }
@@ -1548,7 +1467,6 @@ cv.addEventListener('touchmove', handleTouchMove, { passive:false });
 cv.addEventListener('touchend', handleTouchEnd, { passive:false });
 cv.addEventListener('touchcancel', handleTouchEnd, { passive:false });
 
-/* Mouse for PC */
 cv.addEventListener('mousedown', (e) => {
   if (G.state !== 'playing' || DEVICE.isMobile) return;
   const p = toCanvasXY(e.clientX, e.clientY);
@@ -1569,96 +1487,247 @@ cv.addEventListener('mouseup', () => {
   G.mining.progress = 0;
 });
 cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('mousemove', e => {
+  const p = toCanvasXY(e.clientX, e.clientY);
+  G.mouse = { x: p.x, y: p.y };
+});
 
 addEventListener('keydown', (e) => {
   input.keys[e.key.toLowerCase()] = true;
   if (e.key === ' ') e.preventDefault();
-  // Hotbar selection
   const n = parseInt(e.key);
   if (n >= 1 && n <= 6) G.hotbarSel = n - 1;
-  // Tool cycle
   if (e.key.toLowerCase() === 'q') G.currentTool = (G.currentTool + 1) % TOOLS.length;
-  // Build mode toggle
   if (e.key.toLowerCase() === 'b') G.buildMode = !G.buildMode;
 });
 addEventListener('keyup', (e) => { input.keys[e.key.toLowerCase()] = false; });
 
 /* ============================================================
-   NETWORK (PeerJS)
+   NETWORK — dùng PeerJS server trên Render
    ============================================================ */
+const ICE_CONFIG = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'turn:openrelay.metered.ca:80',
+      username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443',
+      username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+      username: 'openrelayproject', credential: 'openrelayproject' }
+  ]
+};
+
 const Net = {
   peer: null, conn: null,
   isHost: false, connected: false,
   roomCode: '', lastSendT: 0, sendRate: 1/20,
-  connectTimeout: null, gameStarted: false
+  connectTimeout: null, gameStarted: false,
+  pendingJoinCode: '', retryCount: 0
 };
 
+function cleanCode(str){
+  return (str || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+function setStatus(elId, msg, cls){
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'status-conn' + (cls ? ' ' + cls : '');
+}
+
+/* ---------- HOST ---------- */
 function startHost(){
   const code = 'SC' + Math.random().toString(36).substring(2, 8).toUpperCase();
   Net.roomCode = code; Net.isHost = true; Net.gameStarted = false;
-  Net.peer = new Peer(code, { debug: 1 });
+
+  setStatus('hostStatus', '⏳ Đang kết nối server...', '');
+  document.getElementById('roomCode').textContent = code + ' (đang khởi tạo...)';
+
+  try {
+    Net.peer = new Peer(code, {
+      host: PEER_HOST,
+      port: PEER_PORT,
+      path: PEER_PATH,
+      secure: PEER_SECURE,
+      debug: 1,
+      config: ICE_CONFIG
+    });
+  } catch(e){
+    setStatus('hostStatus', '❌ Không tạo được Peer: ' + e.message, 'err');
+    return;
+  }
+
   Net.peer.on('open', (id) => {
+    console.log('[Net] Host ready:', id);
     document.getElementById('roomCode').textContent = id;
-    document.getElementById('hostStatus').textContent = 'Đang chờ kết nối...';
-    document.getElementById('hostStatus').className = 'status-conn';
+    setStatus('hostStatus', '✅ Phòng đã sẵn sàng!\nChờ bạn bè nhập mã...', 'ok');
   });
+
   Net.peer.on('connection', (conn) => {
+    console.log('[Net] Incoming:', conn.peer);
     if (Net.conn && Net.conn.open){ conn.close(); return; }
     Net.conn = conn;
     setupConn(conn, true);
   });
+
   Net.peer.on('error', (err) => {
-    alert('Lỗi PeerJS: ' + err.type);
-    location.reload();
+    console.error('[Net] Host error:', err);
+    if (err.type === 'unavailable-id'){
+      console.log('[Net] ID trùng, thử lại mã mới...');
+      try { Net.peer.destroy(); } catch(e){}
+      setTimeout(startHost, 500);
+      return;
+    }
+    setStatus('hostStatus', '❌ Lỗi: ' + (err.type || err.message) +
+      '\n\nKiểm tra:\n• Server Render đã chạy chưa?\n• URL server đúng chưa?', 'err');
+  });
+
+  Net.peer.on('disconnected', () => {
+    console.log('[Net] Peer server mất kết nối, thử lại...');
+    try { Net.peer.reconnect(); } catch(e){}
   });
 }
+
+/* ---------- CLIENT ---------- */
 function startClient(hostCode){
-  Net.isHost = false; Net.roomCode = hostCode; Net.gameStarted = false;
-  Net.peer = new Peer({ debug: 1 });
-  Net.peer.on('open', () => {
-    document.getElementById('joinStatus').textContent = 'Đang kết nối đến ' + hostCode + '...';
-    document.getElementById('joinStatus').className = 'status-conn';
-    const conn = Net.peer.connect(hostCode);
-    setupConn(conn, false);
-    Net.connectTimeout = setTimeout(() => {
-      if (!Net.connected){
-        document.getElementById('joinStatus').textContent = '❌ Không kết nối sau 15s.';
-        document.getElementById('joinStatus').className = 'status-conn err';
-      }
-    }, 15000);
+  const code = cleanCode(hostCode);
+  if (!code){
+    setStatus('joinStatus', '❌ Mã phòng không hợp lệ', 'err');
+    return;
+  }
+  Net.pendingJoinCode = code;
+  Net.isHost = false; Net.roomCode = code; Net.gameStarted = false;
+  Net.retryCount = 0;
+
+  setStatus('joinStatus', '⏳ Đang khởi tạo...', '');
+
+  if (Net.peer){
+    try { Net.peer.destroy(); } catch(e){}
+    Net.peer = null;
+  }
+
+  try {
+    Net.peer = new Peer({
+      host: PEER_HOST,
+      port: PEER_PORT,
+      path: PEER_PATH,
+      secure: PEER_SECURE,
+      debug: 1,
+      config: ICE_CONFIG
+    });
+  } catch(e){
+    setStatus('joinStatus', '❌ Không tạo được Peer: ' + e.message, 'err');
+    return;
+  }
+
+  Net.peer.on('open', (id) => {
+    console.log('[Net] Client ready:', id, '→ connecting to', code);
+    setStatus('joinStatus', '⏳ Đang kết nối đến ' + code + '...', '');
+    doConnect(code);
   });
+
   Net.peer.on('error', (err) => {
-    document.getElementById('joinStatus').textContent = '❌ Lỗi: ' + err.type;
-    document.getElementById('joinStatus').className = 'status-conn err';
+    console.error('[Net] Client error:', err);
+    handleJoinError(err.type, err.message);
   });
 }
+
+function doConnect(code){
+  if (!Net.peer || Net.peer.destroyed) return;
+  let conn;
+  try {
+    conn = Net.peer.connect(code, { reliable: false });
+  } catch(e){
+    handleJoinError('connect-fail', e.message);
+    return;
+  }
+  setupConn(conn, false);
+  if (Net.connectTimeout) clearTimeout(Net.connectTimeout);
+  Net.connectTimeout = setTimeout(() => {
+    if (!Net.connected){
+      console.log('[Net] Timeout');
+      handleJoinError('timeout', 'Không phản hồi sau 15s');
+    }
+  }, 15000);
+}
+
+function handleJoinError(type, msg){
+  if (Net.connectTimeout) clearTimeout(Net.connectTimeout);
+
+  let userMsg = '❌ Không kết nối được.\n\n';
+  if (type === 'peer-unavailable'){
+    userMsg += '→ Không tìm thấy phòng "' + Net.pendingJoinCode + '"\n\n' +
+               'Kiểm tra:\n' +
+               '• Host đã bấm TẠO PHÒNG xong chưa? (đợi mã hiện đầy đủ)\n' +
+               '• Mã phòng có đúng không?\n' +
+               '• Host còn mở game không?';
+  } else if (type === 'timeout'){
+    userMsg += '→ Host không phản hồi (timeout 15s)\n\n' +
+               'Thử:\n' +
+               '• Tắt VPN\n' +
+               '• Đổi WiFi/4G\n' +
+               '• Bấm THỬ LẠI';
+  } else if (type === 'network' || type === 'server-error' || type === 'socket-error'){
+    userMsg += '→ Lỗi server PeerJS: ' + (msg || type) + '\n\n' +
+               'Render free tier có thể đang "ngủ". Đợi 30s rồi thử lại.';
+  } else if (type === 'browser-incompatible'){
+    userMsg += '→ Trình duyệt không hỗ trợ WebRTC.\nDùng Chrome/Safari mới.';
+  } else if (type === 'socket-closed' || type === 'socket-error'){
+    userMsg += '→ Không kết nối được signaling server.\n\n' +
+               'Kiểm tra:\n• Server Render có chạy không?\n• URL trong code đúng chưa?';
+  } else {
+    userMsg += '→ ' + (msg || type);
+  }
+
+  setStatus('joinStatus', userMsg, 'err');
+  document.getElementById('retryJoinBtn').style.display = 'block';
+}
+
+/* ---------- CONNECTION SETUP ---------- */
 function setupConn(conn, isHost){
+  let opened = false;
   conn.on('open', () => {
+    if (opened) return;
+    opened = true;
+    console.log('[Net] ✅ OPENED', isHost ? 'HOST' : 'CLIENT');
     Net.connected = true;
     if (Net.connectTimeout) clearTimeout(Net.connectTimeout);
     if (isHost){
-      document.getElementById('hostStatus').textContent = '✅ Đã kết nối!';
-      document.getElementById('hostStatus').className = 'status-conn ok';
+      setStatus('hostStatus', '✅ Đã kết nối!', 'ok');
     } else {
-      document.getElementById('joinStatus').textContent = '✅ Đã kết nối!';
-      document.getElementById('joinStatus').className = 'status-conn ok';
+      setStatus('joinStatus', '✅ Đã kết nối! Vào game...', 'ok');
+      document.getElementById('retryJoinBtn').style.display = 'none';
     }
     setTimeout(() => {
       if (!Net.gameStarted){
         Net.gameStarted = true;
         startGame(isHost ? 'host' : 'client');
       }
-    }, 200);
+    }, 300);
   });
   conn.on('data', (data) => handleNetData(data));
   conn.on('close', () => {
     Net.connected = false;
+    console.log('[Net] Closed');
     if (G.state === 'playing' || G.state === 'paused-rot'){
-      alert('Mất kết nối!');
-      location.reload();
+      setTimeout(() => {
+        if (!confirm('Mất kết nối với đối phương.\nOK để về menu.')) return;
+        G.state = 'menu';
+        document.getElementById('menu').classList.remove('hide');
+        document.getElementById('timeBadge').style.display = 'none';
+        if (Net.peer){ try{ Net.peer.destroy(); }catch(e){} Net.peer = null; }
+        Net.conn = null; Net.connected = false;
+      }, 100);
     }
   });
+  conn.on('error', (err) => {
+    console.error('[Net] Conn error:', err);
+    if (!Net.connected) handleJoinError(err.type || 'conn-error', err.message);
+  });
 }
+
+/* ---------- DATA ---------- */
 function handleNetData(data){
   if (!data) return;
   if (data.type === 'input'){
@@ -1669,7 +1738,6 @@ function handleNetData(data){
     if (Net.isHost) return;
     applyNetState(data);
   } else if (data.type === 'init'){
-    // Sync world + spawn
     if (data.world) G.world = data.world;
     G.dayTime = data.dayTime || 0.25;
     G.dayCount = data.dayCount || 1;
@@ -1678,10 +1746,10 @@ function handleNetData(data){
     const remote = G.players.find(pl => !pl.isLocal);
     if (remote){ remote.x = data.spawnX; remote.y = data.spawnY; }
   } else if (data.type === 'block'){
-    // Host báo đổi block
     setTile(data.tx, data.ty, data.t);
   }
 }
+
 function sendInput(){
   if (!Net.connected || Net.isHost) return;
   const now = performance.now();
@@ -1700,6 +1768,7 @@ function sendInput(){
     });
   } catch(e){}
 }
+
 function sendState(){
   if (!Net.connected || !Net.isHost) return;
   const now = performance.now();
@@ -1723,6 +1792,7 @@ function sendState(){
     });
   } catch(e){}
 }
+
 function applyNetState(data){
   G.time = data.t; G.kills = data.kills;
   if (data.dayTime !== undefined){ G.dayTime = data.dayTime; G.dayCount = data.dayCount; }
@@ -1803,7 +1873,14 @@ document.getElementById('joinBtn').addEventListener('click', () => {
   if (!code){ alert('Nhập mã phòng!'); return; }
   multiButtons.style.display = 'none';
   joinView.style.display = 'block';
+  document.getElementById('retryJoinBtn').style.display = 'none';
   startClient(code);
+});
+document.getElementById('retryJoinBtn').addEventListener('click', () => {
+  document.getElementById('retryJoinBtn').style.display = 'none';
+  if (Net.pendingJoinCode){
+    startClient(Net.pendingJoinCode);
+  }
 });
 
 function startGame(mode){
@@ -1821,17 +1898,15 @@ function startGame(mode){
   G.inv = { 0:0, 1:0, 2:0, 3:0, 4:0, 6:0, 7:0, 8:0, 9:0 };
   G.mining = { tx:-1, ty:-1, progress:0 };
 
-  // World
   if (mode === 'client'){
-    // Sẽ nhận world từ host qua init
-    G.world = generateWorld(0);  // placeholder
+    G.world = generateWorld(0);  // placeholder, nhận từ host qua init
   } else {
     G.world = generateWorld(G.netSeed);
   }
 
-  // Tìm vị trí spawn trên grass
   let spawnX = WORLD_W/2, spawnY = WORLD_H/2;
   for (let r = 0; r < 50; r++){
+    let found = false;
     for (let dy = -r; dy <= r; dy++){
       for (let dx = -r; dx <= r; dx++){
         const tx = Math.floor(WORLD_W/2) + dx;
@@ -1840,10 +1915,12 @@ function startGame(mode){
         if (getTile(tx, ty) === 0){
           spawnX = tx * TILE + TILE/2;
           spawnY = ty * TILE + TILE/2;
-          r = 999; dy = 999; dx = 999;
+          found = true; break;
         }
       }
+      if (found) break;
     }
+    if (found) break;
   }
 
   G.players.push(createPlayer('me', true, spawnX, spawnY));
@@ -1886,11 +1963,10 @@ function updateNetHud(){
 }
 
 function gameOver(){
-  const daysSurvived = G.dayCount;
   menuText.innerHTML = 'Bạn đã gục ngã trong bóng tối.';
   document.getElementById('s-time').textContent = G.time.toFixed(0) + 's';
   document.getElementById('s-kills').textContent = G.kills;
-  document.getElementById('s-days').textContent = daysSurvived;
+  document.getElementById('s-days').textContent = G.dayCount;
   menuStats.style.display = 'flex';
   menuMain.style.display = 'block';
   menuMulti.style.display = 'none';
@@ -1923,6 +1999,9 @@ async function init(){
   await new Promise(r => setTimeout(r, failed.length > 0 ? 2500 : 400));
   loading.classList.remove('show');
   requestAnimationFrame(loop);
+
+  // Log server config
+  console.log('[Net] PeerJS Server:', PEER_HOST + PEER_PATH);
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
