@@ -2,7 +2,9 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Viral Defense — 22C</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -11,8 +13,9 @@
     font-family:"Consolas","SF Mono",Menlo,monospace;
     display:flex;align-items:center;justify-content:center;
     padding:8px;user-select:none;-webkit-tap-highlight-color:transparent;
-    touch-action:manipulation}
-  #app{width:100%;max-width:1020px;display:flex;flex-direction:column;gap:6px}
+    touch-action:manipulation;transition:padding .3s}
+  #app{width:100%;max-width:1020px;display:flex;flex-direction:column;gap:6px;
+       transition:max-width .3s}
   #hud{display:flex;flex-wrap:wrap;gap:6px;
     background:linear-gradient(180deg,#170d1e,#0e0813);
     border:1px solid #2a1a33;border-radius:8px;padding:6px 8px}
@@ -89,6 +92,85 @@
   #loader .txt{font-size:11px;color:#7a6b8c;letter-spacing:1px;
     text-align:center;padding:0 20px;line-height:1.6}
   @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ============================================
+     MOBILE ROTATE OVERLAY — Bắt buộc xoay ngang
+     ============================================ */
+  #rotate-overlay{
+    position:fixed;inset:0;z-index:9999;
+    background:linear-gradient(180deg,#0a0510 0%,#050208 100%);
+    display:none;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:24px;padding:30px;text-align:center;
+    animation:fadeIn .3s ease;
+  }
+  #rotate-overlay.show{display:flex}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+  #rotate-overlay .phone{
+    width:72px;height:120px;
+    border:4px solid #3ce0ff;border-radius:12px;
+    position:relative;
+    box-shadow:0 0 32px rgba(60,224,255,0.55);
+    animation:rotate-phone 2.4s ease-in-out infinite;
+    transform-origin:center;
+  }
+  #rotate-overlay .phone::before{
+    content:'';position:absolute;top:5px;left:50%;
+    transform:translateX(-50%);
+    width:26px;height:3px;background:#3ce0ff;border-radius:2px;
+  }
+  #rotate-overlay .phone::after{
+    content:'';position:absolute;bottom:5px;left:50%;
+    transform:translateX(-50%);
+    width:16px;height:16px;
+    border:2px solid #3ce0ff;border-radius:50%;
+  }
+  @keyframes rotate-phone{
+    0%,30%{transform:rotate(0deg)}
+    70%,100%{transform:rotate(-90deg)}
+  }
+  #rotate-overlay h2{
+    font-size:16px;letter-spacing:3px;color:#3ce0ff;
+    text-shadow:0 0 14px #3ce0ff;margin:0;
+  }
+  #rotate-overlay p{
+    font-size:12px;color:#7a6b8c;line-height:1.7;max-width:260px;
+  }
+  #rotate-overlay .icon-ar{
+    font-size:26px;color:#ffd54a;
+    animation:pulse .8s ease-in-out infinite alternate;
+  }
+  @keyframes pulse{from{opacity:.4}to{opacity:1}}
+
+  /* ============================================
+     MOBILE LANDSCAPE — Tối ưu không gian
+     ============================================ */
+  body.device-mobile.landscape #app{
+    max-width:100vw;max-height:100vh;
+    gap:4px;
+  }
+  body.device-mobile.landscape{
+    padding:4px;
+  }
+  body.device-mobile.landscape .stat .val{font-size:12px}
+  body.device-mobile.landscape .stat .lbl{font-size:8px}
+  body.device-mobile.landscape .tw{
+    flex:1 1 60px;min-width:56px;padding:3px 5px;
+  }
+  body.device-mobile.landscape .tw .nm{font-size:9px}
+  body.device-mobile.landscape .panel h1{font-size:20px}
+  body.device-mobile.landscape .panel p{font-size:11px}
+
+  /* Badge hiển thị loại thiết bị (debug — có thể xóa) */
+  #device-badge{
+    position:fixed;bottom:6px;right:6px;
+    font-size:9px;color:#4d3a5c;
+    background:#0a0510;padding:2px 6px;border-radius:8px;
+    border:1px solid #2a1a33;
+    pointer-events:none;z-index:5;
+  }
+
   @media (max-width:520px){
     .panel h1{font-size:20px;letter-spacing:3px}
     .stat .val{font-size:12px}
@@ -134,19 +216,127 @@
   </div>
   <div id="shop"></div>
 </div>
+
+<!-- Overlay bắt buộc xoay ngang trên mobile -->
+<div id="rotate-overlay">
+  <div class="phone"></div>
+  <h2>XOAY NGANG</h2>
+  <p>Vui lòng xoay ngang điện thoại<br>để chơi game</p>
+  <div class="icon-ar">⟳</div>
+</div>
+
 <div id="loader">
   <div class="spin"></div>
   <div class="txt" id="loader-txt">Đang load sprite...</div>
 </div>
 
+<div id="device-badge">—</div>
+
 <script>
 "use strict";
 
 /* ============================================================
+   DEVICE DETECTION — Tự nhận diện PC vs ĐIỆN THOẠI
+   ============================================================ */
+const DEVICE = (function(){
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  const uaMobile = /Android|iPhone|iPad|iPod|Mobile|Tablet|webOS|BlackBerry|Opera Mini|IEMobile|WPDesktop/i.test(ua);
+
+  // matchMedia: pointer thô = mobile, pointer mịn = PC
+  let pointerCoarse = false, pointerFine = false;
+  try {
+    pointerCoarse = window.matchMedia('(pointer: coarse)').matches;
+    pointerFine = window.matchMedia('(pointer: fine)').matches;
+  } catch(e){}
+
+  // Touch support
+  const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+  // Kết luận: ưu tiên UA, fallback pointer/touch
+  const isMobile = uaMobile || (pointerCoarse && !pointerFine) || (hasTouch && !pointerFine);
+  const isTouchDevice = hasTouch || pointerCoarse;
+
+  return { isMobile, isTouchDevice, uaMobile, pointerCoarse, pointerFine, hasTouch };
+})();
+
+function isPortrait(){
+  return window.innerHeight > window.innerWidth;
+}
+
+function isLandscape(){
+  return window.innerWidth >= window.innerHeight;
+}
+
+// Cập nhật badge hiển thị loại thiết bị
+function updateDeviceBadge(){
+  const badge = document.getElementById('device-badge');
+  if (!badge) return;
+  const type = DEVICE.isMobile ? '📱 Mobile' : '💻 PC';
+  const orient = isPortrait() ? 'Dọc' : 'Ngang';
+  const size = `${window.innerWidth}×${window.innerHeight}`;
+  badge.textContent = `${type} · ${orient} · ${size}`;
+}
+
+// Xử lý orientation: bắt buộc ngang trên mobile
+let gamePausedByOrientation = false;
+
+function checkOrientation(){
+  const rotateOverlay = document.getElementById('rotate-overlay');
+  const body = document.body;
+
+  // Cập nhật class body theo device
+  body.classList.toggle('device-mobile', DEVICE.isMobile);
+  body.classList.toggle('device-pc', !DEVICE.isMobile);
+  body.classList.toggle('landscape', isLandscape());
+  body.classList.toggle('portrait', isPortrait());
+
+  updateDeviceBadge();
+
+  if (DEVICE.isMobile && isPortrait()){
+    // Mobile đang cầm dọc → BẮT BUỘC xoay ngang
+    rotateOverlay.classList.add('show');
+
+    // Nếu đang chơi → pause tạm
+    if (typeof G !== 'undefined' && G.state === 'playing'){
+      gamePausedByOrientation = true;
+      G.state = 'paused-orientation';
+    }
+  } else {
+    // PC hoặc mobile đã xoay ngang → ẩn overlay
+    rotateOverlay.classList.remove('show');
+
+    // Resume nếu đang bị pause do orientation
+    if (typeof G !== 'undefined' && G.state === 'paused-orientation'){
+      G.state = 'playing';
+      gamePausedByOrientation = false;
+    }
+  }
+
+  // Gọi resize canvas sau khi layout ổn định
+  setTimeout(() => {
+    if (typeof updateHUD === 'function') updateHUD();
+  }, 100);
+}
+
+// Lắng nghe xoay màn hình & resize
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', () => {
+  setTimeout(checkOrientation, 250);
+});
+
+// Fullscreen helper (tùy chọn — bấm vào game 2 lần để fullscreen)
+function tryFullscreenOnMobile(){
+  if (!DEVICE.isMobile) return;
+  const el = document.documentElement;
+  if (el.requestFullscreen && !document.fullscreenElement){
+    el.requestFullscreen().catch(()=>{});
+  } else if (el.webkitRequestFullscreen && !document.webkitFullscreenElement){
+    el.webkitRequestFullscreen();
+  }
+}
+
+/* ============================================================
    SPRITE CONFIG — TỰ ĐỘNG TÍNH KÍCH THƯỚC FRAME
-   ============================================================
-   Bạn KHÔNG cần nhập fw/fh.
-   Tool tự lấy img.width / tổng_frame → ra fw.
    ============================================================ */
 const SPRITE_CFG = {
   imp:    { src:'sprites/imp.png',    frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, display:44 },
@@ -156,9 +346,9 @@ const SPRITE_CFG = {
   boss:   { src:'sprites/boss.png',   frames:{ idle:1, move:2, attack:2, hurt:1, death:1 }, display:100 }
 };
 
-const SPRITES = {};     // SPRITES[type] = Image
-const SPRITE_OK = {};   // load thành công?
-const SPRITE_DIMS = {}; // { fw, fh, total }
+const SPRITES = {};
+const SPRITE_OK = {};
+const SPRITE_DIMS = {};
 
 function loadSprite(type){
   return new Promise((resolve) => {
@@ -168,13 +358,12 @@ function loadSprite(type){
       SPRITES[type] = img;
       SPRITE_OK[type] = true;
       const total = Object.values(cfg.frames).reduce((s,n)=>s+n, 0);
-      // ✅ TỰ TÍNH KÍCH THƯỚC FRAME
       SPRITE_DIMS[type] = {
         fw: img.width / total,
         fh: img.height,
         total
       };
-      console.log(`[Sprite] ${type}: ảnh ${img.width}×${img.height}, ${total} frame → mỗi frame ${(img.width/total).toFixed(2)}×${img.height}px`);
+      console.log(`[Sprite] ${type}: ${img.width}×${img.height}, ${total} frame → ${(img.width/total).toFixed(2)}×${img.height}px/frame`);
       resolve(true);
     };
     img.onerror = () => {
@@ -186,44 +375,27 @@ function loadSprite(type){
   });
 }
 
-async function loadAllSprites(){
-  const types = Object.keys(SPRITE_CFG);
-  const results = await Promise.all(types.map(loadSprite));
-  const okCount = results.filter(Boolean).length;
-  return { okCount, total: types.length };
-}
-
-/* ---------- LẤY FRAME RECT ---------- */
 function getFrameRect(type, state, animTime, deathProgress){
   const cfg = SPRITE_CFG[type];
   const dims = SPRITE_DIMS[type];
   if (!dims) return null;
-
   const order = ['idle','move','attack','hurt','death'];
   const stateMap = { idle:'idle', walk:'move', move:'move',
                      attack:'attack', hurt:'hurt', dead:'death' };
   const sName = stateMap[state] || 'idle';
-
   let offset = 0;
-  for (const s of order){
-    if (s === sName) break;
-    offset += cfg.frames[s] || 0;
-  }
+  for (const s of order){ if (s === sName) break; offset += cfg.frames[s] || 0; }
   const total = cfg.frames[sName] || 1;
-
   let frameIdx;
   if (sName === 'death'){
-    frameIdx = Math.min(total - 1, Math.floor(deathProgress * total));
+    frameIdx = Math.min(total-1, Math.floor(deathProgress * total));
   } else {
     const fps = { idle:6, move:10, attack:12, hurt:14 }[sName] || 8;
     frameIdx = Math.floor(animTime * fps) % total;
   }
-
   return {
     x: (offset + frameIdx) * dims.fw,
-    y: 0,
-    w: dims.fw,
-    h: dims.fh,
+    y: 0, w: dims.fw, h: dims.fh,
     display: cfg.display
   };
 }
@@ -313,7 +485,6 @@ function addText(x, y, text, color){
   G.texts.push({ x, y, text, color, life: 0.9, maxLife: 0.9 });
 }
 
-/* ---------- WAVES ---------- */
 function generateWave(n){
   const q = []; let t = 0;
   const add = (type, count, gap) => {
@@ -364,7 +535,6 @@ function startWave(){
   updateHUD();
 }
 
-/* ---------- TOWER STATS ---------- */
 function baseStats(t){
   const b = TOWER_TYPES[t.type], L = t.level;
   return {
@@ -417,7 +587,6 @@ function findTarget(tower, range){
   return best;
 }
 
-/* ---------- DAMAGE ---------- */
 function applyDamage(e, rawDmg, opts){
   opts = opts||{};
   if (e.dead || e.state==='dead') return;
@@ -450,7 +619,6 @@ function applyDamage(e, rawDmg, opts){
   }
 }
 
-/* ---------- ATTACKS ---------- */
 function fireProjectile(tower, target, s){
   const b = TOWER_TYPES[tower.type];
   G.projectiles.push({
@@ -487,8 +655,10 @@ function fireChain(tower, target, s){
   G.effects.push({ type:'chain', points, life:0.22, maxLife:0.22, color });
 }
 
-/* ---------- UPDATE ---------- */
 function update(dt){
+  // Không update nếu bị pause do orientation
+  if (G.state === 'paused-orientation') return;
+
   G.time += dt;
   if (G.waveActive){
     for (let i=G.spawnQueue.length-1;i>=0;i--){
@@ -650,13 +820,9 @@ function update(dt){
   }
 }
 
-/* ============================================================
-   DRAW ENEMY SPRITE — DÙNG ẢNH THẬT
-   ============================================================ */
 function drawEnemySprite(e){
   const img = SPRITES[e.type];
   if (!SPRITE_OK[e.type] || !img){
-    // Fallback: hình tròn nếu ảnh lỗi
     ctx.beginPath(); ctx.arc(0, 0, e.size, 0, Math.PI*2);
     ctx.fillStyle = e.hitFlash > 0 ? '#fff' : e.color;
     ctx.fill();
@@ -665,23 +831,18 @@ function drawEnemySprite(e){
   const deathProgress = e.state === 'dead' ? (1 - e.deathTimer / 0.7) : 0;
   const rect = getFrameRect(e.type, e.state, G.time + e.animPhase, deathProgress);
   if (!rect) return;
-
   const dsize = rect.display;
   const sx = -dsize/2;
   const sy = -dsize + e.size*0.3;
-
   if (e.state === 'dead'){
     const ratio = Math.max(0, e.deathTimer / 0.7);
     ctx.globalAlpha = ratio;
     ctx.save();
     ctx.scale(0.6 + ratio*0.4, 0.6 + ratio*0.4);
   }
-
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h, sx, sy, dsize, dsize);
-
   if (e.state === 'dead') ctx.restore();
-
   if (e.hitFlash > 0 && e.state !== 'dead'){
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
@@ -717,7 +878,6 @@ function drawEnemies(){
     }
     drawEnemySprite(e);
     ctx.restore();
-
     if (e.hp < e.maxHp && e.state !== 'dead'){
       const w = e.boss ? 56 : 26;
       const h = e.boss ? 5 : 3;
@@ -731,7 +891,6 @@ function drawEnemies(){
   }
 }
 
-/* ---------- BASE DRAW ---------- */
 function drawGrid(){
   ctx.strokeStyle = 'rgba(140,90,180,0.07)';
   ctx.lineWidth = 1;
@@ -999,19 +1158,20 @@ function draw(){
   drawEffects(); drawParticles(); drawTexts(); drawGhost();
 }
 
-/* ---------- LOOP ---------- */
 let last = performance.now();
 function loop(now){
   try {
     let dt = (now - last)/1000; last = now;
     dt = Math.min(dt, 0.05);
     if (G.state === 'playing') update(dt);
+    else if (G.state === 'paused-orientation') {
+      // Vẫn vẽ nhưng không update
+    }
     draw();
   } catch (err){ console.error('[ViralDefense]', err); }
   requestAnimationFrame(loop);
 }
 
-/* ---------- HUD ---------- */
 const elWave = document.getElementById('s-wave');
 const elMoney = document.getElementById('s-money');
 const elLife = document.getElementById('s-life');
@@ -1031,6 +1191,7 @@ function updateHUD(){
       : 'CHUẨN BỊ · ' + Math.max(0,G.breakTimer).toFixed(1) + 's';
   } else if (G.state === 'gameover') elState.textContent = 'THẤT BẠI';
   else if (G.state === 'paused') elState.textContent = 'TẠM DỪNG';
+  else if (G.state === 'paused-orientation') elState.textContent = 'XOAY NGANG ĐIỆN THOẠI';
   else elState.textContent = '—';
   document.querySelectorAll('#shop .tw').forEach(btn => {
     const type = btn.dataset.type;
@@ -1117,7 +1278,6 @@ function selectType(key){
   updateHUD();
 }
 
-/* ---------- INPUT ---------- */
 function toCanvas(e){
   const r = cv.getBoundingClientRect();
   const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -1134,7 +1294,16 @@ function onMove(e){
 }
 function onClick(e){
   if (e.touches) e.preventDefault();
+
+  // Chặn khi đang bị pause do orientation
+  if (G.state === 'paused-orientation') return;
   if (G.state !== 'playing') return;
+
+  // Trên mobile: lần đầu bấm sẽ thử fullscreen
+  if (DEVICE.isMobile && !document.fullscreenElement && !document.webkitFullscreenElement){
+    tryFullscreenOnMobile();
+  }
+
   const p = toCanvas(e);
   const c = Math.floor(p.x/TILE), r = Math.floor(p.y/TILE);
   for (const t of G.towers){
@@ -1197,7 +1366,6 @@ window.addEventListener('keydown', e => {
   }
 });
 
-/* ---------- FLOW ---------- */
 function resetGame(){
   G.money = 260; G.lives = 20; G.wave = 0;
   G.towers = []; G.enemies = []; G.projectiles = [];
@@ -1226,20 +1394,22 @@ elOvBtn.addEventListener('click', () => {
 
 /* ---------- INIT ---------- */
 async function init(){
+  // Check orientation trước khi làm gì khác
+  checkOrientation();
+
   const loader = document.getElementById('loader');
   const loaderTxt = document.getElementById('loader-txt');
   loader.classList.add('show');
-  loaderTxt.textContent = 'Đang load sprite...\n(0/5)';
+  loaderTxt.textContent = `Thiết bị: ${DEVICE.isMobile ? 'Điện thoại 📱' : 'Máy tính 💻'}\nĐang load sprite...\n(0/5)`;
 
   let done = 0;
   const types = Object.keys(SPRITE_CFG);
   for (const t of types){
     await loadSprite(t);
     done++;
-    loaderTxt.textContent = `Đang load sprite...\n(${done}/${types.length}) ${t}`;
+    loaderTxt.textContent = `Thiết bị: ${DEVICE.isMobile ? 'Điện thoại 📱' : 'Máy tính 💻'}\nĐang load sprite... (${done}/${types.length}) ${t}`;
   }
 
-  // Kiểm tra kết quả
   const failed = types.filter(t => !SPRITE_OK[t]);
   if (failed.length > 0){
     loaderTxt.innerHTML =
@@ -1255,6 +1425,7 @@ async function init(){
   loader.classList.remove('show');
   buildShop();
   updateHUD();
+  checkOrientation();
   requestAnimationFrame(loop);
 }
 init();
