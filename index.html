@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Survival Knight — 22C</title>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden;background:#0a0f0a;margin:0}
@@ -27,29 +28,51 @@
   @keyframes rot{0%,30%{transform:rotate(0)}70%,100%{transform:rotate(-90deg)}}
   #rotate h2{font-size:16px;letter-spacing:4px;color:#7fff7f;text-shadow:0 0 14px #7fff7f}
   #rotate p{font-size:12px;color:#6a7a6a;line-height:1.7}
+
   #menu{position:absolute;inset:0;background:rgba(5,8,5,.92);
     display:flex;align-items:center;justify-content:center;
     z-index:10;padding:16px;backdrop-filter:blur(4px)}
   #menu.hide{display:none}
-  .panel{max-width:480px;text-align:center;border:2px solid #2a4a2a;
-    background:linear-gradient(180deg,#0f1a0f,#081208);border-radius:14px;padding:26px 22px;
-    box-shadow:0 0 60px rgba(60,200,60,.25)}
-  .panel h1{font-size:28px;letter-spacing:6px;color:#fff;
-    text-shadow:0 0 18px #7fff7f,0 0 40px #7fff7f;margin-bottom:6px}
+  .panel{max-width:520px;width:100%;text-align:center;border:2px solid #2a4a2a;
+    background:linear-gradient(180deg,#0f1a0f,#081208);border-radius:14px;padding:22px 20px;
+    box-shadow:0 0 60px rgba(60,200,60,.25);max-height:94vh;overflow-y:auto}
+  .panel h1{font-size:26px;letter-spacing:5px;color:#fff;
+    text-shadow:0 0 18px #7fff7f,0 0 40px #7fff7f;margin-bottom:4px}
   .panel h1 span{color:#ffd54a;text-shadow:0 0 18px #ffd54a}
-  .panel .sub{font-size:11px;letter-spacing:2px;color:#6a7a6a;margin-bottom:14px}
-  .panel p{font-size:12px;line-height:1.7;color:#a8b8a8;margin-bottom:10px}
-  .panel .stats{display:flex;gap:8px;justify-content:center;margin:14px 0;
-    flex-wrap:wrap;font-size:11px}
-  .panel .stat{padding:6px 10px;background:#0a150a;border-radius:6px;border:1px solid #2a4a2a}
-  .panel .stat b{color:#ffd54a;display:block;font-size:14px;margin-top:2px}
-  .panel button{margin-top:12px;padding:13px 34px;border-radius:8px;
-    font-size:14px;letter-spacing:2px;font-weight:bold;color:#041a04;
+  .panel .sub{font-size:10px;letter-spacing:2px;color:#6a7a6a;margin-bottom:14px}
+  .panel p{font-size:12px;line-height:1.6;color:#a8b8a8;margin-bottom:8px}
+  .panel .stats{display:flex;gap:6px;justify-content:center;margin:12px 0;flex-wrap:wrap;font-size:11px}
+  .panel .stat{padding:5px 9px;background:#0a150a;border-radius:6px;border:1px solid #2a4a2a}
+  .panel .stat b{color:#ffd54a;display:block;font-size:13px;margin-top:2px}
+  .panel button{margin-top:8px;padding:12px 30px;border-radius:8px;
+    font-size:13px;letter-spacing:2px;font-weight:bold;color:#041a04;
     background:linear-gradient(180deg,#a4ffa4,#3fb85c);
-    box-shadow:0 0 24px rgba(127,255,127,.5);border:none;cursor:pointer;font-family:inherit}
+    box-shadow:0 0 24px rgba(127,255,127,.5);border:none;cursor:pointer;
+    font-family:inherit;width:100%}
   .panel button:active{transform:scale(.97)}
+  .panel button.secondary{background:linear-gradient(180deg,#7ff0ff,#25b6d8);color:#04121a;
+    box-shadow:0 0 24px rgba(60,224,255,.5)}
+  .panel button.gray{background:#2a3a2a;color:#e0e8e0;box-shadow:none}
+  .panel button:disabled{opacity:.4;cursor:not-allowed}
   .legend{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:8px 0}
   .lg{font-size:9px;padding:3px 7px;border-radius:12px;border:1px solid #2a4a2a;background:#0a150a}
+  input.mp-input{width:100%;padding:11px;background:#0a120a;color:#7fff7f;
+    border:2px solid #3a5a3a;border-radius:7px;font-family:inherit;font-size:14px;
+    text-align:center;font-weight:bold;letter-spacing:1px;margin:8px 0}
+  .room-code{font-size:22px;color:#ffd54a;font-weight:bold;letter-spacing:3px;
+    padding:12px;background:#0a120a;border:2px dashed #ffd54a;border-radius:8px;
+    margin:10px 0;font-family:monospace;word-break:break-all}
+  .note{font-size:10px;color:#7a9a7a;line-height:1.5;margin-top:6px;
+    padding:8px;background:#0a120a;border-radius:5px;border-left:3px solid #3a5a3a;
+    text-align:left}
+  .note b{color:#7fff7f}
+  .note.warn{border-left-color:#ffd54a}
+  .note.warn b{color:#ffd54a}
+  .status-conn{font-size:11px;color:#7ff0ff;padding:8px;
+    background:#0a1a2a;border-radius:6px;margin-top:8px;text-align:center}
+  .status-conn.err{color:#ff5a5a;background:#1a0a0a}
+  .status-conn.ok{color:#7fff7f;background:#0a1a0a}
+
   #loading{position:fixed;inset:0;background:#0a0f0a;
     display:none;align-items:center;justify-content:center;
     flex-direction:column;gap:12px;z-index:100}
@@ -59,91 +82,68 @@
   #loading .txt{font-size:11px;color:#6a7a6a;letter-spacing:1px;text-align:center;
     line-height:1.6;padding:0 20px}
   @keyframes spin{to{transform:rotate(360deg)}}
-  #dbgBtn{position:fixed;top:6px;right:6px;z-index:50;padding:4px 10px;
-    background:rgba(0,0,0,.6);color:#ffd54a;border:1px solid #444;border-radius:6px;
-    font-size:10px;font-family:inherit;cursor:pointer}
-  #dbgPanel{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-    background:rgba(10,18,10,.97);padding:14px;border-radius:12px;z-index:100;
-    color:#e0e8e0;font-size:12px;border:1px solid #3a5a3a;max-width:94vw;max-height:90vh;
-    overflow-y:auto;font-family:inherit;box-shadow:0 0 40px rgba(0,0,0,.8);width:560px}
-  #dbgPanel h3{font-size:13px;color:#7fff7f;margin-bottom:10px;letter-spacing:1px}
-  #dbgPanel label{font-size:10px;color:#9aa89a;display:block;margin-top:8px}
-  #dbgPanel input,#dbgPanel select,#dbgPanel textarea{
-    padding:5px 7px;background:#0a120a;color:#fff;
-    border:1px solid #3a5a3a;border-radius:4px;font-family:inherit;font-size:12px;
-    margin-top:2px;width:100%}
-  #dbgPanel input.fc{width:42px;text-align:center;display:inline-block}
-  #dbgPreview{display:block;margin-top:10px;background:#000;
-    border:1px solid #3a5a3a;max-width:100%;border-radius:4px;image-rendering:pixelated}
-  #dbgRow{display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap}
-  #dbgRow label{margin:0;flex:0 0 auto;width:auto}
-  #dbgActions{display:flex;gap:6px;margin-top:12px;justify-content:center;flex-wrap:wrap}
-  #dbgActions button{padding:8px 14px;border:none;border-radius:5px;
-    font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer}
-  #dbgAuto{background:linear-gradient(180deg,#7ff0ff,#25b6d8);color:#04121a}
-  #dbgApply{background:linear-gradient(180deg,#a4ffa4,#3fb85c);color:#041a04}
-  #dbgReset{background:#3a5a3a;color:#fff}
-  #dbgClose{background:#444;color:#fff}
-  #dbgInfo{font-size:10px;color:#9aa89a;margin-top:6px;line-height:1.5}
-  #dbgInfo b{color:#7fff7f}
+
+  #netHud{position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    font-size:10px;color:#7ff0ff;background:rgba(0,0,0,.6);padding:3px 10px;
+    border-radius:10px;z-index:5;pointer-events:none;display:none}
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
-<button id="dbgBtn">🐞 FIX SPRITE</button>
-<div id="dbgPanel">
-  <h3>CHỈNH SPRITE</h3>
-  <label>Loại quái</label>
-  <select id="dbgType">
-    <option value="imp">Quỷ Nhỏ</option>
-    <option value="hound">Khuyển Ngục</option>
-    <option value="wraith">Oan Hồn</option>
-    <option value="brute">Cự Quỷ</option>
-    <option value="boss">Đại Quỷ</option>
-  </select>
-  <label>Số frame mỗi state (idle / move / attack / hurt / death)</label>
-  <div id="dbgRow">
-    <input id="dbgIdle" class="fc" type="number" min="1" value="3">
-    <input id="dbgMove" class="fc" type="number" min="1" value="3">
-    <input id="dbgAtk"  class="fc" type="number" min="1" value="3">
-    <input id="dbgHurt" class="fc" type="number" min="1" value="2">
-    <input id="dbgDie"  class="fc" type="number" min="1" value="3">
-  </div>
-  <label>Custom frames (mỗi frame: <b>x,w</b> — ngăn bằng dấu chấm phẩy). Để trống = dùng even split</label>
-  <textarea id="dbgCustom" rows="3" placeholder="VD: 0,120; 120,150; 270,130; ..."></textarea>
-
-  <label>Preview (🔴 đỏ = custom/auto · 🟢 xanh = even split)</label>
-  <canvas id="dbgPreview"></canvas>
-  <div id="dbgInfo">—</div>
-
-  <div id="dbgActions">
-    <button id="dbgAuto">🤖 AUTO DETECT</button>
-    <button id="dbgApply">ÁP DỤNG</button>
-    <button id="dbgReset">RESET</button>
-    <button id="dbgClose">ĐÓNG</button>
-  </div>
-</div>
+<div id="netHud">—</div>
 
 <div id="menu">
   <div class="panel">
     <h1>SURVIVAL <span>KNIGHT</span></h1>
     <p class="sub">ĐẤU TRƯỜNG ĐỊA NGỤC · 22C</p>
-    <p id="menu-text">
-      Bạn là hiệp sĩ cuối cùng.<br>
-      Quái từ địa ngục tràn vào từ mọi phía.<br>
-      <b>Sống sót càng lâu càng tốt.</b>
-    </p>
-    <div class="stats" id="menu-stats" style="display:none">
-      <div class="stat">THỜI GIAN <b id="s-time">0s</b></div>
-      <div class="stat">GIẾT <b id="s-kills">0</b></div>
-      <div class="stat">ĐIỂM <b id="s-score">0</b></div>
+
+    <!-- MENU CHÍNH -->
+    <div id="menuMain">
+      <p id="menu-text">Bạn là hiệp sĩ cuối cùng.<br>Quái từ địa ngục tràn vào từ mọi phía.<br><b>Sống sót càng lâu càng tốt.</b></p>
+      <div class="stats" id="menu-stats" style="display:none">
+        <div class="stat">THỜI GIAN <b id="s-time">0s</b></div>
+        <div class="stat">GIẾT <b id="s-kills">0</b></div>
+        <div class="stat">ĐIỂM <b id="s-score">0</b></div>
+      </div>
+      <div class="legend">
+        <span class="lg" style="color:#7fff7f">🕹 Joystick = Đi</span>
+        <span class="lg" style="color:#ffd54a">⚔ Nút phải = Chém</span>
+        <span class="lg" style="color:#7ff0ff">PC: WASD + Space</span>
+      </div>
+      <button id="soloBtn">🎮 CHƠI ĐƠN</button>
+      <button id="multiBtn" class="secondary">🌐 CHƠI MẠNG</button>
     </div>
-    <div class="legend">
-      <span class="lg" style="color:#7fff7f">🕹 Joystick = Đi</span>
-      <span class="lg" style="color:#ffd54a">⚔ Nút phải = Chém</span>
-      <span class="lg" style="color:#7ff0ff">PC: WASD + Space</span>
+
+    <!-- MENU MẠNG -->
+    <div id="menuMulti" style="display:none">
+      <p style="color:#7ff0ff;font-weight:bold;letter-spacing:2px">CHƠI MẠNG · 2 NGƯỜI</p>
+      <div class="note">
+        <b>Cách chơi:</b><br>
+        • Người 1: bấm <b>TẠO PHÒNG</b> → nhận mã phòng<br>
+        • Người 2: nhập mã phòng → bấm <b>VÀO PHÒNG</b><br>
+        • Cả 2 cùng chơi trong 1 thế giới
+      </div>
+
+      <div id="multiButtons">
+        <button id="hostBtn" class="secondary">🎯 TẠO PHÒNG</button>
+        <p style="margin:10px 0;font-size:11px;color:#6a7a6a">— HOẶC —</p>
+        <input class="mp-input" id="joinInput" placeholder="Nhập mã phòng..." maxlength="20">
+        <button id="joinBtn">🔗 VÀO PHÒNG</button>
+      </div>
+
+      <div id="hostView" style="display:none">
+        <p style="font-size:11px;color:#7a9a7a;margin-top:10px">Mã phòng của bạn:</p>
+        <div class="room-code" id="roomCode">...</div>
+        <p style="font-size:11px;color:#7a9a7a">Gửi mã này cho bạn bè</p>
+        <div class="status-conn" id="hostStatus">Đang chờ kết nối...</div>
+      </div>
+
+      <div id="joinView" style="display:none">
+        <div class="status-conn" id="joinStatus">Đang kết nối...</div>
+      </div>
+
+      <button id="backMenuBtn" class="gray" style="margin-top:14px">← QUAY LẠI</button>
     </div>
-    <button id="playBtn">BẮT ĐẦU</button>
   </div>
 </div>
 
@@ -161,7 +161,9 @@
 <script>
 "use strict";
 
-/* ===== DEVICE ===== */
+/* ============================================================
+   DEVICE DETECTION
+   ============================================================ */
 const DEVICE = (function(){
   const ua = navigator.userAgent || '';
   const uaMobile = /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(ua);
@@ -182,67 +184,17 @@ function checkOrientation(){
   }
 }
 
-/* ===== SPRITE CONFIG ===== */
+/* ============================================================
+   SPRITE CONFIG — PNG tự chia đều
+   ============================================================ */
 const SPRITE_CFG = {
-  imp:    { src:'sprites/imp.png',    frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, displayH:48,  custom:null },
-  hound:  { src:'sprites/hound.png',  frames:{ idle:3, move:2, attack:2, hurt:2, death:3 }, displayH:60,  custom:null },
-  wraith: { src:'sprites/wraith.png', frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, displayH:56,  custom:null },
-  brute:  { src:'sprites/brute.png',  frames:{ idle:2, move:3, attack:3, hurt:2, death:3 }, displayH:80,  custom:null },
-  boss:   { src:'sprites/boss.png',   frames:{ idle:1, move:2, attack:2, hurt:1, death:1 }, displayH:130, custom:null }
+  imp:    { src:'sprites/imp.png',    frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, displayH:48 },
+  hound:  { src:'sprites/hound.png',  frames:{ idle:3, move:2, attack:2, hurt:2, death:3 }, displayH:60 },
+  wraith: { src:'sprites/wraith.png', frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, displayH:56 },
+  brute:  { src:'sprites/brute.png',  frames:{ idle:2, move:3, attack:3, hurt:2, death:3 }, displayH:80 },
+  boss:   { src:'sprites/boss.png',   frames:{ idle:1, move:2, attack:2, hurt:1, death:1 }, displayH:130 }
 };
-
 const SPRITES = {}, SPRITE_OK = {}, SPRITE_DIMS = {};
-
-/* ⚡ AUTO-DETECT FRAMES bằng alpha channel */
-function autoDetectFrames(img, alphaThreshold, minGap){
-  alphaThreshold = alphaThreshold || 10;
-  minGap = minGap || 6;
-  const c = document.createElement('canvas');
-  c.width = img.width; c.height = img.height;
-  const cx = c.getContext('2d');
-  cx.drawImage(img, 0, 0);
-  let data;
-  try { data = cx.getImageData(0, 0, img.width, img.height).data; }
-  catch(e){ return []; }
-
-  // Cột có pixel đục?
-  const cols = new Uint8Array(img.width);
-  for (let x = 0; x < img.width; x++){
-    for (let y = 0; y < img.height; y++){
-      if (data[(y*img.width + x)*4 + 3] > alphaThreshold){
-        cols[x] = 1;
-        break;
-      }
-    }
-  }
-
-  // Gom nhóm cột liên tục
-  const groups = [];
-  let inG = false, st = 0;
-  for (let x = 0; x < img.width; x++){
-    if (cols[x]){
-      if (!inG){ inG = true; st = x; }
-    } else if (inG){
-      groups.push([st, x-1]);
-      inG = false;
-    }
-  }
-  if (inG) groups.push([st, img.width-1]);
-
-  if (groups.length === 0) return [];
-
-  // Merge gap nhỏ (đuôi lửa sát body)
-  const merged = [groups[0].slice()];
-  for (let i = 1; i < groups.length; i++){
-    const prev = merged[merged.length-1];
-    if (groups[i][0] - prev[1] <= minGap){
-      prev[1] = groups[i][1];
-    } else {
-      merged.push(groups[i].slice());
-    }
-  }
-  return merged;
-}
 
 function loadSprite(type){
   return new Promise((resolve) => {
@@ -251,23 +203,9 @@ function loadSprite(type){
     img.onload = () => {
       SPRITES[type] = img;
       SPRITE_OK[type] = true;
-      const total = Object.values(cfg.frames).reduce((s,n)=>s+n, 0);
-      const autoFw = img.width / total;
-      const fh = img.height;
-
-      // ⚡ Nếu chưa có custom → thử auto-detect
-      if (!cfg.custom){
-        const detected = autoDetectFrames(img, 10, 6);
-        if (detected.length === total){
-          cfg.custom = detected.map(g => [g[0], g[1] - g[0] + 1]);
-          console.log(`[Sprite] ${type}: auto-detect OK (${detected.length} frames)`);
-        } else {
-          console.log(`[Sprite] ${type}: auto-detect ra ${detected.length} (cần ${total}) → dùng even split`);
-        }
-      }
-
-      SPRITE_DIMS[type] = { fw: autoFw, fh, total, autoFw };
-      console.log(`[Sprite] ${type}: ${img.width}×${img.height} · ${total}f`);
+      const total = Object.values(cfg.frames).reduce((s,n)=>s+n,0);
+      SPRITE_DIMS[type] = { fw: img.width / total, fh: img.height, total };
+      console.log(`[Sprite] ${type}: ${img.width}×${img.height}, ${total}f → ${(img.width/total).toFixed(1)}×${img.height}px`);
       resolve(true);
     };
     img.onerror = () => { SPRITE_OK[type] = false; resolve(false); };
@@ -277,44 +215,29 @@ function loadSprite(type){
 async function loadAllSprites(){
   for (const t of Object.keys(SPRITE_CFG)) await loadSprite(t);
 }
-
-/* ⚡ Lấy rect — ưu tiên custom, fallback even split */
 function getFrameRect(type, state, animTime, deathProgress){
   const cfg = SPRITE_CFG[type];
   const dims = SPRITE_DIMS[type];
   if (!dims) return null;
   const order = ['idle','move','attack','hurt','death'];
-  const stateMap = { idle:'idle', walk:'move', move:'move',
-                     attack:'attack', hurt:'hurt', dead:'death' };
+  const stateMap = { idle:'idle', walk:'move', move:'move', attack:'attack', hurt:'hurt', dead:'death' };
   const sName = stateMap[state] || 'idle';
   let offset = 0;
-  for (const s of order){
-    if (s === sName) break;
-    offset += cfg.frames[s] || 0;
-  }
+  for (const s of order){ if (s === sName) break; offset += cfg.frames[s] || 0; }
   const total = cfg.frames[sName] || 1;
   let frameIdx;
   if (sName === 'death'){
-    frameIdx = Math.min(total-1, Math.floor(deathProgress * total));
+    frameIdx = Math.min(total - 1, Math.floor(deathProgress * 1.6 * total));
   } else {
     const fps = { idle:3, move:7, attack:10, hurt:14 }[sName] || 6;
     frameIdx = Math.floor(animTime * fps) % total;
   }
-  const absIdx = offset + frameIdx;
-
-  // Custom rect (chính xác nhất)
-  if (cfg.custom && cfg.custom[absIdx]){
-    const [x, w] = cfg.custom[absIdx];
-    return { x, y:0, w, h: dims.fh, displayH: cfg.displayH };
-  }
-  // Fallback even split
-  return {
-    x: absIdx * dims.fw, y:0, w: dims.fw, h: dims.fh,
-    displayH: cfg.displayH
-  };
+  return { x: (offset + frameIdx) * dims.fw, y: 0, w: dims.fw, h: dims.fh, displayH: cfg.displayH };
 }
 
-/* ===== CANVAS ===== */
+/* ============================================================
+   CANVAS
+   ============================================================ */
 const cv = document.getElementById('cv');
 const ctx = cv.getContext('2d');
 ctx.imageSmoothingEnabled = false;
@@ -355,12 +278,20 @@ addEventListener('resize', () => { resizeCanvas(); setTimeout(checkOrientation, 
 addEventListener('orientationchange', () => setTimeout(() => { resizeCanvas(); checkOrientation(); }, 300));
 if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { if (DEVICE.isMobile) resizeCanvas(); });
 
-/* ===== WORLD ===== */
+/* ============================================================
+   WORLD & GAME STATE
+   ============================================================ */
 const WORLD_W = 2400, WORLD_H = 2400, TILE = 40;
 const G = {
-  state:'menu', time:0, kills:0, spawnTimer:0, bossTimer:60,
-  player:null, enemies:[], obstacles:[], decorations:[],
-  particles:[], texts:[], cam:{x:0,y:0}
+  state:'menu',         // menu | playing | paused-rot | gameover
+  mode:'solo',          // solo | host | client
+  time:0, kills:0,
+  spawnTimer:0, bossTimer:60,
+  players:[],           // list of players (local + remote)
+  myId:'me',            // local player id
+  enemies:[], obstacles:[], decorations:[],
+  particles:[], texts:[],
+  cam:{x:0,y:0}
 };
 const rand = (a,b) => a + Math.random()*(b-a);
 const dist = (a,b,c,d) => Math.hypot(a-c, b-d);
@@ -369,9 +300,14 @@ const clamp = (v,a,b) => v < a ? a : (v > b ? b : v);
 const input = { joyId:null, joyVec:{x:0,y:0}, atkId:null, atkHeld:false, keys:{} };
 const UI = { joy:{x:120,y:480,r:70,knobR:34}, atk:{x:850,y:480,r:58} };
 
-/* ===== KNIGHT ===== */
+/* ============================================================
+   KNIGHT PIXEL ART
+   ============================================================ */
 const PAL_KNIGHT = { k:'#0a0a0a', b:'#4a7ab8', d:'#2a4a78', w:'#ffffff', s:'#d0d8e0',
   g:'#ffd54a', r:'#c03030', f:'#8a6a4a', h:'#6a3a1a' };
+const PAL_KNIGHT2 = { k:'#0a0a0a', b:'#b84a4a', d:'#782828', w:'#ffffff', s:'#d0d8e0',
+  g:'#ffd54a', r:'#c03030', f:'#8a6a4a', h:'#6a3a1a' };
+
 const KNIGHT = {
   idle:["     kkkk       ","    kbbbbk      ","    kbwwbk      ","    kbbbbk      ",
     "     kbbk       ","   kkkbbkkk     ","  kbbbbbbbbk    ","  kbbbbdbbbk    ",
@@ -395,6 +331,9 @@ const KNIGHT = {
     "                ","                "]
 };
 
+/* ============================================================
+   WORLD GEN
+   ============================================================ */
 function genWorld(){
   G.obstacles = []; G.decorations = [];
   for (let i=0;i<120;i++){
@@ -411,12 +350,23 @@ function genWorld(){
     G.decorations.push({ x:rand(0,WORLD_W), y:rand(0,WORLD_H), r:rand(5,12), tone:rand(0,1) });
   }
 }
-function createPlayer(){
-  return { x: WORLD_W/2, y: WORLD_H/2, vx:0, vy:0,
+
+function createPlayer(id, isLocal, x, y){
+  return {
+    id, isLocal,
+    x: x !== undefined ? x : WORLD_W/2 + (isLocal ? 0 : 60),
+    y: y !== undefined ? y : WORLD_H/2,
     hp:100, maxHp:100, speed:220, radius:18,
-    facing:1, aimX:1, aimY:0, state:'idle', stateT:0,
-    attackCd:0, invuln:0, hitFlash:0 };
+    facing:1, aimX:1, aimY:0,
+    state:'idle', stateT:0,
+    attackCd:0, invuln:0, hitFlash:0,
+    color: isLocal ? 0 : 1,
+    // Remote smooth
+    rx: 0, ry: 0, hasTarget: false,
+    lastSeen: 0
+  };
 }
+
 const ENEMY_DATA = {
   imp:{ hp:30, speed:90, damage:8, radius:16, color:'#e8574a', size:11 },
   hound:{ hp:55, speed:140, damage:12, radius:18, color:'#e8963a', size:13 },
@@ -424,27 +374,347 @@ const ENEMY_DATA = {
   brute:{ hp:220, speed:55, damage:22, radius:26, color:'#b02b2b', size:17 },
   boss:{ hp:900, speed:45, damage:35, radius:38, color:'#ff3040', size:26 }
 };
+
 function spawnEnemy(type){
   const d = ENEMY_DATA[type];
+  const target = G.players[0];
   const angle = Math.random()*Math.PI*2;
   const range = rand(550, 850);
-  let x = clamp(G.player.x + Math.cos(angle)*range, 60, WORLD_W-60);
-  let y = clamp(G.player.y + Math.sin(angle)*range, 60, WORLD_H-60);
-  G.enemies.push({ type, x, y, hp:d.hp, maxHp:d.hp,
+  let x = clamp(target.x + Math.cos(angle)*range, 60, WORLD_W-60);
+  let y = clamp(target.y + Math.sin(angle)*range, 60, WORLD_H-60);
+  G.enemies.push({
+    type, x, y, hp:d.hp, maxHp:d.hp,
     speed:d.speed, damage:d.damage, radius:d.radius,
     color:d.color, size:d.size, facing:1,
-    state:'walk', stateT:0, animStartT:0, lastState:'walk',
+    state:'walk', stateT:0, animStartT:G.time, lastState:'walk',
     attackCd:0, hurtTimer:0, attackAnimT:0,
-    hitFlash:0, dead:false, deathTimer:0, hitThisSwing:false });
+    hitFlash:0, dead:false, deathTimer:0, hitThisSwing:false,
+    netx:x, nety:y
+  });
 }
 
+/* ============================================================
+   NETWORK (PeerJS)
+   ============================================================ */
+const Net = {
+  peer: null,
+  conn: null,
+  isHost: false,
+  connected: false,
+  roomCode: '',
+  lastSendT: 0,
+  sendRate: 1/20,   // 20Hz
+  lastRecvT: 0
+};
+
+function startHost(){
+  const code = 'SK' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  Net.roomCode = code;
+  Net.isHost = true;
+  Net.peer = new Peer(code, { debug: 0 });
+
+  Net.peer.on('open', (id) => {
+    console.log('[Net] Host ready:', id);
+    document.getElementById('roomCode').textContent = id;
+    document.getElementById('hostStatus').textContent = 'Đang chờ kết nối...';
+    document.getElementById('hostStatus').className = 'status-conn';
+  });
+  Net.peer.on('connection', (conn) => {
+    if (Net.conn){ conn.close(); return; }
+    Net.conn = conn;
+    Net.connected = true;
+    console.log('[Net] Client connected:', conn.peer);
+    document.getElementById('hostStatus').textContent = '✅ Đã kết nối!';
+    document.getElementById('hostStatus').className = 'status-conn ok';
+    setupConn(conn);
+    startGame('host');
+  });
+  Net.peer.on('error', (err) => {
+    console.error('[Net] Host error:', err);
+    alert('Lỗi PeerJS: ' + err.message + '\nCó thể mã phòng đã bị trùng, thử lại.');
+    location.reload();
+  });
+}
+
+function startClient(hostCode){
+  Net.isHost = false;
+  Net.roomCode = hostCode;
+  Net.peer = new Peer({ debug: 0 });
+
+  Net.peer.on('open', (id) => {
+    console.log('[Net] Client ID:', id, '→ connecting to', hostCode);
+    document.getElementById('joinStatus').textContent = 'Đang kết nối đến ' + hostCode + '...';
+    Net.conn = Net.peer.connect(hostCode, { reliable: true });
+    setupConn(Net.conn);
+  });
+  Net.peer.on('error', (err) => {
+    console.error('[Net] Client error:', err);
+    document.getElementById('joinStatus').textContent = '❌ Lỗi: ' + err.message;
+    document.getElementById('joinStatus').className = 'status-conn err';
+  });
+}
+
+function setupConn(conn){
+  conn.on('open', () => {
+    Net.connected = true;
+    console.log('[Net] Connection open');
+    if (!Net.isHost){
+      document.getElementById('joinStatus').textContent = '✅ Đã kết nối! Vào game...';
+      document.getElementById('joinStatus').className = 'status-conn ok';
+      startGame('client');
+    }
+  });
+  conn.on('data', (data) => {
+    Net.lastRecvT = performance.now();
+    handleNetData(data);
+  });
+  conn.on('close', () => {
+    Net.connected = false;
+    console.log('[Net] Closed');
+    if (G.state === 'playing' || G.state === 'paused-rot'){
+      alert('Mất kết nối với đối phương!');
+      location.reload();
+    }
+  });
+  conn.on('error', (err) => console.error('[Net] Conn error:', err));
+}
+
+/* ---------- NET DATA HANDLERS ---------- */
+function handleNetData(data){
+  if (!data) return;
+  if (data.type === 'input'){
+    // Host nhận input từ client
+    if (!Net.isHost) return;
+    const p = G.players.find(pl => pl.id === 'remote');
+    if (p){
+      p.netInput = data.input;
+    }
+  } else if (data.type === 'state'){
+    // Client nhận state từ host
+    if (Net.isHost) return;
+    applyNetState(data);
+  } else if (data.type === 'init'){
+    // Client nhận init data (map)
+    G.obstacles = data.obstacles;
+    G.decorations = data.decorations;
+    if (G.players[0]) { G.players[0].x = data.spawnX; G.players[0].y = data.spawnY; }
+    updateCam(0);
+  }
+}
+
+function sendInput(){
+  if (!Net.connected || Net.isHost) return;
+  const p = G.players[0];
+  if (!p) return;
+  const now = performance.now();
+  if (now - Net.lastSendT < Net.sendRate*1000) return;
+  Net.lastSendT = now;
+  try {
+    Net.conn.send({
+      type:'input',
+      input: {
+        dx: input.joyId !== null ? input.joyVec.x : 
+            (input.keys['d']||input.keys['arrowright'] ? 1 : input.keys['a']||input.keys['arrowleft'] ? -1 : 0),
+        dy: input.joyId !== null ? input.joyVec.y :
+            (input.keys['s']||input.keys['arrowdown'] ? 1 : input.keys['w']||input.keys['arrowup'] ? -1 : 0),
+        atk: !!(input.keys[' '] || input.atkHeld)
+      }
+    });
+  } catch(e){}
+}
+
+function sendState(){
+  if (!Net.connected || !Net.isHost) return;
+  const now = performance.now();
+  if (now - Net.lastSendT < Net.sendRate*1000) return;
+  Net.lastSendT = now;
+  try {
+    Net.conn.send({
+      type:'state',
+      t: G.time,
+      kills: G.kills,
+      players: G.players.map(p => ({
+        id: p.id,
+        x: Math.round(p.x), y: Math.round(p.y),
+        hp: Math.round(p.hp),
+        state: p.state, facing: p.facing,
+        aimX: p.aimX, aimY: p.aimY,
+        stateT: p.stateT
+      })),
+      enemies: G.enemies.map(e => ({
+        type: e.type,
+        x: Math.round(e.x), y: Math.round(e.y),
+        hp: Math.round(e.hp), maxHp: e.maxHp,
+        state: e.state, facing: e.facing,
+        size: e.size, color: e.color,
+        dead: e.dead, deathTimer: e.deathTimer,
+        animStartT: e.animStartT
+      }))
+    });
+  } catch(e){}
+}
+
+function applyNetState(data){
+  G.time = data.t;
+  G.kills = data.kills;
+
+  // Sync players
+  for (const pd of data.players){
+    let p = G.players.find(pl => pl.id === pd.id);
+    if (!p){
+      if (pd.id === 'me' || pd.id === 'host' || pd.id === 'remote'){
+        // ignore
+      }
+    }
+    if (p){
+      // Nếu không phải local → smooth
+      if (!p.isLocal){
+        p.rx = pd.x; p.ry = pd.y;
+        p.hasTarget = true;
+        p.hp = pd.hp;
+        p.state = pd.state;
+        p.facing = pd.facing;
+        p.aimX = pd.aimX; p.aimY = pd.aimY;
+        p.stateT = pd.stateT;
+      } else {
+        // Local: chỉ cập nhật HP (host authoritative)
+        p.hp = pd.hp;
+      }
+    }
+  }
+
+  // Sync enemies
+  // Match by index (đơn giản, ổn cho số lượng vừa)
+  G.enemies = data.enemies.map((ed, i) => {
+    const old = G.enemies[i];
+    const enemy = {
+      type: ed.type,
+      x: old ? old.x : ed.x,
+      y: old ? old.y : ed.y,
+      targetX: ed.x, targetY: ed.y,
+      hp: ed.hp, maxHp: ed.maxHp,
+      speed: ENEMY_DATA[ed.type].speed,
+      damage: ENEMY_DATA[ed.type].damage,
+      radius: ENEMY_DATA[ed.type].radius,
+      color: ed.color, size: ed.size, facing: ed.facing,
+      state: ed.state, stateT:0, animStartT: ed.animStartT,
+      lastState: ed.state,
+      attackCd:0, hurtTimer:0, attackAnimT:0,
+      hitFlash:0, dead: ed.dead, deathTimer: ed.deathTimer,
+      hitThisSwing:false,
+      isClient: true
+    };
+    return enemy;
+  });
+}
+
+/* ============================================================
+   UPDATE
+   ============================================================ */
 function update(dt){
   if (G.state === 'paused-rot') return;
   if (G.state !== 'playing') return;
-  G.time += dt;
-  const p = G.player;
 
-  let dx = 0, dy = 0;
+  const isClient = (G.mode === 'client');
+  const p = G.players[0];
+  if (!p) return;
+
+  // ================ CLIENT: không chạy logic, chỉ smooth ================
+  if (isClient){
+    // Smooth remote players
+    for (const pl of G.players){
+      if (!pl.isLocal && pl.hasTarget){
+        pl.x += (pl.rx - pl.x) * Math.min(1, dt*15);
+        pl.y += (pl.ry - pl.y) * Math.min(1, dt*15);
+      }
+    }
+    // Smooth enemies
+    for (const e of G.enemies){
+      if (e.targetX !== undefined){
+        e.x += (e.targetX - e.x) * Math.min(1, dt*15);
+        e.y += (e.targetY - e.y) * Math.min(1, dt*15);
+      }
+    }
+    // Local player movement (client prediction)
+    const local = p;
+    let dx=0, dy=0;
+    if (input.joyId !== null){ dx = input.joyVec.x; dy = input.joyVec.y; }
+    else {
+      if (input.keys['a']||input.keys['arrowleft'])  dx -= 1;
+      if (input.keys['d']||input.keys['arrowright']) dx += 1;
+      if (input.keys['w']||input.keys['arrowup'])    dy -= 1;
+      if (input.keys['s']||input.keys['arrowdown'])  dy += 1;
+    }
+    const mag = Math.hypot(dx,dy);
+    if (mag > 1){ dx/=mag; dy/=mag; }
+    local.stateT += dt;
+    if (local.invuln > 0) local.invuln -= dt;
+    if (local.hitFlash > 0) local.hitFlash -= dt;
+    if (local.attackCd > 0) local.attackCd -= dt;
+
+    const wantAttack = input.keys[' '] || input.atkHeld;
+    if (wantAttack && local.attackCd <= 0){
+      local.state='attack'; local.stateT=0; local.attackCd=0.5;
+      if (mag>0.15){ local.aimX=dx; local.aimY=dy; }
+      else { local.aimX=local.facing; local.aimY=0; }
+    }
+    if (local.state==='attack' && local.stateT>0.25){
+      local.state = mag>0.15 ? 'walk' : 'idle'; local.stateT=0;
+    }
+    if (local.state !== 'attack' && local.state !== 'hurt' && local.state !== 'dead'){
+      moveWithCollision(local, dx*local.speed*dt, dy*local.speed*dt);
+      if (mag > 0.15){
+        local.state = 'walk';
+        if (Math.abs(dx)>0.1) local.facing = dx>0 ? 1 : -1;
+      } else local.state = 'idle';
+    }
+    updateCam(dt);
+    // Particles/texts
+    for (const pa of G.particles){ pa.life-=dt; pa.x+=pa.vx*dt; pa.y+=pa.vy*dt; pa.vx*=0.92; pa.vy*=0.92; }
+    for (const t of G.texts){ t.life-=dt; t.y-=30*dt; }
+    G.particles = G.particles.filter(x=>x.life>0);
+    G.texts = G.texts.filter(x=>x.life>0);
+    sendInput();
+    return;
+  }
+
+  // ================ HOST / SOLO ================
+  G.time += dt;
+
+  // Apply remote input (nếu có)
+  if (G.mode === 'host'){
+    const remote = G.players.find(pl => !pl.isLocal);
+    if (remote && remote.netInput){
+      const ri = remote.netInput;
+      let rdx = ri.dx, rdy = ri.dy;
+      const rmag = Math.hypot(rdx, rdy);
+      if (rmag > 1){ rdx/=rmag; rdy/=rmag; }
+      remote.stateT += dt;
+      if (remote.invuln > 0) remote.invuln -= dt;
+      if (remote.hitFlash > 0) remote.hitFlash -= dt;
+      if (remote.attackCd > 0) remote.attackCd -= dt;
+      if (ri.atk && remote.attackCd <= 0){
+        remote.state='attack'; remote.stateT=0; remote.attackCd=0.5;
+        if (rmag>0.15){ remote.aimX=rdx; remote.aimY=rdy; }
+        else { remote.aimX=remote.facing; remote.aimY=0; }
+        // Attack hit detection
+        attackHit(remote);
+      }
+      if (remote.state==='attack' && remote.stateT>0.25){
+        remote.state = rmag>0.15 ? 'walk' : 'idle'; remote.stateT=0;
+      }
+      if (remote.state !== 'attack' && remote.state !== 'hurt' && remote.state !== 'dead'){
+        moveWithCollision(remote, rdx*remote.speed*dt, rdy*remote.speed*dt);
+        if (rmag > 0.15){
+          remote.state = 'walk';
+          if (Math.abs(rdx)>0.1) remote.facing = rdx>0 ? 1 : -1;
+        } else remote.state = 'idle';
+      }
+    }
+  }
+
+  // Local player
+  let dx=0, dy=0;
   if (input.joyId !== null){ dx = input.joyVec.x; dy = input.joyVec.y; }
   else {
     if (input.keys['a']||input.keys['arrowleft'])  dx -= 1;
@@ -452,8 +722,8 @@ function update(dt){
     if (input.keys['w']||input.keys['arrowup'])    dy -= 1;
     if (input.keys['s']||input.keys['arrowdown'])  dy += 1;
   }
-  const mag = Math.hypot(dx, dy);
-  if (mag > 1){ dx /= mag; dy /= mag; }
+  const mag = Math.hypot(dx,dy);
+  if (mag > 1){ dx/=mag; dy/=mag; }
   const wantAttack = input.keys[' '] || input.atkHeld;
 
   p.stateT += dt;
@@ -464,48 +734,24 @@ function update(dt){
   if (p.hp <= 0 && p.state !== 'dead'){ p.state='dead'; p.stateT=0; gameOver(); return; }
   if (wantAttack && p.attackCd <= 0 && p.state !== 'dead'){
     p.state='attack'; p.stateT=0; p.attackCd=0.5;
-    if (mag > 0.15){ p.aimX=dx; p.aimY=dy; }
+    if (mag>0.15){ p.aimX=dx; p.aimY=dy; }
     else { p.aimX=p.facing; p.aimY=0; }
     for (const e of G.enemies) e.hitThisSwing = false;
-    burstVFX(p.x + p.aimX*30, p.y + p.aimY*30, '#ffd54a', 6, 120, 0.35);
+    burstVFX(p.x+p.aimX*30, p.y+p.aimY*30, '#ffd54a', 6, 120, 0.35);
+    attackHit(p);
   }
-  if (p.state === 'attack' && p.stateT > 0.25){
-    p.state = mag > 0.15 ? 'walk' : 'idle'; p.stateT = 0;
+  if (p.state==='attack' && p.stateT>0.25){
+    p.state = mag>0.15 ? 'walk' : 'idle'; p.stateT=0;
   }
   if (p.state !== 'attack' && p.state !== 'hurt' && p.state !== 'dead'){
     moveWithCollision(p, dx*p.speed*dt, dy*p.speed*dt);
     if (mag > 0.15){
       p.state = 'walk';
-      if (Math.abs(dx) > 0.1) p.facing = dx > 0 ? 1 : -1;
+      if (Math.abs(dx)>0.1) p.facing = dx>0 ? 1 : -1;
     } else p.state = 'idle';
-  } else if (p.state === 'hurt' && p.stateT > 0.25) p.state = 'idle';
+  } else if (p.state==='hurt' && p.stateT>0.25) p.state = 'idle';
 
-  if (p.state === 'attack' && p.stateT < 0.25){
-    const reach = 65, halfAngle = Math.PI/2.6;
-    const aimAngle = Math.atan2(p.aimY, p.aimX);
-    for (const e of G.enemies){
-      if (e.dead || e.hitThisSwing) continue;
-      const d = dist(e.x, e.y, p.x, p.y);
-      if (d > reach + e.radius) continue;
-      const a = Math.atan2(e.y-p.y, e.x-p.x);
-      let diff = a - aimAngle;
-      while (diff >  Math.PI) diff -= Math.PI*2;
-      while (diff < -Math.PI) diff += Math.PI*2;
-      if (Math.abs(diff) < halfAngle){
-        const dmg = 25;
-        e.hp -= dmg; e.hitFlash = 0.2; e.hitThisSwing = true; e.hurtTimer = 0.25;
-        burstVFX(e.x, e.y, '#ffd54a', 8, 150, 0.4);
-        addText(e.x, e.y - e.size - 8, '-'+dmg, '#ffd54a');
-        e.x += Math.cos(a)*90*dt*8; e.y += Math.sin(a)*90*dt*8;
-        if (e.hp <= 0 && !e.dead){
-          e.dead = true; e.deathTimer = 0.7; G.kills++;
-          burstVFX(e.x, e.y, e.color, e.type==='boss'?40:14, e.type==='boss'?260:150, 0.6);
-          addText(e.x, e.y-20, '+1', '#7fff7f');
-        }
-      }
-    }
-  }
-
+  // Spawn
   G.spawnTimer -= dt;
   if (G.spawnTimer <= 0){
     const t = G.time;
@@ -520,10 +766,11 @@ function update(dt){
   G.bossTimer -= dt;
   if (G.bossTimer <= 0){
     spawnEnemy('boss');
-    addText(G.player.x, G.player.y-80, '⚠ ĐẠI QUỶ', '#ff3040');
+    addText(G.players[0].x, G.players[0].y-80, '⚠ ĐẠI QUỶ', '#ff3040');
     G.bossTimer = 60;
   }
 
+  // Enemies — target player gần nhất
   for (const e of G.enemies){
     if (e.dead){ e.deathTimer -= dt; continue; }
     if (e.hitFlash > 0) e.hitFlash -= dt;
@@ -531,7 +778,16 @@ function update(dt){
     if (e.attackCd > 0) e.attackCd -= dt;
     if (e.attackAnimT > 0) e.attackAnimT -= dt;
 
-    const ex = p.x-e.x, ey = p.y-e.y;
+    // Tìm player gần nhất
+    let target = G.players[0];
+    let bd = dist(e.x,e.y,target.x,target.y);
+    for (const pl of G.players){
+      if (pl.state === 'dead') continue;
+      const d = dist(e.x,e.y,pl.x,pl.y);
+      if (d < bd){ bd = d; target = pl; }
+    }
+
+    const ex = target.x-e.x, ey = target.y-e.y;
     const ed = Math.hypot(ex, ey) || 1;
 
     let ns = 'walk';
@@ -548,32 +804,66 @@ function update(dt){
       e.y = clamp(e.y + ey/ed * e.speed*dt, e.radius, WORLD_H-e.radius);
       if (Math.abs(ex) > 0.5) e.facing = ex > 0 ? 1 : -1;
     }
-    if (ed < e.radius + p.radius + 10 && e.attackCd <= 0){
+    // Attack player
+    if (ed < e.radius + target.radius + 10 && e.attackCd <= 0){
       e.attackCd = 1.0; e.attackAnimT = 0.5;
-      if (p.invuln <= 0 && p.state !== 'dead'){
-        const dmg = e.damage;
-        p.hp -= dmg; p.hitFlash = 0.2; p.invuln = 0.4;
-        p.state = 'hurt'; p.stateT = 0;
-        addText(p.x, p.y-30, '-'+dmg, '#ff5a5a');
-        burstVFX(p.x, p.y, '#ff3050', 10, 160, 0.4);
+      if (target.invuln <= 0 && target.state !== 'dead'){
+        target.hp -= e.damage;
+        target.hitFlash = 0.2; target.invuln = 0.4;
+        target.state = 'hurt'; target.stateT = 0;
+        addText(target.x, target.y-30, '-'+e.damage, '#ff5a5a');
+        burstVFX(target.x, target.y, '#ff3050', 10, 160, 0.4);
       }
     }
   }
   G.enemies = G.enemies.filter(e => !(e.dead && e.deathTimer <= 0));
 
+  updateCam(dt);
+
+  for (const pa of G.particles){ pa.life-=dt; pa.x+=pa.vx*dt; pa.y+=pa.vy*dt; pa.vx*=0.92; pa.vy*=0.92; }
+  for (const t of G.texts){ t.life-=dt; t.y-=30*dt; }
+  G.particles = G.particles.filter(x=>x.life>0);
+  G.texts = G.texts.filter(x=>x.life>0);
+
+  sendState();
+}
+
+function attackHit(p){
+  const reach = 65, halfAngle = Math.PI/2.6;
+  const aimAngle = Math.atan2(p.aimY, p.aimX);
+  for (const e of G.enemies){
+    if (e.dead || e.hitThisSwing) continue;
+    const d = dist(e.x, e.y, p.x, p.y);
+    if (d > reach + e.radius) continue;
+    const a = Math.atan2(e.y-p.y, e.x-p.x);
+    let diff = a - aimAngle;
+    while (diff >  Math.PI) diff -= Math.PI*2;
+    while (diff < -Math.PI) diff += Math.PI*2;
+    if (Math.abs(diff) < halfAngle){
+      const dmg = 25;
+      e.hp -= dmg; e.hitFlash = 0.2; e.hitThisSwing = true;
+      e.hurtTimer = 0.3;
+      burstVFX(e.x, e.y, '#ffd54a', 8, 150, 0.4);
+      addText(e.x, e.y-e.size-8, '-'+dmg, '#ffd54a');
+      e.x += Math.cos(a)*90*0.016*8;
+      e.y += Math.sin(a)*90*0.016*8;
+      if (e.hp <= 0 && !e.dead){
+        e.dead = true; e.deathTimer = 1.5; G.kills++;
+        burstVFX(e.x, e.y, e.color, e.type==='boss'?40:14, e.type==='boss'?260:150, 0.6);
+        addText(e.x, e.y-20, '+1', '#7fff7f');
+      }
+    }
+  }
+}
+
+function updateCam(dt){
+  const p = G.players[0];
+  if (!p) return;
   const tcx = p.x - VW/2, tcy = p.y - VH/2;
-  G.cam.x += (tcx - G.cam.x) * Math.min(1, dt*8);
-  G.cam.y += (tcy - G.cam.y) * Math.min(1, dt*8);
+  G.cam.x += (tcx - G.cam.x) * Math.min(1, (dt||0.05) * 8);
+  G.cam.y += (tcy - G.cam.y) * Math.min(1, (dt||0.05) * 8);
   G.cam.x = clamp(G.cam.x, 0, WORLD_W - VW);
   G.cam.y = clamp(G.cam.y, 0, WORLD_H - VH);
-
-  for (const pa of G.particles){
-    pa.life -= dt; pa.x += pa.vx*dt; pa.y += pa.vy*dt;
-    pa.vx *= 0.92; pa.vy *= 0.92;
-  }
-  for (const t of G.texts){ t.life -= dt; t.y -= 30*dt; }
-  G.particles = G.particles.filter(p => p.life > 0);
-  G.texts = G.texts.filter(t => t.life > 0);
 }
 
 function moveWithCollision(obj, dx, dy){
@@ -610,11 +900,13 @@ function addText(x, y, text, color){
   G.texts.push({ x, y, text, color, life:0.9, maxLife:0.9 });
 }
 
-/* ===== RENDER ===== */
+/* ============================================================
+   RENDER
+   ============================================================ */
 function drawGridSprite(grid, pal, px, ox, oy){
-  for (let r=0;r<grid.length;r++){
+  for (let r=0; r<grid.length; r++){
     const row = grid[r];
-    for (let c=0;c<row.length;c++){
+    for (let c=0; c<row.length; c++){
       const ch = row[c];
       if (ch === ' ') continue;
       const col = pal[ch];
@@ -624,17 +916,16 @@ function drawGridSprite(grid, pal, px, ox, oy){
     }
   }
 }
-function getKnightGrid(state){
-  switch (state){
-    case 'attack': return KNIGHT.attack;
-    case 'hurt': return KNIGHT.hurt;
-    case 'dead': return KNIGHT.dead;
-    case 'walk': return KNIGHT.walk;
-    default: return KNIGHT.idle;
+
+function drawPlayer(p){
+  let grid;
+  switch (p.state){
+    case 'attack': grid = KNIGHT.attack; break;
+    case 'hurt': grid = KNIGHT.hurt; break;
+    case 'dead': grid = KNIGHT.dead; break;
+    case 'walk': grid = KNIGHT.walk; break;
+    default: grid = KNIGHT.idle;
   }
-}
-function drawKnight(p){
-  const grid = getKnightGrid(p.state);
   const rows = grid.length, cols = grid[0].length;
   const px = 3.2;
   const totalW = cols*px, totalH = rows*px;
@@ -650,10 +941,18 @@ function drawKnight(p){
   if (p.state === 'walk') bobY = Math.sin(G.time*12)*1.5;
   if (p.state === 'idle') bobY = Math.sin(G.time*3)*0.8;
   if (p.state === 'dead') ctx.globalAlpha = Math.max(0.3, 1 - p.stateT*0.3);
-  const pal = { ...PAL_KNIGHT };
+  const pal = p.isLocal ? { ...PAL_KNIGHT } : { ...PAL_KNIGHT2 };
   if (p.hitFlash > 0){ pal.b = '#ffffff'; pal.d = '#ffdddd'; }
   drawGridSprite(grid, pal, px, -totalW/2, -totalH+12+bobY);
   ctx.globalAlpha = 1;
+  // Name tag remote
+  if (!p.isLocal){
+    ctx.fillStyle = 'rgba(255,100,100,0.9)';
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('P2', 0, -totalH-4);
+    ctx.textAlign = 'left';
+  }
   ctx.restore();
   if (p.state === 'attack'){
     const reach = 65;
@@ -671,7 +970,7 @@ function drawKnight(p){
 
 function drawEnemy(e){
   const sx = e.x - G.cam.x, sy = e.y - G.cam.y;
-  if (sx < -200 || sx > VW+200 || sy < -200 || sy > VH+200) return;
+  if (sx < -120 || sx > VW+120 || sy < -120 || sy > VH+120) return;
 
   ctx.save();
   ctx.translate(sx, sy);
@@ -682,15 +981,10 @@ function drawEnemy(e){
   }
   if (e.facing < 0) ctx.scale(-1, 1);
 
-  const animTime = G.time - e.animStartT;
-  const deathProgress = e.dead ? (1 - e.deathTimer/0.7) : 0;
+  const animTime = G.time - (e.animStartT || 0);
+  const deathProgress = e.dead ? (1 - e.deathTimer / 1.5) : 0;
 
-  if (e.dead){
-    const ratio = Math.max(0, e.deathTimer/0.7);
-    ctx.globalAlpha = ratio;
-    const scl = 0.7 + ratio*0.3;
-    ctx.scale(scl, scl);
-  }
+  if (e.dead && e.deathTimer < 0.4) ctx.globalAlpha = e.deathTimer / 0.4;
 
   if (SPRITE_OK[e.type] && SPRITES[e.type]){
     const rect = getFrameRect(e.type, e.state, animTime, deathProgress);
@@ -701,16 +995,12 @@ function drawEnemy(e){
       const ox = -dW/2;
       const oy = -dH + e.size*0.5;
       ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(SPRITES[e.type],
-        rect.x, rect.y, rect.w, rect.h,
-        ox, oy, dW, dH);
+      ctx.drawImage(SPRITES[e.type], rect.x, rect.y, rect.w, rect.h, ox, oy, dW, dH);
       if (e.hitFlash > 0 && !e.dead){
         ctx.save();
         ctx.globalCompositeOperation = 'lighter';
         ctx.globalAlpha = e.hitFlash*4;
-        ctx.drawImage(SPRITES[e.type],
-          rect.x, rect.y, rect.w, rect.h,
-          ox, oy, dW, dH);
+        ctx.drawImage(SPRITES[e.type], rect.x, rect.y, rect.w, rect.h, ox, oy, dW, dH);
         ctx.restore();
       }
     }
@@ -721,7 +1011,6 @@ function drawEnemy(e){
     ctx.fill();
   }
   ctx.restore();
-
   if (!e.dead && e.hp < e.maxHp){
     const w = e.type === 'boss' ? 60 : 30;
     const h = e.type === 'boss' ? 5 : 3;
@@ -832,7 +1121,8 @@ function drawTexts(){
   ctx.textAlign = 'left';
 }
 function drawUI(){
-  const p = G.player;
+  const p = G.players[0];
+  if (!p) return;
   const scale = Math.min(1, VW/960);
   const hpW = 240*scale, hpH = 20*scale;
   const hpX = 20*scale, hpY = 20*scale;
@@ -851,6 +1141,24 @@ function drawUI(){
   ctx.textAlign = 'center';
   ctx.fillText(`${Math.ceil(p.hp)} / ${p.maxHp}`, hpX+hpW/2, hpY+14*scale);
   ctx.textAlign = 'left';
+
+  // HP remote (nếu MP)
+  if (G.mode !== 'solo'){
+    const rem = G.players.find(pl => !pl.isLocal);
+    if (rem){
+      const ry = hpY + hpH + 4;
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(hpX-2, ry-2, hpW+4, hpH+4);
+      ctx.fillStyle = '#2a0a0a'; ctx.fillRect(hpX, ry, hpW, hpH);
+      const rpct = Math.max(0, rem.hp/rem.maxHp);
+      ctx.fillStyle = '#ff5a5a';
+      ctx.fillRect(hpX, ry, hpW*rpct, hpH);
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.fillText(`P2: ${Math.ceil(rem.hp)}`, hpX+hpW/2, ry+14*scale);
+      ctx.textAlign = 'left';
+    }
+  }
 
   const statX = VW - 200*scale;
   ctx.font = `bold ${Math.round(15*scale)}px monospace`;
@@ -914,10 +1222,9 @@ function render(){
   drawWorldBackground();
   drawDecorations();
   drawObstacles();
-  const sorted = [...G.enemies].sort((a,b) => a.y-b.y);
   const all = [
-    ...sorted.map(e => ({ y: e.y, draw: () => drawEnemy(e) })),
-    { y: G.player.y, draw: () => drawKnight(G.player) }
+    ...G.enemies.map(e => ({ y: e.y, draw: () => drawEnemy(e) })),
+    ...G.players.map(p => ({ y: p.y, draw: () => drawPlayer(p) }))
   ];
   all.sort((a,b) => a.y-b.y);
   for (const a of all) a.draw();
@@ -926,6 +1233,9 @@ function render(){
   drawUI();
 }
 
+/* ============================================================
+   LOOP
+   ============================================================ */
 let last = performance.now();
 function loop(now){
   try {
@@ -937,7 +1247,9 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 
-/* ===== INPUT ===== */
+/* ============================================================
+   INPUT
+   ============================================================ */
 function toCanvasXY(cx, cy){
   const r = cv.getBoundingClientRect();
   return { x:(cx-r.left)*(VW/r.width), y:(cy-r.top)*(VH/r.height) };
@@ -988,208 +1300,114 @@ addEventListener('keydown', (e) => {
 });
 addEventListener('keyup', (e) => { input.keys[e.key.toLowerCase()] = false; });
 
-/* ===== DEBUG PANEL ===== */
-const dbgBtn = document.getElementById('dbgBtn');
-const dbgPanel = document.getElementById('dbgPanel');
-const dbgType = document.getElementById('dbgType');
-const dbgIdle = document.getElementById('dbgIdle');
-const dbgMove = document.getElementById('dbgMove');
-const dbgAtk = document.getElementById('dbgAtk');
-const dbgHurt = document.getElementById('dbgHurt');
-const dbgDie = document.getElementById('dbgDie');
-const dbgCustom = document.getElementById('dbgCustom');
-const dbgPreview = document.getElementById('dbgPreview');
-const dbgInfo = document.getElementById('dbgInfo');
-
-function loadDebugValues(){
-  const type = dbgType.value;
-  const cfg = SPRITE_CFG[type];
-  if (!cfg) return;
-  dbgIdle.value = cfg.frames.idle;
-  dbgMove.value = cfg.frames.move;
-  dbgAtk.value = cfg.frames.attack;
-  dbgHurt.value = cfg.frames.hurt;
-  dbgDie.value = cfg.frames.death;
-  if (cfg.custom){
-    dbgCustom.value = cfg.custom.map(f => `${f[0]},${f[1]}`).join('; ');
-  } else {
-    dbgCustom.value = '';
-  }
-  updateDebugPreview();
-}
-
-function parseCustom(str){
-  if (!str || !str.trim()) return null;
-  const frames = [];
-  for (const part of str.split(';')){
-    const p = part.trim();
-    if (!p) continue;
-    const m = p.split(',').map(s => parseInt(s.trim()));
-    if (m.length >= 2 && !isNaN(m[0]) && !isNaN(m[1])) frames.push([m[0], m[1]]);
-  }
-  return frames.length > 0 ? frames : null;
-}
-
-function updateDebugPreview(){
-  const type = dbgType.value;
-  const img = SPRITES[type];
-  if (!img){ dbgInfo.textContent = 'Sprite chưa load'; return; }
-
-  const cfg = SPRITE_CFG[type];
-  const totalFrames = (parseInt(dbgIdle.value)||0) + (parseInt(dbgMove.value)||0) +
-    (parseInt(dbgAtk.value)||0) + (parseInt(dbgHurt.value)||0) + (parseInt(dbgDie.value)||0);
-
-  const maxW = Math.min(540, window.innerWidth - 60);
-  const scale = Math.min(maxW / img.width, 80 / img.height);
-  dbgPreview.width = Math.round(img.width * scale);
-  dbgPreview.height = Math.round(img.height * scale);
-  const c = dbgPreview.getContext('2d');
-  c.imageSmoothingEnabled = false;
-  c.fillStyle = '#000';
-  c.fillRect(0, 0, dbgPreview.width, dbgPreview.height);
-  c.drawImage(img, 0, 0, dbgPreview.width, dbgPreview.height);
-
-  // Custom frames (đỏ)
-  const custom = parseCustom(dbgCustom.value);
-  let mode = 'even';
-  if (custom && custom.length === totalFrames){
-    mode = 'custom';
-    let acc = 0;
-    for (const [x, w] of custom){
-      c.strokeStyle = '#ff4040';
-      c.lineWidth = 2;
-      c.beginPath();
-      c.moveTo(x * scale, 0);
-      c.lineTo(x * scale, dbgPreview.height);
-      c.stroke();
-      c.beginPath();
-      c.moveTo((x + w) * scale, 0);
-      c.lineTo((x + w) * scale, dbgPreview.height);
-      c.stroke();
-      // Nhãn frame idx
-      c.fillStyle = '#ff4040';
-      c.font = 'bold 9px monospace';
-      c.fillText(acc, x * scale + 2, 10);
-      acc++;
-    }
-  } else {
-    // Even split (xanh)
-    const fw = img.width / totalFrames;
-    for (let i = 0; i <= totalFrames; i++){
-      c.strokeStyle = '#40ff40';
-      c.lineWidth = 1;
-      c.beginPath();
-      c.moveTo(i * fw * scale, 0);
-      c.lineTo(i * fw * scale, dbgPreview.height);
-      c.stroke();
-    }
-  }
-
-  dbgInfo.innerHTML =
-    `PNG: <b>${img.width}×${img.height}</b> · Tổng <b>${totalFrames}</b> frame · Chế độ: <b>${mode === 'custom' ? 'CUSTOM 🔴' : 'EVEN 🟢'}</b>` +
-    (custom && custom.length !== totalFrames ?
-      `<br>⚠️ Custom có ${custom.length} frame, cần ${totalFrames}` : '');
-}
-
-[dbgType, dbgIdle, dbgMove, dbgAtk, dbgHurt, dbgDie, dbgCustom].forEach(el => {
-  el.addEventListener('input', updateDebugPreview);
-  el.addEventListener('change', updateDebugPreview);
-});
-dbgType.addEventListener('change', loadDebugValues);
-dbgBtn.addEventListener('click', () => { dbgPanel.style.display = 'block'; loadDebugValues(); });
-document.getElementById('dbgClose').addEventListener('click', () => { dbgPanel.style.display = 'none'; });
-
-/* 🤖 AUTO DETECT */
-document.getElementById('dbgAuto').addEventListener('click', () => {
-  const type = dbgType.value;
-  const img = SPRITES[type];
-  if (!img) return;
-  const totalFrames = (parseInt(dbgIdle.value)||0) + (parseInt(dbgMove.value)||0) +
-    (parseInt(dbgAtk.value)||0) + (parseInt(dbgHurt.value)||0) + (parseInt(dbgDie.value)||0);
-
-  // Thử nhiều minGap để có số frame khớp
-  let bestResult = null;
-  for (let minGap = 3; minGap <= 20; minGap++){
-    const result = autoDetectFrames(img, 10, minGap);
-    if (result.length === totalFrames){
-      bestResult = result;
-      break;
-    }
-    // Nếu chưa khớp, giữ kết quả gần nhất (ít lệch nhất)
-    if (!bestResult || Math.abs(result.length - totalFrames) < Math.abs(bestResult.length - totalFrames)){
-      bestResult = result;
-    }
-  }
-
-  if (bestResult && bestResult.length > 0){
-    dbgCustom.value = bestResult.map(g => `${g[0]},${g[1]-g[0]+1}`).join('; ');
-    if (bestResult.length !== totalFrames){
-      dbgInfo.innerHTML = `⚠️ Auto detect ra ${bestResult.length} frame, cần ${totalFrames}. Cần tinh chỉnh thủ công.`;
-    } else {
-      dbgInfo.innerHTML = `✅ Auto detect ra đúng ${bestResult.length} frame!`;
-    }
-    updateDebugPreview();
-  }
-});
-
-/* ÁP DỤNG */
-document.getElementById('dbgApply').addEventListener('click', () => {
-  const type = dbgType.value;
-  const cfg = SPRITE_CFG[type];
-  if (!cfg) return;
-  const nf = {
-    idle: parseInt(dbgIdle.value)||1, move: parseInt(dbgMove.value)||1,
-    attack: parseInt(dbgAtk.value)||1, hurt: parseInt(dbgHurt.value)||1,
-    death: parseInt(dbgDie.value)||1
-  };
-  cfg.frames = nf;
-  cfg.custom = parseCustom(dbgCustom.value);
-  dbgInfo.innerHTML = '✅ Đã áp dụng!';
-  setTimeout(() => { dbgPanel.style.display = 'none'; }, 400);
-});
-
-/* RESET */
-document.getElementById('dbgReset').addEventListener('click', () => {
-  const type = dbgType.value;
-  SPRITE_CFG[type].custom = null;
-  dbgCustom.value = '';
-  updateDebugPreview();
-  dbgInfo.innerHTML = '↺ Đã reset về even split';
-});
-
-/* ===== GAME FLOW ===== */
+/* ============================================================
+   MENU & FLOW
+   ============================================================ */
 const menu = document.getElementById('menu');
+const menuMain = document.getElementById('menuMain');
+const menuMulti = document.getElementById('menuMulti');
 const menuText = document.getElementById('menu-text');
 const menuStats = document.getElementById('menu-stats');
-const playBtn = document.getElementById('playBtn');
-const stTime = document.getElementById('s-time');
-const stKills = document.getElementById('s-kills');
-const stScore = document.getElementById('s-score');
+const multiButtons = document.getElementById('multiButtons');
+const hostView = document.getElementById('hostView');
+const joinView = document.getElementById('joinView');
 
-function startGame(){
+document.getElementById('soloBtn').addEventListener('click', () => {
+  G.mode = 'solo';
+  startGame('solo');
+});
+
+document.getElementById('multiBtn').addEventListener('click', () => {
+  menuMain.style.display = 'none';
+  menuMulti.style.display = 'block';
+});
+
+document.getElementById('backMenuBtn').addEventListener('click', () => {
+  if (Net.peer){ try{ Net.peer.destroy(); }catch(e){} Net.peer = null; }
+  Net.conn = null; Net.connected = false;
+  menuMulti.style.display = 'none';
+  menuMain.style.display = 'block';
+  multiButtons.style.display = 'block';
+  hostView.style.display = 'none';
+  joinView.style.display = 'none';
+});
+
+document.getElementById('hostBtn').addEventListener('click', () => {
+  multiButtons.style.display = 'none';
+  hostView.style.display = 'block';
+  startHost();
+});
+
+document.getElementById('joinBtn').addEventListener('click', () => {
+  const code = document.getElementById('joinInput').value.trim();
+  if (!code){ alert('Nhập mã phòng!'); return; }
+  multiButtons.style.display = 'none';
+  joinView.style.display = 'block';
+  startClient(code);
+});
+
+function startGame(mode){
+  G.mode = mode;
   G.time = 0; G.kills = 0;
   G.spawnTimer = 1.0; G.bossTimer = 60;
   G.enemies = []; G.particles = []; G.texts = [];
-  G.player = createPlayer();
-  G.cam.x = G.player.x - VW/2;
-  G.cam.y = G.player.y - VH/2;
+  G.players = [];
+  G.cam.x = 0; G.cam.y = 0;
   genWorld();
+
+  // Tạo local player
+  const px = WORLD_W/2, py = WORLD_H/2;
+  G.players.push(createPlayer('me', true, px, py));
+
+  if (mode === 'host' || mode === 'client'){
+    // Remote player
+    const rpx = mode === 'host' ? px + 80 : px;
+    const rpy = mode === 'host' ? py : py;
+    G.players.push(createPlayer('remote', false, px + (mode==='host'?80:-80), py));
+    // Send init map nếu là host
+    if (mode === 'host' && Net.conn){
+      setTimeout(() => {
+        try { Net.conn.send({ type:'init', obstacles: G.obstacles, decorations: G.decorations, spawnX: px + 80, spawnY: py }); } catch(e){}
+      }, 500);
+    }
+  }
+
+  G.cam.x = px - VW/2;
+  G.cam.y = py - VH/2;
   G.state = 'playing';
   menu.classList.add('hide');
+  document.getElementById('netHud').style.display = (mode !== 'solo') ? 'block' : 'none';
+  updateNetHud();
   checkOrientation();
 }
+
+function updateNetHud(){
+  const hud = document.getElementById('netHud');
+  if (G.mode === 'solo'){ hud.style.display = 'none'; return; }
+  hud.style.display = 'block';
+  const role = G.mode === 'host' ? 'HOST' : 'CLIENT';
+  const conn = Net.connected ? '🟢' : '🔴';
+  hud.textContent = `${conn} ${role} · Phòng: ${Net.roomCode}`;
+}
+
 function gameOver(){
   const score = Math.floor(G.time*10 + G.kills*25);
   menuText.innerHTML = 'Bạn đã chiến đấu đến hơi thở cuối cùng.';
-  stTime.textContent = G.time.toFixed(1) + 's';
-  stKills.textContent = G.kills;
-  stScore.textContent = score;
+  document.getElementById('s-time').textContent = G.time.toFixed(1) + 's';
+  document.getElementById('s-kills').textContent = G.kills;
+  document.getElementById('s-score').textContent = score;
   menuStats.style.display = 'flex';
-  playBtn.textContent = 'CHƠI LẠI';
+  menuMain.style.display = 'block';
+  menuMulti.style.display = 'none';
+  document.getElementById('soloBtn').textContent = '🎮 CHƠI LẠI';
   menu.classList.remove('hide');
+  if (Net.peer){ try{ Net.peer.destroy(); }catch(e){} Net.peer = null; }
+  Net.conn = null; Net.connected = false;
 }
-playBtn.addEventListener('click', startGame);
 
+/* ============================================================
+   INIT
+   ============================================================ */
 async function init(){
   resizeCanvas();
   checkOrientation();
@@ -1201,17 +1419,13 @@ async function init(){
   const types = Object.keys(SPRITE_CFG);
   const failed = types.filter(t => !SPRITE_OK[t]);
   if (failed.length > 0){
-    loadingTxt.innerHTML = `⚠️ Không load ${failed.length}/${types.length} sprite<br>Chạy fallback`;
-    await new Promise(r => setTimeout(r, 2000));
+    loadingTxt.innerHTML = `⚠️ Không load ${failed.length}/${types.length} sprite<br>Chạy với fallback hình tròn<br><br>${failed.map(t=>SPRITE_CFG[t].src).join('<br>')}`;
+    await new Promise(r => setTimeout(r, 2500));
   } else {
-    loadingTxt.textContent = `✅ Đã load sprite!`;
+    loadingTxt.textContent = `✅ Đã load tất cả sprite!`;
     await new Promise(r => setTimeout(r, 400));
   }
   loading.classList.remove('show');
-  G.player = createPlayer();
-  genWorld();
-  G.cam.x = G.player.x - VW/2;
-  G.cam.y = G.player.y - VH/2;
   requestAnimationFrame(loop);
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
