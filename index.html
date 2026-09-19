@@ -16,7 +16,6 @@
   canvas{display:block;width:100%;height:100%;image-rendering:pixelated;
     touch-action:none;background:#1a2a1a}
 
-  /* ===== Rotate overlay ===== */
   #rotate{position:fixed;inset:0;background:linear-gradient(180deg,#0a0f0a,#050805);
     display:none;flex-direction:column;align-items:center;justify-content:center;
     gap:22px;z-index:9999;padding:30px;text-align:center}
@@ -34,7 +33,6 @@
     text-shadow:0 0 14px #7fff7f}
   #rotate p{font-size:12px;color:#6a7a6a;line-height:1.7}
 
-  /* ===== Overlay menu ===== */
   #menu{position:absolute;inset:0;background:rgba(5,8,5,.92);
     display:flex;align-items:center;justify-content:center;
     z-index:10;padding:16px;backdrop-filter:blur(4px)}
@@ -63,17 +61,16 @@
   .lg{font-size:9px;padding:3px 7px;border-radius:12px;
     border:1px solid #2a4a2a;background:#0a150a}
 
-  /* ===== Loading ===== */
   #loading{position:fixed;inset:0;background:#0a0f0a;
     display:none;align-items:center;justify-content:center;
     flex-direction:column;gap:12px;z-index:100}
   #loading.show{display:flex}
   #loading .spin{width:36px;height:36px;border:3px solid #2a4a2a;
     border-top-color:#7fff7f;border-radius:50%;animation:spin .8s linear infinite}
-  #loading .txt{font-size:11px;color:#6a7a6a;letter-spacing:1px;text-align:center}
+  #loading .txt{font-size:11px;color:#6a7a6a;letter-spacing:1px;text-align:center;
+    line-height:1.6;padding:0 20px}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* Badge device */
   #badge{position:fixed;bottom:6px;right:6px;font-size:9px;color:#2a3a2a;
     background:#081208;padding:2px 6px;border-radius:8px;
     border:1px solid #1a2a1a;pointer-events:none;z-index:5}
@@ -99,7 +96,7 @@
       <div class="stat">ĐIỂM <b id="s-score">0</b></div>
     </div>
     <div class="legend">
-      <span class="lg" style="color:#7fff7f">🕹 Joystick trái = Đi</span>
+      <span class="lg" style="color:#7fff7f">🕹 Joystick = Đi</span>
       <span class="lg" style="color:#ffd54a">⚔ Nút phải = Chém</span>
       <span class="lg" style="color:#7ff0ff">PC: WASD + Space</span>
     </div>
@@ -115,19 +112,17 @@
 
 <div id="loading">
   <div class="spin"></div>
-  <div class="txt" id="loading-txt">Đang chuẩn bị...</div>
+  <div class="txt" id="loading-txt">Đang load sprite...</div>
 </div>
 
 <div id="badge">—</div>
 
 <script>
 "use strict";
-/* ============================================================
-   SURVIVAL KNIGHT — 2D top-down survival
-   Map taming.io style + Joystick + Combat
-   ============================================================ */
 
-/* ========== DEVICE DETECTION ========== */
+/* ============================================================
+   DEVICE DETECTION
+   ============================================================ */
 const DEVICE = (function(){
   const ua = navigator.userAgent || '';
   const uaMobile = /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(ua);
@@ -161,17 +156,102 @@ function checkOrientation(){
 addEventListener('resize', () => setTimeout(checkOrientation, 100));
 addEventListener('orientationchange', () => setTimeout(checkOrientation, 250));
 
-/* ========== CANVAS ========== */
+/* ============================================================
+   SPRITE SHEET LOADER
+   ============================================================
+   Mỗi file PNG là 1 dải ngang: [idle][move][attack][hurt][death]
+   fw được TỰ TÍNH = img.width / tổng_frame
+   ============================================================ */
+const SPRITE_CFG = {
+  imp:    { src:'sprites/imp.png',    frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, display:48 },
+  hound:  { src:'sprites/hound.png',  frames:{ idle:3, move:2, attack:2, hurt:2, death:3 }, display:60 },
+  wraith: { src:'sprites/wraith.png', frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, display:56 },
+  brute:  { src:'sprites/brute.png',  frames:{ idle:2, move:3, attack:3, hurt:2, death:3 }, display:80 },
+  boss:   { src:'sprites/boss.png',   frames:{ idle:1, move:2, attack:2, hurt:1, death:1 }, display:130 }
+};
+
+const SPRITES = {};
+const SPRITE_OK = {};
+const SPRITE_DIMS = {};
+
+function loadSprite(type){
+  return new Promise((resolve) => {
+    const cfg = SPRITE_CFG[type];
+    const img = new Image();
+    img.onload = () => {
+      SPRITES[type] = img;
+      SPRITE_OK[type] = true;
+      const total = Object.values(cfg.frames).reduce((s,n)=>s+n, 0);
+      SPRITE_DIMS[type] = {
+        fw: img.width / total,
+        fh: img.height,
+        total
+      };
+      console.log(`[Sprite] ${type}: ${img.width}×${img.height}, ${total} frame → ${(img.width/total).toFixed(2)}×${img.height}px/frame`);
+      resolve(true);
+    };
+    img.onerror = () => {
+      SPRITE_OK[type] = false;
+      console.warn(`[Sprite] ❌ Không load được: ${cfg.src}`);
+      resolve(false);
+    };
+    img.src = cfg.src;
+  });
+}
+
+async function loadAllSprites(){
+  const types = Object.keys(SPRITE_CFG);
+  for (const t of types) await loadSprite(t);
+  return types.filter(t => SPRITE_OK[t]).length;
+}
+
+function getFrameRect(type, state, animTime, deathProgress){
+  const cfg = SPRITE_CFG[type];
+  const dims = SPRITE_DIMS[type];
+  if (!dims) return null;
+
+  const order = ['idle','move','attack','hurt','death'];
+  const stateMap = {
+    idle:'idle', walk:'move', move:'move',
+    attack:'attack', hurt:'hurt', dead:'death'
+  };
+  const sName = stateMap[state] || 'idle';
+
+  let offset = 0;
+  for (const s of order){
+    if (s === sName) break;
+    offset += cfg.frames[s] || 0;
+  }
+  const total = cfg.frames[sName] || 1;
+
+  let frameIdx;
+  if (sName === 'death'){
+    frameIdx = Math.min(total - 1, Math.floor(deathProgress * total));
+  } else {
+    const fps = { idle:6, move:10, attack:12, hurt:14 }[sName] || 8;
+    frameIdx = Math.floor(animTime * fps) % total;
+  }
+
+  return {
+    x: (offset + frameIdx) * dims.fw,
+    y: 0,
+    w: dims.fw,
+    h: dims.fh,
+    display: cfg.display
+  };
+}
+
+/* ============================================================
+   CANVAS
+   ============================================================ */
 const cv = document.getElementById('cv');
 const ctx = cv.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-// Kích thước canvas cố định — CSS scale
 const VW = 960, VH = 600;
 cv.width = VW; cv.height = VH;
 
 function resizeCanvas(){
-  // Vừa viewport, giữ aspect 960:600
   const availW = innerWidth;
   const availH = innerHeight;
   const aspect = VW / VH;
@@ -182,7 +262,9 @@ function resizeCanvas(){
 }
 addEventListener('resize', resizeCanvas);
 
-/* ========== WORLD ========== */
+/* ============================================================
+   WORLD
+   ============================================================ */
 const WORLD_W = 2400, WORLD_H = 2400;
 const TILE = 40;
 
@@ -205,32 +287,27 @@ const rand = (a,b) => a + Math.random()*(b-a);
 const dist = (a,b,c,d) => Math.hypot(a-c, b-d);
 const clamp = (v,a,b) => v < a ? a : (v > b ? b : v);
 
-/* ========== INPUT STATE ========== */
+/* ============================================================
+   INPUT
+   ============================================================ */
 const input = {
   joyId: null,
-  joyCenter: { x: 0, y: 0 },
   joyVec: { x: 0, y: 0 },
   atkId: null,
   atkHeld: false,
   keys: {}
 };
-// UI vị trí (screen coords trong canvas)
 const UI = {
   joy: { x: 120, y: VH - 120, r: 70, knobR: 34 },
   atk: { x: VW - 110, y: VH - 110, r: 58 }
 };
 
-/* ========== KNIGHT SPRITES (pixel art) ========== */
+/* ============================================================
+   KNIGHT PIXEL ART (giữ nguyên)
+   ============================================================ */
 const PAL_KNIGHT = {
-  k: '#0a0a0a',   // outline
-  b: '#4a7ab8',   // armor blue
-  d: '#2a4a78',   // armor dark
-  w: '#ffffff',   // white (visor)
-  s: '#d0d8e0',   // sword silver
-  g: '#ffd54a',   // gold
-  r: '#c03030',   // blood/damage
-  f: '#8a6a4a',   // flesh/belt
-  h: '#6a3a1a'    // boot
+  k:'#0a0a0a', b:'#4a7ab8', d:'#2a4a78', w:'#ffffff', s:'#d0d8e0',
+  g:'#ffd54a', r:'#c03030', f:'#8a6a4a', h:'#6a3a1a'
 };
 
 const KNIGHT = {
@@ -316,94 +393,24 @@ const KNIGHT = {
   ]
 };
 
-/* ========== ENEMY SPRITES (tái sử dụng từ bản cũ) ========== */
-const PAL = {
-  imp:    { k:'#1a0505', b:'#8b2a2a', d:'#5a1414', w:'#6a1a1a', e:'#ffd24a', f:'#3a0a0a', m:'#3a0a0a', g:'#c44545' },
-  hound:  { k:'#1a0a05', b:'#2a1505', d:'#0a0505', w:'#3a1a05', e:'#ffaa20', '1':'#ff6a20', '2':'#ffaa20', '3':'#ff2020' },
-  wraith: { k:'#0a0515', b:'#3a1a5a', d:'#1a0a2a', w:'#5a2a8a', e:'#e8c8ff', g:'#c890ff' },
-  brute:  { k:'#1a0a05', b:'#a05a3a', d:'#6a3a20', w:'#3a2010', e:'#ff3020', a:'#8a8a9a', m:'#5a5a6a' },
-  boss:   { k:'#1a0510', b:'#6a1a3a', d:'#3a0a1a', w:'#2a0a1a', e:'#ffd24a', '1':'#ff6a20', '2':'#ffaa20' }
-};
-
-// Sprite quái: chỉ cần 2-3 frame mỗi con — vẽ đơn giản hơn
-function makeEnemySprite(type){
-  // Trả về grid string đơn giản cho mỗi con
-  const grid = {
-    imp: [
-      "  k  k  ",
-      " kbbbbk ",
-      " kbebbk ",
-      " kbbbbk ",
-      "kkbbbbkk",
-      " kbbbbk ",
-      " kd  dk ",
-      " kh  hk "
-    ],
-    hound: [
-      "  kkk   ",
-      " kbbbkk ",
-      " kbebbbk",
-      "kbkbbbkk",
-      "kbbbbbkk",
-      "kbk kbk ",
-      "kk  kk  "
-    ],
-    wraith: [
-      "  kkkk  ",
-      " kbbbbk ",
-      " kbeeek ",
-      " kbbbbk ",
-      " kbbbbk ",
-      " kbbbbk ",
-      "kbkbkbk ",
-      " k k k  "
-    ],
-    brute: [
-      "  kk kk   ",
-      " kbbbbbk  ",
-      " kbebebk  ",
-      " kbbbbbk  ",
-      "kkkbbbbkkk",
-      "kbbbbbbbbbk",
-      "kbbkbbkbbk",
-      "kbk  bk bk",
-      "kk    k  k"
-    ],
-    boss: [
-      "   k  k     ",
-      "  kbbbbk    ",
-      "  kbebbk    ",
-      "  kbbbbk    ",
-      " kkkbbkkk   ",
-      "kbbbbbbbbbk ",
-      "kbbbbbbbbbk ",
-      "kbbkbbbkbbk ",
-      "kbk  bk  bk ",
-      "kk    k   k "
-    ]
-  };
-  return grid[type] || grid.imp;
-}
-
-/* ========== OBSTACLES / DECORATIONS ========== */
+/* ============================================================
+   WORLD GEN
+   ============================================================ */
 function genWorld(){
   G.obstacles = [];
   G.decorations = [];
-  // Cây rải rác (không gần spawn player)
   for (let i = 0; i < 120; i++){
     const x = rand(150, WORLD_W - 150);
     const y = rand(150, WORLD_H - 150);
     if (dist(x, y, WORLD_W/2, WORLD_H/2) < 350) continue;
     G.obstacles.push({ type: 'tree', x, y, r: 26 });
   }
-  // Đá
   for (let i = 0; i < 60; i++){
     const x = rand(120, WORLD_W - 120);
     const y = rand(120, WORLD_H - 120);
     if (dist(x, y, WORLD_W/2, WORLD_H/2) < 250) continue;
     G.obstacles.push({ type: 'rock', x, y, r: 22 });
   }
-  // Bụi cỏ trang trí
   for (let i = 0; i < 500; i++){
     G.decorations.push({
       x: rand(0, WORLD_W),
@@ -414,18 +421,19 @@ function genWorld(){
   }
 }
 
-/* ========== PLAYER ========== */
+/* ============================================================
+   PLAYER
+   ============================================================ */
 function createPlayer(){
   return {
-    x: WORLD_W/2,
-    y: WORLD_H/2,
+    x: WORLD_W/2, y: WORLD_H/2,
     vx: 0, vy: 0,
     hp: 100, maxHp: 100,
     speed: 220,
     radius: 18,
-    facing: 1,           // 1 = phải, -1 = trái
-    aimX: 1, aimY: 0,     // Hướng chém cuối
-    state: 'idle',       // idle | walk | attack | hurt | dead
+    facing: 1,
+    aimX: 1, aimY: 0,
+    state: 'idle',
     stateT: 0,
     attackCd: 0,
     invuln: 0,
@@ -433,18 +441,19 @@ function createPlayer(){
   };
 }
 
-/* ========== ENEMY ========== */
+/* ============================================================
+   ENEMY
+   ============================================================ */
 const ENEMY_DATA = {
-  imp:    { hp: 30,   speed: 90,  damage: 8,  radius: 14, color: '#e8574a', size: 11 },
-  hound:  { hp: 55,   speed: 140, damage: 12, radius: 16, color: '#e8963a', size: 13 },
-  wraith: { hp: 85,   speed: 110, damage: 10, radius: 15, color: '#a95ce8', size: 12 },
-  brute:  { hp: 220,  speed: 55,  damage: 22, radius: 22, color: '#b02b2b', size: 17 },
-  boss:   { hp: 900,  speed: 45,  damage: 35, radius: 32, color: '#ff3040', size: 26 }
+  imp:    { hp: 30,   speed: 90,  damage: 8,  radius: 16, color: '#e8574a', size: 11 },
+  hound:  { hp: 55,   speed: 140, damage: 12, radius: 18, color: '#e8963a', size: 13 },
+  wraith: { hp: 85,   speed: 110, damage: 10, radius: 17, color: '#a95ce8', size: 12 },
+  brute:  { hp: 220,  speed: 55,  damage: 22, radius: 26, color: '#b02b2b', size: 17 },
+  boss:   { hp: 900,  speed: 45,  damage: 35, radius: 38, color: '#ff3040', size: 26 }
 };
 
 function spawnEnemy(type){
   const d = ENEMY_DATA[type];
-  // Spawn xa player 500-800px
   const angle = Math.random() * Math.PI * 2;
   const range = rand(550, 850);
   let x = G.player.x + Math.cos(angle) * range;
@@ -461,9 +470,11 @@ function spawnEnemy(type){
     color: d.color,
     size: d.size,
     facing: 1,
-    state: 'walk',
+    state: 'walk',       // walk | attack | hurt | dead
     stateT: 0,
     attackCd: 0,
+    hurtTimer: 0,
+    attackAnimT: 0,
     hitFlash: 0,
     dead: false,
     deathTimer: 0,
@@ -472,7 +483,9 @@ function spawnEnemy(type){
   });
 }
 
-/* ========== UPDATE ========== */
+/* ============================================================
+   UPDATE
+   ============================================================ */
 function update(dt){
   if (G.state === 'paused-rot') return;
   if (G.state !== 'playing') return;
@@ -494,45 +507,36 @@ function update(dt){
   const mag = Math.hypot(dx, dy);
   if (mag > 1){ dx /= mag; dy /= mag; }
 
-  // Attack input (space or touch button)
   const wantAttack = input.keys[' '] || input.atkHeld;
 
-  /* ----- Player state machine ----- */
+  /* ----- Player state ----- */
   p.stateT += dt;
   if (p.invuln > 0) p.invuln -= dt;
   if (p.hitFlash > 0) p.hitFlash -= dt;
   if (p.attackCd > 0) p.attackCd -= dt;
 
-  // Death
   if (p.hp <= 0 && p.state !== 'dead'){
     p.state = 'dead'; p.stateT = 0;
     gameOver();
     return;
   }
-  if (p.state === 'dead'){ /* vẫn vẽ */ }
 
-  // Attack
   if (wantAttack && p.attackCd <= 0 && p.state !== 'dead'){
     p.state = 'attack'; p.stateT = 0;
     p.attackCd = 0.5;
-    // Aim theo hướng di chuyển cuối
     if (mag > 0.15){ p.aimX = dx; p.aimY = dy; }
     else { p.aimX = p.facing; p.aimY = 0; }
-    // Reset hit flag cho enemies
     for (const e of G.enemies) e.hitThisSwing = false;
-    // VFX
     burstVFX(p.x + p.aimX * 30, p.y + p.aimY * 30, '#ffd54a', 6, 120, 0.35);
   }
   if (p.state === 'attack' && p.stateT > 0.25){
     p.state = mag > 0.15 ? 'walk' : 'idle'; p.stateT = 0;
   }
 
-  // Move
   if (p.state !== 'attack' && p.state !== 'hurt' && p.state !== 'dead'){
     const vx = dx * p.speed;
     const vy = dy * p.speed;
     moveWithCollision(p, vx * dt, vy * dt);
-
     if (mag > 0.15){
       p.state = 'walk';
       if (Math.abs(dx) > 0.1) p.facing = dx > 0 ? 1 : -1;
@@ -543,10 +547,10 @@ function update(dt){
     p.state = 'idle';
   }
 
-  // Attack hit detection
+  /* ----- Attack hits ----- */
   if (p.state === 'attack' && p.stateT < 0.25){
     const reach = 65;
-    const halfAngle = Math.PI / 2.6; // ~69°
+    const halfAngle = Math.PI / 2.6;
     const aimAngle = Math.atan2(p.aimY, p.aimX);
     for (const e of G.enemies){
       if (e.dead || e.hitThisSwing) continue;
@@ -557,21 +561,20 @@ function update(dt){
       while (diff >  Math.PI) diff -= Math.PI * 2;
       while (diff < -Math.PI) diff += Math.PI * 2;
       if (Math.abs(diff) < halfAngle){
-        // Hit!
         const dmg = 25;
         e.hp -= dmg;
         e.hitFlash = 0.2;
         e.hitThisSwing = true;
+        e.state = 'hurt'; e.hurtTimer = 0.25;
         burstVFX(e.x, e.y, '#ffd54a', 8, 150, 0.4);
         addText(e.x, e.y - e.size - 8, '-' + dmg, '#ffd54a');
-        // Knockback
         const kb = 90;
         e.x += Math.cos(a) * kb * dt * 8;
         e.y += Math.sin(a) * kb * dt * 8;
         if (e.hp <= 0 && !e.dead){
           e.dead = true;
           e.state = 'dead';
-          e.deathTimer = 0.6;
+          e.deathTimer = 0.7;
           G.kills++;
           burstVFX(e.x, e.y, e.color, e.type === 'boss' ? 40 : 14,
                    e.type === 'boss' ? 260 : 150, 0.6);
@@ -581,7 +584,7 @@ function update(dt){
     }
   }
 
-  /* ----- Spawn enemies ----- */
+  /* ----- Spawn ----- */
   G.spawnTimer -= dt;
   if (G.spawnTimer <= 0){
     const t = G.time;
@@ -592,12 +595,9 @@ function update(dt){
     if (t > 80) types.push('brute');
     const type = types[Math.floor(Math.random() * types.length)];
     spawnEnemy(type);
-    // Spawn rate tăng dần
     const baseRate = Math.max(0.35, 1.4 - t * 0.012);
     G.spawnTimer = baseRate * rand(0.7, 1.3);
   }
-
-  /* ----- Boss spawn ----- */
   G.bossTimer -= dt;
   if (G.bossTimer <= 0){
     spawnEnemy('boss');
@@ -605,31 +605,47 @@ function update(dt){
     G.bossTimer = 60;
   }
 
-  /* ----- Enemies update ----- */
+  /* ----- Enemies ----- */
   for (const e of G.enemies){
     if (e.dead){
       e.deathTimer -= dt;
       continue;
     }
     if (e.hitFlash > 0) e.hitFlash -= dt;
+    if (e.hurtTimer > 0) e.hurtTimer -= dt;
     e.stateT += dt;
     if (e.attackCd > 0) e.attackCd -= dt;
 
-    // Chase player
     const ex = p.x - e.x;
     const ey = p.y - e.y;
     const ed = Math.hypot(ex, ey) || 1;
-    if (ed > 4){
+
+    // Attack animation cooldown
+    if (e.attackAnimT > 0) e.attackAnimT -= dt;
+
+    // STATE MACHINE
+    if (e.hurtTimer > 0){
+      e.state = 'hurt';
+    } else if (e.attackAnimT > 0){
+      e.state = 'attack';
+    } else if (ed > 4){
+      e.state = 'walk';
+    } else {
+      e.state = 'idle';
+    }
+
+    // Movement (chỉ đi khi walk)
+    if (e.state === 'walk'){
       const sp = e.speed;
       const step = sp * dt;
-      // Collision với obstacles
       moveEnemyWithCollision(e, ex / ed * step, ey / ed * step);
       if (Math.abs(ex) > 0.5) e.facing = ex > 0 ? 1 : -1;
     }
 
-    // Attack player
-    if (ed < e.radius + p.radius + 6 && e.attackCd <= 0){
+    // Attack
+    if (ed < e.radius + p.radius + 10 && e.attackCd <= 0){
       e.attackCd = 1.0;
+      e.attackAnimT = 0.5;   // hiện animation attack
       if (p.invuln <= 0 && p.state !== 'dead'){
         const dmg = e.damage;
         p.hp -= dmg;
@@ -642,10 +658,9 @@ function update(dt){
     }
   }
 
-  /* ----- Cleanup ----- */
   G.enemies = G.enemies.filter(e => !(e.dead && e.deathTimer <= 0));
 
-  /* ----- Camera follow ----- */
+  /* ----- Camera ----- */
   const targetCamX = p.x - VW/2;
   const targetCamY = p.y - VH/2;
   G.cam.x += (targetCamX - G.cam.x) * Math.min(1, dt * 8);
@@ -653,23 +668,21 @@ function update(dt){
   G.cam.x = clamp(G.cam.x, 0, WORLD_W - VW);
   G.cam.y = clamp(G.cam.y, 0, WORLD_H - VH);
 
-  /* ----- Particles / texts ----- */
+  /* ----- Particles/texts ----- */
   for (const pa of G.particles){
     pa.life -= dt;
-    pa.x += pa.vx * dt;
-    pa.y += pa.vy * dt;
+    pa.x += pa.vx * dt; pa.y += pa.vy * dt;
     pa.vx *= 0.92; pa.vy *= 0.92;
   }
-  for (const t of G.texts){
-    t.life -= dt; t.y -= 30 * dt;
-  }
+  for (const t of G.texts){ t.life -= dt; t.y -= 30 * dt; }
   G.particles = G.particles.filter(p => p.life > 0);
   G.texts = G.texts.filter(t => t.life > 0);
 }
 
-/* ========== COLLISION ========== */
+/* ============================================================
+   COLLISION
+   ============================================================ */
 function moveWithCollision(obj, dx, dy){
-  // X axis
   obj.x += dx;
   for (const o of G.obstacles){
     const d = dist(obj.x, obj.y, o.x, o.y);
@@ -680,7 +693,6 @@ function moveWithCollision(obj, dx, dy){
       obj.y += Math.sin(a) * push;
     }
   }
-  // Y axis
   obj.y += dy;
   for (const o of G.obstacles){
     const d = dist(obj.x, obj.y, o.x, o.y);
@@ -691,17 +703,17 @@ function moveWithCollision(obj, dx, dy){
       obj.y += Math.sin(a) * push;
     }
   }
-  // World bounds
   obj.x = clamp(obj.x, obj.radius, WORLD_W - obj.radius);
   obj.y = clamp(obj.y, obj.radius, WORLD_H - obj.radius);
 }
 function moveEnemyWithCollision(e, dx, dy){
   e.x = clamp(e.x + dx, e.radius, WORLD_W - e.radius);
   e.y = clamp(e.y + dy, e.radius, WORLD_H - e.radius);
-  // Không check obstacles cho enemy — đơn giản, để chúng đi xuyên cây
 }
 
-/* ========== VFX ========== */
+/* ============================================================
+   VFX
+   ============================================================ */
 function burstVFX(x, y, color, n, spd, life){
   if (G.particles.length > 400) return;
   for (let i = 0; i < n; i++){
@@ -717,7 +729,9 @@ function addText(x, y, text, color){
   G.texts.push({ x, y, text, color, life: 0.9, maxLife: 0.9 });
 }
 
-/* ========== SPRITE RENDER ========== */
+/* ============================================================
+   RENDER — KNIGHT (pixel art)
+   ============================================================ */
 function drawGridSprite(grid, pal, px, ox, oy){
   for (let r = 0; r < grid.length; r++){
     const row = grid[r];
@@ -747,14 +761,13 @@ function drawKnight(p){
   const grid = getKnightGrid(p.state);
   const rows = grid.length;
   const cols = grid[0].length;
-  const px = 3.2;               // pixel size
+  const px = 3.2;
   const totalW = cols * px;
   const totalH = rows * px;
 
   ctx.save();
   ctx.translate(p.x - G.cam.x, p.y - G.cam.y);
 
-  // Shadow
   if (p.state !== 'dead'){
     ctx.beginPath();
     ctx.ellipse(0, 14, 16, 6, 0, 0, Math.PI*2);
@@ -762,40 +775,30 @@ function drawKnight(p){
     ctx.fill();
   }
 
-  // Flip
   if (p.facing < 0) ctx.scale(-1, 1);
 
-  // Bob khi walk
   let bobY = 0;
   if (p.state === 'walk') bobY = Math.sin(G.time * 12) * 1.5;
   if (p.state === 'idle') bobY = Math.sin(G.time * 3) * 0.8;
 
-  // Death fade
   let alpha = 1;
-  if (p.state === 'dead'){
-    alpha = Math.max(0.3, 1 - p.stateT * 0.3);
-  }
+  if (p.state === 'dead') alpha = Math.max(0.3, 1 - p.stateT * 0.3);
   ctx.globalAlpha = alpha;
 
-  // Hit flash
   const pal = { ...PAL_KNIGHT };
   if (p.hitFlash > 0){
     pal.b = '#ffffff'; pal.d = '#ffdddd';
   }
 
-  // Draw
   drawGridSprite(grid, pal, px, -totalW/2, -totalH + 12 + bobY);
   ctx.globalAlpha = 1;
-
   ctx.restore();
 
-  // Aim line khi đang attack
+  // Attack arc
   if (p.state === 'attack'){
     const reach = 65;
     const a = Math.atan2(p.aimY, p.aimX);
     const x1 = p.x - G.cam.x, y1 = p.y - G.cam.y;
-    const x2 = x1 + Math.cos(a) * reach;
-    const y2 = y1 + Math.sin(a) * reach;
 
     ctx.save();
     const prog = p.stateT / 0.25;
@@ -811,46 +814,81 @@ function drawKnight(p){
   }
 }
 
+/* ============================================================
+   RENDER — ENEMY (dùng sprite sheet)
+   ============================================================ */
 function drawEnemy(e){
   const sx = e.x - G.cam.x;
   const sy = e.y - G.cam.y;
-  if (sx < -80 || sx > VW + 80 || sy < -80 || sy > VH + 80) return;
+  if (sx < -100 || sx > VW + 100 || sy < -100 || sy > VH + 100) return;
 
   ctx.save();
   ctx.translate(sx, sy);
 
+  // Shadow
   if (e.state !== 'dead'){
-    // Shadow
     ctx.beginPath();
-    ctx.ellipse(0, e.size * 0.6, e.size * 0.9, e.size * 0.3, 0, 0, Math.PI*2);
+    ctx.ellipse(0, e.size * 0.7, e.size * 0.9, e.size * 0.3, 0, 0, Math.PI*2);
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.fill();
   }
 
   if (e.facing < 0) ctx.scale(-1, 1);
 
-  // Death
-  let alpha = 1;
-  if (e.dead){
-    alpha = Math.max(0, e.deathTimer / 0.6);
-    ctx.globalAlpha = alpha;
-    ctx.scale(0.6 + alpha * 0.4, 0.6 + alpha * 0.4);
+  // Chọn state để vẽ (map từ logic → sprite state)
+  let spriteState = e.state;
+  // Nếu chưa attack bao giờ mà đang attack thì hiện attack
+  // Nếu hurt → hurt
+  // Nếu dead → death
+  // Còn lại → walk
+  if (e.state === 'idle') spriteState = 'walk';  // Không có idle riêng, dùng walk
+
+  // Death animation
+  if (e.state === 'dead'){
+    const ratio = Math.max(0, e.deathTimer / 0.7);
+    ctx.globalAlpha = ratio;
+    const scl = 0.7 + ratio * 0.3;
+    ctx.scale(scl, scl);
+    spriteState = 'dead';
   }
 
-  const grid = makeEnemySprite(e.type);
-  const rows = grid.length;
-  const cols = grid[0].length;
-  const px = (e.size * 2.0) / cols;
+  // Lấy sprite frame
+  if (SPRITE_OK[e.type] && SPRITES[e.type]){
+    const deathProgress = e.state === 'dead' ? (1 - e.deathTimer / 0.7) : 0;
+    const rect = getFrameRect(e.type, spriteState, G.time + e.animPhase, deathProgress);
 
-  const pal = { ...PAL[e.type] };
-  if (e.hitFlash > 0){
-    pal.b = '#ffffff'; pal.d = '#ffdddd';
+    if (rect){
+      const dsize = rect.display;
+      const ox = -dsize / 2;
+      const oy = -dsize + e.size * 0.5;
+
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(
+        SPRITES[e.type],
+        rect.x, rect.y, rect.w, rect.h,
+        ox, oy, dsize, dsize
+      );
+
+      // Hit flash
+      if (e.hitFlash > 0 && e.state !== 'dead'){
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = e.hitFlash * 4;
+        ctx.drawImage(
+          SPRITES[e.type],
+          rect.x, rect.y, rect.w, rect.h,
+          ox, oy, dsize, dsize
+        );
+        ctx.restore();
+      }
+    }
+  } else {
+    // Fallback hình tròn
+    ctx.beginPath();
+    ctx.arc(0, 0, e.size, 0, Math.PI*2);
+    ctx.fillStyle = e.hitFlash > 0 ? '#fff' : e.color;
+    ctx.fill();
   }
-
-  let bob = 0;
-  if (!e.dead) bob = Math.sin(G.time * 8 + e.animPhase) * 1.2;
-
-  drawGridSprite(grid, pal, px, -cols*px/2, -rows*px + e.size*0.4 + bob);
 
   ctx.restore();
 
@@ -858,7 +896,7 @@ function drawEnemy(e){
   if (!e.dead && e.hp < e.maxHp){
     const w = e.type === 'boss' ? 60 : 30;
     const h = e.type === 'boss' ? 5 : 3;
-    const bx = sx - w/2, by = sy - e.size - (e.type === 'boss' ? 22 : 16);
+    const bx = sx - w/2, by = sy - e.size * 2 - (e.type === 'boss' ? 24 : 16);
     ctx.fillStyle = 'rgba(0,0,0,0.75)';
     ctx.fillRect(bx-1, by-1, w+2, h+2);
     const pct = Math.max(0, e.hp/e.maxHp);
@@ -867,13 +905,13 @@ function drawEnemy(e){
   }
 }
 
-/* ========== WORLD RENDER ========== */
+/* ============================================================
+   WORLD RENDER
+   ============================================================ */
 function drawWorldBackground(){
-  // Grass base
   ctx.fillStyle = '#1a2e1a';
   ctx.fillRect(0, 0, VW, VH);
 
-  // Grass tiles có tone khác nhau
   const startCol = Math.floor(G.cam.x / TILE);
   const startRow = Math.floor(G.cam.y / TILE);
   const endCol = startCol + Math.ceil(VW / TILE) + 1;
@@ -881,7 +919,6 @@ function drawWorldBackground(){
 
   for (let c = startCol; c < endCol; c++){
     for (let r = startRow; r < endRow; r++){
-      // Deterministic tone từ vị trí
       const h = (c * 73856093 ^ r * 19349663) >>> 0;
       const tone = (h % 100) / 100;
       if (tone < 0.3) ctx.fillStyle = '#1a2e1a';
@@ -900,12 +937,10 @@ function drawDecorations(){
     const x = d.x - G.cam.x;
     const y = d.y - G.cam.y;
     if (x < -30 || x > VW + 30 || y < -30 || y > VH + 30) continue;
-    // Bụi cỏ
     ctx.fillStyle = d.tone > 0.5 ? '#2a4a2a' : '#2d5230';
     ctx.beginPath();
     ctx.ellipse(x, y, d.r, d.r * 0.6, 0, 0, Math.PI * 2);
     ctx.fill();
-    // Vài cọng cỏ
     ctx.strokeStyle = d.tone > 0.5 ? '#3a6a3a' : '#3d7240';
     ctx.lineWidth = 1.5;
     for (let i = 0; i < 3; i++){
@@ -918,7 +953,6 @@ function drawDecorations(){
 }
 
 function drawObstacles(){
-  // Sort theo y để fake depth
   const visible = G.obstacles.filter(o => {
     const x = o.x - G.cam.x, y = o.y - G.cam.y;
     return x > -80 && x < VW + 80 && y > -100 && y < VH + 80;
@@ -928,36 +962,23 @@ function drawObstacles(){
     const x = o.x - G.cam.x;
     const y = o.y - G.cam.y;
 
-    // Shadow
     ctx.beginPath();
     ctx.ellipse(x, y + o.r * 0.5, o.r * 1.1, o.r * 0.4, 0, 0, Math.PI*2);
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.fill();
 
     if (o.type === 'tree'){
-      // Thân cây
       ctx.fillStyle = '#3a2410';
       ctx.fillRect(x - 5, y - 4, 10, o.r + 4);
-      // Tán cây (3 lớp)
       ctx.fillStyle = '#1e4a1e';
-      ctx.beginPath();
-      ctx.arc(x, y - o.r * 0.7, o.r * 1.1, 0, Math.PI*2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y - o.r * 0.7, o.r * 1.1, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = '#2a5a2a';
-      ctx.beginPath();
-      ctx.arc(x - 6, y - o.r * 0.9, o.r * 0.75, 0, Math.PI*2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(x - 6, y - o.r * 0.9, o.r * 0.75, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = '#3a7a3a';
-      ctx.beginPath();
-      ctx.arc(x + 5, y - o.r * 0.5, o.r * 0.6, 0, Math.PI*2);
-      ctx.fill();
-      // Highlight
+      ctx.beginPath(); ctx.arc(x + 5, y - o.r * 0.5, o.r * 0.6, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = '#4a8a4a';
-      ctx.beginPath();
-      ctx.arc(x - 8, y - o.r * 1.0, o.r * 0.35, 0, Math.PI*2);
-      ctx.fill();
-    } else if (o.type === 'rock'){
-      // Đá
+      ctx.beginPath(); ctx.arc(x - 8, y - o.r * 1.0, o.r * 0.35, 0, Math.PI*2); ctx.fill();
+    } else {
       ctx.fillStyle = '#4a4a52';
       ctx.beginPath();
       ctx.moveTo(x - o.r, y + o.r * 0.3);
@@ -965,16 +986,13 @@ function drawObstacles(){
       ctx.lineTo(x, y - o.r);
       ctx.lineTo(x + o.r * 0.8, y - o.r * 0.5);
       ctx.lineTo(x + o.r, y + o.r * 0.4);
-      ctx.closePath();
-      ctx.fill();
-      // Highlight
+      ctx.closePath(); ctx.fill();
       ctx.fillStyle = '#6a6a72';
       ctx.beginPath();
       ctx.moveTo(x - o.r * 0.5, y - o.r * 0.5);
       ctx.lineTo(x, y - o.r * 0.85);
       ctx.lineTo(x + o.r * 0.4, y - o.r * 0.35);
-      ctx.closePath();
-      ctx.fill();
+      ctx.closePath(); ctx.fill();
     }
   }
 }
@@ -1007,97 +1025,75 @@ function drawTexts(){
   ctx.textAlign = 'left';
 }
 
-/* ========== UI RENDER (screen space) ========== */
+/* ============================================================
+   UI
+   ============================================================ */
 function drawUI(){
   const p = G.player;
 
-  // ---- HP bar ----
+  // HP bar
   const hpW = 240, hpH = 20;
   const hpX = 20, hpY = 20;
-
   ctx.fillStyle = 'rgba(0,0,0,0.6)';
   ctx.fillRect(hpX - 2, hpY - 2, hpW + 4, hpH + 4);
   ctx.fillStyle = '#2a0a0a';
   ctx.fillRect(hpX, hpY, hpW, hpH);
-
   const pct = Math.max(0, p.hp / p.maxHp);
   const grad = ctx.createLinearGradient(hpX, 0, hpX + hpW, 0);
-  grad.addColorStop(0, '#ff3a3a');
-  grad.addColorStop(1, '#ff7a3a');
+  grad.addColorStop(0, '#ff3a3a'); grad.addColorStop(1, '#ff7a3a');
   ctx.fillStyle = grad;
   ctx.fillRect(hpX, hpY, hpW * pct, hpH);
-
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
   ctx.strokeRect(hpX, hpY, hpW, hpH);
-
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 12px monospace';
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace';
   ctx.textAlign = 'center';
   ctx.fillText(`${Math.ceil(p.hp)} / ${p.maxHp}`, hpX + hpW/2, hpY + 14);
   ctx.textAlign = 'left';
 
-  // ---- Time + Kills + Score ----
+  // Stats
   ctx.font = 'bold 16px monospace';
-  ctx.fillStyle = '#fff';
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 3;
-
-  const tStr = `⏱ ${G.time.toFixed(1)}s`;
-  const kStr = `☠ ${G.kills}`;
-  const score = Math.floor(G.time * 10 + G.kills * 25);
-
-  ctx.strokeText(tStr, VW - 200, 32); ctx.fillText(tStr, VW - 200, 32);
-  ctx.strokeText(kStr, VW - 200, 56); ctx.fillText(kStr, VW - 200, 56);
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+  ctx.strokeText(`⏱ ${G.time.toFixed(1)}s`, VW - 200, 32);
+  ctx.fillText(`⏱ ${G.time.toFixed(1)}s`, VW - 200, 32);
+  ctx.strokeText(`☠ ${G.kills}`, VW - 200, 56);
+  ctx.fillText(`☠ ${G.kills}`, VW - 200, 56);
   ctx.fillStyle = '#ffd54a';
+  const score = Math.floor(G.time * 10 + G.kills * 25);
   ctx.strokeText(`★ ${score}`, VW - 200, 80);
   ctx.fillText(`★ ${score}`, VW - 200, 80);
 
-  // ---- Joystick (chỉ mobile) ----
+  // Joystick
   if (DEVICE.isMobile){
-    // Base ring
     ctx.beginPath();
     ctx.arc(UI.joy.x, UI.joy.y, UI.joy.r, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,255,255,0.10)';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 3; ctx.stroke();
 
-    // Knob
     const kx = UI.joy.x + input.joyVec.x * (UI.joy.r - UI.joy.knobR);
     const ky = UI.joy.y + input.joyVec.y * (UI.joy.r - UI.joy.knobR);
     ctx.beginPath();
     ctx.arc(kx, ky, UI.joy.knobR, 0, Math.PI*2);
     ctx.fillStyle = input.joyId !== null ? 'rgba(127,255,127,0.7)' : 'rgba(255,255,255,0.4)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2; ctx.stroke();
 
-    // Label
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('DI CHUYỂN', UI.joy.x, UI.joy.y + UI.joy.r + 18);
-    ctx.textAlign = 'left';
 
-    // ---- Attack button ----
     const atkPressed = input.atkId !== null;
     ctx.beginPath();
     ctx.arc(UI.atk.x, UI.atk.y, UI.atk.r, 0, Math.PI*2);
     ctx.fillStyle = atkPressed ? 'rgba(255,213,74,0.85)' : 'rgba(255,213,74,0.35)';
     ctx.fill();
     ctx.strokeStyle = atkPressed ? '#fff' : '#ffd54a';
-    ctx.lineWidth = 4;
-    ctx.stroke();
+    ctx.lineWidth = 4; ctx.stroke();
 
-    // Sword icon
     ctx.save();
     ctx.translate(UI.atk.x, UI.atk.y);
     ctx.rotate(-Math.PI / 4);
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(-14, 0); ctx.lineTo(14, 0);
     ctx.moveTo(-10, -6); ctx.lineTo(-10, 6);
@@ -1106,29 +1102,26 @@ function drawUI(){
 
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.font = 'bold 10px monospace';
-    ctx.textAlign = 'center';
     ctx.fillText('CHÉM', UI.atk.x, UI.atk.y + UI.atk.r + 18);
     ctx.textAlign = 'left';
   }
 
-  // Red flash khi HP thấp
   if (p.hp / p.maxHp < 0.3 && p.state !== 'dead'){
-    const t = G.time * 4;
-    const a = 0.15 + Math.abs(Math.sin(t)) * 0.15;
+    const a = 0.15 + Math.abs(Math.sin(G.time * 4)) * 0.15;
     ctx.fillStyle = `rgba(255,0,0,${a})`;
     ctx.fillRect(0, 0, VW, VH);
   }
 }
 
-/* ========== MAIN RENDER ========== */
+/* ============================================================
+   MAIN RENDER
+   ============================================================ */
 function render(){
   drawWorldBackground();
   drawDecorations();
   drawObstacles();
 
-  // Enemies sort theo y
   const sortedEnemies = [...G.enemies].sort((a, b) => a.y - b.y);
-  // Vẽ enemy + player theo thứ tự y
   const allActors = [
     ...sortedEnemies.map(e => ({ y: e.y, draw: () => drawEnemy(e) })),
     { y: G.player.y, draw: () => drawKnight(G.player) }
@@ -1141,7 +1134,9 @@ function render(){
   drawUI();
 }
 
-/* ========== LOOP ========== */
+/* ============================================================
+   LOOP
+   ============================================================ */
 let last = performance.now();
 function loop(now){
   try {
@@ -1154,7 +1149,9 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 
-/* ========== INPUT HANDLERS ========== */
+/* ============================================================
+   INPUT HANDLERS
+   ============================================================ */
 function toCanvasXY(clientX, clientY){
   const r = cv.getBoundingClientRect();
   return {
@@ -1162,7 +1159,6 @@ function toCanvasXY(clientX, clientY){
     y: (clientY - r.top) * (VH / r.height)
   };
 }
-
 function isInJoystick(x, y){
   return dist(x, y, UI.joy.x, UI.joy.y) < UI.joy.r + 30;
 }
@@ -1171,27 +1167,21 @@ function isInAttackBtn(x, y){
 }
 
 function handleTouchStart(e){
-  if (G.state !== 'playing'){
-    // Không chặn nếu đang menu
-    return;
-  }
+  if (G.state !== 'playing') return;
   e.preventDefault();
   for (const t of e.changedTouches){
     const p = toCanvasXY(t.clientX, t.clientY);
     if (DEVICE.isMobile && input.joyId === null && isInJoystick(p.x, p.y)){
       input.joyId = t.identifier;
-      input.joyCenter = { x: p.x, y: p.y };
       input.joyVec = { x: 0, y: 0 };
     } else if (DEVICE.isMobile && input.atkId === null && isInAttackBtn(p.x, p.y)){
       input.atkId = t.identifier;
       input.atkHeld = true;
     } else if (!DEVICE.isMobile){
-      // PC: touch = click attack
       input.atkHeld = true;
     }
   }
 }
-
 function handleTouchMove(e){
   if (G.state !== 'playing') return;
   e.preventDefault();
@@ -1202,15 +1192,11 @@ function handleTouchMove(e){
       const dy = p.y - UI.joy.y;
       const d = Math.hypot(dx, dy);
       const maxR = UI.joy.r - UI.joy.knobR * 0.3;
-      if (d > maxR){
-        input.joyVec = { x: dx/d * 1, y: dy/d * 1 };
-      } else {
-        input.joyVec = { x: dx / maxR, y: dy / maxR };
-      }
+      if (d > maxR) input.joyVec = { x: dx/d, y: dy/d };
+      else input.joyVec = { x: dx / maxR, y: dy / maxR };
     }
   }
 }
-
 function handleTouchEnd(e){
   for (const t of e.changedTouches){
     if (t.identifier === input.joyId){
@@ -1222,7 +1208,6 @@ function handleTouchEnd(e){
       input.atkHeld = false;
     }
   }
-  // PC: reset attack
   if (!DEVICE.isMobile) input.atkHeld = false;
 }
 
@@ -1231,31 +1216,25 @@ cv.addEventListener('touchmove', handleTouchMove, { passive: false });
 cv.addEventListener('touchend', handleTouchEnd, { passive: false });
 cv.addEventListener('touchcancel', handleTouchEnd, { passive: false });
 
-// PC mouse
 cv.addEventListener('mousedown', (e) => {
   if (G.state !== 'playing') return;
-  if (!DEVICE.isMobile){
-    // Check nếu click vào attack button
-    const p = toCanvasXY(e.clientX, e.clientY);
-    if (isInAttackBtn(p.x, p.y)) input.atkHeld = true;
-    else input.atkHeld = true; // Bất kỳ click nào cũng attack
-  }
+  if (!DEVICE.isMobile) input.atkHeld = true;
 });
 cv.addEventListener('mouseup', () => {
   if (!DEVICE.isMobile) input.atkHeld = false;
 });
 
-// PC keyboard
 addEventListener('keydown', (e) => {
-  const k = e.key.toLowerCase();
-  input.keys[k] = true;
-  if (k === ' '){ e.preventDefault(); }
+  input.keys[e.key.toLowerCase()] = true;
+  if (e.key === ' ') e.preventDefault();
 });
 addEventListener('keyup', (e) => {
   input.keys[e.key.toLowerCase()] = false;
 });
 
-/* ========== GAME FLOW ========== */
+/* ============================================================
+   GAME FLOW
+   ============================================================ */
 const menu = document.getElementById('menu');
 const menuText = document.getElementById('menu-text');
 const menuStats = document.getElementById('menu-stats');
@@ -1280,7 +1259,6 @@ function startGame(){
   menu.classList.add('hide');
   checkOrientation();
 }
-
 function gameOver(){
   const score = Math.floor(G.time * 10 + G.kills * 25);
   menuText.innerHTML = 'Bạn đã chiến đấu đến hơi thở cuối cùng.';
@@ -1291,25 +1269,48 @@ function gameOver(){
   playBtn.textContent = 'CHƠI LẠI';
   menu.classList.remove('hide');
 }
+playBtn.addEventListener('click', startGame);
 
-playBtn.addEventListener('click', () => {
-  startGame();
-});
-
-/* ========== INIT ========== */
-function init(){
+/* ============================================================
+   INIT
+   ============================================================ */
+async function init(){
   resizeCanvas();
   updateBadge();
   checkOrientation();
-  // Khởi tạo player để vẽ menu background (không dùng)
+
+  const loading = document.getElementById('loading');
+  const loadingTxt = document.getElementById('loading-txt');
+  loading.classList.add('show');
+  loadingTxt.textContent = `Thiết bị: ${DEVICE.isMobile ? 'Điện thoại 📱' : 'Máy tính 💻'}\nĐang load sprite quái...`;
+
+  const okCount = await loadAllSprites();
+
+  const types = Object.keys(SPRITE_CFG);
+  const failed = types.filter(t => !SPRITE_OK[t]);
+
+  if (failed.length > 0){
+    loadingTxt.innerHTML =
+      `⚠️ Không load được ${failed.length}/${types.length} sprite:<br>` +
+      failed.map(t => SPRITE_CFG[t].src).join('<br>') +
+      `<br><br>Chạy với fallback hình tròn.`;
+    await new Promise(r => setTimeout(r, 2200));
+  } else {
+    loadingTxt.textContent = `✅ Đã load ${okCount} sprite quái!`;
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  loading.classList.remove('show');
+
+  // Setup world menu bg
   G.player = createPlayer();
   genWorld();
   G.cam.x = G.player.x - VW/2;
   G.cam.y = G.player.y - VH/2;
+
   requestAnimationFrame(loop);
 }
 
-// Chờ DOM sẵn sàng
 if (document.readyState === 'loading'){
   document.addEventListener('DOMContentLoaded', init);
 } else {
