@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Survival Knight — 22C</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -66,24 +65,27 @@
   #dbgPanel{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
     background:rgba(10,18,10,.97);padding:14px;border-radius:12px;z-index:100;
     color:#e0e8e0;font-size:12px;border:1px solid #3a5a3a;max-width:94vw;max-height:90vh;
-    overflow-y:auto;font-family:inherit;box-shadow:0 0 40px rgba(0,0,0,.8)}
+    overflow-y:auto;font-family:inherit;box-shadow:0 0 40px rgba(0,0,0,.8);width:560px}
   #dbgPanel h3{font-size:13px;color:#7fff7f;margin-bottom:10px;letter-spacing:1px}
-  #dbgPanel label{font-size:10px;color:#9aa89a;display:block;margin-top:6px}
-  #dbgPanel input,#dbgPanel select{padding:5px 7px;background:#0a120a;color:#fff;
-    border:1px solid #3a5a3a;border-radius:4px;font-family:inherit;font-size:12px;margin-top:2px}
-  #dbgPanel input.fw{width:80px}
-  #dbgPanel input.fc{width:38px;text-align:center}
+  #dbgPanel label{font-size:10px;color:#9aa89a;display:block;margin-top:8px}
+  #dbgPanel input,#dbgPanel select,#dbgPanel textarea{
+    padding:5px 7px;background:#0a120a;color:#fff;
+    border:1px solid #3a5a3a;border-radius:4px;font-family:inherit;font-size:12px;
+    margin-top:2px;width:100%}
+  #dbgPanel input.fc{width:42px;text-align:center;display:inline-block}
   #dbgPreview{display:block;margin-top:10px;background:#000;
-    border:1px solid #3a5a3a;max-width:100%;border-radius:4px}
+    border:1px solid #3a5a3a;max-width:100%;border-radius:4px;image-rendering:pixelated}
   #dbgRow{display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap}
-  #dbgRow label{margin:0;flex:0 0 auto}
+  #dbgRow label{margin:0;flex:0 0 auto;width:auto}
   #dbgActions{display:flex;gap:6px;margin-top:12px;justify-content:center;flex-wrap:wrap}
-  #dbgActions button{padding:8px 16px;border:none;border-radius:5px;
+  #dbgActions button{padding:8px 14px;border:none;border-radius:5px;
     font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer}
+  #dbgAuto{background:linear-gradient(180deg,#7ff0ff,#25b6d8);color:#04121a}
   #dbgApply{background:linear-gradient(180deg,#a4ffa4,#3fb85c);color:#041a04}
-  #dbgReload{background:#3a5a3a;color:#fff}
+  #dbgReset{background:#3a5a3a;color:#fff}
   #dbgClose{background:#444;color:#fff}
   #dbgInfo{font-size:10px;color:#9aa89a;margin-top:6px;line-height:1.5}
+  #dbgInfo b{color:#7fff7f}
 </style>
 </head>
 <body>
@@ -92,32 +94,32 @@
 <div id="dbgPanel">
   <h3>CHỈNH SPRITE</h3>
   <label>Loại quái</label>
-  <select id="dbgType" style="width:100%">
+  <select id="dbgType">
     <option value="imp">Quỷ Nhỏ</option>
     <option value="hound">Khuyển Ngục</option>
     <option value="wraith">Oan Hồn</option>
     <option value="brute">Cự Quỷ</option>
     <option value="boss">Đại Quỷ</option>
   </select>
+  <label>Số frame mỗi state (idle / move / attack / hurt / death)</label>
   <div id="dbgRow">
-    <label>Frame width:</label>
-    <input id="dbgFw" class="fw" type="number" step="1" min="1">
-    <span id="dbgAuto" style="font-size:10px;color:#7a8a7a"></span>
+    <input id="dbgIdle" class="fc" type="number" min="1" value="3">
+    <input id="dbgMove" class="fc" type="number" min="1" value="3">
+    <input id="dbgAtk"  class="fc" type="number" min="1" value="3">
+    <input id="dbgHurt" class="fc" type="number" min="1" value="2">
+    <input id="dbgDie"  class="fc" type="number" min="1" value="3">
   </div>
-  <label>Số frame mỗi state (idle/move/attack/hurt/death)</label>
-  <div id="dbgRow">
-    <input id="dbgIdle" class="fc" type="number" min="1">
-    <input id="dbgMove" class="fc" type="number" min="1">
-    <input id="dbgAtk"  class="fc" type="number" min="1">
-    <input id="dbgHurt" class="fc" type="number" min="1">
-    <input id="dbgDie"  class="fc" type="number" min="1">
-  </div>
-  <label>Preview (đỏ/xanh = ranh giới frame)</label>
+  <label>Custom frames (mỗi frame: <b>x,w</b> — ngăn bằng dấu chấm phẩy). Để trống = dùng even split</label>
+  <textarea id="dbgCustom" rows="3" placeholder="VD: 0,120; 120,150; 270,130; ..."></textarea>
+
+  <label>Preview (🔴 đỏ = custom/auto · 🟢 xanh = even split)</label>
   <canvas id="dbgPreview"></canvas>
   <div id="dbgInfo">—</div>
+
   <div id="dbgActions">
+    <button id="dbgAuto">🤖 AUTO DETECT</button>
     <button id="dbgApply">ÁP DỤNG</button>
-    <button id="dbgReload">RELOAD</button>
+    <button id="dbgReset">RESET</button>
     <button id="dbgClose">ĐÓNG</button>
   </div>
 </div>
@@ -180,24 +182,67 @@ function checkOrientation(){
   }
 }
 
-/* ===== SPRITE CONFIG =====
-   displayH = CHIỀU CAO mục tiêu
-   displayW tự tính theo tỷ lệ PNG (không còn bóp méo)
-   ===== */
+/* ===== SPRITE CONFIG ===== */
 const SPRITE_CFG = {
-  imp:    { src:'sprites/imp.png',    fw:null, fh:null,
-            frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, displayH:48 },
-  hound:  { src:'sprites/hound.png',  fw:null, fh:null,
-            frames:{ idle:3, move:2, attack:2, hurt:2, death:3 }, displayH:60 },
-  wraith: { src:'sprites/wraith.png', fw:null, fh:null,
-            frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, displayH:56 },
-  brute:  { src:'sprites/brute.png',  fw:null, fh:null,
-            frames:{ idle:2, move:3, attack:3, hurt:2, death:3 }, displayH:80 },
-  boss:   { src:'sprites/boss.png',   fw:null, fh:null,
-            frames:{ idle:1, move:2, attack:2, hurt:1, death:1 }, displayH:130 }
+  imp:    { src:'sprites/imp.png',    frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, displayH:48,  custom:null },
+  hound:  { src:'sprites/hound.png',  frames:{ idle:3, move:2, attack:2, hurt:2, death:3 }, displayH:60,  custom:null },
+  wraith: { src:'sprites/wraith.png', frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, displayH:56,  custom:null },
+  brute:  { src:'sprites/brute.png',  frames:{ idle:2, move:3, attack:3, hurt:2, death:3 }, displayH:80,  custom:null },
+  boss:   { src:'sprites/boss.png',   frames:{ idle:1, move:2, attack:2, hurt:1, death:1 }, displayH:130, custom:null }
 };
 
 const SPRITES = {}, SPRITE_OK = {}, SPRITE_DIMS = {};
+
+/* ⚡ AUTO-DETECT FRAMES bằng alpha channel */
+function autoDetectFrames(img, alphaThreshold, minGap){
+  alphaThreshold = alphaThreshold || 10;
+  minGap = minGap || 6;
+  const c = document.createElement('canvas');
+  c.width = img.width; c.height = img.height;
+  const cx = c.getContext('2d');
+  cx.drawImage(img, 0, 0);
+  let data;
+  try { data = cx.getImageData(0, 0, img.width, img.height).data; }
+  catch(e){ return []; }
+
+  // Cột có pixel đục?
+  const cols = new Uint8Array(img.width);
+  for (let x = 0; x < img.width; x++){
+    for (let y = 0; y < img.height; y++){
+      if (data[(y*img.width + x)*4 + 3] > alphaThreshold){
+        cols[x] = 1;
+        break;
+      }
+    }
+  }
+
+  // Gom nhóm cột liên tục
+  const groups = [];
+  let inG = false, st = 0;
+  for (let x = 0; x < img.width; x++){
+    if (cols[x]){
+      if (!inG){ inG = true; st = x; }
+    } else if (inG){
+      groups.push([st, x-1]);
+      inG = false;
+    }
+  }
+  if (inG) groups.push([st, img.width-1]);
+
+  if (groups.length === 0) return [];
+
+  // Merge gap nhỏ (đuôi lửa sát body)
+  const merged = [groups[0].slice()];
+  for (let i = 1; i < groups.length; i++){
+    const prev = merged[merged.length-1];
+    if (groups[i][0] - prev[1] <= minGap){
+      prev[1] = groups[i][1];
+    } else {
+      merged.push(groups[i].slice());
+    }
+  }
+  return merged;
+}
 
 function loadSprite(type){
   return new Promise((resolve) => {
@@ -208,10 +253,21 @@ function loadSprite(type){
       SPRITE_OK[type] = true;
       const total = Object.values(cfg.frames).reduce((s,n)=>s+n, 0);
       const autoFw = img.width / total;
-      const fw = cfg.fw || autoFw;
-      const fh = cfg.fh || img.height;
-      SPRITE_DIMS[type] = { fw, fh, total, autoFw };
-      console.log(`[Sprite] ${type}: ${img.width}×${img.height} · ${total}f · fw=${fw.toFixed(1)} fh=${fh}`);
+      const fh = img.height;
+
+      // ⚡ Nếu chưa có custom → thử auto-detect
+      if (!cfg.custom){
+        const detected = autoDetectFrames(img, 10, 6);
+        if (detected.length === total){
+          cfg.custom = detected.map(g => [g[0], g[1] - g[0] + 1]);
+          console.log(`[Sprite] ${type}: auto-detect OK (${detected.length} frames)`);
+        } else {
+          console.log(`[Sprite] ${type}: auto-detect ra ${detected.length} (cần ${total}) → dùng even split`);
+        }
+      }
+
+      SPRITE_DIMS[type] = { fw: autoFw, fh, total, autoFw };
+      console.log(`[Sprite] ${type}: ${img.width}×${img.height} · ${total}f`);
       resolve(true);
     };
     img.onerror = () => { SPRITE_OK[type] = false; resolve(false); };
@@ -222,6 +278,7 @@ async function loadAllSprites(){
   for (const t of Object.keys(SPRITE_CFG)) await loadSprite(t);
 }
 
+/* ⚡ Lấy rect — ưu tiên custom, fallback even split */
 function getFrameRect(type, state, animTime, deathProgress){
   const cfg = SPRITE_CFG[type];
   const dims = SPRITE_DIMS[type];
@@ -238,14 +295,21 @@ function getFrameRect(type, state, animTime, deathProgress){
   const total = cfg.frames[sName] || 1;
   let frameIdx;
   if (sName === 'death'){
-    frameIdx = Math.min(total - 1, Math.floor(deathProgress * total));
+    frameIdx = Math.min(total-1, Math.floor(deathProgress * total));
   } else {
     const fps = { idle:3, move:7, attack:10, hurt:14 }[sName] || 6;
     frameIdx = Math.floor(animTime * fps) % total;
   }
+  const absIdx = offset + frameIdx;
+
+  // Custom rect (chính xác nhất)
+  if (cfg.custom && cfg.custom[absIdx]){
+    const [x, w] = cfg.custom[absIdx];
+    return { x, y:0, w, h: dims.fh, displayH: cfg.displayH };
+  }
+  // Fallback even split
   return {
-    x: (offset + frameIdx) * dims.fw,
-    y: 0, w: dims.fw, h: dims.fh,
+    x: absIdx * dims.fw, y:0, w: dims.fw, h: dims.fh,
     displayH: cfg.displayH
   };
 }
@@ -294,55 +358,41 @@ if (window.visualViewport) window.visualViewport.addEventListener('resize', () =
 /* ===== WORLD ===== */
 const WORLD_W = 2400, WORLD_H = 2400, TILE = 40;
 const G = {
-  state: 'menu', time: 0, kills: 0,
-  spawnTimer: 0, bossTimer: 60,
-  player: null, enemies: [], obstacles: [], decorations: [],
-  particles: [], texts: [], cam: { x: 0, y: 0 }
+  state:'menu', time:0, kills:0, spawnTimer:0, bossTimer:60,
+  player:null, enemies:[], obstacles:[], decorations:[],
+  particles:[], texts:[], cam:{x:0,y:0}
 };
 const rand = (a,b) => a + Math.random()*(b-a);
 const dist = (a,b,c,d) => Math.hypot(a-c, b-d);
 const clamp = (v,a,b) => v < a ? a : (v > b ? b : v);
 
-/* ===== INPUT ===== */
 const input = { joyId:null, joyVec:{x:0,y:0}, atkId:null, atkHeld:false, keys:{} };
 const UI = { joy:{x:120,y:480,r:70,knobR:34}, atk:{x:850,y:480,r:58} };
 
 /* ===== KNIGHT ===== */
-const PAL_KNIGHT = {
-  k:'#0a0a0a', b:'#4a7ab8', d:'#2a4a78', w:'#ffffff', s:'#d0d8e0',
-  g:'#ffd54a', r:'#c03030', f:'#8a6a4a', h:'#6a3a1a'
-};
+const PAL_KNIGHT = { k:'#0a0a0a', b:'#4a7ab8', d:'#2a4a78', w:'#ffffff', s:'#d0d8e0',
+  g:'#ffd54a', r:'#c03030', f:'#8a6a4a', h:'#6a3a1a' };
 const KNIGHT = {
-  idle: [
-    "     kkkk       ","    kbbbbk      ","    kbwwbk      ","    kbbbbk      ",
+  idle:["     kkkk       ","    kbbbbk      ","    kbwwbk      ","    kbbbbk      ",
     "     kbbk       ","   kkkbbkkk     ","  kbbbbbbbbk    ","  kbbbbdbbbk    ",
     "  kbbfbfbbbk    ","  kbbbbbbbbk    ","  kbbkkkkbbk    ","   kkk  kkk     ",
-    "   khk  khk     ","   kkk  kkk     "
-  ],
-  walk: [
-    "     kkkk       ","    kbbbbk      ","    kbwwbk      ","    kbbbbk      ",
+    "   khk  khk     ","   kkk  kkk     "],
+  walk:["     kkkk       ","    kbbbbk      ","    kbwwbk      ","    kbbbbk      ",
     "     kbbk       ","   kkkbbkkk     ","  kbbbbbbbbk    ","  kbbbbdbbbk    ",
     "  kbbfbfbbbk    ","  kbbbbbbbbk    ","  kbbkkkkbbk    ","   kkhk khk     ",
-    "   khk   khk    ","   kkk   kkk    "
-  ],
-  attack: [
-    "     kkkk       ","    kbbbbk      ","    kbwwbk      ","    kbbbbk      ",
+    "   khk   khk    ","   kkk   kkk    "],
+  attack:["     kkkk       ","    kbbbbk      ","    kbwwbk      ","    kbbbbk      ",
     "     kbbk       ","   kkkbbkkk    s","  kbbbbbbbbk  ss","  kbbbbdbbbk ss ",
     "  kbbfbfbbbk s  ","  kbbbbbbbbk s  ","  kbbkkkkbbk s  ","   kkk  kkk     ",
-    "   khk  khk     ","   kkk  kkk     "
-  ],
-  hurt: [
-    "     kkkk       ","    kggggk      ","    kgrggk      ","    kggggk      ",
+    "   khk  khk     ","   kkk  kkk     "],
+  hurt:["     kkkk       ","    kggggk      ","    kgrggk      ","    kggggk      ",
     "     kggk       ","   kkkggkkk     ","  kggggggggk    ","  kggggrgggk    ",
     "  kggrgrgggk    ","  kggggggggk    ","  kggkkkkggk    ","   kkk  kkk     ",
-    "   kggk kgk     ","   kkk  kkk     "
-  ],
-  dead: [
-    "                ","                ","                ","                ",
+    "   kggk kgk     ","   kkk  kkk     "],
+  dead:["                ","                ","                ","                ",
     "                ","                ","                ","  kkkkkkkkkk    ",
     " kbbbbbbbbbk    "," kbbdbbbdbk     "," kkkkkkkkkk     ","                ",
-    "                ","                "
-  ]
+    "                ","                "]
 };
 
 function genWorld(){
@@ -362,19 +412,17 @@ function genWorld(){
   }
 }
 function createPlayer(){
-  return {
-    x: WORLD_W/2, y: WORLD_H/2, vx:0, vy:0,
+  return { x: WORLD_W/2, y: WORLD_H/2, vx:0, vy:0,
     hp:100, maxHp:100, speed:220, radius:18,
     facing:1, aimX:1, aimY:0, state:'idle', stateT:0,
-    attackCd:0, invuln:0, hitFlash:0
-  };
+    attackCd:0, invuln:0, hitFlash:0 };
 }
 const ENEMY_DATA = {
-  imp:    { hp:30,   speed:90,  damage:8,  radius:16, color:'#e8574a', size:11 },
-  hound:  { hp:55,   speed:140, damage:12, radius:18, color:'#e8963a', size:13 },
-  wraith: { hp:85,   speed:110, damage:10, radius:17, color:'#a95ce8', size:12 },
-  brute:  { hp:220,  speed:55,  damage:22, radius:26, color:'#b02b2b', size:17 },
-  boss:   { hp:900,  speed:45,  damage:35, radius:38, color:'#ff3040', size:26 }
+  imp:{ hp:30, speed:90, damage:8, radius:16, color:'#e8574a', size:11 },
+  hound:{ hp:55, speed:140, damage:12, radius:18, color:'#e8963a', size:13 },
+  wraith:{ hp:85, speed:110, damage:10, radius:17, color:'#a95ce8', size:12 },
+  brute:{ hp:220, speed:55, damage:22, radius:26, color:'#b02b2b', size:17 },
+  boss:{ hp:900, speed:45, damage:35, radius:38, color:'#ff3040', size:26 }
 };
 function spawnEnemy(type){
   const d = ENEMY_DATA[type];
@@ -382,17 +430,14 @@ function spawnEnemy(type){
   const range = rand(550, 850);
   let x = clamp(G.player.x + Math.cos(angle)*range, 60, WORLD_W-60);
   let y = clamp(G.player.y + Math.sin(angle)*range, 60, WORLD_H-60);
-  G.enemies.push({
-    type, x, y, hp:d.hp, maxHp:d.hp,
+  G.enemies.push({ type, x, y, hp:d.hp, maxHp:d.hp,
     speed:d.speed, damage:d.damage, radius:d.radius,
     color:d.color, size:d.size, facing:1,
     state:'walk', stateT:0, animStartT:0, lastState:'walk',
     attackCd:0, hurtTimer:0, attackAnimT:0,
-    hitFlash:0, dead:false, deathTimer:0, hitThisSwing:false
-  });
+    hitFlash:0, dead:false, deathTimer:0, hitThisSwing:false });
 }
 
-/* ===== UPDATE ===== */
 function update(dt){
   if (G.state === 'paused-rot') return;
   if (G.state !== 'playing') return;
@@ -417,7 +462,6 @@ function update(dt){
   if (p.attackCd > 0) p.attackCd -= dt;
 
   if (p.hp <= 0 && p.state !== 'dead'){ p.state='dead'; p.stateT=0; gameOver(); return; }
-
   if (wantAttack && p.attackCd <= 0 && p.state !== 'dead'){
     p.state='attack'; p.stateT=0; p.attackCd=0.5;
     if (mag > 0.15){ p.aimX=dx; p.aimY=dy; }
@@ -625,16 +669,12 @@ function drawKnight(p){
   }
 }
 
-/* =========================================================
-   ⚡ FIX CHÍNH: GIỮ TỶ LỆ KHUNG HÌNH KHI VẼ ENEMY
-   ========================================================= */
 function drawEnemy(e){
   const sx = e.x - G.cam.x, sy = e.y - G.cam.y;
-  if (sx < -120 || sx > VW+120 || sy < -120 || sy > VH+120) return;
+  if (sx < -200 || sx > VW+200 || sy < -200 || sy > VH+200) return;
 
   ctx.save();
   ctx.translate(sx, sy);
-
   if (!e.dead){
     ctx.beginPath();
     ctx.ellipse(0, e.size*0.7, e.size*0.9, e.size*0.3, 0, 0, Math.PI*2);
@@ -655,18 +695,15 @@ function drawEnemy(e){
   if (SPRITE_OK[e.type] && SPRITES[e.type]){
     const rect = getFrameRect(e.type, e.state, animTime, deathProgress);
     if (rect){
-      // ⚡ TỶ LỆ KHUNG HÌNH — không bóp méo
       const aspect = rect.w / rect.h;
       const dH = rect.displayH;
       const dW = dH * aspect;
       const ox = -dW/2;
       const oy = -dH + e.size*0.5;
-
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(SPRITES[e.type],
         rect.x, rect.y, rect.w, rect.h,
         ox, oy, dW, dH);
-
       if (e.hitFlash > 0 && !e.dead){
         ctx.save();
         ctx.globalCompositeOperation = 'lighter';
@@ -889,7 +926,6 @@ function render(){
   drawUI();
 }
 
-/* ===== LOOP ===== */
 let last = performance.now();
 function loop(now){
   try {
@@ -901,25 +937,22 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 
-/* ===== INPUT HANDLERS ===== */
+/* ===== INPUT ===== */
 function toCanvasXY(cx, cy){
   const r = cv.getBoundingClientRect();
   return { x:(cx-r.left)*(VW/r.width), y:(cy-r.top)*(VH/r.height) };
 }
 function isInJoystick(x,y){ return dist(x,y,UI.joy.x,UI.joy.y) < UI.joy.r+40; }
 function isInAttackBtn(x,y){ return dist(x,y,UI.atk.x,UI.atk.y) < UI.atk.r+30; }
-
 function handleTouchStart(e){
   if (G.state !== 'playing') return;
   e.preventDefault();
   for (const t of e.changedTouches){
     const p = toCanvasXY(t.clientX, t.clientY);
     if (input.joyId === null && isInJoystick(p.x, p.y)){
-      input.joyId = t.identifier;
-      input.joyVec = { x:0, y:0 };
+      input.joyId = t.identifier; input.joyVec = { x:0, y:0 };
     } else if (input.atkId === null && isInAttackBtn(p.x, p.y)){
-      input.atkId = t.identifier;
-      input.atkHeld = true;
+      input.atkId = t.identifier; input.atkHeld = true;
     }
   }
 }
@@ -959,90 +992,169 @@ addEventListener('keyup', (e) => { input.keys[e.key.toLowerCase()] = false; });
 const dbgBtn = document.getElementById('dbgBtn');
 const dbgPanel = document.getElementById('dbgPanel');
 const dbgType = document.getElementById('dbgType');
-const dbgFw = document.getElementById('dbgFw');
-const dbgAuto = document.getElementById('dbgAuto');
 const dbgIdle = document.getElementById('dbgIdle');
 const dbgMove = document.getElementById('dbgMove');
 const dbgAtk = document.getElementById('dbgAtk');
 const dbgHurt = document.getElementById('dbgHurt');
 const dbgDie = document.getElementById('dbgDie');
+const dbgCustom = document.getElementById('dbgCustom');
 const dbgPreview = document.getElementById('dbgPreview');
 const dbgInfo = document.getElementById('dbgInfo');
 
 function loadDebugValues(){
   const type = dbgType.value;
   const cfg = SPRITE_CFG[type];
-  const dims = SPRITE_DIMS[type];
   if (!cfg) return;
-  dbgFw.value = Math.round(dims ? dims.fw : 0);
-  dbgAuto.textContent = dims ? `(auto: ${dims.autoFw.toFixed(1)}px)` : '';
   dbgIdle.value = cfg.frames.idle;
   dbgMove.value = cfg.frames.move;
   dbgAtk.value = cfg.frames.attack;
   dbgHurt.value = cfg.frames.hurt;
   dbgDie.value = cfg.frames.death;
+  if (cfg.custom){
+    dbgCustom.value = cfg.custom.map(f => `${f[0]},${f[1]}`).join('; ');
+  } else {
+    dbgCustom.value = '';
+  }
   updateDebugPreview();
 }
+
+function parseCustom(str){
+  if (!str || !str.trim()) return null;
+  const frames = [];
+  for (const part of str.split(';')){
+    const p = part.trim();
+    if (!p) continue;
+    const m = p.split(',').map(s => parseInt(s.trim()));
+    if (m.length >= 2 && !isNaN(m[0]) && !isNaN(m[1])) frames.push([m[0], m[1]]);
+  }
+  return frames.length > 0 ? frames : null;
+}
+
 function updateDebugPreview(){
   const type = dbgType.value;
   const img = SPRITES[type];
   if (!img){ dbgInfo.textContent = 'Sprite chưa load'; return; }
-  const fw = parseInt(dbgFw.value) || 64;
-  const totalFrames =
-    (parseInt(dbgIdle.value)||0) + (parseInt(dbgMove.value)||0) +
-    (parseInt(dbgAtk.value)||0) + (parseInt(dbgHurt.value)||0) +
-    (parseInt(dbgDie.value)||0);
-  const maxW = Math.min(700, window.innerWidth-60);
-  const scale = Math.min(maxW/img.width, 100/img.height);
-  dbgPreview.width = Math.round(img.width*scale);
-  dbgPreview.height = Math.round(img.height*scale);
+
+  const cfg = SPRITE_CFG[type];
+  const totalFrames = (parseInt(dbgIdle.value)||0) + (parseInt(dbgMove.value)||0) +
+    (parseInt(dbgAtk.value)||0) + (parseInt(dbgHurt.value)||0) + (parseInt(dbgDie.value)||0);
+
+  const maxW = Math.min(540, window.innerWidth - 60);
+  const scale = Math.min(maxW / img.width, 80 / img.height);
+  dbgPreview.width = Math.round(img.width * scale);
+  dbgPreview.height = Math.round(img.height * scale);
   const c = dbgPreview.getContext('2d');
   c.imageSmoothingEnabled = false;
   c.fillStyle = '#000';
   c.fillRect(0, 0, dbgPreview.width, dbgPreview.height);
   c.drawImage(img, 0, 0, dbgPreview.width, dbgPreview.height);
-  for (let i=0; i<=totalFrames; i++){
-    const x = i*fw*scale;
-    c.strokeStyle = (i%2===0) ? '#ff3030' : '#30ff30';
-    c.lineWidth = 1.5;
-    c.beginPath(); c.moveTo(x, 0); c.lineTo(x, dbgPreview.height); c.stroke();
+
+  // Custom frames (đỏ)
+  const custom = parseCustom(dbgCustom.value);
+  let mode = 'even';
+  if (custom && custom.length === totalFrames){
+    mode = 'custom';
+    let acc = 0;
+    for (const [x, w] of custom){
+      c.strokeStyle = '#ff4040';
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(x * scale, 0);
+      c.lineTo(x * scale, dbgPreview.height);
+      c.stroke();
+      c.beginPath();
+      c.moveTo((x + w) * scale, 0);
+      c.lineTo((x + w) * scale, dbgPreview.height);
+      c.stroke();
+      // Nhãn frame idx
+      c.fillStyle = '#ff4040';
+      c.font = 'bold 9px monospace';
+      c.fillText(acc, x * scale + 2, 10);
+      acc++;
+    }
+  } else {
+    // Even split (xanh)
+    const fw = img.width / totalFrames;
+    for (let i = 0; i <= totalFrames; i++){
+      c.strokeStyle = '#40ff40';
+      c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(i * fw * scale, 0);
+      c.lineTo(i * fw * scale, dbgPreview.height);
+      c.stroke();
+    }
   }
-  const calcW = totalFrames*fw;
-  const wMatch = Math.abs(calcW - img.width) < 2;
+
   dbgInfo.innerHTML =
-    `PNG: ${img.width}×${img.height}<br>` +
-    `Frame: ${totalFrames} · fw=${fw}px · Tổng: ${calcW}px<br>` +
-    (wMatch ? '✅ Khớp' : `⚠️ Lệch ${img.width-calcW}px`);
+    `PNG: <b>${img.width}×${img.height}</b> · Tổng <b>${totalFrames}</b> frame · Chế độ: <b>${mode === 'custom' ? 'CUSTOM 🔴' : 'EVEN 🟢'}</b>` +
+    (custom && custom.length !== totalFrames ?
+      `<br>⚠️ Custom có ${custom.length} frame, cần ${totalFrames}` : '');
 }
-[dbgType,dbgFw,dbgIdle,dbgMove,dbgAtk,dbgHurt,dbgDie].forEach(el => {
+
+[dbgType, dbgIdle, dbgMove, dbgAtk, dbgHurt, dbgDie, dbgCustom].forEach(el => {
   el.addEventListener('input', updateDebugPreview);
   el.addEventListener('change', updateDebugPreview);
 });
 dbgType.addEventListener('change', loadDebugValues);
 dbgBtn.addEventListener('click', () => { dbgPanel.style.display = 'block'; loadDebugValues(); });
 document.getElementById('dbgClose').addEventListener('click', () => { dbgPanel.style.display = 'none'; });
+
+/* 🤖 AUTO DETECT */
+document.getElementById('dbgAuto').addEventListener('click', () => {
+  const type = dbgType.value;
+  const img = SPRITES[type];
+  if (!img) return;
+  const totalFrames = (parseInt(dbgIdle.value)||0) + (parseInt(dbgMove.value)||0) +
+    (parseInt(dbgAtk.value)||0) + (parseInt(dbgHurt.value)||0) + (parseInt(dbgDie.value)||0);
+
+  // Thử nhiều minGap để có số frame khớp
+  let bestResult = null;
+  for (let minGap = 3; minGap <= 20; minGap++){
+    const result = autoDetectFrames(img, 10, minGap);
+    if (result.length === totalFrames){
+      bestResult = result;
+      break;
+    }
+    // Nếu chưa khớp, giữ kết quả gần nhất (ít lệch nhất)
+    if (!bestResult || Math.abs(result.length - totalFrames) < Math.abs(bestResult.length - totalFrames)){
+      bestResult = result;
+    }
+  }
+
+  if (bestResult && bestResult.length > 0){
+    dbgCustom.value = bestResult.map(g => `${g[0]},${g[1]-g[0]+1}`).join('; ');
+    if (bestResult.length !== totalFrames){
+      dbgInfo.innerHTML = `⚠️ Auto detect ra ${bestResult.length} frame, cần ${totalFrames}. Cần tinh chỉnh thủ công.`;
+    } else {
+      dbgInfo.innerHTML = `✅ Auto detect ra đúng ${bestResult.length} frame!`;
+    }
+    updateDebugPreview();
+  }
+});
+
+/* ÁP DỤNG */
 document.getElementById('dbgApply').addEventListener('click', () => {
   const type = dbgType.value;
   const cfg = SPRITE_CFG[type];
-  const dims = SPRITE_DIMS[type];
-  if (!cfg || !dims) return;
-  const newFw = parseInt(dbgFw.value);
-  if (newFw > 0) dims.fw = newFw;
+  if (!cfg) return;
   const nf = {
     idle: parseInt(dbgIdle.value)||1, move: parseInt(dbgMove.value)||1,
     attack: parseInt(dbgAtk.value)||1, hurt: parseInt(dbgHurt.value)||1,
     death: parseInt(dbgDie.value)||1
   };
   cfg.frames = nf;
-  dims.total = Object.values(nf).reduce((s,n)=>s+n, 0);
+  cfg.custom = parseCustom(dbgCustom.value);
   dbgInfo.innerHTML = '✅ Đã áp dụng!';
   setTimeout(() => { dbgPanel.style.display = 'none'; }, 400);
 });
-document.getElementById('dbgReload').addEventListener('click', () => {
+
+/* RESET */
+document.getElementById('dbgReset').addEventListener('click', () => {
   const type = dbgType.value;
-  SPRITE_CFG[type].fw = null;
-  SPRITE_CFG[type].fh = null;
-  loadSprite(type).then(() => { loadDebugValues(); dbgInfo.innerHTML = '✅ Đã reload'; });
+  SPRITE_CFG[type].custom = null;
+  dbgCustom.value = '';
+  updateDebugPreview();
+  dbgInfo.innerHTML = '↺ Đã reset về even split';
 });
 
 /* ===== GAME FLOW ===== */
@@ -1078,7 +1190,6 @@ function gameOver(){
 }
 playBtn.addEventListener('click', startGame);
 
-/* ===== INIT ===== */
 async function init(){
   resizeCanvas();
   checkOrientation();
