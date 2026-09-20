@@ -136,9 +136,12 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   color:#fff;font-size:24px;font-weight:900;text-shadow:2px 2px 0 #1a1f14;
   pointer-events:auto;touch-action:none;padding:0;line-height:1;
   display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tb.jump{background:rgba(80,140,200,.9);border-color:#1a1f14;
+  box-shadow:inset 0 0 0 2px #88c8e8,3px 3px 0 rgba(0,0,0,.6)}
 .tb.pressed{background:#d8a898;border-color:#fff;box-shadow:none;transform:translate(2px,2px)}
+.tb.jump.pressed{background:#88c8e8}
 #btnAttack{right:16px;bottom:16px;width:72px;height:72px;font-size:30px}
-#btnFly{right:96px;bottom:16px;width:56px;height:56px;font-size:18px}
+#btnJump{right:96px;bottom:16px;width:64px;height:64px;font-size:28px}
 
 #settingsBtn{position:fixed;top:8px;right:8px;z-index:13;width:36px;height:36px;
   background:rgba(20,24,16,.9);border:2px solid #0a0d08;border-radius:6px;color:#e8f0d8;
@@ -202,7 +205,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 <div id="touchUI">
   <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
   <button class="tb" id="btnAttack">⚔</button>
-  <button class="tb" id="btnFly">✦</button>
+  <button class="tb jump" id="btnJump">⤒</button>
 </div>
 
 <button id="settingsBtn" onclick="Game.showSettings()" title="Cài đặt (M)">⚙</button>
@@ -252,8 +255,8 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
       <button class="mbtn primary" onclick="Game.showMP()">🌐 Chơi mạng (PvP)</button>
       <button class="mbtn" onclick="Game.showSettings()">⚙ Cài đặt</button>
       <div style="font-size:10px;color:#586850;margin-top:14px;font-family:Consolas,monospace;line-height:1.6">
-        <b style="color:#88ff60">WASD</b> di chuyển · <b style="color:#88ff60">Chuột trái</b> tấn công<br>
-        <b style="color:#88ff60">1-4</b> chọn kiếm · <b style="color:#88ff60">F</b> bay · <b style="color:#88ff60">P</b> AI panel
+        <b style="color:#88ff60">WASD</b> di chuyển · <b style="color:#88ff60">Space</b> nhảy<br>
+        <b style="color:#88ff60">Chuột trái</b> tấn công · <b style="color:#88ff60">1-4</b> kiếm · <b style="color:#88ff60">P</b> AI
       </div>
     </div>
 
@@ -329,10 +332,8 @@ const BACKEND = {
   secure: true
 };
 const API_URL = 'https://' + BACKEND.host + BACKEND.apiPath;
-
 const buzz = ms => { if (navigator.vibrate) try{ navigator.vibrate(ms||6); }catch(e){} };
 
-/* Seeded RNG */
 function mulberry32(a){
   return function(){
     a |= 0; a = a + 0x6D2B79F5 | 0;
@@ -345,26 +346,35 @@ let rng = Math.random, SEED = 0;
 function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 
 /* ============================================================
-   SPRITE CONFIG
+   SPRITE CONFIG — điều chỉnh nếu ảnh hiển thị sai
    ============================================================ */
 const SPRITE = {
   src: 'assets/player.png',
-  frameW: 192,
-  frameH: 205,
+  frameW: 192,       // chiều rộng 1 frame trong sprite sheet
+  frameH: 205,       // chiều cao 1 frame
   cols: 8,
   rows: 5,
+  destW: 96,         // kích thước vẽ trên canvas
+  destH: 102,
+  footOffset: 18,    // khoảng cách từ chân nhân vật tới player.y
   animations: {
     idle:   { row: 0, frames: 7, fps: 6,  loop: true  },
     run:    { row: 1, frames: 8, fps: 14, loop: true  },
-    jump:   { row: 2, frames: 8, fps: 10, loop: false },
+    jump:   { row: 2, frames: 8, fps: 12, loop: false },
     attack: { row: 3, frames: 8, fps: 18, loop: false },
     hurt:   { row: 4, frames: 8, fps: 10, loop: false }
   }
 };
 const playerSprite = new Image();
 let spriteLoaded = false;
-playerSprite.onload = () => { spriteLoaded = true; console.log('✓ Sprite loaded:', SPRITE.src); };
-playerSprite.onerror = () => { spriteLoaded = false; console.warn('✗ Sprite not found, using fallback rect'); };
+playerSprite.onload = () => {
+  spriteLoaded = true;
+  console.log('✓ Sprite loaded:', SPRITE.src, '· size:', playerSprite.width + '×' + playerSprite.height);
+};
+playerSprite.onerror = () => {
+  spriteLoaded = false;
+  console.warn('✗ Sprite not found at', SPRITE.src, '· dùng fallback rect');
+};
 playerSprite.src = SPRITE.src;
 
 /* ============================================================
@@ -461,6 +471,7 @@ const Audio2D = (() => {
     step(){ noise(0.05,'bandpass',400+Math.random()*200,0.08,1.5); },
     swordHit(){ noise(0.08,'bandpass',1800,0.20,3); tone(900,0.08,0.15,'square',400); },
     swordSwing(){ noise(0.10,'highpass',2400,0.10,2); },
+    jump(){ tone(440,0.10,0.10,'sine',800); },
     hurt(){ tone(280,0.14,0.22,'sawtooth',140); noise(0.10,'lowpass',500,0.12); },
     kill(){ tone(180,0.4,0.3,'sawtooth',60); setTimeout(()=>tone(140,0.3,0.2,'square',50),100); },
     click(){ tone(1200,0.02,0.08,'square'); }
@@ -478,30 +489,13 @@ const Audio2D = (() => {
    TILES
    ============================================================ */
 const TILE = 32;
-const T = { AIR:0, GRASS:1, DIRT:2, STONE:3, COBBLE:4, LOG:5, LEAVES:6, PLANK:7,
-  SAND:8, SANDSTONE:9, GLASS:11, COAL_ORE:12, IRON_ORE:13, GOLD_ORE:14, DIAMOND_ORE:15,
-  BRICK:16, BEDROCK:17, OBSIDIAN:18, SNOW:19, GRAVEL:21, CRAFTING:22, FURNACE:23, CHEST:24, TORCH:25 };
+const T = { AIR:0, GRASS:1, SAND:8, STONE:3, LOG:5 };
 const TILES = {};
 const reg = (id, def) => TILES[id] = { id, ...def };
-reg(T.GRASS,    { name:'Cỏ', colors:['#6fbf4a','#5a9a48','#4a7a3a'], solid:false, floor:true });
-reg(T.DIRT,     { name:'Đất', colors:['#9a6a3e','#8b5f37','#7a5230'], solid:false, floor:true });
-reg(T.SAND,     { name:'Cát', colors:['#e8d596','#dcc88a','#c8b478'], solid:false, floor:true });
-reg(T.SANDSTONE,{ name:'Đá sa thạch', colors:['#dcc88a','#c8b478','#b8a468'], solid:false, floor:true });
-reg(T.SNOW,     { name:'Tuyết', colors:['#f4f8fc','#e8eef4','#d8e0e8'], solid:false, floor:true });
-reg(T.GRAVEL,   { name:'Sỏi', colors:['#8a8a8a','#6a6a6a','#5a5a5a'], solid:false, floor:true });
-reg(T.STONE,    { name:'Đá', colors:['#a8a8a8','#9a9a9a','#8a8a8a'] });
-reg(T.COBBLE,   { name:'Đá cuội', colors:['#8a8a8a','#7a7a7a','#6a6a6a'] });
-reg(T.LOG,      { name:'Gỗ sồi', colors:['#a06a3a','#8a5a2e','#7a4e28'] });
-reg(T.LEAVES,   { name:'Lá sồi', colors:['#4a9a3a','#3d8030','#2d6020'] });
-reg(T.PLANK,    { name:'Ván gỗ', colors:['#c9905a','#a87848','#8a5a2e'] });
-reg(T.GLASS,    { name:'Thủy tinh', colors:['#a8d4e8','#88b4c8','#6a94a8'], transparent:true });
-reg(T.COAL_ORE, { name:'Quặng than', colors:['#5a5a5a','#3a3a3a','#1a1a1a'] });
-reg(T.IRON_ORE, { name:'Quặng sắt', colors:['#a8a8a8','#d0906a','#8a5030'] });
-reg(T.GOLD_ORE, { name:'Quặng vàng', colors:['#a8a8a8','#f4c830','#c8a020'] });
-reg(T.DIAMOND_ORE,{ name:'Quặng KC', colors:['#a8a8a8','#4aede0','#20b0a0'] });
-reg(T.BRICK,    { name:'Gạch', colors:['#b04038','#8a3028','#6a2018'] });
-reg(T.BEDROCK,  { name:'Bedrock', colors:['#3a3a3a','#2a2a2a','#1a1a1a'] });
-reg(T.TORCH,    { name:'Đuốc', colors:['#e08020','#ffd060','#8a5a2e'], solid:false, light:12, transparent:true });
+reg(T.GRASS, { name:'Cỏ', colors:['#6fbf4a','#5a9a48','#4a7a3a'], solid:false, floor:true });
+reg(T.SAND,  { name:'Cát', colors:['#e8d596','#dcc88a','#c8b478'], solid:false, floor:true });
+reg(T.STONE, { name:'Đá', colors:['#a8a8a8','#9a9a9a','#8a8a8a'] });
+reg(T.LOG,   { name:'Gỗ', colors:['#a06a3a','#8a5a2e','#7a4e28'] });
 
 const ITEMS = {};
 const regI = (id, def) => ITEMS[id] = { id, ...def };
@@ -511,11 +505,11 @@ regI('sword_iron',   { name:'Kiếm sắt', color:'#f0f0f0', stack:1, tool:'swor
 regI('sword_diamond',{ name:'Kiếm KC', color:'#8afff5', stack:1, tool:'sword', tier:4, dmg:7 });
 
 /* ============================================================
-   WORLD
+   WORLD — CHỈ CỎ, KHÔNG KHỐI
    ============================================================ */
 const WORLD_W = 128, WORLD_H = 128;
 const world = new Uint8Array(WORLD_W * WORLD_H);
-const wGet = (x,y) => (x<0||y<0||x>=WORLD_W||y>=WORLD_H) ? T.BEDROCK : world[y*WORLD_W + x];
+const wGet = (x,y) => (x<0||y<0||x>=WORLD_W||y>=WORLD_H) ? T.GRASS : world[y*WORLD_W + x];
 const wSet = (x,y,id) => { if (x>=0&&y>=0&&x<WORLD_W&&y<WORLD_H) world[y*WORLD_W + x] = id; };
 const wSolid = (x,y) => {
   const t = wGet(x,y);
@@ -523,71 +517,14 @@ const wSolid = (x,y) => {
   const d = TILES[t];
   return !d || d.solid !== false;
 };
-const lightMap = new Uint8Array(WORLD_W * WORLD_H);
-function computeLight(){
-  lightMap.fill(0);
-  const queue = [];
-  for (let y=0;y<WORLD_H;y++) for (let x=0;x<WORLD_W;x++){
-    const t = wGet(x,y); const d = TILES[t];
-    if (d && d.light){ lightMap[y*WORLD_W+x] = d.light; queue.push(x,y,d.light); }
-  }
-  let head = 0;
-  const NEI = [[1,0],[-1,0],[0,1],[0,-1]];
-  while (head < queue.length){
-    const x = queue[head++], y = queue[head++], v = queue[head++];
-    if (v <= 1) continue;
-    for (const [dx,dy] of NEI){
-      const nx = x+dx, ny = y+dy;
-      if (nx<0||ny<0||nx>=WORLD_W||ny>=WORLD_H) continue;
-      const t = wGet(nx,ny); const td = TILES[t];
-      if (td && td.solid !== false && !td.light && !td.transparent) continue;
-      const nv = v - 1;
-      if (nv > lightMap[ny*WORLD_W+nx]){ lightMap[ny*WORLD_W+nx] = nv; queue.push(nx,ny,nv); }
-    }
-  }
-}
+
 function generateWorld(){
+  /* Xóa tất cả khối — chỉ còn cỏ */
   for (let y=0;y<WORLD_H;y++) for (let x=0;x<WORLD_W;x++) wSet(x,y,T.GRASS);
-  for (let i=0;i<35;i++){
-    const cx = Math.floor(rng()*WORLD_W), cy = Math.floor(rng()*WORLD_H);
-    const r = 2 + Math.floor(rng()*4);
-    for (let dy=-r;dy<=r;dy++) for (let dx=-r;dx<=r;dx++){
-      if (Math.hypot(dx,dy) > r) continue;
-      wSet(cx+dx, cy+dy, T.SAND);
-    }
-  }
-  for (let i=0;i<35;i++){
-    const cx = Math.floor(rng()*WORLD_W), cy = Math.floor(rng()*WORLD_H);
-    const r = 1 + Math.floor(rng()*3);
-    for (let dy=-r;dy<=r;dy++) for (let dx=-r;dx<=r;dx++){
-      if (Math.hypot(dx,dy) > r) continue;
-      if (rng() < 0.55) wSet(cx+dx, cy+dy, T.STONE);
-    }
-  }
-  for (let i=0;i<400;i++){
-    const cx = Math.floor(rng()*WORLD_W), cy = Math.floor(rng()*WORLD_H);
-    if (wGet(cx,cy) !== T.GRASS) continue;
-    let ok = true;
-    for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++)
-      if (wGet(cx+dx,cy+dy) !== T.GRASS) ok = false;
-    if (!ok) continue;
-    placeTree(cx,cy);
-  }
-}
-function placeTree(x,y){
-  wSet(x,y,T.LOG);
-  const leaves = [[-1,-2],[0,-2],[1,-2],[-2,-1],[-1,-1],[0,-1],[1,-1],[2,-1],
-                  [-2,0],[-1,0],[1,0],[2,0],[-2,1],[-1,1],[0,1],[1,1],[2,1],
-                  [-1,2],[0,2],[1,2]];
-  for (const [dx,dy] of leaves){
-    const cur = wGet(x+dx, y+dy);
-    if (cur === T.GRASS || cur === T.AIR) wSet(x+dx, y+dy, T.LEAVES);
-  }
-  wSet(x, y-1, T.LOG);
 }
 
 /* ============================================================
-   INVENTORY (chỉ kiếm)
+   INVENTORY
    ============================================================ */
 const inv = { hotbar: new Array(9).fill(null) };
 function isBlockId(id){ return typeof id === 'string' && id.startsWith('block_'); }
@@ -613,14 +550,16 @@ function initInv(){
 const player = {
   x: WORLD_W*TILE/2, y: WORLD_H*TILE/2,
   hp: 20, maxHp: 20,
-  radius: 12, speed: 160, flying: false,
+  radius: 12, speed: 160,
   facing: 1, selected: 0, animT: 0,
   state: 'idle',
   currentAnim: 'idle',
   animTime: 0,
   _stepAcc: 0,
   attackAnimT: 0,
-  hurtT: 0
+  hurtT: 0,
+  jumpT: 0,           // thời gian còn lại của cú nhảy
+  jumpY: 0            // offset Y hiển thị (âm = bay lên)
 };
 
 /* ============================================================
@@ -655,15 +594,14 @@ addEventListener('keydown', e => {
     return;
   }
   if (!gameStarted || paused) return;
-  if (e.code === 'KeyF'){ player.flying = !player.flying;
-    toast(player.flying ? '✦ Bay: BẬT' : '✦ Bay: TẮT'); Audio2D.sfx.click(); }
   if (e.code === 'KeyM'){ e.preventDefault(); toggleSettings(); }
   if (e.code === 'KeyP'){ e.preventDefault(); FrameAnalyzer.toggle(); }
+  if (e.code === 'Space'){ e.preventDefault(); tryJump(); }
   if (e.code.startsWith('Digit')){
     const n = parseInt(e.code.slice(5));
     if (n>=1 && n<=9){ player.selected = n-1; renderHotbar(); }
   }
-  if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
 });
 addEventListener('keyup', e => keys[e.code] = false);
 
@@ -756,11 +694,23 @@ function bindBtn(id, downFn, upFn){
 }
 let attackTouch = false;
 bindBtn('btnAttack', () => { attackTouch = true; tryAttack(); }, () => { attackTouch = false; });
-bindBtn('btnFly', () => { player.flying = !player.flying;
-  toast(player.flying ? '✦ Bay: BẬT' : '✦ Bay: TẮT'); });
+bindBtn('btnJump', () => tryJump(), null);
 
 /* ============================================================
-   ATTACK (chỉ PvP)
+   JUMP
+   ============================================================ */
+const JUMP_DURATION = 0.55;
+function tryJump(){
+  if (!gameStarted || paused) return;
+  if (player.jumpT > 0) return;
+  player.jumpT = JUMP_DURATION;
+  player.currentAnim = 'jump';
+  player.animTime = 0;
+  Audio2D.sfx.jump();
+}
+
+/* ============================================================
+   ATTACK
    ============================================================ */
 let lastAttackT = 0;
 function tryAttack(){
@@ -822,29 +772,39 @@ function updatePlayer(dt){
   const mag = Math.hypot(dx, dy);
   if (mag > 1){ dx /= mag; dy /= mag; }
   if (Math.abs(dx) > 0.1) player.facing = dx > 0 ? 1 : -1;
-  const speed = player.speed * (player.flying ? 1.6 : 1);
   const nr = player.radius;
-  const nx = player.x + dx*speed*dt;
+  const nx = player.x + dx*player.speed*dt;
   if (!tileCollide(nx - nr, player.y - nr) && !tileCollide(nx + nr, player.y - nr) &&
       !tileCollide(nx - nr, player.y + nr) && !tileCollide(nx + nr, player.y + nr))
     player.x = nx;
-  const ny = player.y + dy*speed*dt;
+  const ny = player.y + dy*player.speed*dt;
   if (!tileCollide(player.x - nr, ny - nr) && !tileCollide(player.x + nr, ny - nr) &&
       !tileCollide(player.x - nr, ny + nr) && !tileCollide(player.x + nr, ny + nr))
     player.y = ny;
   player.x = Math.max(nr, Math.min(WORLD_W*TILE - nr, player.x));
   player.y = Math.max(nr, Math.min(WORLD_H*TILE - nr, player.y));
+
   player.animT += dt;
   if (player.attackAnimT > 0) player.attackAnimT -= dt;
   if (player.hurtT > 0) player.hurtT -= dt;
+
+  /* Jump */
+  if (player.jumpT > 0){
+    player.jumpT = Math.max(0, player.jumpT - dt);
+    const prog = 1 - player.jumpT / JUMP_DURATION;   // 0 → 1
+    player.jumpY = -Math.sin(prog * Math.PI) * 24;    // lên cao tối đa 24px
+  } else {
+    player.jumpY = 0;
+  }
+
   if (attackTouch && player.attackAnimT <= 0) tryAttack();
 
-  /* Chọn animation */
+  /* Chọn animation — ưu tiên: attack > hurt > jump > run > idle */
   let targetAnim = 'idle';
-  if (player.attackAnimT > 0) targetAnim = 'attack';
-  else if (player.hurtT > 0) targetAnim = 'hurt';
-  else if (player.flying) targetAnim = 'jump';
-  else if (mag > 0.1) targetAnim = 'run';
+  if (player.attackAnimT > 0)      targetAnim = 'attack';
+  else if (player.hurtT > 0)       targetAnim = 'hurt';
+  else if (player.jumpT > 0)       targetAnim = 'jump';
+  else if (mag > 0.1)              targetAnim = 'run';
   if (targetAnim !== player.currentAnim){
     player.currentAnim = targetAnim;
     player.animTime = 0;
@@ -853,7 +813,7 @@ function updatePlayer(dt){
   player.state = mag > 0.1 ? 'walk' : 'idle';
 
   if (mag > 0.1){
-    player._stepAcc += speed*dt;
+    player._stepAcc += player.speed*dt;
     if (player._stepAcc > 24){ player._stepAcc = 0; Audio2D.sfx.step(); }
   } else player._stepAcc = 0;
 }
@@ -955,7 +915,6 @@ const net = {
     if (d.t === 'world'){
       initRNG(d.seed);
       world.set(b64ToU8(d.data));
-      computeLight();
       resetPlayerPosition();
       if (this.onWorldReady) this.onWorldReady();
     } else if (d.t === 'pos'){
@@ -1055,35 +1014,14 @@ function updateNetHud(){
 function drawTile(x, y, id, sx, sy){
   const def = TILES[id];
   if (!def) return;
-  if (def.floor){
-    ctx.fillStyle = def.colors[0]; ctx.fillRect(sx, sy, TILE, TILE);
-    const h = (x*73856093 ^ y*19349663) >>> 0;
-    ctx.fillStyle = def.colors[2];
-    for (let i=0;i<3;i++){
-      const hh = (h >> (i*5)) & 0xFF;
-      ctx.fillRect(sx + 3 + (hh % (TILE-8)), sy + 4 + ((hh >> 4) % (TILE-10)), 3, 3);
-    }
-    return;
-  }
-  if (def.transparent){
-    ctx.globalAlpha = 0.7;
-    ctx.fillStyle = def.colors[0]; ctx.fillRect(sx, sy, TILE, TILE);
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = def.colors[1]; ctx.fillRect(sx, sy, TILE, 2);
-    return;
-  }
+  /* chỉ vẽ cỏ/cát */
   ctx.fillStyle = def.colors[0]; ctx.fillRect(sx, sy, TILE, TILE);
-  ctx.fillStyle = def.colors[1]; ctx.fillRect(sx, sy, TILE, 3);
   const h = (x*73856093 ^ y*19349663) >>> 0;
   ctx.fillStyle = def.colors[2];
   for (let i=0;i<3;i++){
     const hh = (h >> (i*5)) & 0xFF;
     ctx.fillRect(sx + 3 + (hh % (TILE-8)), sy + 4 + ((hh >> 4) % (TILE-10)), 3, 3);
   }
-  ctx.fillStyle = 'rgba(0,0,0,0.20)';
-  ctx.fillRect(sx, sy+TILE-2, TILE, 2); ctx.fillRect(sx+TILE-2, sy, 2, TILE);
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
-  ctx.fillRect(sx, sy, TILE, 1); ctx.fillRect(sx, sy, 1, TILE);
 }
 function getNightFactor(){
   const t = worldTime * Math.PI * 2;
@@ -1098,15 +1036,7 @@ function render(){
   ctx.fillStyle = nightFactor > 0.6 ? '#0a0a14' : '#0f180f';
   ctx.fillRect(0, 0, VW, VH);
   for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
-    const id = wGet(x, y); if (!id) continue;
-    const def = TILES[id];
-    if (def && def.floor) drawTile(x, y, id, x*TILE - cam.x, y*TILE - cam.y);
-  }
-  for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
-    const id = wGet(x, y); if (!id) continue;
-    const def = TILES[id];
-    if (!def || def.floor) continue;
-    drawTile(x, y, id, x*TILE - cam.x, y*TILE - cam.y);
+    drawTile(x, y, wGet(x, y), x*TILE - cam.x, y*TILE - cam.y);
   }
 
   const ents = [];
@@ -1123,90 +1053,63 @@ function render(){
   }
   ctx.globalAlpha = 1;
 
-  applyLighting(nightFactor);
+  applyNightOverlay(nightFactor);
 
   document.getElementById('time').textContent =
     `${nightFactor > 0.6 ? '🌙' : '☀'} ${getClockString()} · Ngày ${dayCount}`;
   document.getElementById('coords').innerHTML =
     `XYZ: <b>${(player.x/TILE).toFixed(1)} ${(player.y/TILE).toFixed(1)}</b>`;
 }
-function applyLighting(nightFactor){
+function applyNightOverlay(nightFactor){
   if (nightFactor < 0.05) return;
   ctx.save();
-  ctx.fillStyle = `rgba(5, 8, 25, ${nightFactor * 0.85})`;
+  ctx.fillStyle = `rgba(5, 8, 25, ${nightFactor * 0.75})`;
   ctx.fillRect(0, 0, VW, VH);
-  ctx.globalCompositeOperation = 'lighter';
-  for (let y=0; y<WORLD_H; y++){
-    for (let x=0; x<WORLD_W; x++){
-      const lv = lightMap[y*WORLD_W+x];
-      if (lv <= 0) continue;
-      const sx = x*TILE + TILE/2 - cam.x;
-      const sy = y*TILE + TILE/2 - cam.y;
-      if (sx < -200 || sx > VW+200 || sy < -200 || sy > VH+200) continue;
-      const r = lv * 22;
-      const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, r);
-      const alpha = (lv / 14) * 0.75;
-      g.addColorStop(0, `rgba(255, 200, 100, ${alpha})`);
-      g.addColorStop(1, 'rgba(255, 200, 100, 0)');
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI*2); ctx.fill();
-    }
-  }
-  const px = player.x - cam.x, py = player.y - cam.y;
-  const pg = ctx.createRadialGradient(px, py, 0, px, py, 100);
-  pg.addColorStop(0, `rgba(150, 200, 255, ${nightFactor * 0.7})`);
-  pg.addColorStop(1, 'rgba(150, 200, 255, 0)');
-  ctx.fillStyle = pg;
-  ctx.beginPath(); ctx.arc(px, py, 100, 0, Math.PI*2); ctx.fill();
   ctx.restore();
-  ctx.globalCompositeOperation = 'source-over';
 }
 
 /* ============================================================
-   DRAW PLAYER (sprite + fallback)
+   DRAW PLAYER — sprite với cache frame
    ============================================================ */
 function drawPlayer(){
-  const sx = player.x - cam.x, sy = player.y - cam.y;
+  const sx = player.x - cam.x;
+  const sy = player.y - cam.y + player.jumpY;   // jumpY âm = bay lên
   if (spriteLoaded){
     drawSpriteFrame(player.currentAnim, player.animTime, sx, sy, player.facing);
   } else {
     drawFallbackBody(sx, sy, player.animT, player.state, player.facing, LOCAL_COLORS);
   }
-  /* Vẽ kiếm nếu không dùng sprite */
-  if (!spriteLoaded){
-    const held = inv.hotbar[player.selected];
-    if (held && defOf(held.id)?.tool === 'sword'){
-      const col = defOf(held.id).color;
-      const ix = sx + (player.facing > 0 ? 12 : -18);
-      const iy = sy - 8;
-      ctx.fillStyle = col;
-      ctx.fillRect(ix, iy, 3, 10);
-      ctx.fillRect(ix - (player.facing > 0 ? 0 : 3), iy + 8, 6, 2);
-    }
-  }
 }
 function drawSpriteFrame(animName, animTime, sx, sy, facing){
   const anim = SPRITE.animations[animName];
   if (!anim) return;
-  const frameIndex = Math.floor(animTime * anim.fps) % anim.frames;
+
+  /* Tính frame index — loop hoặc dừng ở frame cuối */
+  let frameIndex;
+  if (anim.loop){
+    frameIndex = Math.floor(animTime * anim.fps) % anim.frames;
+  } else {
+    frameIndex = Math.min(anim.frames - 1, Math.floor(animTime * anim.fps));
+  }
+
   const srcX = frameIndex * SPRITE.frameW;
   const srcY = anim.row * SPRITE.frameH;
-  const DEST_W = 64;
-  const DEST_H = 68;
-  const drawX = sx - DEST_W / 2;
-  const drawY = sy - DEST_H + 16;
+  const DEST_W = SPRITE.destW;
+  const DEST_H = SPRITE.destH;
+  const drawY = sy + SPRITE.footOffset - DEST_H;
 
   ctx.save();
   if (facing < 0){
+    /* Lật ngang quanh tâm player */
     ctx.translate(sx, 0);
     ctx.scale(-1, 1);
     ctx.drawImage(playerSprite,
       srcX, srcY, SPRITE.frameW, SPRITE.frameH,
-      -DEST_W/2, drawY, DEST_W, DEST_H);
+      -DEST_W / 2, drawY, DEST_W, DEST_H);
   } else {
     ctx.drawImage(playerSprite,
       srcX, srcY, SPRITE.frameW, SPRITE.frameH,
-      drawX, drawY, DEST_W, DEST_H);
+      sx - DEST_W / 2, drawY, DEST_W, DEST_H);
   }
   ctx.restore();
 }
@@ -1248,7 +1151,7 @@ function drawFallbackBody(sx, sy, animT, state, facing, colors){
   }
 }
 
-/* Remote player (PvP) — vẫn dùng rect để phân biệt màu */
+/* Remote player */
 const REMOTE_PALETTE = [
   { legs:'#5a2a3a', shoes:'#2a1020', body:'#d04a5a', bodyShade:'#a02a3a', skin:'#f0c8a0', hair:'#2a1010' },
   { legs:'#2a3a5a', shoes:'#1a1a3a', body:'#4a6ad0', bodyShade:'#2a4aa0', skin:'#f0c8a0', hair:'#202010' },
@@ -1259,7 +1162,7 @@ const REMOTE_PALETTE = [
 function hashCode(s){ let h = 0; for (let i=0;i<s.length;i++) h = ((h<<5) - h) + s.charCodeAt(i) | 0; return h; }
 function drawRemotePlayer(p){
   const sx = p.x - cam.x, sy = p.y - cam.y;
-  if (sx < -60 || sx > VW+60 || sy < -60 || sy > VH+60) return;
+  if (sx < -80 || sx > VW+80 || sy < -80 || sy > VH+80) return;
   const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name)) % REMOTE_PALETTE.length];
   p.animT = (p.animT || 0) + 0.016;
   drawFallbackBody(sx, sy, p.animT, 'idle', p.facing, pal);
@@ -1359,7 +1262,7 @@ function toast(msg){
 }
 
 /* ============================================================
-   FRAME ANALYZER — auto phân tích
+   FRAME ANALYZER
    ============================================================ */
 const FrameAnalyzer = (() => {
   const panel = document.getElementById('framePanel');
@@ -1407,7 +1310,6 @@ const FrameAnalyzer = (() => {
     if (busy || !gameStarted || paused) return;
     busy = true;
     capture();
-    const ts = new Date().toLocaleTimeString('vi-VN');
     const pendingId = 'p' + Date.now() + '_' + Math.floor(Math.random()*1000);
     appendEntry(pendingId, manual
       ? '<span class="loading">🤖 Đang phân tích...</span>'
@@ -1434,6 +1336,7 @@ const FrameAnalyzer = (() => {
 - Thời gian: ${getClockString()} · Ngày ${dayCount} · ${night ? 'Đêm' : 'Ngày'}
 - Người chơi khác: ${others}
 - Chế độ: ${net.active ? net.mode : 'singleplayer'}
+- Animation hiện tại: ${player.currentAnim}
 - Camera: ${Math.round(VW)}×${Math.round(VH)}px, tile 32px`;
   }
 
@@ -1491,7 +1394,7 @@ const FrameAnalyzer = (() => {
 })();
 
 /* ============================================================
-   MENU / UI
+   MENU
    ============================================================ */
 window.Game = {
   startSingleplayer: () => startSingleplayer(),
@@ -1543,7 +1446,6 @@ async function hostRoom(){
     initRNG(Date.now() & 0x7fffffff);
     world.fill(0);
     generateWorld();
-    computeLight();
     resetPlayerPosition();
     initInv();
     setTimeout(() => startGame('host'), 800);
@@ -1613,7 +1515,6 @@ function startSingleplayer(){
   initRNG(Date.now() & 0x7fffffff);
   world.fill(0);
   generateWorld();
-  computeLight();
   resetPlayerPosition();
   initInv();
   startGame('sp');
@@ -1633,7 +1534,6 @@ function startGame(mode){
   toast(mode === 'sp' ? '🎮 Chơi đơn' :
         mode === 'host' ? '🏠 Phòng: ' + net.roomCode :
         '⚔️ Đã vào phòng');
-  /* Auto enable AI frame analysis */
   if (document.getElementById('setAutoFrame').checked){
     setTimeout(() => FrameAnalyzer.enableAuto(), 1200);
   }
@@ -1657,14 +1557,8 @@ function resetPlayerPosition(){
   player.hp = player.maxHp;
   player.x = WORLD_W*TILE/2;
   player.y = WORLD_H*TILE/2;
-  for (let r=0;r<30;r++){
-    const cx = WORLD_W/2 + r, cy = WORLD_H/2;
-    if (!wSolid(cx, cy) && wGet(cx,cy) !== T.BEDROCK){
-      player.x = cx*TILE + TILE/2;
-      player.y = cy*TILE + TILE/2;
-      break;
-    }
-  }
+  player.jumpT = 0;
+  player.jumpY = 0;
   cam.x = player.x - VW/2;
   cam.y = player.y - VH/2;
 }
@@ -1702,4 +1596,4 @@ showMenuPage('main');
 requestAnimationFrame(loop);
 </script>
 </body>
-  </html>
+      </html>
