@@ -1,12 +1,29 @@
-const { PeerServer } = require('peer');
+const express = require('express');
+const { ExpressPeerServer } = require('peer');
+const cors = require('cors');
 
-const port = process.env.PORT || 9000;
+const app = express();
+app.use(cors());
 
-const peerServer = PeerServer({
-  port: port,
-  path: '/myapp', // Đường dẫn tùy chỉnh, ví dụ: your-app.onrender.com/myapp
-  proxied: true,  // Quan trọng khi chạy sau proxy của Render
-  allow_discovery: true
+// Health check
+app.get('/', (req, res) => res.send('2DCraft PeerServer OK'));
+
+const server = app.listen(process.env.PORT || 9000, () => {
+  console.log('PeerServer running on port', process.env.PORT || 9000);
 });
 
-console.log(`PeerJS server đang chạy trên cổng ${port}`);
+const peerServer = ExpressPeerServer(server, {
+  path: '/myapp',
+  proxied: true,           // QUAN TRỌNG khi chạy sau reverse proxy của Render
+  allow_discovery: false,
+  alive_timeout: 60000
+});
+
+app.use('/peerjs', peerServer);
+
+peerServer.on('connection', (client) => {
+  console.log('Client connected:', client.getId());
+});
+peerServer.on('disconnect', (client) => {
+  console.log('Client disconnected:', client.getId());
+});
