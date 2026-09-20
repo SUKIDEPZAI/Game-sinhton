@@ -13,8 +13,10 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#14180f;
   font-family:'Segoe UI',Arial,sans-serif;color:var(--text);
-  user-select:none;-webkit-user-select:none;touch-action:none;position:fixed;inset:0}
-canvas{display:block;image-rendering:pixelated}
+  user-select:none;-webkit-user-select:none;
+  touch-action:manipulation;position:fixed;inset:0}
+canvas{display:block;image-rendering:pixelated;touch-action:none}
+button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 
 #coords{position:fixed;top:8px;left:8px;color:#fff;font-size:11px;
   font-family:Consolas,monospace;background:rgba(0,0,0,.5);padding:4px 8px;
@@ -30,7 +32,7 @@ canvas{display:block;image-rendering:pixelated}
 #netInfo b{color:#e8ff80}
 
 #hearts{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);
-  display:flex;gap:1px;filter:drop-shadow(1px 1px 0 #000);z-index:5}
+  display:flex;gap:1px;filter:drop-shadow(1px 1px 0 #000);z-index:5;pointer-events:none}
 .heart{width:16px;height:16px;background-size:contain;background-repeat:no-repeat;image-rendering:pixelated}
 
 #hotbar{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
@@ -52,7 +54,7 @@ canvas{display:block;image-rendering:pixelated}
 #mineFill{height:100%;width:0%;background:linear-gradient(90deg,#7dd6ff,#3aa9ff);transition:width .05s}
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;
-  display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(3px)}
+  display:flex;align-items:center;justify-content:center;padding:14px}
 .modal.hidden{display:none!important}
 
 #gui{display:none}
@@ -88,7 +90,7 @@ canvas{display:block;image-rendering:pixelated}
   border:3px solid #0a0d08;
   box-shadow:inset 0 0 0 2px #5a6850,inset 0 0 0 4px #8a9878,0 8px 0 #000,0 12px 30px rgba(0,0,0,.7);
   padding:24px 28px;text-align:center;max-width:480px;width:100%;max-height:92vh;overflow-y:auto;
-  border-radius:6px;position:relative}
+  border-radius:6px;position:relative;z-index:1}
 .logo{font-size:38px;font-weight:900;letter-spacing:3px;
   background:linear-gradient(180deg,#e8ffb0 0%,#6fbf4a 55%,#2a5a18 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
@@ -104,7 +106,8 @@ canvas{display:block;image-rendering:pixelated}
   box-shadow:inset 0 1px 0 #98a888,0 4px 0 #1a1f14;
   padding:13px 18px;font-size:14px;font-weight:bold;cursor:pointer;letter-spacing:1px;
   border-radius:3px;font-family:inherit;transition:all .08s;
-  display:flex;align-items:center;justify-content:center;gap:8px}
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  position:relative;z-index:2;user-select:none;-webkit-user-select:none}
 .mbtn:hover{background:linear-gradient(180deg,#7a8870 0%,#5a6450 100%)}
 .mbtn:active{transform:translateY(2px);box-shadow:inset 0 1px 0 #98a888,0 2px 0 #1a1f14}
 .mbtn.primary{background:linear-gradient(180deg,#88d858 0%,#4a8a30 100%);
@@ -118,7 +121,8 @@ canvas{display:block;image-rendering:pixelated}
 .menu-page input[type=text],.menu-page input[type=password],.menu-page select{
   width:100%;padding:10px 12px;background:#1a2018;color:#e8f0d8;
   border:2px solid #0a0d08;border-radius:3px;font-family:inherit;
-  font-size:14px;letter-spacing:2px;text-align:center;box-shadow:inset 0 2px 4px rgba(0,0,0,.5)}
+  font-size:14px;letter-spacing:2px;text-align:center;box-shadow:inset 0 2px 4px rgba(0,0,0,.5);
+  position:relative;z-index:2}
 .menu-page input:focus,.menu-page select:focus{outline:none;border-color:#6fbf4a}
 .code-display{margin:14px 0;padding:14px;background:#0a0d08;border:2px dashed #4a8a30;
   border-radius:6px;font-size:26px;font-weight:900;letter-spacing:6px;color:#88ff60;
@@ -132,7 +136,7 @@ canvas{display:block;image-rendering:pixelated}
 .setting-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
   background:linear-gradient(180deg,#a8b898 0%,#68765a 100%);border:2px solid #0a0d08;border-radius:50%;
   cursor:pointer;box-shadow:0 2px 0 #1a1f14}
-.setting-row input[type=checkbox]{width:20px;height:20px;accent-color:#6fbf4a}
+.setting-row input[type=checkbox]{width:20px;height:20px;accent-color:#6fbf4a;cursor:pointer}
 .setting-row .val{font-size:11px;color:#88ff60;font-family:Consolas,monospace;min-width:36px;text-align:right}
 
 .pause-panel{background:linear-gradient(180deg,#3a4438 0%,#2a3328 100%);
@@ -145,7 +149,7 @@ canvas{display:block;image-rendering:pixelated}
 
 #touchUI{display:none;position:fixed;inset:0;pointer-events:none;z-index:8}
 body.is-touch #touchUI{display:block}
-#joyZone{position:absolute;left:16px;bottom:80px;width:130px;height:130px;pointer-events:auto}
+#joyZone{position:absolute;left:16px;bottom:80px;width:130px;height:130px;pointer-events:auto;touch-action:none}
 #joyBase{width:100%;height:100%;border-radius:50%;background:rgba(0,0,0,.3);
   border:3px solid rgba(255,255,255,.4);position:relative}
 #joyKnob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin-left:-27px;margin-top:-27px;
@@ -155,7 +159,7 @@ body.is-touch #touchUI{display:block}
   border:3px solid #1a1f14;box-shadow:inset 0 0 0 2px #98a888,3px 3px 0 rgba(0,0,0,.6);
   color:#fff;font-size:22px;font-weight:900;text-shadow:2px 2px 0 #1a1f14;
   pointer-events:auto;touch-action:none;padding:0;line-height:1;
-  display:flex;align-items:center;justify-content:center}
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
 .tb.pressed{background:#98a888;border-color:#fff;box-shadow:none;transform:translate(2px,2px)}
 #btnUse{right:16px;bottom:16px;width:68px;height:68px;font-size:26px}
 #btnPlace{right:96px;bottom:16px;width:56px;height:56px;font-size:22px}
@@ -167,13 +171,12 @@ body.is-touch #hearts{bottom:62px;transform:translateX(-50%) scale(.85)}
 #settingsBtn,#btnFrame{position:fixed;top:8px;z-index:13;width:36px;height:36px;
   background:rgba(20,24,16,.9);border:2px solid #0a0d08;border-radius:6px;color:#e8f0d8;
   font-size:16px;display:none;align-items:center;justify-content:center;cursor:pointer;
-  box-shadow:0 3px 0 rgba(0,0,0,.5)}
+  box-shadow:0 3px 0 rgba(0,0,0,.5);touch-action:manipulation}
 #settingsBtn{right:8px}
 #btnFrame{right:52px}
 #settingsBtn.show,#btnFrame.show{display:flex}
 #settingsBtn:active,#btnFrame:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.5)}
 
-/* ==== Frame Analysis Panel ==== */
 #framePanel{
   position:fixed;top:56px;right:8px;width:400px;max-width:calc(100vw - 16px);
   max-height:calc(100vh - 72px);background:linear-gradient(180deg,#3a4438 0%,#2a3328 100%);
@@ -187,7 +190,7 @@ body.is-touch #hearts{bottom:62px;transform:translateX(-50%) scale(.85)}
 .fp-header .fp-ctrls{display:flex;gap:6px;align-items:center}
 .fp-header button{background:#1a2018;border:2px solid #0a0d08;color:#e8f0d8;
   font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:Consolas,monospace;
-  box-shadow:0 2px 0 rgba(0,0,0,.5)}
+  box-shadow:0 2px 0 rgba(0,0,0,.5);touch-action:manipulation}
 .fp-header button:hover{background:#2a3328}
 .fp-header button.on{background:#4a8a30;color:#e8ffb0}
 .fp-body{padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
@@ -241,7 +244,6 @@ body.is-touch #hearts{bottom:62px;transform:translateX(-50%) scale(.85)}
 <button id="settingsBtn" title="Cài đặt (M)">⚙</button>
 <button id="btnFrame" title="Phân tích frame (P)">🔍</button>
 
-<!-- ============ FRAME ANALYSIS PANEL ============ -->
 <div id="framePanel" class="hidden">
   <div class="fp-header">
     <span>🔍 PHÂN TÍCH CHUYÊN SÂU</span>
@@ -284,11 +286,11 @@ body.is-touch #hearts{bottom:62px;transform:translateX(-50%) scale(.85)}
     <div class="logo-sub">Survival · Multiplayer · AI Vision</div>
 
     <div id="menuMain" class="menu-page">
-      <button class="mbtn primary" data-go="sp">🎮 Chơi đơn</button>
-      <button class="mbtn primary" data-go="mp">🌐 Chơi mạng</button>
-      <button class="mbtn" data-go="settings">⚙ Cài đặt</button>
+      <button class="mbtn primary" id="btnSP">🎮 Chơi đơn</button>
+      <button class="mbtn primary" id="btnMP">🌐 Chơi mạng</button>
+      <button class="mbtn" id="btnSettings">⚙ Cài đặt</button>
       <div style="font-size:10px;color:#586850;margin-top:14px;font-family:Consolas,monospace">
-        WASD đi · Chuột đào/đặt · E túi · F bay · P phân tích · ESC dừng
+        WASD đi · Chuột trái đào · Chuột phải đặt · E túi · F bay · P phân tích
       </div>
     </div>
 
@@ -314,7 +316,7 @@ body.is-touch #hearts{bottom:62px;transform:translateX(-50%) scale(.85)}
         <div class="status-text" id="joinStatus"></div>
       </div>
 
-      <button class="mbtn back" data-go="main">← Quay lại</button>
+      <button class="mbtn back" id="btnMPBack">← Quay lại</button>
     </div>
 
     <div id="menuSettings" class="menu-page hidden">
@@ -347,7 +349,7 @@ body.is-touch #hearts{bottom:62px;transform:translateX(-50%) scale(.85)}
         API key được cấu hình an toàn trên server (Render ENV).<br>
         Trình duyệt không bao giờ nhìn thấy key.
       </div>
-      <button class="mbtn back" data-go="main">← Quay lại</button>
+      <button class="mbtn back" id="btnSettingsBack">← Quay lại</button>
     </div>
   </div>
 </div>
@@ -357,12 +359,11 @@ body.is-touch #hearts{bottom:62px;transform:translateX(-50%) scale(.85)}
 <script>
 "use strict";
 /* ============================================================
-   2D CRAFT — Sinhton Edition
-   HTML host trên GitHub Pages · Backend (PeerJS + AI) trên Render
+   2D CRAFT — Sinhton Edition (Fixed Input)
    ============================================================ */
 
 /* ============================================================
-   BACKEND CONFIG — trỏ tới Render
+   BACKEND CONFIG
    ============================================================ */
 const BACKEND = {
   host: 'game-sinhton.onrender.com',
@@ -373,10 +374,11 @@ const BACKEND = {
 };
 const API_URL = 'https://' + BACKEND.host + BACKEND.apiPath;
 
-const isTouch = matchMedia('(pointer:coarse)').matches
-  || navigator.maxTouchPoints > 1 || 'ontouchstart' in window;
-if (isTouch) document.body.classList.add('is-touch');
-const buzz = ms => { if (isTouch && navigator.vibrate) try{ navigator.vibrate(ms||6); }catch(e){} };
+const isTouchDevice = matchMedia('(pointer:coarse)').matches
+  || (navigator.maxTouchPoints > 1 && !matchMedia('(pointer:fine)').matches)
+  || ('ontouchstart' in window && !matchMedia('(pointer:fine)').matches);
+if (isTouchDevice) document.body.classList.add('is-touch');
+const buzz = ms => { if (isTouchDevice && navigator.vibrate) try{ navigator.vibrate(ms||6); }catch(e){} };
 
 /* Seeded RNG */
 function mulberry32(a){
@@ -397,7 +399,6 @@ const Audio2D = (() => {
   let ctx = null, enabled = true;
   let masterGain, musicGain, sfxGain, ambientGain, noiseBuf = null;
   let musicPlaying = false, currentDayPhase = -1;
-
   function init(){
     if (ctx){ if (ctx.state==='suspended') ctx.resume(); return; }
     try {
@@ -514,7 +515,6 @@ const Audio2D = (() => {
   function setMusicVolume(v){ init(); if (musicGain) musicGain.gain.value = Math.max(0,Math.min(1,v)); }
   function setSfxVolume(v){ init(); if (sfxGain) sfxGain.gain.value = Math.max(0,Math.min(1,v)); }
   function setAmbientVolume(v){ init(); if (ambientGain) ambientGain.gain.value = Math.max(0,Math.min(1,v)); }
-
   const sfx = {
     step(mat){ const f = mat==='grass'?450:mat==='sand'?900:mat==='wood'?500:220;
       noise(0.06,'bandpass',f*(0.9+Math.random()*0.2),0.10,1.5); },
@@ -873,7 +873,7 @@ addEventListener('orientationchange', () => setTimeout(resize, 100));
 resize();
 
 /* ============================================================
-   INPUT
+   INPUT (FIXED — per-event pointerType, không dùng isTouch flag)
    ============================================================ */
 const keys = {};
 const mouse = { x: 0, y: 0, down:false, rdown:false };
@@ -884,6 +884,9 @@ addEventListener('keydown', e => {
   keys[e.code] = true;
   if (e.code === 'Escape'){
     if (guiOpen){ closeGUI(); return; }
+    if (gameStarted && !paused && !menuEl.classList.contains('hidden') === false){
+      togglePause(); return;
+    }
     if (gameStarted){ togglePause(); return; }
     return;
   }
@@ -901,30 +904,39 @@ addEventListener('keydown', e => {
 });
 addEventListener('keyup', e => keys[e.code] = false);
 
-cv.addEventListener('mousemove', e => {
-  if (isTouch) return;
-  const r = cv.getBoundingClientRect();
-  mouse.x = e.clientX - r.left;
-  mouse.y = e.clientY - r.top;
-});
-cv.addEventListener('mousedown', e => {
-  if (isTouch || guiOpen || !gameStarted || paused) return;
-  if (e.button === 0) mouse.down = true;
-  else if (e.button === 2) mouse.rdown = true;
-});
-cv.addEventListener('mouseup', e => {
-  if (isTouch) return;
-  if (e.button === 0) mouse.down = false;
-  else if (e.button === 2) mouse.rdown = false;
-});
+/* FIX: dùng pointer events thay vì mousedown để hoạt động cả chuột lẫn touch
+   Không dùng cờ isTouch toàn cục — kiểm tra pointerType từng event */
+cv.addEventListener('pointermove', e => {
+  if (e.pointerType === 'mouse'){
+    const r = cv.getBoundingClientRect();
+    mouse.x = e.clientX - r.left;
+    mouse.y = e.clientY - r.top;
+  }
+}, { passive: true });
+
+cv.addEventListener('pointerdown', e => {
+  if (guiOpen || !gameStarted || paused) return;
+  if (e.pointerType === 'mouse'){
+    if (e.button === 0){ mouse.down = true; e.preventDefault(); }
+    else if (e.button === 2){ placeAtCursor(); e.preventDefault(); }
+  }
+}, { passive: false });
+
+cv.addEventListener('pointerup', e => {
+  if (e.pointerType === 'mouse'){
+    if (e.button === 0) mouse.down = false;
+  }
+}, { passive: true });
+
 cv.addEventListener('contextmenu', e => e.preventDefault());
-cv.addEventListener('click', () => { if (!isTouch && gameStarted && !guiOpen) Audio2D.init(); });
+cv.addEventListener('click', () => { if (gameStarted && !guiOpen && !paused) Audio2D.init(); });
 addEventListener('wheel', e => {
   if (guiOpen || !gameStarted || paused) return;
   player.selected = (player.selected + (e.deltaY > 0 ? 1 : -1) + 9) % 9;
   renderHotbar();
 }, { passive:true });
 
+/* Joystick */
 const joy = { id:null, x:0, y:0, cx:0, cy:0 };
 const joyZone = document.getElementById('joyZone');
 const joyKnob = document.getElementById('joyKnob');
@@ -955,13 +967,15 @@ addEventListener('pointermove', e => {
 addEventListener('pointerup', endJoy);
 addEventListener('pointercancel', endJoy);
 
+/* Touch look on canvas — CHỈ xử lý touch, mouse do pointerdown ở trên */
 let lookId = null, lookX = 0, lookY = 0;
 cv.addEventListener('pointerdown', e => {
-  if (e.pointerType !== 'touch' || !gameStarted || guiOpen || paused) return;
+  if (e.pointerType !== 'touch') return;
+  if (!gameStarted || guiOpen || paused) return;
   if (lookId !== null) return;
-  lookId = e.pointerId; lookX = e.clientX; lookY = e.clientY;
-  e.preventDefault();
-}, { passive:false });
+  lookId = e.pointerId;
+  lookX = e.clientX; lookY = e.clientY;
+}, { passive: false });
 addEventListener('pointermove', e => {
   if (e.pointerId !== lookId) return;
   const dx = e.clientX - lookX, dy = e.clientY - lookY;
@@ -972,18 +986,29 @@ function endLook(e){ if (e.pointerId === lookId) lookId = null; }
 addEventListener('pointerup', endLook);
 addEventListener('pointercancel', endLook);
 
+/* Touch buttons — dùng cả pointerdown và click để chắc chắn */
 function bindBtn(id, downFn, upFn){
   const el = document.getElementById(id);
   if (!el) return;
-  el.addEventListener('pointerdown', e => {
+  const onDown = e => {
     e.preventDefault(); e.stopPropagation();
     el.classList.add('pressed'); buzz(5);
     if (downFn) downFn();
+  };
+  const onUp = e => {
+    el.classList.remove('pressed');
+    if (upFn) upFn();
+  };
+  el.addEventListener('pointerdown', onDown);
+  el.addEventListener('pointerup', onUp);
+  el.addEventListener('pointercancel', onUp);
+  el.addEventListener('pointerleave', onUp);
+  /* Fallback click cho browser cũ */
+  el.addEventListener('click', e => {
+    if (e.detail === 0) return;
+    if (downFn && upFn){ onDown(e); setTimeout(onUp, 60); }
+    else if (downFn) onDown(e);
   });
-  const up = () => { el.classList.remove('pressed'); if (upFn) upFn(); };
-  el.addEventListener('pointerup', up);
-  el.addEventListener('pointercancel', up);
-  el.addEventListener('pointerleave', up);
 }
 let miningTouch = false;
 bindBtn('btnUse', () => { miningTouch = true; }, () => { miningTouch = false; });
@@ -1219,7 +1244,7 @@ function burstExplosionVisual(x, y){
 }
 
 /* ============================================================
-   NETWORK — PeerJS trên Render
+   NETWORK
    ============================================================ */
 const PEER_OPTS = {
   host: BACKEND.host,
@@ -1234,12 +1259,10 @@ const PEER_OPTS = {
     ]
   }
 };
-
 const net = {
   active: false, mode: null, peer: null, hostConn: null,
   clients: new Map(), myId: null, name: 'Player', roomCode: null,
   players: new Map(), onWorldReady: null,
-
   startHost(name){
     this.name = name || 'Host';
     this.mode = 'host';
@@ -1258,7 +1281,6 @@ const net = {
       this.peer.on('error', e => { clearTimeout(timer); reject(e); });
     });
   },
-
   startClient(name, code){
     this.name = name || 'Player';
     this.mode = 'client';
@@ -1283,7 +1305,6 @@ const net = {
       });
     });
   },
-
   _acceptClient(conn){
     conn.on('open', () => {
       this.clients.set(conn.peer, conn);
@@ -1304,7 +1325,6 @@ const net = {
       toast('👋 Người chơi rời đi'); updateNetHud();
     });
   },
-
   _onData(d, conn){
     if (d.t === 'world'){
       initRNG(d.seed);
@@ -1336,7 +1356,6 @@ const net = {
       }
     }
   },
-
   broadcastBlock(x, y, id){
     if (!this.active) return;
     this.send({ t:'block', x, y, id });
@@ -1362,7 +1381,6 @@ const net = {
     updateNetHud();
   }
 };
-
 function genRoomCode(){
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let s = '';
@@ -2086,7 +2104,7 @@ function tickFurnaces(dt){
 }
 
 /* ============================================================
-   FRAME ANALYZER — gọi API_URL trên Render
+   FRAME ANALYZER
    ============================================================ */
 const FrameAnalyzer = (() => {
   const panel = document.getElementById('framePanel');
@@ -2098,7 +2116,6 @@ const FrameAnalyzer = (() => {
   const btnClose = document.getElementById('fpClose');
   const btnFrame = document.getElementById('btnFrame');
   const pctx = preview.getContext('2d');
-
   let capturedDataURL = null;
   let busy = false;
   let autoOn = false;
@@ -2106,15 +2123,12 @@ const FrameAnalyzer = (() => {
   let intervalSec = 8;
   let focus = 'full';
   const FOCUS_LABELS = { full:'🎯 Toàn diện', combat:'⚔️ Chiến đấu', terrain:'🗺️ Địa hình', resource:'⛏️ Tài nguyên' };
-
   function toggle(){ panel.classList.toggle('hidden'); }
   function open(){ panel.classList.remove('hidden'); }
   function close(){ panel.classList.add('hidden'); }
-
   btnFrame.addEventListener('click', toggle);
   btnClose.addEventListener('click', close);
   btnClear.addEventListener('click', () => { resultEl.innerHTML = '<em>Log đã xóa.</em>'; });
-
   btnAuto.addEventListener('click', () => {
     autoOn = !autoOn;
     btnAuto.classList.toggle('on', autoOn);
@@ -2125,36 +2139,28 @@ const FrameAnalyzer = (() => {
     else { clearInterval(autoTimer); autoTimer = null; }
     Audio2D.sfx.click();
   });
-
   btnCapture.addEventListener('click', () => runOnce(true));
-
   function capture(){
     const W = preview.width, H = preview.height;
     pctx.drawImage(cv, 0, 0, cv.width, cv.height, 0, 0, W, H);
     capturedDataURL = preview.toDataURL('image/jpeg', 0.72);
   }
-
   async function runOnce(manual){
     if (busy || !gameStarted || paused) return;
     busy = true;
     capture();
     const ts = new Date().toLocaleTimeString('vi-VN');
     const pendingId = 'p' + Date.now() + '_' + Math.floor(Math.random()*1000);
-    if (manual){
-      appendEntry(pendingId, ts, '<span class="loading">🤖 Đang phân tích...</span>');
-    } else {
-      appendEntry(pendingId, ts, '<span class="loading">🤖 Auto phân tích...</span>');
-    }
+    appendEntry(pendingId, ts, manual
+      ? '<span class="loading">🤖 Đang phân tích...</span>'
+      : '<span class="loading">🤖 Auto phân tích...</span>');
     try {
       const data = await callServer(capturedDataURL, buildContext(), focus);
       updateEntry(pendingId, ts, escapeHtml(data.result));
     } catch(e){
       updateEntry(pendingId, ts, '<span class="error">❌ ' + escapeHtml(e.message) + '</span>');
-    } finally {
-      busy = false;
-    }
+    } finally { busy = false; }
   }
-
   function buildContext(){
     const px = (player.x / TILE).toFixed(1), py = (player.y / TILE).toFixed(1);
     const held = inv.hotbar[player.selected];
@@ -2171,7 +2177,6 @@ const FrameAnalyzer = (() => {
 - Chế độ: ${net.active ? net.mode : 'singleplayer'} · Người chơi khác: ${net.players.size}
 - Chỉ số camera: hiển thị ${Math.round(VW)}×${Math.round(VH)}px, tile 32px`;
   }
-
   async function callServer(image, context, focusMode){
     const res = await fetch(API_URL, {
       method: 'POST',
@@ -2184,13 +2189,11 @@ const FrameAnalyzer = (() => {
     }
     return await res.json();
   }
-
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
     }[c]));
   }
-
   function appendEntry(id, ts, html){
     const empty = resultEl.querySelector('em');
     if (empty) resultEl.innerHTML = '';
@@ -2207,7 +2210,6 @@ const FrameAnalyzer = (() => {
     const b = el.querySelector('.body');
     if (b) b.innerHTML = html;
   }
-
   function setIntervalSec(sec){
     intervalSec = sec;
     document.getElementById('fpIntervalLabel').textContent = '⏱️ ' + sec + 's';
@@ -2217,13 +2219,12 @@ const FrameAnalyzer = (() => {
     focus = f;
     document.getElementById('fpFocusLabel').textContent = FOCUS_LABELS[f];
   }
-
   return { toggle, open, close, setInterval: setIntervalSec, setFocus,
            get autoOn(){ return autoOn; } };
 })();
 
 /* ============================================================
-   MENU
+   MENU (FIXED — dùng id riêng, không dùng data-go)
    ============================================================ */
 const menuEl = document.getElementById('menu');
 const pauseEl = document.getElementById('pause');
@@ -2234,16 +2235,30 @@ const menuPages = {
   settings: document.getElementById('menuSettings')
 };
 function showMenuPage(name){
+  if (!menuPages[name]) return;
   for (const k in menuPages) menuPages[k].classList.toggle('hidden', k !== name);
 }
-document.querySelectorAll('[data-go]').forEach(el => {
-  el.addEventListener('click', () => {
-    showMenuPage(el.dataset.go);
-    Audio2D.init(); Audio2D.sfx.click();
-  });
-});
-document.querySelector('[data-go="sp"]').addEventListener('click', () => startSingleplayer());
-document.querySelector('[data-go="mp"]').addEventListener('click', () => {
+
+/* Gắn sự kiện cho từng nút — dùng cả click và pointerup để chắc chắn trên mobile */
+function onBtnClick(el, fn){
+  if (!el) return;
+  let fired = false;
+  const fire = e => {
+    if (fired) return;
+    fired = true;
+    setTimeout(() => fired = false, 300);
+    e.preventDefault?.();
+    Audio2D.init();
+    Audio2D.sfx.click();
+    fn(e);
+  };
+  el.addEventListener('click', fire);
+  el.addEventListener('touchstart', e => { e.preventDefault(); fire(e); }, { passive: false });
+}
+
+/* Menu chính */
+onBtnClick(document.getElementById('btnSP'), () => startSingleplayer());
+onBtnClick(document.getElementById('btnMP'), () => {
   showMenuPage('mp');
   document.getElementById('hostPanel').classList.add('hidden');
   document.getElementById('joinPanel').classList.add('hidden');
@@ -2251,8 +2266,12 @@ document.querySelector('[data-go="mp"]').addEventListener('click', () => {
   document.getElementById('hostStatus').textContent = '';
   document.getElementById('joinStatus').textContent = '';
 });
+onBtnClick(document.getElementById('btnSettings'), () => showMenuPage('settings'));
+onBtnClick(document.getElementById('btnMPBack'), () => showMenuPage('main'));
+onBtnClick(document.getElementById('btnSettingsBack'), () => showMenuPage('main'));
 
-document.getElementById('btnHost').addEventListener('click', async () => {
+/* Host / Join */
+onBtnClick(document.getElementById('btnHost'), async () => {
   const panel = document.getElementById('hostPanel');
   const join = document.getElementById('joinPanel');
   panel.classList.remove('hidden'); join.classList.add('hidden');
@@ -2277,12 +2296,12 @@ document.getElementById('btnHost').addEventListener('click', async () => {
     status.textContent = '❌ Lỗi: ' + (e.message || e);
   }
 });
-document.getElementById('btnJoinShow').addEventListener('click', () => {
+onBtnClick(document.getElementById('btnJoinShow'), () => {
   document.getElementById('hostPanel').classList.add('hidden');
   document.getElementById('joinPanel').classList.remove('hidden');
-  document.getElementById('joinCode').focus();
+  setTimeout(() => document.getElementById('joinCode').focus(), 100);
 });
-document.getElementById('btnJoinGo').addEventListener('click', async () => {
+onBtnClick(document.getElementById('btnJoinGo'), async () => {
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   const name = document.getElementById('joinName').value.trim() || 'Player';
   const status = document.getElementById('joinStatus');
@@ -2297,15 +2316,17 @@ document.getElementById('btnJoinGo').addEventListener('click', async () => {
   }
 });
 
-document.getElementById('btnResume').addEventListener('click', () => togglePause());
-document.getElementById('btnPauseSettings').addEventListener('click', () => {
+/* Pause */
+onBtnClick(document.getElementById('btnResume'), () => togglePause());
+onBtnClick(document.getElementById('btnPauseSettings'), () => {
   paused = false; pauseEl.classList.add('hidden'); backToMenu(); showMenuPage('settings');
 });
-document.getElementById('btnQuit').addEventListener('click', () => backToMenu());
+onBtnClick(document.getElementById('btnQuit'), () => backToMenu());
 
-/* Settings */
+/* Settings sliders */
 function bindSlider(id, valId, cb){
   const s = document.getElementById(id), v = document.getElementById(valId);
+  if (!s) return;
   s.addEventListener('input', e => { v.textContent = e.target.value; cb(+e.target.value/100); });
   v.textContent = s.value;
   cb(+s.value/100);
@@ -2327,7 +2348,6 @@ intSlider.addEventListener('input', e => {
 });
 document.getElementById('valInterval').textContent = intSlider.value;
 FrameAnalyzer.setInterval(+intSlider.value);
-
 document.getElementById('setFrameFocus').addEventListener('change', e => {
   FrameAnalyzer.setFocus(e.target.value);
 });
@@ -2466,4 +2486,4 @@ showMenuPage('main');
 requestAnimationFrame(loop);
 </script>
 </body>
- </html>
+    </html>
