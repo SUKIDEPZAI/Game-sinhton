@@ -28,125 +28,196 @@
   @keyframes rot{0%,30%{transform:rotate(0)}70%,100%{transform:rotate(-90deg)}}
   #rotate h2{font-size:16px;letter-spacing:4px;color:#7fff7f;text-shadow:0 0 14px #7fff7f}
   #rotate p{font-size:12px;color:#6a7a6a;line-height:1.7}
-  #menu{position:absolute;inset:0;background:rgba(5,8,5,.92);
+  #menu{position:absolute;inset:0;background:rgba(5,8,5,.94);
     display:flex;align-items:center;justify-content:center;
-    z-index:10;padding:16px;backdrop-filter:blur(4px)}
+    z-index:10;padding:14px;backdrop-filter:blur(5px);overflow-y:auto}
   #menu.hide{display:none}
-  .panel{max-width:520px;width:100%;text-align:center;border:2px solid #2a4a2a;
-    background:linear-gradient(180deg,#0f1a0f,#081208);border-radius:14px;padding:22px 20px;
-    box-shadow:0 0 60px rgba(60,200,60,.25);max-height:94vh;overflow-y:auto}
-  .panel h1{font-size:24px;letter-spacing:4px;color:#fff;
-    text-shadow:0 0 18px #7fff7f,0 0 40px #7fff7f;margin-bottom:4px}
-  .panel h1 span{color:#ffd54a;text-shadow:0 0 18px #ffd54a}
+  .panel{max-width:480px;width:100%;text-align:center;border:2px solid #2a4a2a;
+    background:linear-gradient(180deg,#0f1a0f,#081208);border-radius:16px;padding:22px 18px;
+    box-shadow:0 0 60px rgba(60,200,60,.3);max-height:96vh;overflow-y:auto;margin:auto}
+  .panel h1{font-size:26px;letter-spacing:5px;color:#fff;
+    text-shadow:0 0 20px #7fff7f,0 0 45px #7fff7f;margin-bottom:3px;line-height:1.1}
+  .panel h1 span{color:#ffd54a;text-shadow:0 0 20px #ffd54a}
   .panel .sub{font-size:10px;letter-spacing:2px;color:#6a7a6a;margin-bottom:14px}
   .panel p{font-size:12px;line-height:1.6;color:#a8b8a8;margin-bottom:8px}
   .panel .stats{display:flex;gap:6px;justify-content:center;margin:12px 0;flex-wrap:wrap;font-size:11px}
-  .panel .stat{padding:5px 9px;background:#0a150a;border-radius:6px;border:1px solid #2a4a2a}
-  .panel .stat b{color:#ffd54a;display:block;font-size:13px;margin-top:2px}
-  .panel button{margin-top:8px;padding:12px 30px;border-radius:8px;
-    font-size:13px;letter-spacing:2px;font-weight:bold;color:#041a04;
-    background:linear-gradient(180deg,#a4ffa4,#3fb85c);
-    box-shadow:0 0 24px rgba(127,255,127,.5);border:none;cursor:pointer;
-    font-family:inherit;width:100%}
-  .panel button:active{transform:scale(.97)}
-  .panel button.secondary{background:linear-gradient(180deg,#7ff0ff,#25b6d8);color:#04121a;
-    box-shadow:0 0 24px rgba(60,224,255,.5)}
-  .panel button.gray{background:#2a3a2a;color:#e0e8e0;box-shadow:none}
-  .panel button:disabled{opacity:.4;cursor:not-allowed}
-  .legend{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:8px 0}
-  .lg{font-size:9px;padding:3px 7px;border-radius:12px;border:1px solid #2a4a2a;background:#0a150a}
-  input.mp-input{width:100%;padding:11px;background:#0a120a;color:#7fff7f;
-    border:2px solid #3a5a3a;border-radius:7px;font-family:inherit;font-size:14px;
-    text-align:center;font-weight:bold;letter-spacing:1px;margin:8px 0}
-  .room-code{font-size:22px;color:#ffd54a;font-weight:bold;letter-spacing:3px;
-    padding:12px;background:#0a120a;border:2px dashed #ffd54a;border-radius:8px;
-    margin:10px 0;font-family:monospace;word-break:break-all}
-  .note{font-size:10px;color:#7a9a7a;line-height:1.5;margin-top:6px;
-    padding:8px;background:#0a120a;border-radius:5px;border-left:3px solid #3a5a3a;text-align:left}
+  .panel .stat{padding:6px 10px;background:#0a150a;border-radius:8px;border:1px solid #2a4a2a;min-width:70px}
+  .panel .stat b{color:#ffd54a;display:block;font-size:14px;margin-top:3px}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;padding:14px 20px;margin-top:8px;border-radius:12px;border:none;
+    font-family:inherit;font-size:14px;font-weight:bold;letter-spacing:1.5px;
+    cursor:pointer;transition:transform .1s,filter .15s;
+    box-shadow:0 4px 0 rgba(0,0,0,.35)}
+  .btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn-green{background:linear-gradient(180deg,#a4ffa4,#3fb85c);color:#041a04;
+    box-shadow:0 4px 0 #1a5a2a,0 0 20px rgba(127,255,127,.35)}
+  .btn-cyan{background:linear-gradient(180deg,#7ff0ff,#25b6d8);color:#04121a;
+    box-shadow:0 4px 0 #0a4a5a,0 0 20px rgba(60,224,255,.4)}
+  .btn-gold{background:linear-gradient(180deg,#ffe07a,#e0a020);color:#1a0a00;
+    box-shadow:0 4px 0 #5a4a10}
+  .btn-gray{background:linear-gradient(180deg,#4a5a4a,#2a3a2a);color:#e0e8e0;
+    box-shadow:0 4px 0 #1a1a1a}
+  .btn-sm{padding:10px 16px;font-size:12px;margin-top:6px}
+  .legend{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:10px 0}
+  .lg{font-size:10px;padding:4px 9px;border-radius:12px;
+    border:1px solid #2a4a2a;background:#0a150a}
+  .mp-input{width:100%;padding:14px;background:#0a120a;color:#7fff7f;
+    border:2px solid #3a5a3a;border-radius:10px;font-family:inherit;font-size:15px;
+    text-align:center;font-weight:bold;letter-spacing:2px;margin:10px 0;text-transform:uppercase}
+  .mp-input:focus{outline:none;border-color:#7fff7f}
+  .room-code{font-size:24px;color:#ffd54a;font-weight:bold;letter-spacing:4px;
+    padding:14px;background:#0a120a;border:2px dashed #ffd54a;border-radius:10px;
+    margin:12px 0;font-family:monospace;word-break:break-all;
+    box-shadow:0 0 20px rgba(255,213,74,.2)}
+  .note{font-size:11px;color:#8a9a8a;line-height:1.6;margin-top:8px;
+    padding:10px;background:#0a120a;border-radius:8px;border-left:3px solid #3a5a3a;
+    text-align:left}
   .note b{color:#7fff7f}
-  .status-conn{font-size:11px;color:#7ff0ff;padding:8px;
-    background:#0a1a2a;border-radius:6px;margin-top:8px;text-align:center;
-    white-space:pre-line;line-height:1.5}
-  .status-conn.err{color:#ff5a5a;background:#1a0a0a}
-  .status-conn.ok{color:#7fff7f;background:#0a1a0a}
-  #playersList{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
-  .p-chip{padding:4px 8px;background:#0a120a;border:1px solid #3a5a3a;
-    border-radius:12px;font-size:10px;color:#7fff7f}
-  .p-chip.host{border-color:#ffd54a;color:#ffd54a}
+  .status-conn{font-size:12px;color:#7ff0ff;padding:10px;
+    background:#0a1a2a;border-radius:8px;margin-top:8px;text-align:center;
+    white-space:pre-line;line-height:1.5;border:1px solid #2a5a6a}
+  .status-conn.err{color:#ff5a5a;background:#1a0a0a;border-color:#5a2020}
+  .status-conn.ok{color:#7fff7f;background:#0a1a0a;border-color:#2a5a3a}
+  #playersList{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+  .p-chip{padding:5px 10px;background:#0a120a;border:1px solid #3a5a3a;
+    border-radius:14px;font-size:11px;color:#7fff7f;font-weight:bold}
+  .p-chip.host{border-color:#ffd54a;color:#ffd54a;box-shadow:0 0 8px rgba(255,213,74,.4)}
   #loading{position:fixed;inset:0;background:#0a0f0a;
     display:none;align-items:center;justify-content:center;
-    flex-direction:column;gap:12px;z-index:100}
+    flex-direction:column;gap:14px;z-index:100}
   #loading.show{display:flex}
-  #loading .spin{width:36px;height:36px;border:3px solid #2a4a2a;
+  #loading .spin{width:44px;height:44px;border:4px solid #2a4a2a;
     border-top-color:#7fff7f;border-radius:50%;animation:spin .8s linear infinite}
-  #loading .txt{font-size:11px;color:#6a7a6a;letter-spacing:1px;text-align:center;
-    line-height:1.6;padding:0 20px}
+  #loading .txt{font-size:12px;color:#7a9a7a;letter-spacing:1px;text-align:center;
+    line-height:1.7;padding:0 24px;max-width:400px}
   @keyframes spin{to{transform:rotate(360deg)}}
-  #netHud{position:absolute;top:26px;left:50%;transform:translateX(-50%);
-    font-size:10px;color:#7ff0ff;background:rgba(0,0,0,.6);padding:3px 10px;
-    border-radius:10px;z-index:5;pointer-events:none;display:none}
+  #netHud{position:absolute;top:30px;left:50%;transform:translateX(-50%);
+    font-size:10px;color:#7ff0ff;background:rgba(0,0,0,.7);padding:4px 12px;
+    border-radius:12px;z-index:5;pointer-events:none;display:none;
+    border:1px solid #2a5a6a;font-weight:bold;letter-spacing:.5px}
   #timeBadge{position:absolute;top:6px;left:50%;transform:translateX(-50%);
-    font-size:11px;color:#ffd54a;background:rgba(0,0,0,.7);padding:3px 12px;
-    border-radius:10px;z-index:5;pointer-events:none;display:none;font-weight:bold;letter-spacing:1px}
-  .skin-picker{margin:12px 0}
-  .skin-label{font-size:10px;color:#7a9a7a;letter-spacing:2px;margin-bottom:8px}
-  .skin-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-  .skin-opt{width:58px;height:58px;border:2px solid #3a5a3a;border-radius:8px;
-    cursor:pointer;background:#0a120a;padding:2px;position:relative;
-    image-rendering:pixelated;transition:transform .12s,border-color .12s;
+    font-size:12px;color:#ffd54a;background:rgba(0,0,0,.75);padding:4px 14px;
+    border-radius:12px;z-index:5;pointer-events:none;display:none;font-weight:bold;
+    letter-spacing:1.5px;border:1px solid #5a4a1a}
+  .skin-picker{margin:14px 0}
+  .skin-label{font-size:10px;color:#7a9a7a;letter-spacing:2px;margin-bottom:10px}
+  .skin-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .skin-opt{width:62px;height:62px;border:3px solid #3a5a3a;border-radius:12px;
+    cursor:pointer;background:#0a120a;padding:3px;position:relative;
+    transition:transform .12s,border-color .15s,box-shadow .15s;
     display:flex;align-items:center;justify-content:center;overflow:hidden}
   .skin-opt:active{transform:scale(.94)}
-  .skin-opt.sel{border-color:#ffd54a;box-shadow:0 0 14px rgba(255,213,74,.55);background:#1a2a1a}
+  .skin-opt.sel{border-color:#ffd54a;box-shadow:0 0 18px rgba(255,213,74,.65);background:#1a2a1a}
   .skin-opt canvas{width:100%;height:100%;image-rendering:pixelated;display:block;object-fit:contain}
-  .skin-opt .empty{font-size:18px;color:#4a5a4a;font-weight:bold}
+  .skin-opt .empty{font-size:20px;color:#4a5a4a;font-weight:bold}
   .inv-toggle{position:absolute;top:8px;right:8px;display:none;gap:6px;z-index:8}
   .inv-toggle.show{display:flex}
-  .inv-toggle button{padding:8px 12px;background:rgba(20,30,20,.88);color:#e0e8e0;
-    border:2px solid #3a5a3a;border-radius:8px;font-family:inherit;font-size:11px;
-    font-weight:bold;cursor:pointer;letter-spacing:1px}
-  .inv-toggle button:active{transform:scale(.95)}
+  .inv-toggle button{padding:10px 14px;background:rgba(20,30,20,.9);color:#e0e8e0;
+    border:2px solid #3a5a3a;border-radius:10px;font-family:inherit;font-size:12px;
+    font-weight:bold;cursor:pointer;letter-spacing:.5px;
+    box-shadow:0 2px 0 rgba(0,0,0,.5);transition:transform .1s}
+  .inv-toggle button:active{transform:translateY(2px);box-shadow:none}
   .inv-panel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    background:rgba(10,18,10,.97);border:2px solid #3a5a3a;border-radius:12px;
-    padding:14px;z-index:20;display:none;width:min(92vw,560px);max-height:82vh;
-    overflow-y:auto;box-shadow:0 0 40px rgba(0,0,0,.9)}
+    background:rgba(10,18,10,.98);border:2px solid #3a5a3a;border-radius:14px;
+    padding:16px;z-index:20;display:none;width:min(94vw,560px);max-height:86vh;
+    overflow-y:auto;box-shadow:0 0 60px rgba(0,0,0,.95)}
   .inv-panel.show{display:block}
   .inv-header{display:flex;justify-content:space-between;align-items:center;
-    margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #3a5a3a}
-  .inv-header span{color:#7fff7f;font-weight:bold;letter-spacing:2px;font-size:13px}
-  .inv-close{background:#3a2020;color:#ff8a8a;border:none;padding:5px 10px;
-    border-radius:5px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:bold}
-  .inv-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:8px 0}
-  .inv-slot{position:relative;aspect-ratio:1;border-radius:6px;
+    margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #3a5a3a}
+  .inv-header span{color:#7fff7f;font-weight:bold;letter-spacing:2px;font-size:14px}
+  .inv-close{background:#3a2020;color:#ff8a8a;border:none;padding:8px 14px;
+    border-radius:8px;cursor:pointer;font-family:inherit;font-size:16px;font-weight:bold;
+    box-shadow:0 2px 0 rgba(0,0,0,.4)}
+  .inv-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:10px 0}
+  .inv-slot{position:relative;aspect-ratio:1;border-radius:8px;
     background:rgba(0,0,0,.7);border:2px solid #2a3a2a;cursor:pointer;
     display:flex;align-items:center;justify-content:center;overflow:hidden}
   .inv-slot.has{background:rgba(0,0,0,.4);border-color:#5a7a5a}
-  .inv-slot.sel{border-color:#ffd54a;box-shadow:0 0 12px rgba(255,213,74,.6)}
-  .inv-slot .ico{width:68%;height:68%;border-radius:4px;box-shadow:inset 0 -6px 0 rgba(0,0,0,.25)}
-  .inv-slot .cnt{position:absolute;bottom:2px;right:4px;color:#fff;font-size:11px;font-weight:bold;
-    text-shadow:0 0 3px #000,0 0 3px #000,0 0 3px #000}
-  .inv-slot .key{position:absolute;top:2px;left:4px;color:#ffd54a;font-size:9px;font-weight:bold;text-shadow:0 0 3px #000}
+  .inv-slot.sel{border-color:#ffd54a;box-shadow:0 0 14px rgba(255,213,74,.7)}
+  .inv-slot .ico{width:70%;height:70%;border-radius:5px;box-shadow:inset 0 -6px 0 rgba(0,0,0,.3)}
+  .inv-slot .cnt{position:absolute;bottom:2px;right:5px;color:#fff;font-size:12px;
+    font-weight:bold;text-shadow:0 0 4px #000,0 0 4px #000,0 0 4px #000}
+  .inv-slot .key{position:absolute;top:2px;left:5px;color:#ffd54a;font-size:10px;
+    font-weight:bold;text-shadow:0 0 4px #000}
   .inv-slot.empty{cursor:default;opacity:.4}
-  .inv-filter{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-  .inv-filter button{padding:5px 8px;background:#0a120a;border:1px solid #3a5a3a;
-    border-radius:5px;color:#9a9a9a;font-family:inherit;font-size:10px;cursor:pointer}
+  .inv-filter{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+  .inv-filter button{padding:6px 10px;background:#0a120a;border:1px solid #3a5a3a;
+    border-radius:7px;color:#9a9a9a;font-family:inherit;font-size:11px;cursor:pointer}
   .inv-filter button.active{background:#2a5a2a;color:#7fff7f;border-color:#7fff7f}
-  .craft-list{display:flex;flex-direction:column;gap:8px}
-  .craft-row{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;
-    padding:8px;background:#0a120a;border-radius:8px;border:1px solid #2a3a2a}
-  .craft-in,.craft-out{display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:center}
-  .craft-arrow{color:#7fff7f;font-size:18px;font-weight:bold}
-  .craft-item{position:relative;width:38px;height:38px;border-radius:5px;
+  .craft-list{display:flex;flex-direction:column;gap:10px}
+  .craft-row{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;
+    padding:10px;background:#0a120a;border-radius:10px;border:1px solid #2a3a2a}
+  .craft-in,.craft-out{display:flex;gap:5px;flex-wrap:wrap;align-items:center;justify-content:center}
+  .craft-arrow{color:#7fff7f;font-size:22px;font-weight:bold}
+  .craft-item{position:relative;width:42px;height:42px;border-radius:7px;
     background:rgba(0,0,0,.7);border:1px solid #3a5a3a;
     display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .craft-item .ico{width:72%;height:72%;border-radius:3px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.25)}
-  .craft-item .need{position:absolute;bottom:-4px;right:-4px;font-size:9px;padding:1px 4px;
-    border-radius:6px;font-weight:bold;background:#000;border:1px solid #3a5a3a;line-height:1.2}
+  .craft-item .ico{width:74%;height:74%;border-radius:4px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.3)}
+  .craft-item .need{position:absolute;bottom:-5px;right:-5px;font-size:10px;padding:2px 5px;
+    border-radius:8px;font-weight:bold;background:#000;border:1px solid #3a5a3a}
   .craft-item .need.ok{color:#7fff7f;border-color:#3a7a3a}
   .craft-item .need.no{color:#ff5a5a;border-color:#5a2020}
-  .craft-btn{grid-column:1/-1;margin-top:4px;padding:8px;background:#2a5a2a;
-    color:#e0f0e0;border:none;border-radius:6px;font-family:inherit;
-    font-size:11px;font-weight:bold;cursor:pointer;letter-spacing:1px}
-  .craft-btn:disabled{opacity:.35;cursor:not-allowed}
+  .craft-btn{grid-column:1/-1;margin-top:6px;padding:10px;
+    background:linear-gradient(180deg,#3a7a3a,#2a5a2a);color:#e0f0e0;border:none;
+    border-radius:8px;font-family:inherit;font-size:12px;font-weight:bold;
+    cursor:pointer;letter-spacing:1px;box-shadow:0 3px 0 #1a3a1a}
+  .craft-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+
+  /* ===== CALIBRATION PANEL ===== */
+  #calibBtn{position:absolute;top:8px;left:8px;padding:6px 10px;z-index:9;
+    background:rgba(20,30,20,.9);border:2px solid #3a5a3a;border-radius:8px;
+    color:#ffd54a;font-family:inherit;font-size:11px;font-weight:bold;
+    cursor:pointer;display:none;box-shadow:0 2px 0 rgba(0,0,0,.5)}
+  #calibBtn.show{display:block}
+  #calibBtn:active{transform:translateY(2px);box-shadow:none}
+  .calib-panel{position:absolute;inset:0;z-index:30;background:rgba(3,5,3,.97);
+    display:none;flex-direction:column;padding:12px;overflow-y:auto}
+  .calib-panel.show{display:flex}
+  .calib-top{display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #3a5a3a}
+  .calib-top h2{color:#ffd54a;font-size:14px;letter-spacing:2px}
+  .calib-top .close{background:#3a2020;color:#ff8a8a;border:none;padding:6px 12px;
+    border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;font-family:inherit}
+  .calib-tabs{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;padding-bottom:4px}
+  .calib-tab{padding:8px 12px;background:#0a120a;border:1px solid #3a5a3a;
+    border-radius:6px;color:#9a9a9a;font-family:inherit;font-size:11px;
+    font-weight:bold;cursor:pointer;white-space:nowrap}
+  .calib-tab.active{background:#2a4a5a;color:#7ff0ff;border-color:#3ce0ff}
+  .calib-body{display:flex;flex-direction:column;gap:10px;flex:1}
+  .calib-preview{background:#000;border:1px solid #3a5a3a;border-radius:6px;
+    padding:8px;overflow:auto;max-height:280px;text-align:center}
+  #calibCanvas{image-rendering:pixelated;display:inline-block;vertical-align:top;
+    background:repeating-conic-gradient(#1a1a1a 0 25%,#2a2a2a 0 50%) 50%/12px 12px}
+  .calib-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .calib-field{background:#0a120a;border:1px solid #2a4a2a;border-radius:6px;
+    padding:6px 8px;display:flex;flex-direction:column;gap:3px}
+  .calib-field label{font-size:9px;color:#7a9a7a;letter-spacing:1px}
+  .calib-field input{background:#000;border:1px solid #2a4a2a;color:#7fff7f;
+    font-family:inherit;font-size:13px;font-weight:bold;padding:5px;
+    border-radius:4px;width:100%;text-align:center}
+  .calib-field input:focus{outline:none;border-color:#7fff7f}
+  .calib-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .calib-actions button{flex:1;min-width:100px;padding:10px;border:none;
+    border-radius:8px;font-family:inherit;font-size:12px;font-weight:bold;
+    cursor:pointer;letter-spacing:1px}
+  .calib-actions button:active{transform:translateY(2px)}
+  .calib-save{background:linear-gradient(180deg,#a4ffa4,#3fb85c);color:#041a04}
+  .calib-reset{background:linear-gradient(180deg,#ffb0a0,#c9452f);color:#1a0505}
+  .calib-info{background:#0a120a;border:1px solid #2a4a2a;border-radius:6px;
+    padding:8px;font-size:10px;color:#7a9a7a;line-height:1.5}
+  .calib-info b{color:#ffd54a}
+  .calib-frame-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));
+    gap:6px;margin-top:8px}
+  .calib-frame-item{background:#000;border:2px solid #2a4a2a;border-radius:6px;
+    padding:3px;cursor:pointer;position:relative;aspect-ratio:1;
+    display:flex;align-items:center;justify-content:center}
+  .calib-frame-item.sel{border-color:#ffd54a;box-shadow:0 0 10px rgba(255,213,74,.6)}
+  .calib-frame-item canvas{width:100%;height:100%;image-rendering:pixelated;object-fit:contain}
+  .calib-frame-item .lbl{position:absolute;bottom:1px;right:3px;font-size:9px;
+    color:#7fff7f;font-weight:bold;text-shadow:0 0 3px #000}
+  .calib-frame-item .state-lbl{position:absolute;top:1px;left:3px;font-size:8px;
+    color:#ff7ad9;font-weight:bold;text-shadow:0 0 3px #000}
 </style>
 </head>
 <body>
@@ -154,9 +225,11 @@
 <div id="netHud">—</div>
 <div id="timeBadge">☀ 6:00</div>
 
+<button id="calibBtn" title="Căn chỉnh frame">🎯 FRAME</button>
+
 <div class="inv-toggle" id="invToggle">
-  <button id="bagBtn">🎒 BALO</button>
-  <button id="craftBtn">⚒ CHẾ TẠO</button>
+  <button id="bagBtn">🎒</button>
+  <button id="craftBtn">⚒</button>
 </div>
 
 <div id="bagPanel" class="inv-panel">
@@ -170,6 +243,55 @@
   <div class="inv-header"><span>⚒ BÀN CHẾ TẠO</span>
     <button class="inv-close" data-close="craftPanel">✕</button></div>
   <div class="craft-list" id="craftList"></div>
+</div>
+
+<!-- ===== CALIBRATION PANEL ===== -->
+<div class="calib-panel" id="calibPanel">
+  <div class="calib-top">
+    <h2>🎯 CĂN CHỈNH FRAME</h2>
+    <button class="close" id="calibClose">✕</button>
+  </div>
+  <div class="calib-tabs" id="calibTabs"></div>
+  <div class="calib-body">
+    <div class="calib-preview"><canvas id="calibCanvas"></canvas></div>
+    <div class="calib-row">
+      <div class="calib-field">
+        <label>FRAME W (px)</label>
+        <input type="number" id="calibFw" step="0.5" min="1">
+      </div>
+      <div class="calib-field">
+        <label>FRAME H (px)</label>
+        <input type="number" id="calibFh" step="0.5" min="1">
+      </div>
+    </div>
+    <div class="calib-row">
+      <div class="calib-field">
+        <label>OFFSET X</label>
+        <input type="number" id="calibOx" step="0.5">
+      </div>
+      <div class="calib-field">
+        <label>OFFSET Y</label>
+        <input type="number" id="calibOy" step="0.5">
+      </div>
+    </div>
+    <div class="calib-row">
+      <div class="calib-field">
+        <label>DISPLAY H (px)</label>
+        <input type="number" id="calibDisplayH" step="1" min="8">
+      </div>
+      <div class="calib-field">
+        <label>OFFSET DRAW Y</label>
+        <input type="number" id="calibDrawY" step="1">
+      </div>
+    </div>
+    <div class="calib-info" id="calibInfo">Chọn sprite để chỉnh</div>
+    <div class="calib-frame-list" id="calibFrameList"></div>
+    <div class="calib-actions">
+      <button class="calib-save" id="calibSave">💾 LƯU</button>
+      <button class="calib-reset" id="calibReset">↺ RESET</button>
+      <button class="calib-gray" id="calibClose2">← ĐÓNG</button>
+    </div>
+  </div>
 </div>
 
 <div id="menu">
@@ -189,41 +311,39 @@
         <div class="skin-row" id="skinRow"></div>
       </div>
       <div class="legend">
-        <span class="lg" style="color:#7fff7f">🕹 Joystick = Đi</span>
-        <span class="lg" style="color:#ffd54a">⛏ Chạm = Đào</span>
-        <span class="lg" style="color:#7ff0ff">🔨 Nút = Xây</span>
-        <span class="lg" style="color:#ffaa20">🔥 Đuốc = Sáng</span>
+        <span class="lg" style="color:#7fff7f">🕹 Joystick</span>
+        <span class="lg" style="color:#ffd54a">⛏ Đào</span>
+        <span class="lg" style="color:#7ff0ff">🔨 Xây</span>
+        <span class="lg" style="color:#c890ff">🔄 Tool</span>
       </div>
-      <button id="soloBtn">🎮 CHƠI ĐƠN</button>
-      <button id="multiBtn" class="secondary">🌐 CHƠI MẠNG (tối đa 5)</button>
+      <button id="soloBtn" class="btn btn-green">🎮 CHƠI ĐƠN</button>
+      <button id="multiBtn" class="btn btn-cyan">🌐 CHƠI MẠNG (tối đa 5)</button>
+      <button id="calibMenuBtn" class="btn btn-gold btn-sm">🎯 CĂN CHỈNH FRAME</button>
     </div>
 
     <div id="menuMulti" style="display:none">
-      <p style="color:#7ff0ff;font-weight:bold;letter-spacing:2px">CHƠI MẠNG · TỐI ĐA 5 NGƯỜI</p>
+      <p style="color:#7ff0ff;font-weight:bold;letter-spacing:2px;font-size:13px;margin-bottom:10px">CHƠI MẠNG · TỐI ĐA 5 NGƯỜI</p>
       <div class="note">
-        <b>Cách chơi:</b><br>
-        • Người 1: bấm <b>TẠO PHÒNG</b> → vào game luôn, nhận mã<br>
-        • Người 2-5: nhập mã → bấm <b>VÀO PHÒNG</b><br>
-        • Tất cả cùng chơi trong 1 thế giới
+        <b>Người 1:</b> TẠO PHÒNG → vào game ngay<br>
+        <b>Người 2-5:</b> dán mã → VÀO PHÒNG
       </div>
       <div id="multiButtons">
-        <button id="hostBtn" class="secondary">🎯 TẠO PHÒNG</button>
-        <p style="margin:10px 0;font-size:11px;color:#6a7a6a">— HOẶC —</p>
-        <input class="mp-input" id="joinInput" placeholder="Nhập mã phòng..." maxlength="20">
-        <button id="joinBtn">🔗 VÀO PHÒNG</button>
+        <button id="hostBtn" class="btn btn-cyan">🎯 TẠO PHÒNG</button>
+        <p style="margin:12px 0;font-size:11px;color:#6a7a6a">— HOẶC —</p>
+        <input class="mp-input" id="joinInput" placeholder="NHẬP MÃ PHÒNG" maxlength="20">
+        <button id="joinBtn" class="btn btn-green">🔗 VÀO PHÒNG</button>
       </div>
       <div id="hostView" style="display:none">
-        <p style="font-size:11px;color:#7a9a7a;margin-top:10px">Mã phòng của bạn:</p>
+        <p style="font-size:11px;color:#7a9a7a;margin-top:12px">Mã phòng:</p>
         <div class="room-code" id="roomCode">...</div>
-        <p style="font-size:11px;color:#7a9a7a">Gửi mã này cho bạn bè</p>
         <div class="status-conn" id="hostStatus">Đang khởi tạo...</div>
         <div id="playersList"></div>
       </div>
       <div id="joinView" style="display:none">
         <div class="status-conn" id="joinStatus">Đang kết nối...</div>
-        <button id="retryJoinBtn" class="gray" style="margin-top:10px;display:none">🔄 THỬ LẠI</button>
+        <button id="retryJoinBtn" class="btn btn-gray btn-sm" style="display:none">🔄 THỬ LẠI</button>
       </div>
-      <button id="backMenuBtn" class="gray" style="margin-top:14px">← QUAY LẠI</button>
+      <button id="backMenuBtn" class="btn btn-gray btn-sm" style="margin-top:14px">← QUAY LẠI</button>
     </div>
   </div>
 </div>
@@ -237,7 +357,7 @@
 "use strict";
 
 /* ============================================================
-   ⚙ CẤU HÌNH SERVER
+   CONFIG SERVER
    ============================================================ */
 const PEER_HOST = 'game-sinhton.onrender.com';
 const PEER_PATH = '/myapp';
@@ -279,7 +399,37 @@ function loadImage(src){
 }
 
 /* ============================================================
-   MOB SPRITES — 5 loài ma quỷ đêm
+   CALIBRATION STORAGE
+   ============================================================ */
+const Calib = {
+  data: {},
+  load(){
+    try {
+      const s = localStorage.getItem('svc_calib_v1');
+      if (s) this.data = JSON.parse(s);
+    } catch(e){}
+  },
+  save(){
+    try { localStorage.setItem('svc_calib_v1', JSON.stringify(this.data)); } catch(e){}
+  },
+  get(key){
+    if (!this.data[key]) return null;
+    return { ...this.data[key] };
+  },
+  set(key, val){
+    this.data[key] = { ...val };
+    this.save();
+  },
+  reset(key){
+    if (key) delete this.data[key];
+    else this.data = {};
+    this.save();
+  }
+};
+Calib.load();
+
+/* ============================================================
+   MOB SPRITES
    ============================================================ */
 const MOB_SPRITE_CFG = {
   imp:    { src:'sprites/imp.png',    frames:{ idle:3, move:3, attack:3, hurt:2, death:3 }, displayH:48 },
@@ -298,10 +448,17 @@ async function loadMobSprites(){
       MOB_IMGS[type] = img;
       MOB_OK[type] = true;
       const total = Object.values(cfg.frames).reduce((s,n)=>s+n, 0);
-      MOB_DIMS[type] = { fw: img.width / total, fh: img.height, total };
+      // Default = auto
+      const cal = Calib.get('mob_' + type);
+      if (cal){
+        MOB_DIMS[type] = { fw: cal.fw, fh: cal.fh, total, ox: cal.ox||0, oy: cal.oy||0,
+          displayH: cal.displayH || cfg.displayH, drawY: cal.drawY||0 };
+      } else {
+        MOB_DIMS[type] = { fw: img.width/total, fh: img.height, total, ox:0, oy:0,
+          displayH: cfg.displayH, drawY:0 };
+      }
     } catch(e){
       MOB_OK[type] = false;
-      console.warn(`[Mob] ✗ ${type}`);
     }
   }
 }
@@ -323,8 +480,15 @@ function getMobFrame(type, state, animTime, deathProgress){
     const fps = { idle:3, move:7, attack:10, hurt:14 }[sName] || 6;
     frameIdx = Math.floor(animTime * fps) % total;
   }
-  return { x: (offset + frameIdx) * dims.fw, y:0, w: dims.fw, h: dims.fh,
-    aspect: dims.fw / dims.fh, displayH: cfg.displayH };
+  return {
+    x: (offset + frameIdx) * dims.fw + dims.ox,
+    y: dims.oy,
+    w: dims.fw,
+    h: dims.fh,
+    aspect: dims.fw / dims.fh,
+    displayH: dims.displayH,
+    drawY: dims.drawY
+  };
 }
 
 /* ============================================================
@@ -349,15 +513,24 @@ async function loadPlayerSkins(){
     try {
       const img = await loadImage(cfg.src);
       PLAYER_IMGS[key] = img;
-      cfg.fw = img.width / cfg.cols;
-      cfg.fh = img.height / cfg.rows;
-    } catch(e){
-      console.warn(`[Player] ✗ ${key}`);
-    }
+      const cal = Calib.get('player_' + key);
+      if (cal){
+        cfg.fw = cal.fw;
+        cfg.fh = cal.fh;
+        cfg.ox = cal.ox || 0;
+        cfg.oy = cal.oy || 0;
+        cfg.displayH = cal.displayH || cfg.displayH;
+        cfg.drawY = cal.drawY || 0;
+      } else {
+        cfg.fw = img.width / cfg.cols;
+        cfg.fh = img.height / cfg.rows;
+        cfg.ox = 0; cfg.oy = 0; cfg.drawY = 0;
+      }
+    } catch(e){}
   }
 }
 
-function getPlayerFrame(skin, state, stateT){
+function getPlayerFrame(skin, state, animTime){
   const cfg = PLAYER_SKINS[skin];
   if (!cfg || !cfg.fw) return null;
   const rowMap = { idle:0, walk:1, jump:2, attack:3, hurt:4, dead:5 };
@@ -366,10 +539,23 @@ function getPlayerFrame(skin, state, stateT){
   const fps = fpsMap[state] ?? 6;
   const total = cfg.frames[state] ?? 4;
   let idx;
-  if (state === 'dead') idx = Math.min(total - 1, Math.floor(stateT * fps));
-  else idx = Math.floor(stateT * fps) % total;
-  return { x: idx * cfg.fw, y: row * cfg.fh, w: cfg.fw, h: cfg.fh,
-    aspect: cfg.fw / cfg.fh, displayH: cfg.displayH };
+  if (state === 'dead') idx = Math.min(total - 1, Math.floor(animTime * fps));
+  else idx = Math.floor(animTime * fps) % total;
+  return {
+    x: idx * cfg.fw + (cfg.ox || 0),
+    y: row * cfg.fh + (cfg.oy || 0),
+    w: cfg.fw, h: cfg.fh,
+    aspect: cfg.fw / cfg.fh,
+    displayH: cfg.displayH,
+    drawY: cfg.drawY || 0
+  };
+}
+
+function setState(obj, newState){
+  if (obj.state !== newState){
+    obj.state = newState;
+    obj.stateT = 0;
+  }
 }
 
 /* ============================================================
@@ -392,8 +578,7 @@ function resizeCanvas(){
       cv.style.width = VW + 'px'; cv.style.height = VH + 'px';
       cv.style.left = '0'; cv.style.top = '0';
     } else {
-      w = innerWidth || 960;
-      h = innerHeight || 600;
+      w = innerWidth || 960; h = innerHeight || 600;
       const aspect = 960/600;
       let cw = w, ch = w/aspect;
       if (ch > h){ ch = h; cw = h*aspect; }
@@ -406,35 +591,37 @@ function resizeCanvas(){
     }
     updateUIPositions();
   } catch(e){
-    console.error('[Canvas]', e);
     VW = 960; VH = 600;
     cv.width = 960; cv.height = 600;
   }
 }
+
 function updateUIPositions(){
   const baseR = Math.min(VW, VH);
-  UI.joy = { x: 20 + baseR*0.14, y: VH - baseR*0.14 - 70, r: Math.max(50, Math.min(80, baseR*0.14)), knobR: 0 };
-  UI.joy.knobR = UI.joy.r * 0.48;
-  UI.action = { x: VW - baseR*0.1 - 30, y: VH - baseR*0.1 - 70, r: Math.max(38, Math.min(52, baseR*0.1)) };
-  UI.place = { x: UI.action.x, y: UI.action.y - UI.action.r*2 - 14, r: UI.action.r };
-  UI.tool = { x: UI.action.x, y: UI.place.y - UI.action.r*2 - 14, r: UI.action.r };
-  UI.hotbar = { w:42, h:42, gap:4, y: VH - 56, x: VW/2 };
+  const joyR = Math.max(56, Math.min(84, baseR*0.15));
+  UI.joy = { x: 30 + joyR, y: VH - joyR - 70, r: joyR, knobR: joyR*0.45 };
+  const actR = Math.max(42, Math.min(56, baseR*0.11));
+  UI.action = { x: VW - actR - 26, y: VH - actR - 70, r: actR };
+  UI.place = { x: VW - actR - 26, y: VH - actR*3 - 78, r: actR };
+  UI.tool = { x: VW - actR - 26, y: VH - actR*5 - 86, r: actR };
+  UI.hotbar = { w:44, h:44, gap:5, y: VH - 58, x: VW/2 };
   UI.hotbar.totalW = 6 * (UI.hotbar.w + UI.hotbar.gap) - UI.hotbar.gap;
   UI.hotbar.startX = UI.hotbar.x - UI.hotbar.totalW/2;
 }
+
 addEventListener('resize', () => { resizeCanvas(); setTimeout(checkOrientation, 100); });
 addEventListener('orientationchange', () => setTimeout(() => { resizeCanvas(); checkOrientation(); }, 300));
 if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { if (DEVICE.isMobile) resizeCanvas(); });
 
 /* ============================================================
-   TILE SYSTEM
+   BLOCKS
    ============================================================ */
 const TILE = 40;
 const BLOCKS = {};
 const CAT_NAMES = {
-  natural:'🌱 TN', stone:'🪨 Đá', ore:'💎 Quặng', wood:'🪵 Gỗ',
-  leaves:'🌿 Lá', flower:'🌸 Hoa', build:'🏗 Xây', wool:'🧶 Len',
-  concrete:'🟥 BT', terra:'🟫 ĐN', glass:'💠 Kính', special:'✨ ĐB', func:'⚙ CN'
+  natural:'🌱', stone:'🪨', ore:'💎', wood:'🪵', leaves:'🌿',
+  flower:'🌸', build:'🏗', wool:'🧶', concrete:'🟥', terra:'🟫',
+  glass:'💠', special:'✨', func:'⚙'
 };
 const BLOCK_LIST = [
   [0,'Cỏ','#4a7a3a','#5a9a48','spots',0.6,null,0,'natural'],
@@ -497,131 +684,49 @@ const BLOCK_LIST = [
   [75,'Khối KC','#5ad8e8','#7ae8f8','crystal',5,'pickaxe',1,'ore'],
   [76,'Khối ngọc','#3ad04a','#5ae05a','crystal',5,'pickaxe',1,'ore'],
   [77,'Khối netherite','#4a3a3a','#5a4a4a','metal',6,'pickaxe',1,'ore'],
-  [78,'Khối thạch anh','#e8e0d0','#f8f0e0','grid',1.5,'pickaxe',1,'ore'],
-  [79,'Chùm thạch anh','#9a5aba','#ba7ada','crystal',1.5,'pickaxe',1,'ore',2],
   [80,'Hoa cương','#a86858','#b87868','spots',2,'pickaxe',1,'stone'],
-  [81,'Hoa cương mịn','#b87868','#c88878','grid',2,'pickaxe',1,'stone'],
   [82,'Diorite','#d8d8d8','#e8e8e8','spots',2,'pickaxe',1,'stone'],
-  [83,'Diorite mịn','#e0e0e0','#f0f0f0','grid',2,'pickaxe',1,'stone'],
   [84,'Andesite','#7a7a7a','#8a8a8a','spots',2,'pickaxe',1,'stone'],
-  [85,'Andesite mịn','#8a8a8a','#9a9a9a','grid',2,'pickaxe',1,'stone'],
   [86,'Gạch đá','#6a6a6a','#7a7a7a','brick',2,'pickaxe',1,'stone'],
-  [87,'Gạch đá rêu','#5a7a5a','#6a8a6a','brick',2,'pickaxe',1,'stone'],
-  [88,'Gạch đá nứt','#5a5a5a','#6a6a6a','brick',2,'pickaxe',1,'stone'],
-  [89,'Gạch đá trạm','#5a5a5a','#6a6a6a','grid',2,'pickaxe',1,'stone'],
   [90,'Đá mịn','#7a7a7a','#8a8a8a','solid',2,'pickaxe',1,'stone'],
-  [91,'Tấm đá','#6a6a6a','#7a7a7a','lines',2,'pickaxe',1,'stone'],
   [101,'Gạch','#8a4a3a','#aa6a5a','brick',2,'pickaxe',1,'stone'],
-  [102,'Gạch bùn','#6a5a3a','#7a6a4a','brick',1.5,'pickaxe',1,'stone'],
-  [103,'Gạch Nether','#4a1a2a','#5a2a3a','brick',2,'pickaxe',1,'stone'],
   [107,'Prismarine','#3a8a7a','#4a9a8a','grid',2,'pickaxe',1,'stone'],
-  [108,'Gạch Prisma','#3a8a7a','#4a9a8a','brick',2,'pickaxe',1,'stone'],
-  [109,'Prisma tối','#2a6a5a','#3a7a6a','brick',2,'pickaxe',1,'stone'],
   [110,'Đèn biển','#a8e8e8','#c8f8f8','grid',1,'pickaxe',1,'stone',5],
   [113,'Gạch thạch anh','#e8e0d0','#f8f0e0','brick',1.5,'pickaxe',1,'stone'],
   [120,'Gỗ sồi','#6a3a1a','#8a5a2a','lines',1.2,'axe',1,'wood'],
   [121,'Gỗ vân sam','#4a2a1a','#6a4a2a','lines',1.2,'axe',1,'wood'],
   [122,'Gỗ bạch dương','#d8d0b0','#e8e0c0','lines',1.2,'axe',1,'wood'],
   [123,'Gỗ rừng','#8a5a3a','#a87a4a','lines',1.2,'axe',1,'wood'],
-  [124,'Gỗ keo','#a8683a','#c8885a','lines',1.2,'axe',1,'wood'],
-  [125,'Gỗ sồi sẫm','#3a2a1a','#5a3a2a','lines',1.2,'axe',1,'wood'],
-  [126,'Gỗ đước','#5a4a3a','#7a6a4a','lines',1.2,'axe',1,'wood'],
-  [127,'Gỗ anh đào','#b87878','#d89898','lines',1.2,'axe',1,'wood'],
-  [128,'Thân Crimson','#7a3040','#9a4050','lines',1.2,'axe',1,'wood'],
-  [129,'Thân Warped','#2a5a5a','#3a7a7a','lines',1.2,'axe',1,'wood'],
-  [134,'Khối tre','#8a9a3a','#aab85a','lines',1,'axe',1,'wood'],
-  [135,'Khảm tre','#b8a858','#d8c878','grid',1,'axe',1,'wood'],
   [140,'Ván sồi','#b88a4a','#d8a86a','grid',1,'axe',1,'wood'],
   [141,'Ván vân sam','#7a5a3a','#8a6a4a','grid',1,'axe',1,'wood'],
   [142,'Ván bạch dương','#d8c8a0','#e8d8b0','grid',1,'axe',1,'wood'],
   [143,'Ván rừng','#a87858','#c89868','grid',1,'axe',1,'wood'],
-  [144,'Ván keo','#c87040','#e89060','grid',1,'axe',1,'wood'],
-  [145,'Ván sồi sẫm','#4a3020','#6a4a30','grid',1,'axe',1,'wood'],
-  [146,'Ván đước','#8a5a3a','#a87858','grid',1,'axe',1,'wood'],
-  [147,'Ván anh đào','#e0a0a0','#f0b8b8','grid',1,'axe',1,'wood'],
-  [148,'Ván tre','#c8b858','#e8d878','grid',1,'axe',1,'wood'],
-  [149,'Ván Crimson','#7a3a4a','#9a5a6a','grid',1,'axe',1,'wood'],
-  [150,'Ván Warped','#3a6a6a','#4a8a8a','grid',1,'axe',1,'wood'],
-  [152,'Hàng rào sồi','#b88a4a','#d8a86a','lines',1,'axe',1,'wood'],
-  [158,'Cửa sồi','#b88a4a','#d8a86a','solid',1,'axe',1,'wood'],
   [160,'Lá sồi','#3a6a2a','#4a7a3a','leaves',0.3,'axe',0,'leaves'],
   [161,'Lá vân sam','#1a3a1a','#2a4a2a','leaves',0.3,'axe',0,'leaves'],
   [162,'Lá bạch dương','#6a9a4a','#7aaa5a','leaves',0.3,'axe',0,'leaves'],
   [163,'Lá rừng','#2a5a1a','#3a6a2a','leaves',0.3,'axe',0,'leaves'],
-  [164,'Lá keo','#6a8a3a','#7a9a4a','leaves',0.3,'axe',0,'leaves'],
-  [165,'Lá sồi sẫm','#1a4a1a','#2a5a2a','leaves',0.3,'axe',0,'leaves'],
-  [166,'Lá đước','#4a8a4a','#5a9a5a','leaves',0.3,'axe',0,'leaves'],
-  [167,'Hoa anh đào','#e8a8c8','#f8b8d8','leaves',0.3,'axe',0,'leaves'],
-  [171,'Mầm sồi','#4a8a3a','#5a9a4a','plant',0.1,null,0,'leaves'],
-  [175,'Tre','#9ab83a','#aac85a','lines',0.3,'axe',0,'leaves'],
-  [176,'Tảo bẹ','#3a7a4a','#4a8a5a','plant',0.2,null,0,'leaves'],
-  [177,'Cỏ biển','#3a9a5a','#4aaa6a','plant',0.2,null,0,'leaves'],
-  [178,'Dây leo','#2a5a2a','#3a6a3a','lines',0.2,'axe',0,'leaves'],
-  [179,'Địa y sáng','#9ae8c8','#baf8d8','plant',0.2,null,0,'leaves',2],
   [180,'Bồ công anh','#ffd54a','#ffe87a','plant',0.1,null,0,'flower'],
   [181,'Anh túc','#e83030','#f85050','plant',0.1,null,0,'flower'],
   [182,'Lan xanh','#3a8ae8','#5aaaf8','plant',0.1,null,0,'flower'],
-  [183,'Hành tím','#c85ac8','#d87ad8','plant',0.1,null,0,'flower'],
-  [184,'Azure bluet','#e8e8c8','#f8f8d8','plant',0.1,null,0,'flower'],
   [185,'Tulip đỏ','#e83030','#ff5050','plant',0.1,null,0,'flower'],
-  [186,'Tulip cam','#f08840','#ffa860','plant',0.1,null,0,'flower'],
-  [187,'Tulip trắng','#f0f0f0','#ffffff','plant',0.1,null,0,'flower'],
-  [188,'Tulip hồng','#f088b8','#ffa8d8','plant',0.1,null,0,'flower'],
-  [189,'Cúc mắt bò','#f8f8f0','#ffffff','plant',0.1,null,0,'flower'],
   [190,'Hoa ngô','#5a7ad8','#7a9af8','plant',0.1,null,0,'flower'],
-  [191,'Linh lan','#e8f8e8','#ffffff','plant',0.1,null,0,'flower'],
-  [192,'Hoa héo','#3a2a2a','#4a3a3a','plant',0.1,null,0,'flower'],
   [193,'Hướng dương','#ffd54a','#ffe87a','plant',0.1,null,0,'flower'],
-  [198,'Hoa đuốc','#f08030','#ffa050','plant',0.1,null,0,'flower',1],
   [200,'Kính','#a8d0e8','#c8e8f8','glass',0.3,'pickaxe',1,'glass'],
   [201,'Kính tối','#3a5a6a','#4a6a7a','glass',0.3,'pickaxe',1,'glass'],
-  [202,'Tấm kính','#a8d0e8','#c8e8f8','glass',0.3,'pickaxe',0,'glass'],
   [203,'Đuốc','#ffaa20','#ffcc40','torch',0.1,null,0,'build',5],
-  [204,'Đuốc hồn','#4a90c0','#6ab0e0','torch',0.1,null,0,'build',5],
   [205,'Đèn lồng','#e8b878','#f8d898','torch',0.5,'pickaxe',0,'build',4],
-  [207,'Đống lửa','#a05a30','#c07a50','torch',0.5,'axe',0,'build',5],
-  [210,'Giá pha chế','#8a5a2a','#a87a4a','solid',0.8,'pickaxe',0,'func'],
-  [211,'Vạc','#5a5a5a','#7a7a7a','metal',2,'pickaxe',1,'func'],
   [212,'Bàn chế tạo','#b88a4a','#d8a86a','grid',1.5,'axe',1,'func'],
   [213,'Lò nung','#6a6a6a','#8a8a8a','solid',3,'pickaxe',1,'func'],
-  [216,'Đe','#3a3a3a','#4a4a4a','metal',4,'pickaxe',1,'func'],
-  [221,'Bàn rèn','#4a4a5a','#6a6a7a','metal',2,'pickaxe',1,'func'],
-  [224,'Thùng gỗ','#8a6a4a','#a88a6a','grid',1,'axe',1,'func'],
   [225,'Rương','#8a5a2a','#a87a4a','grid',1,'axe',1,'func'],
-  [226,'Rương Ender','#2a2a3a','#3a3a4a','grid',1,'pickaxe',1,'func'],
-  [227,'Hộp Shulker','#a868a8','#c088c0','grid',1,'pickaxe',1,'func'],
   [228,'Đèn hiệu','#6ad8e8','#8af8f8','crystal',3,'pickaxe',1,'build',5],
-  [230,'TNT','#c03030','#e85050','grid',0.5,null,0,'special'],
-  [232,'Cần gạt','#8a6a4a','#a88a6a','solid',0.5,null,0,'func'],
-  [234,'Máy hát','#5a3a2a','#7a5a4a','solid',1,'axe',1,'func'],
-  [235,'Giá sách','#b88a4a','#d8a86a','grid',1.5,'axe',1,'func'],
-  [238,'Chuông','#ffd54a','#ffe87a','metal',2,'pickaxe',1,'func'],
-  [239,'Chậu hoa','#a86858','#b87868','solid',0.5,'pickaxe',0,'build'],
-  [242,'Biển gỗ','#b88a4a','#d8a86a','solid',0.5,'axe',0,'build'],
   [244,'Thang','#8a6a4a','#a88a6a','lines',0.5,'axe',0,'build'],
-  [245,'Giàn giáo','#d8b878','#f8d898','grid',0.3,'axe',0,'build'],
-  [246,'Xích','#5a5a5a','#7a7a7a','lines',1,'pickaxe',0,'build'],
-  [247,'Cột thu lôi','#c87a4a','#e89a6a','metal',1.5,'pickaxe',0,'build'],
-  [249,'Đèn giấy','#f8f0d0','#fff8e0','torch',0.1,null,0,'build',3],
   [300,'Khối mật ong','#e8b840','#f8c860','solid',0.6,'axe',1,'special'],
   [301,'Khối slime','#80c880','#a0d8a0','grid',0.5,null,1,'special'],
-  [302,'Giường','#c04040','#e06060','solid',0.3,'axe',0,'special'],
-  [303,'Bánh kem','#f0e0b0','#f8f0c8','grid',0.5,null,0,'special'],
   [304,'Bí ngô','#e88020','#f0a040','lines',1,'axe',0,'special'],
-  [305,'Bí ngô khắc','#e88020','#ffaa20','solid',1,'axe',0,'special',2],
   [306,'Đèn bí ngô','#e88020','#ffd54a','solid',1,'axe',0,'special',5],
   [307,'Dưa hấu','#4a8a3a','#6aaa4a','lines',1,'axe',0,'special'],
-  [308,'Cỏ khô','#d0a848','#e8c068','lines',0.6,'axe',0,'special'],
-  [310,'Bọt biển','#e8e8a0','#f8f8c0','spots',0.6,null,0,'special'],
   [312,'Khối xương','#e8e0c8','#fff8e0','grid',2,'pickaxe',1,'special'],
   [313,'Mạng nhện','#f0f0f0','#ffffff','glass',4,null,0,'special'],
-  [314,'Tổ ong','#d0a848','#e8c068','grid',0.6,'axe',0,'special'],
-  [316,'Sáp ong','#e8b840','#f8c860','grid',0.8,'axe',1,'special'],
-  [320,'Đèn nấm','#c88040','#e8a060','crystal',1,'axe',1,'special',4],
-  [323,'Mụn nước','#7a2a2a','#9a3a3a','spots',1,'axe',1,'special'],
-  [331,'Trứng rồng','#1a0a20','#3a1a40','crystal',5,'pickaxe',1,'special',3],
-  [335,'Xúc tác Sculk','#2a3a4a','#3a4a5a','leaves',3,'pickaxe',1,'special',2],
-  [339,'Deepslate gia cố','#2a2a2a','#3a3a3a','grid',5,'pickaxe',1,'special'],
   [350,'Quả sáng','#ffa840','#ffc860','crystal',0.2,null,0,'special',3]
 ];
 BLOCK_LIST.forEach(a => {
@@ -630,29 +735,23 @@ BLOCK_LIST.forEach(a => {
 });
 
 const COLOR_16 = [
-  ['Trắng','#e9ecec','#f4f6f6','#d8c8b8'],['Cam','#f07613','#ff8a30','#a0532a'],
-  ['Đỏ tươi','#bd44b3','#d864c8','#955a8a'],['Xanh nhạt','#3aafd9','#5ac8f0','#4a7890'],
-  ['Vàng','#f8c627','#ffd850','#a88030'],['Chanh','#70b919','#8ad040','#5a7a3a'],
-  ['Hồng','#ed8dac','#ffa8c0','#a87088'],['Xám','#3e4447','#5a6060','#404040'],
-  ['Xám nhạt','#8e8e86','#a8a8a0','#787068'],['Xanh lơ','#158991','#2aa8b0','#2a6070'],
-  ['Tím','#792aac','#9a4ac0','#5a3a70'],['Xanh dương','#35399d','#4a5ac0','#3a4068'],
-  ['Nâu','#724728','#8a5a3a','#5a3a20'],['Xanh lá','#546d1b','#6a8a30','#40502a'],
-  ['Đỏ','#a12722','#c04040','#782020'],['Đen','#141519','#2a2a30','#252520']
+  ['Trắng','#e9ecec','#f4f6f6'],['Cam','#f07613','#ff8a30'],
+  ['Hồng','#bd44b3','#d864c8'],['Xanh nhạt','#3aafd9','#5ac8f0'],
+  ['Vàng','#f8c627','#ffd850'],['Chanh','#70b919','#8ad040'],
+  ['Hồng phấn','#ed8dac','#ffa8c0'],['Xám','#3e4447','#5a6060'],
+  ['Xám nhạt','#8e8e86','#a8a8a0'],['Xanh lơ','#158991','#2aa8b0'],
+  ['Tím','#792aac','#9a4ac0'],['Xanh dương','#35399d','#4a5ac0'],
+  ['Nâu','#724728','#8a5a3a'],['Xanh lá','#546d1b','#6a8a30'],
+  ['Đỏ','#a12722','#c04040'],['Đen','#141519','#2a2a30']
 ];
 COLOR_16.forEach((c,i) => {
   BLOCKS[250+i] = { id:250+i, name:'Len '+c[0], color:c[1], top:c[2],
     pattern:'cloth', hardness:0.4, tool:null, solid:false, cat:'wool', light:0 };
-  BLOCKS[266+i] = { id:266+i, name:'Bê tông '+c[0], color:c[1], top:c[2],
+  BLOCKS[266+i] = { id:266+i, name:'BT '+c[0], color:c[1], top:c[2],
     pattern:'solid', hardness:1.8, tool:'pickaxe', solid:true, cat:'concrete', light:0 };
-  BLOCKS[282+i] = { id:282+i, name:'Đất nung '+c[0], color:c[3], top:c[3],
-    pattern:'solid', hardness:1.25, tool:'pickaxe', solid:true, cat:'terra', light:0 };
-  BLOCKS[360+i] = { id:360+i, name:'Kính '+c[0], color:c[1], top:c[2],
-    pattern:'glass', hardness:0.3, tool:'pickaxe', solid:true, cat:'glass', light:0 };
 });
 
-const TILE_TYPES = BLOCKS;
 const AIR = -1;
-
 const TOOLS = [
   { id:'hand', name:'✋ Tay', reach:3, mult:1.0 },
   { id:'pickaxe', name:'⛏ Cuốc', reach:3.5, mult:4.0 },
@@ -675,8 +774,7 @@ const G = {
   currentTool:0,
   inv:{}, hotbar:[0,1,2,3,7,8], hotbarSel:0,
   mining:{tx:-1,ty:-1,progress:0},
-  buildMode:false,
-  mobTimer:3,
+  buildMode:false, mobTimer:3,
   netSeed: Math.floor(Math.random()*1e9),
   activeFilter:'all'
 };
@@ -767,9 +865,6 @@ function isSolid(tx, ty){
   return td && td.solid;
 }
 
-/* ============================================================
-   PLAYER
-   ============================================================ */
 function createPlayer(id, isLocal, x, y, skin){
   return {
     id, isLocal, skin: skin || 'nam_trang',
@@ -779,14 +874,10 @@ function createPlayer(id, isLocal, x, y, skin){
     facing:1, aimX:1, aimY:0,
     state:'idle', stateT:0,
     attackCd:0, invuln:0, hitFlash:0,
-    rx:0, ry:0, hasTarget:false,
-    netInput:null
+    rx:0, ry:0, hasTarget:false, netInput:null
   };
 }
 
-/* ============================================================
-   DAY / NIGHT
-   ============================================================ */
 function updateDayNight(dt){
   G.dayTime += dt / G.dayLength;
   if (G.dayTime >= 1){ G.dayTime -= 1; G.dayCount++; }
@@ -805,11 +896,11 @@ function getClockString(){
 function getLightSources(){
   const lights = [];
   for (const p of G.players) lights.push({ x:p.x, y:p.y, r:120, intensity:0.85 });
-  const camTX0 = Math.max(0, Math.floor(G.cam.x/TILE)-3);
-  const camTY0 = Math.max(0, Math.floor(G.cam.y/TILE)-3);
-  const camTX1 = Math.min(WORLD_W, Math.ceil((G.cam.x+VW)/TILE)+3);
-  const camTY1 = Math.min(WORLD_H, Math.ceil((G.cam.y+VH)/TILE)+3);
-  for (let ty=camTY0;ty<camTY1;ty++) for (let tx=camTX0;tx<camTX1;tx++){
+  const t0x = Math.max(0, Math.floor(G.cam.x/TILE)-3);
+  const t0y = Math.max(0, Math.floor(G.cam.y/TILE)-3);
+  const t1x = Math.min(WORLD_W, Math.ceil((G.cam.x+VW)/TILE)+3);
+  const t1y = Math.min(WORLD_H, Math.ceil((G.cam.y+VH)/TILE)+3);
+  for (let ty=t0y;ty<t1y;ty++) for (let tx=t0x;tx<t1x;tx++){
     const t = G.world[ty] && G.world[ty][tx];
     if (t !== undefined && t !== AIR && BLOCKS[t] && BLOCKS[t].light > 0){
       lights.push({ x:tx*TILE+TILE/2, y:ty*TILE+TILE/2, r:BLOCKS[t].light*40, intensity:1 });
@@ -828,63 +919,25 @@ const MOBS = {
   chicken:{name:'Gà',c1:'#f0f0f0',c2:'#e8c800',sz:14,h:18,shp:'bird',hp:8,bh:'passive'},
   rabbit:{name:'Thỏ',c1:'#d0a878',c2:'#e8c8a0',sz:12,h:12,shp:'quadruped',hp:6,bh:'passive'},
   horse:{name:'Ngựa',c1:'#8a5a3a',c2:'#5a3a20',sz:24,h:34,shp:'quadruped',hp:24,bh:'passive'},
-  donkey:{name:'Lừa',c1:'#7a6a5a',c2:'#5a4a3a',sz:22,h:30,shp:'quadruped',hp:22,bh:'passive'},
-  llama:{name:'Lạc đà',c1:'#e8c8a0',c2:'#c8a880',sz:22,h:32,shp:'quadruped',hp:30,bh:'neutral',dmg:4},
-  camel:{name:'Lạc đà 2 bướu',c1:'#e8b878',c2:'#c89858',sz:26,h:34,shp:'quadruped',hp:32,bh:'passive'},
   cat:{name:'Mèo',c1:'#8a6a3a',c2:'#5a3a1a',sz:12,h:12,shp:'quadruped',hp:10,bh:'passive'},
-  ocelot:{name:'Mèo rừng',c1:'#e8b878',c2:'#8a6a3a',sz:12,h:12,shp:'quadruped',hp:10,bh:'passive'},
   fox:{name:'Cáo',c1:'#e8a060',c2:'#f0d0a0',sz:14,h:14,shp:'quadruped',hp:10,bh:'passive'},
-  dolphin:{name:'Cá heo',c1:'#a8c8e0',c2:'#7898b0',sz:20,h:12,shp:'fish',hp:10,bh:'passive'},
-  turtle:{name:'Rùa',c1:'#3a7a3a',c2:'#5a9a5a',sz:18,h:12,shp:'quadruped',hp:30,bh:'passive'},
-  cod:{name:'Cá tuyết',c1:'#a89070',c2:'#c8b090',sz:12,h:8,shp:'fish',hp:3,bh:'passive'},
-  salmon:{name:'Cá hồi',c1:'#c8a070',c2:'#e8c090',sz:14,h:10,shp:'fish',hp:3,bh:'passive'},
-  tropical:{name:'Cá nhiệt đới',c1:'#f0a040',c2:'#4080f0',sz:10,h:8,shp:'fish',hp:3,bh:'passive'},
-  puffer:{name:'Cá nóc',c1:'#e8d040',c2:'#a8a020',sz:12,h:14,shp:'fish',hp:3,bh:'neutral',dmg:3},
-  squid:{name:'Mực',c1:'#5a3a5a',c2:'#7a5a7a',sz:14,h:16,shp:'fish',hp:10,bh:'passive'},
-  glowsquid:{name:'Mực sáng',c1:'#40c8d0',c2:'#80e8f0',sz:14,h:16,shp:'fish',hp:10,bh:'passive',light:2},
-  bat:{name:'Dơi',c1:'#3a2a2a',c2:'#5a4a4a',sz:10,h:8,shp:'flying',hp:6,bh:'passive',fly:true},
-  parrot:{name:'Vẹt',c1:'#e83030',c2:'#f0d040',sz:10,h:14,shp:'bird',hp:6,bh:'passive',fly:true},
-  villager:{name:'Làng dân',c1:'#c8a080',c2:'#7a5a3a',sz:14,h:26,shp:'biped',hp:20,bh:'passive'},
-  trader:{name:'Thương nhân',c1:'#3a5ac8',c2:'#7a4a20',sz:14,h:26,shp:'biped',hp:20,bh:'passive'},
-  snowman:{name:'Người tuyết',c1:'#f0f0f0',c2:'#e8a020',sz:14,h:24,shp:'biped',hp:10,bh:'passive'},
-  irongolem:{name:'Golem sắt',c1:'#e8e8e8',c2:'#8a5a3a',sz:20,h:36,shp:'biped',hp:100,bh:'neutral',dmg:15},
-  goat:{name:'Dê',c1:'#c8b090',c2:'#8a7050',sz:18,h:24,shp:'quadruped',hp:10,bh:'neutral',dmg:3},
-  yak:{name:'Bò Tạng',c1:'#3a2a1a',c2:'#5a4a3a',sz:26,h:30,shp:'quadruped',hp:24,bh:'passive'},
   wolf:{name:'Sói',c1:'#d0d0d8',c2:'#808088',sz:16,h:16,shp:'quadruped',hp:20,bh:'neutral',dmg:5},
-  polarbear:{name:'Gấu Bắc Cực',c1:'#f0f0f0',c2:'#d0d0d0',sz:26,h:30,shp:'quadruped',hp:30,bh:'neutral',dmg:8},
-  panda:{name:'Gấu trúc',c1:'#f0f0f0',c2:'#202020',sz:24,h:28,shp:'quadruped',hp:20,bh:'passive'},
-  spider:{name:'Nhện',c1:'#2a1a2a',c2:'#c02020',sz:18,h:14,shp:'spider',hp:16,bh:'hostile',dmg:5},
-  cavespider:{name:'Nhện hang',c1:'#204a2a',c2:'#c02020',sz:14,h:12,shp:'spider',hp:12,bh:'hostile',dmg:4},
   enderman:{name:'Enderman',c1:'#1a0a20',c2:'#a040f0',sz:14,h:40,shp:'biped',hp:40,bh:'neutral',dmg:10},
-  piglin:{name:'Piglin',c1:'#e8a878',c2:'#8a5a3a',sz:16,h:26,shp:'biped',hp:16,bh:'neutral',dmg:8},
-  bee:{name:'Ong',c1:'#f0c020',c2:'#2a2a2a',sz:10,h:10,shp:'flying',hp:10,bh:'neutral',dmg:6,fly:true},
   zombie:{name:'Zombie',c1:'#4a7040',c2:'#3a5a9a',sz:14,h:28,shp:'biped',hp:20,bh:'hostile',dmg:6},
-  husk:{name:'Zombie hoang',c1:'#a89870',c2:'#6a7a9a',sz:14,h:28,shp:'biped',hp:20,bh:'hostile',dmg:6},
-  drowned:{name:'Zombie nước',c1:'#3a6a70',c2:'#2a5a8a',sz:14,h:28,shp:'biped',hp:20,bh:'hostile',dmg:6},
   skeleton:{name:'Skeleton',c1:'#d0d0c0',c2:'#8a8a7a',sz:14,h:28,shp:'biped',hp:20,bh:'hostile',dmg:4},
-  stray:{name:'Skeleton lạnh',c1:'#b0c8d8',c2:'#7a98a8',sz:14,h:28,shp:'biped',hp:20,bh:'hostile',dmg:4},
   creeper:{name:'Creeper',c1:'#3aa838',c2:'#2a7a28',sz:12,h:24,shp:'biped',hp:20,bh:'hostile',dmg:30},
+  spider:{name:'Nhện',c1:'#2a1a2a',c2:'#c02020',sz:18,h:14,shp:'spider',hp:16,bh:'hostile',dmg:5},
   witch:{name:'Phù thủy',c1:'#4a3a2a',c2:'#8a4aa8',sz:14,h:26,shp:'biped',hp:26,bh:'hostile',dmg:6},
   slime:{name:'Slime',c1:'#80c880',c2:'#4a9a48',sz:16,h:16,shp:'slime',hp:16,bh:'hostile',dmg:4},
-  magma:{name:'Magma',c1:'#a03020',c2:'#f08040',sz:16,h:16,shp:'slime',hp:16,bh:'hostile',dmg:6},
-  ghast:{name:'Ghast',c1:'#e8e0d0',c2:'#a8988a',sz:24,h:24,shp:'flying',hp:10,bh:'hostile',dmg:8},
-  blaze:{name:'Blaze',c1:'#f0c020',c2:'#f08040',sz:14,h:22,shp:'flying',hp:20,bh:'hostile',dmg:6},
-  phantom:{name:'Phantom',c1:'#3a5a7a',c2:'#5a7a9a',sz:20,h:8,shp:'flying',hp:20,bh:'hostile',dmg:6,fly:true},
-  vex:{name:'Vex',c1:'#5ad8e8',c2:'#a8e8f0',sz:8,h:12,shp:'flying',hp:14,bh:'hostile',dmg:4,fly:true},
-  vindicator:{name:'Vindicator',c1:'#6a6a6a',c2:'#3a3a3a',sz:14,h:28,shp:'biped',hp:24,bh:'hostile',dmg:13},
-  pillager:{name:'Pillager',c1:'#5a5a6a',c2:'#3a3a4a',sz:14,h:28,shp:'biped',hp:24,bh:'hostile',dmg:5},
-  evoker:{name:'Evoker',c1:'#4a4a5a',c2:'#c8a870',sz:14,h:28,shp:'biped',hp:24,bh:'hostile',dmg:6},
-  ravager:{name:'Ravager',c1:'#4a3a2a',c2:'#6a5a4a',sz:28,h:30,shp:'quadruped',hp:100,bh:'hostile',dmg:12},
-  guardian:{name:'Guardian',c1:'#4a8a9a',c2:'#a8e8f0',sz:16,h:16,shp:'fish',hp:30,bh:'hostile',dmg:6},
-  elder:{name:'Elder Guard',c1:'#a8a8b8',c2:'#f0f080',sz:26,h:24,shp:'fish',hp:80,bh:'hostile',dmg:8},
-  silverfish:{name:'Cá bạc',c1:'#5a5a5a',c2:'#8a8a8a',sz:8,h:8,shp:'spider',hp:8,bh:'hostile',dmg:1},
-  shulker:{name:'Shulker',c1:'#a868a8',c2:'#c088c0',sz:16,h:14,shp:'slime',hp:30,bh:'hostile',dmg:4}
+  bat:{name:'Dơi',c1:'#3a2a2a',c2:'#5a4a4a',sz:10,h:8,shp:'flying',hp:6,bh:'passive',fly:true},
+  bee:{name:'Ong',c1:'#f0c020',c2:'#2a2a2a',sz:10,h:10,shp:'flying',hp:10,bh:'neutral',dmg:6,fly:true}
 };
 
 function spawnMob(key, x, y){
   const d = MOBS[key];
   if (!d) return;
-  const target = G.players[0];
+  const target = G.players.find(p => p.isLocal) || G.players[0];
+  if (!target) return;
   if (x === undefined || y === undefined){
     const angle = Math.random()*Math.PI*2;
     const range = rand(400, 700);
@@ -901,8 +954,7 @@ function spawnMob(key, x, y){
     size:d.sz, height:d.h, shape:d.shp,
     color1:d.c1, color2:d.c2,
     behavior:d.bh, hostile:d.bh === 'hostile',
-    boss:false, ranged:false, explode:d.key === 'creeper',
-    fly:!!d.fly, light:d.light || 0,
+    explode:d.key === 'creeper', fly:!!d.fly,
     name:d.name, facing:Math.random() < 0.5 ? 1 : -1,
     state:'idle', stateT:0, animStartT:G.time,
     wanderTimer:rand(1,3), wanderAngle:Math.random()*Math.PI*2,
@@ -917,25 +969,15 @@ function spawnMobWave(dt){
   if (G.mobTimer > 0) return;
   if (G.mobs.length > 60){ G.mobTimer = 2; return; }
   const isN = isNight();
-  let pool = [];
-  if (isN){
-    pool = ['zombie','skeleton','spider','creeper','enderman','witch','phantom','vex','vindicator','pillager','slime'];
-  } else {
-    pool = ['cow','sheep','pig','chicken','rabbit','horse','cat','fox','wolf','parrot','bee','villager','ocelot','llama'];
-  }
-  const p = G.players[0];
-  const ptx = Math.floor(p.x/TILE), pty = Math.floor(p.y/TILE);
-  const t = getTile(ptx, pty);
-  if (t === 7){ pool = ['cod','salmon','tropical','squid','dolphin','guardian','drowned']; }
-  else if (t === 10 || t === 11 || t === 14) pool.push('polarbear','stray','snowman','goat','yak');
-  else if (t === 3 || t === 6) pool.push('husk','camel');
-
+  let pool = isN
+    ? ['zombie','skeleton','spider','creeper','enderman','witch','slime']
+    : ['cow','sheep','pig','chicken','rabbit','horse','cat','fox','wolf','bee'];
   spawnMob(pool[Math.floor(Math.random()*pool.length)]);
   G.mobTimer = (isN ? 1.2 : 2.2) * rand(0.6, 1.4);
 }
 
 function updateMobs(dt){
-  const p = G.players[0];
+  const p = G.players.find(x => x.isLocal) || G.players[0];
   if (!p) return;
   for (const m of G.mobs){
     if (m.dead){ m.deathTimer -= dt; continue; }
@@ -951,7 +993,7 @@ function updateMobs(dt){
     if (m.behavior === 'passive' && ed < 100 && !m.provoked){
       m.x -= ex/ed * m.speed * dt * 0.8;
       m.y -= ey/ed * m.speed * dt * 0.8;
-      m.state = 'walk';
+      setState(m, 'walk');
       if (Math.abs(ex) > 0.5) m.facing = ex > 0 ? -1 : 1;
       continue;
     }
@@ -962,7 +1004,7 @@ function updateMobs(dt){
         if (m.wanderTimer <= 0){
           m.wanderTimer = rand(2,4);
           m.wanderAngle = Math.random()*Math.PI*2;
-          m.state = Math.random() < 0.5 ? 'idle' : 'walk';
+          setState(m, Math.random() < 0.5 ? 'idle' : 'walk');
         }
         if (m.state === 'walk'){
           const wx = Math.cos(m.wanderAngle)*m.speed*0.5*dt;
@@ -974,7 +1016,7 @@ function updateMobs(dt){
         }
         continue;
       }
-      m.state = ed > 30 ? 'walk' : 'attack';
+      setState(m, ed > 30 ? 'walk' : 'attack');
       if (m.state === 'walk'){
         const step = m.speed * dt;
         const nx = m.x + ex/ed * step, ny = m.y + ey/ed * step;
@@ -989,10 +1031,10 @@ function updateMobs(dt){
         if (p.invuln <= 0 && p.state !== 'dead'){
           p.hp -= m.damage;
           p.hitFlash = 0.2; p.invuln = 0.4;
-          p.state = 'hurt'; p.stateT = 0;
+          setState(p, 'hurt');
           addText(p.x, p.y-30, '-'+m.damage, '#ff5a5a');
           burstVFX(p.x, p.y, '#ff3050', 8, 150, 0.4);
-          if (p.hp <= 0){ p.state='dead'; p.stateT=0; gameOver(); }
+          if (p.hp <= 0){ setState(p, 'dead'); gameOver(); }
         }
         if (m.explode){
           burstVFX(m.x, m.y, '#ff8020', 30, 260, 0.8);
@@ -1004,7 +1046,7 @@ function updateMobs(dt){
       if (m.wanderTimer <= 0){
         m.wanderTimer = rand(2,5);
         m.wanderAngle = Math.random()*Math.PI*2;
-        m.state = Math.random() < 0.4 ? 'idle' : 'walk';
+        setState(m, Math.random() < 0.4 ? 'idle' : 'walk');
       }
       if (m.state === 'walk'){
         const wx = Math.cos(m.wanderAngle)*m.speed*0.5*dt;
@@ -1023,7 +1065,7 @@ function updateMobs(dt){
 }
 
 /* ============================================================
-   MA QUỶ — 5 loài sprite PNG (imp/hound/wraith/brute/boss)
+   DEMON ENEMIES (PNG)
    ============================================================ */
 const ENEMY_DATA = {
   imp:{ hp:30, speed:90, damage:8, radius:14, color:'#e8574a', size:11 },
@@ -1035,7 +1077,8 @@ const ENEMY_DATA = {
 
 function spawnEnemy(type){
   const d = ENEMY_DATA[type];
-  const target = G.players[0];
+  const target = G.players.find(x => x.isLocal) || G.players[0];
+  if (!target) return;
   const angle = Math.random()*Math.PI*2;
   const range = rand(450, 700);
   let x = clamp(target.x + Math.cos(angle)*range, 40, WORLD_W*TILE - 40);
@@ -1053,7 +1096,7 @@ function spawnEnemy(type){
 }
 
 function updateEnemies(dt){
-  const p = G.players[0];
+  const p = G.players.find(x => x.isLocal) || G.players[0];
   if (!p) return;
   G.spawnTimer -= dt;
   if (G.spawnTimer <= 0){
@@ -1063,10 +1106,8 @@ function updateEnemies(dt){
       if (G.dayCount > 2) types.push('wraith');
       if (G.dayCount > 3) types.push('brute');
       spawnEnemy(types[Math.floor(Math.random()*types.length)]);
-      G.spawnTimer = Math.max(1.2, 2.5 - G.dayCount * 0.15) * rand(0.7, 1.3);
-    } else {
-      G.spawnTimer = 2;
-    }
+      G.spawnTimer = Math.max(1.2, 2.5 - G.dayCount*0.15) * rand(0.7, 1.3);
+    } else G.spawnTimer = 2;
   }
   for (const e of G.enemies){
     if (e.dead){ e.deathTimer -= dt; continue; }
@@ -1106,10 +1147,10 @@ function updateEnemies(dt){
       if (target.invuln <= 0 && target.state !== 'dead'){
         target.hp -= e.damage;
         target.hitFlash = 0.2; target.invuln = 0.4;
-        target.state = 'hurt'; target.stateT = 0;
+        setState(target, 'hurt');
         addText(target.x, target.y-30, '-'+e.damage, '#ff5a5a');
         burstVFX(target.x, target.y, '#ff3050', 10, 160, 0.4);
-        if (target.hp <= 0){ target.state='dead'; target.stateT=0; gameOver(); }
+        if (target.hp <= 0){ setState(target, 'dead'); gameOver(); }
       }
     }
   }
@@ -1157,8 +1198,7 @@ function update(dt){
 
   G.time += dt;
 
-  if (G.mode === 'host' || G.mode === 'client'){
-    // Apply remote input (host side)
+  if (G.mode === 'host'){
     for (const pl of G.players){
       if (pl.isLocal) continue;
       if (!pl.netInput) continue;
@@ -1170,20 +1210,20 @@ function update(dt){
       if (pl.invuln > 0) pl.invuln -= dt;
       if (pl.attackCd > 0) pl.attackCd -= dt;
       if (ri.atk && pl.attackCd <= 0){
-        pl.state='attack'; pl.stateT=0; pl.attackCd=0.5;
+        setState(pl, 'attack'); pl.attackCd = 0.5;
         if (rmag>0.15){ pl.aimX=rdx; pl.aimY=rdy; }
         else { pl.aimX=pl.facing; pl.aimY=0; }
         attackHit(pl);
       }
       if (pl.state==='attack' && pl.stateT>0.25){
-        pl.state = rmag>0.15 ? 'walk' : 'idle'; pl.stateT=0;
+        setState(pl, rmag>0.15 ? 'walk' : 'idle');
       }
       if (pl.state !== 'attack' && pl.state !== 'hurt' && pl.state !== 'dead'){
         moveWithCollision(pl, rdx*pl.speed*dt, rdy*pl.speed*dt);
         if (rmag > 0.15){
-          pl.state = 'walk';
+          setState(pl, 'walk');
           if (Math.abs(rdx)>0.1) pl.facing = rdx>0 ? 1 : -1;
-        } else pl.state = 'idle';
+        } else setState(pl, 'idle');
       }
     }
   }
@@ -1218,7 +1258,7 @@ function handleLocalPlayer(p, dt, isClient){
 
   const wantAction = input.actionHeld || input.keys[' '];
   if (wantAction && p.attackCd <= 0 && p.state !== 'dead'){
-    p.state='attack'; p.stateT=0; p.attackCd=0.5;
+    setState(p, 'attack'); p.attackCd = 0.5;
     if (mag>0.15){ p.aimX=dx; p.aimY=dy; }
     else { p.aimX=p.facing; p.aimY=0; }
     for (const e of G.enemies) e.hitThisSwing = false;
@@ -1227,15 +1267,17 @@ function handleLocalPlayer(p, dt, isClient){
     if (!isClient) attackHit(p);
   }
   if (p.state==='attack' && p.stateT>0.25){
-    p.state = mag>0.15 ? 'walk' : 'idle'; p.stateT=0;
+    setState(p, mag>0.15 ? 'walk' : 'idle');
   }
   if (p.state !== 'attack' && p.state !== 'hurt' && p.state !== 'dead'){
     moveWithCollision(p, dx*p.speed*dt, dy*p.speed*dt);
     if (mag > 0.15){
-      p.state = 'walk';
+      setState(p, 'walk');
       if (Math.abs(dx)>0.1) p.facing = dx>0 ? 1 : -1;
-    } else p.state = 'idle';
-  } else if (p.state==='hurt' && p.stateT>0.25) p.state = 'idle';
+    } else setState(p, 'idle');
+  } else if (p.state==='hurt' && p.stateT>0.25){
+    setState(p, 'idle');
+  }
 }
 
 function updateMining(dt){
@@ -1245,6 +1287,7 @@ function updateMining(dt){
     return;
   }
   const p = G.players.find(pl => pl.isLocal);
+  if (!p) return;
   const tool = TOOLS[G.currentTool];
   const tx = m.tx, ty = m.ty;
   const tileType = getTile(tx, ty);
@@ -1279,6 +1322,7 @@ function breakBlock(tx, ty){
 
 function tryPlaceBlock(screenX, screenY){
   const p = G.players.find(pl => pl.isLocal);
+  if (!p) return;
   const wx = screenX + G.cam.x;
   const wy = screenY + G.cam.y;
   const tx = Math.floor(wx/TILE), ty = Math.floor(wy/TILE);
@@ -1324,7 +1368,6 @@ function attackHit(p){
       }
     }
   }
-
   for (const m of G.mobs){
     if (m.dead || m.hitThisSwing) continue;
     const d = dist(m.x, m.y, p.x, p.y);
@@ -1359,8 +1402,7 @@ function moveWithCollision(obj, dx, dy){
 function tileCollide(cx, cy, r){
   const corners = [
     [cx-r, cy-r*0.7], [cx+r, cy-r*0.7],
-    [cx-r, cy+r*0.7], [cx+r, cy+r*0.7],
-    [cx, cy]
+    [cx-r, cy+r*0.7], [cx+r, cy+r*0.7], [cx, cy]
   ];
   for (const [x, y] of corners){
     const tx = Math.floor(x/TILE), ty = Math.floor(y/TILE);
@@ -1414,10 +1456,6 @@ function drawBlockPattern(sx, sy, tx, ty, td){
     ctx.beginPath(); ctx.arc(sx+TILE/2, sy+TILE/2-4+flicker, 5, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = '#ffee80';
     ctx.beginPath(); ctx.arc(sx+TILE/2, sy+TILE/2-4+flicker, 2.5, 0, Math.PI*2); ctx.fill();
-    const g = ctx.createRadialGradient(sx+TILE/2, sy+TILE/2-4, 2, sx+TILE/2, sy+TILE/2-4, 20);
-    g.addColorStop(0, 'rgba(255, 200, 100, 0.5)');
-    g.addColorStop(1, 'rgba(255, 200, 100, 0)');
-    ctx.fillStyle = g; ctx.fillRect(sx, sy, TILE, TILE);
     return;
   }
   if (pat === 'glass'){
@@ -1425,9 +1463,6 @@ function drawBlockPattern(sx, sy, tx, ty, td){
     ctx.fillRect(sx, sy, TILE, TILE);
     ctx.strokeStyle = td.top; ctx.lineWidth = 2;
     ctx.strokeRect(sx+1, sy+1, TILE-2, TILE-2);
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(sx+4, sy+TILE-4); ctx.lineTo(sx+TILE-4, sy+4); ctx.stroke();
     return;
   }
   if (pat === 'plant'){
@@ -1443,25 +1478,16 @@ function drawBlockPattern(sx, sy, tx, ty, td){
       const py = sy+TILE-20 + Math.sin(a)*5;
       ctx.beginPath(); ctx.arc(px, py, 3.5, 0, Math.PI*2); ctx.fill();
     }
-    ctx.fillStyle = td.top;
-    ctx.beginPath(); ctx.arc(sx+TILE/2+sway, sy+TILE-20, 2.5, 0, Math.PI*2); ctx.fill();
     return;
   }
   if (pat === 'ore'){
     ctx.fillStyle = '#5a5a5a'; ctx.fillRect(sx, sy, TILE, TILE);
-    ctx.fillStyle = '#4a4a4a';
-    for (let i=0;i<4;i++){
-      const hh = (h >> (i*5)) & 0xFF;
-      ctx.fillRect(sx+4+(hh%30), sy+6+((hh>>4)%28), 5, 4);
-    }
     const spots = [[8,10,3.5],[22,8,3],[12,22,3.5],[26,24,3],[18,16,2.5]];
     for (const [dx,dy,r] of spots){
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.beginPath(); ctx.arc(sx+dx+1, sy+dy+1, r+0.5, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = td.color;
       ctx.beginPath(); ctx.arc(sx+dx, sy+dy, r, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = td.top;
-      ctx.beginPath(); ctx.arc(sx+dx-1, sy+dy-1, r*0.5, 0, Math.PI*2); ctx.fill();
     }
     return;
   }
@@ -1487,8 +1513,6 @@ function drawBlockPattern(sx, sy, tx, ty, td){
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.fillRect(sx, sy+TILE/2-1, TILE, 2);
     ctx.fillRect(sx+TILE/2-1, sy+2, 2, TILE/2-2);
-    ctx.fillRect(sx+TILE/4-1, sy+TILE/2+1, 2, TILE/2-3);
-    ctx.fillRect(sx+TILE*3/4-1, sy+TILE/2+1, 2, TILE/2-3);
     return;
   }
   if (pat === 'leaves'){
@@ -1531,7 +1555,7 @@ function drawBlockPattern(sx, sy, tx, ty, td){
   if (pat === 'spots'){
     ctx.fillStyle = td.color; ctx.fillRect(sx, sy, TILE, TILE);
     ctx.fillStyle = td.top; ctx.fillRect(sx, sy, TILE, 3);
-    const spots = [[8,10,3],[24,8,2.5],[14,22,3.5],[28,24,2],[6,30,2.5],[22,32,3],[32,16,2]];
+    const spots = [[8,10,3],[24,8,2.5],[14,22,3.5],[28,24,2],[6,30,2.5]];
     for (let i=0;i<spots.length;i++){
       const [dx,dy,r] = spots[i];
       ctx.fillStyle = i%2 === 0 ? td.top : td.color;
@@ -1549,6 +1573,7 @@ function drawBlockPattern(sx, sy, tx, ty, td){
 }
 
 function drawTiles(){
+  if (!G.world) return;
   const t0x = Math.max(0, Math.floor(G.cam.x/TILE)-1);
   const t0y = Math.max(0, Math.floor(G.cam.y/TILE)-1);
   const t1x = Math.min(WORLD_W, Math.ceil((G.cam.x+VW)/TILE)+1);
@@ -1571,7 +1596,7 @@ function drawPlayer(p){
   const dH = frame.displayH;
   const dW = dH * frame.aspect;
   ctx.save();
-  ctx.translate(p.x-G.cam.x, p.y-G.cam.y);
+  ctx.translate(p.x-G.cam.x, p.y-G.cam.y + (frame.drawY || 0));
   if (p.state !== 'dead'){
     ctx.beginPath(); ctx.ellipse(0, 14, dW*0.35, 5, 0, 0, Math.PI*2);
     ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fill();
@@ -1579,8 +1604,7 @@ function drawPlayer(p){
   if (p.facing < 0) ctx.scale(-1, 1);
   if (p.state === 'dead') ctx.globalAlpha = Math.max(0.3, 1-p.stateT*0.12);
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img, frame.x, frame.y, frame.w, frame.h,
-    -dW/2, -dH+12, dW, dH);
+  ctx.drawImage(img, frame.x, frame.y, frame.w, frame.h, -dW/2, -dH+12, dW, dH);
   if (p.hitFlash > 0 && p.state !== 'dead'){
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = Math.min(1, p.hitFlash*4);
@@ -1590,10 +1614,10 @@ function drawPlayer(p){
   }
   if (!p.isLocal){
     ctx.fillStyle = 'rgba(255,200,100,0.95)';
-    ctx.font = 'bold 9px monospace';
+    ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'center';
     ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
-    const label = p.id === 'host' ? '👑' : ('P' + (p.id ? p.id.slice(-3) : '?'));
+    const label = p.id === 'host' ? '👑' : ('P' + String(p.id||'').slice(-3));
     ctx.strokeText(label, 0, -dH-2);
     ctx.fillText(label, 0, -dH-2);
     ctx.textAlign = 'left';
@@ -1702,7 +1726,7 @@ function drawEnemy(e){
     const rect = getMobFrame(e.type, e.state, animTime, deathProgress);
     if (rect){
       const dH = rect.displayH, dW = dH * rect.aspect;
-      const ox = -dW/2, oy = -dH + e.size*0.5;
+      const ox = -dW/2, oy = -dH + e.size*0.5 + (rect.drawY || 0);
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(MOB_IMGS[e.type], rect.x, rect.y, rect.w, rect.h, ox, oy, dW, dH);
       if (e.hitFlash > 0 && !e.dead){
@@ -1818,19 +1842,6 @@ function drawMobShape(shape, c1, c2, sz, h, bob, walk, m){
     ctx.fill();
     ctx.fillStyle = '#000';
     ctx.beginPath(); ctx.arc(sz*0.58, -h*0.9+bob, 1.8, 0, Math.PI*2); ctx.fill();
-  } else if (shape === 'fish'){
-    ctx.fillStyle = c2;
-    ctx.beginPath();
-    ctx.moveTo(-sz*0.65, -h*0.4+bob);
-    ctx.lineTo(-sz*1.1, -h*0.7+bob);
-    ctx.lineTo(-sz*0.85, -h*0.4+bob);
-    ctx.lineTo(-sz*1.1, -h*0.1+bob);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = c1;
-    ctx.beginPath();
-    ctx.ellipse(0, -h*0.4+bob, sz*0.7, sz*0.38, 0, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.arc(sz*0.45, -h*0.5+bob, 1.5, 0, Math.PI*2); ctx.fill();
   } else if (shape === 'spider'){
     ctx.strokeStyle = c2; ctx.lineWidth = 2;
     for (let i=0;i<4;i++){
@@ -1928,6 +1939,7 @@ function drawMiningProgress(){
 function drawBuildGhost(){
   if (!G.buildMode) return;
   const p = G.players.find(pl => pl.isLocal);
+  if (!p) return;
   const tool = TOOLS[G.currentTool];
   const px = p.x/TILE, py = p.y/TILE;
   const mx = VW/2, my = VH/2;
@@ -1943,13 +1955,6 @@ function drawBuildGhost(){
   ctx.setLineDash([4,4]);
   ctx.strokeRect(sx+1, sy+1, TILE-2, TILE-2);
   ctx.setLineDash([]);
-  if (canPlace){
-    const bt = G.hotbar[G.hotbarSel];
-    ctx.globalAlpha = 0.5;
-    ctx.fillStyle = BLOCKS[bt].color;
-    ctx.fillRect(sx+2, sy+2, TILE-4, TILE-4);
-    ctx.globalAlpha = 1;
-  }
 }
 function drawDarkness(){
   const darkness = getDarkness();
@@ -1985,8 +1990,7 @@ function drawUI(){
   const pct = Math.max(0, p.hp/p.maxHp);
   const grad = ctx.createLinearGradient(hpX, 0, hpX+hpW, 0);
   grad.addColorStop(0, '#ff3a3a'); grad.addColorStop(1, '#ff7a3a');
-  ctx.fillStyle = grad;
-  ctx.fillRect(hpX, hpY, hpW*pct, hpH);
+  ctx.fillStyle = grad; ctx.fillRect(hpX, hpY, hpW*pct, hpH);
   ctx.strokeStyle = '#000'; ctx.lineWidth = 2*scale;
   ctx.strokeRect(hpX, hpY, hpW, hpH);
   ctx.fillStyle = '#fff';
@@ -2007,14 +2011,14 @@ function drawUI(){
     ctx.beginPath();
     ctx.arc(UI.joy.x, UI.joy.y, UI.joy.r, 0, Math.PI*2);
     ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 3; ctx.stroke();
     const kx = UI.joy.x + input.joyVec.x*(UI.joy.r - UI.joy.knobR);
     const ky = UI.joy.y + input.joyVec.y*(UI.joy.r - UI.joy.knobR);
     ctx.beginPath();
     ctx.arc(kx, ky, UI.joy.knobR, 0, Math.PI*2);
-    ctx.fillStyle = input.joyId !== null ? 'rgba(127,255,127,0.7)' : 'rgba(255,255,255,0.4)';
+    ctx.fillStyle = input.joyId !== null ? 'rgba(127,255,127,0.75)' : 'rgba(255,255,255,0.45)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 2; ctx.stroke();
 
     const actPressed = input.actionHeld;
     ctx.beginPath();
@@ -2024,7 +2028,7 @@ function drawUI(){
     ctx.strokeStyle = actPressed ? '#fff' : '#ffd54a';
     ctx.lineWidth = 3; ctx.stroke();
     ctx.fillStyle = '#fff';
-    ctx.font = `bold ${Math.round(20*scale)}px sans-serif`;
+    ctx.font = `bold ${Math.round(22*scale)}px sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('⛏', UI.action.x, UI.action.y);
 
@@ -2045,33 +2049,35 @@ function drawUI(){
   }
 
   const hb = UI.hotbar;
-  for (let i=0;i<6;i++){
-    const bx = hb.startX + i*(hb.w+hb.gap);
-    const by = hb.y;
-    const bt = G.hotbar[i];
-    const sel = i === G.hotbarSel;
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(bx, by, hb.w, hb.h);
-    ctx.strokeStyle = sel ? '#ffd54a' : '#3a5a3a';
-    ctx.lineWidth = sel ? 3 : 2;
-    ctx.strokeRect(bx+0.5, by+0.5, hb.w-1, hb.h-1);
-    if (BLOCKS[bt]){
-      ctx.fillStyle = BLOCKS[bt].color;
-      ctx.fillRect(bx+6, by+6, hb.w-12, hb.h-12);
-      ctx.fillStyle = BLOCKS[bt].top;
-      ctx.fillRect(bx+6, by+6, hb.w-12, 4);
+  if (hb){
+    for (let i=0;i<6;i++){
+      const bx = hb.startX + i*(hb.w+hb.gap);
+      const by = hb.y;
+      const bt = G.hotbar[i];
+      const sel = i === G.hotbarSel;
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillRect(bx, by, hb.w, hb.h);
+      ctx.strokeStyle = sel ? '#ffd54a' : '#3a5a3a';
+      ctx.lineWidth = sel ? 3 : 2;
+      ctx.strokeRect(bx+0.5, by+0.5, hb.w-1, hb.h-1);
+      if (BLOCKS[bt]){
+        ctx.fillStyle = BLOCKS[bt].color;
+        ctx.fillRect(bx+6, by+6, hb.w-12, hb.h-12);
+        ctx.fillStyle = BLOCKS[bt].top;
+        ctx.fillRect(bx+6, by+6, hb.w-12, 4);
+      }
+      const cnt = G.inv[bt] || 0;
+      ctx.fillStyle = cnt > 0 ? '#fff' : '#666';
+      ctx.font = 'bold 11px monospace';
+      ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+      ctx.textAlign = 'right';
+      ctx.strokeText(cnt, bx+hb.w-3, by+hb.h-3);
+      ctx.fillText(cnt, bx+hb.w-3, by+hb.h-3);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = sel ? '#ffd54a' : 'rgba(255,255,255,0.5)';
+      ctx.font = 'bold 10px monospace';
+      ctx.fillText(i+1, bx+4, by+12);
     }
-    const cnt = G.inv[bt] || 0;
-    ctx.fillStyle = cnt > 0 ? '#fff' : '#666';
-    ctx.font = 'bold 11px monospace';
-    ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
-    ctx.textAlign = 'right';
-    ctx.strokeText(cnt, bx+hb.w-3, by+hb.h-3);
-    ctx.fillText(cnt, bx+hb.w-3, by+hb.h-3);
-    ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = 'bold 9px monospace';
-    ctx.fillText(i+1, bx+3, by+10);
   }
 
   if (p.hp/p.maxHp < 0.3 && p.state !== 'dead'){
@@ -2083,6 +2089,11 @@ function drawUI(){
 
 function render(){
   try {
+    if (!G.world){
+      ctx.fillStyle = '#0a0f0a';
+      ctx.fillRect(0, 0, VW, VH);
+      return;
+    }
     drawTiles();
     const all = [
       ...G.enemies.map(e => ({ y: e.y, draw: () => drawEnemy(e) })),
@@ -2099,13 +2110,6 @@ function render(){
     drawUI();
   } catch(e){
     console.error('[Render]', e);
-    ctx.fillStyle = '#1a2a1a';
-    ctx.fillRect(0, 0, VW, VH);
-    ctx.fillStyle = '#fff';
-    ctx.font = '14px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('Render error — check console', VW/2, VH/2);
-    ctx.textAlign = 'left';
   }
 }
 
@@ -2119,6 +2123,280 @@ function loop(now){
   } catch(err){ console.error('[Loop]', err); }
   requestAnimationFrame(loop);
 }
+
+/* ============================================================
+   CALIBRATION UI
+   ============================================================ */
+const CalibUI = {
+  open: false,
+  currentKey: null,
+  currentType: null, // 'player' or 'mob'
+  currentIdx: 0,
+
+  allSprites: [
+    { type:'player', key:'nam_trang', label:'Nam sáng' },
+    { type:'player', key:'nam_den',   label:'Nam tối' },
+    { type:'player', key:'nu_trang',  label:'Nữ sáng' },
+    { type:'player', key:'nu_den',    label:'Nữ tối' },
+    { type:'mob', key:'imp',    label:'Imp' },
+    { type:'mob', key:'hound',  label:'Hound' },
+    { type:'mob', key:'wraith', label:'Wraith' },
+    { type:'mob', key:'brute',  label:'Brute' },
+    { type:'mob', key:'boss',   label:'Boss' }
+  ],
+
+  openPanel(){
+    this.open = true;
+    document.getElementById('calibPanel').classList.add('show');
+    this.buildTabs();
+    this.select(0);
+  },
+  closePanel(){
+    this.open = false;
+    document.getElementById('calibPanel').classList.remove('show');
+  },
+  buildTabs(){
+    const tabs = document.getElementById('calibTabs');
+    tabs.innerHTML = '';
+    this.allSprites.forEach((s, i) => {
+      const t = document.createElement('div');
+      t.className = 'calib-tab';
+      t.textContent = s.label;
+      t.addEventListener('click', () => this.select(i));
+      tabs.appendChild(t);
+    });
+  },
+  select(idx){
+    this.currentIdx = idx;
+    const sprite = this.allSprites[idx];
+    this.currentType = sprite.type;
+    this.currentKey = sprite.key;
+    // Active tab
+    document.querySelectorAll('.calib-tab').forEach((t, i) => {
+      t.classList.toggle('active', i === idx);
+    });
+    this.loadValues();
+    this.drawPreview();
+    this.buildFrameList();
+  },
+  loadValues(){
+    const key = this.currentType + '_' + this.currentKey;
+    const cal = Calib.get(key);
+    let cfg;
+    if (this.currentType === 'player') cfg = PLAYER_SKINS[this.currentKey];
+    else cfg = MOB_SPRITE_CFG[this.currentKey];
+
+    const fw = cal ? cal.fw : (cfg.fw || (this.currentType === 'player'
+      ? PLAYER_IMGS[this.currentKey].width / cfg.cols
+      : MOB_IMGS[this.currentKey].width / Object.values(cfg.frames).reduce((a,b)=>a+b,0)));
+    const fh = cal ? cal.fh : (cfg.fh || (this.currentType === 'player'
+      ? PLAYER_IMGS[this.currentKey].height / cfg.rows
+      : MOB_IMGS[this.currentKey].height));
+
+    document.getElementById('calibFw').value = fw.toFixed(1);
+    document.getElementById('calibFh').value = fh.toFixed(1);
+    document.getElementById('calibOx').value = (cal ? cal.ox : (cfg.ox||0)).toFixed(1);
+    document.getElementById('calibOy').value = (cal ? cal.oy : (cfg.oy||0)).toFixed(1);
+    document.getElementById('calibDisplayH').value = cal ? cal.displayH : cfg.displayH;
+    document.getElementById('calibDrawY').value = (cal ? cal.drawY : (cfg.drawY||0));
+
+    document.getElementById('calibInfo').innerHTML =
+      `<b>${this.allSprites[this.currentIdx].label}</b> — Chỉnh fw/fh để sprite khớp ô. Xem preview bên trên.`;
+  },
+  drawPreview(){
+    const canvas = document.getElementById('calibCanvas');
+    const img = this.currentType === 'player'
+      ? PLAYER_IMGS[this.currentKey]
+      : MOB_IMGS[this.currentKey];
+    if (!img) return;
+    const fw = parseFloat(document.getElementById('calibFw').value) || 64;
+    const fh = parseFloat(document.getElementById('calibFh').value) || 64;
+    const ox = parseFloat(document.getElementById('calibOx').value) || 0;
+    const oy = parseFloat(document.getElementById('calibOy').value) || 0;
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const cc = canvas.getContext('2d');
+    cc.imageSmoothingEnabled = false;
+    cc.fillStyle = '#000';
+    cc.fillRect(0, 0, canvas.width, canvas.height);
+    cc.drawImage(img, 0, 0);
+
+    // Vẽ khung cho từng frame
+    const cols = Math.ceil(img.width / fw);
+    const rows = Math.ceil(img.height / fh);
+    cc.strokeStyle = '#ff4040';
+    cc.lineWidth = 1;
+    for (let c = 0; c <= cols; c++){
+      const x = c * fw + ox;
+      if (x < 0 || x > canvas.width) continue;
+      cc.beginPath();
+      cc.moveTo(x, 0);
+      cc.lineTo(x, canvas.height);
+      cc.stroke();
+    }
+    for (let r = 0; r <= rows; r++){
+      const y = r * fh + oy;
+      if (y < 0 || y > canvas.height) continue;
+      cc.beginPath();
+      cc.moveTo(0, y);
+      cc.lineTo(canvas.width, y);
+      cc.stroke();
+    }
+    // Highlight frame 0
+    cc.strokeStyle = '#ffd54a';
+    cc.lineWidth = 2;
+    cc.strokeRect(ox, oy, fw, fh);
+  },
+  buildFrameList(){
+    const list = document.getElementById('calibFrameList');
+    list.innerHTML = '';
+    const img = this.currentType === 'player'
+      ? PLAYER_IMGS[this.currentKey]
+      : MOB_IMGS[this.currentKey];
+    if (!img) return;
+    const fw = parseFloat(document.getElementById('calibFw').value) || 64;
+    const fh = parseFloat(document.getElementById('calibFh').value) || 64;
+    const ox = parseFloat(document.getElementById('calibOx').value) || 0;
+    const oy = parseFloat(document.getElementById('calibOy').value) || 0;
+
+    const cfg = this.currentType === 'player'
+      ? PLAYER_SKINS[this.currentKey]
+      : MOB_SPRITE_CFG[this.currentKey];
+
+    if (this.currentType === 'player'){
+      const rowNames = ['idle','walk','jump','attack','hurt','dead'];
+      const rowMap = { idle:0, walk:1, jump:2, attack:3, hurt:4, dead:5 };
+      rowNames.forEach(stateName => {
+        const row = rowMap[stateName];
+        const cnt = cfg.frames[stateName] || 4;
+        for (let i = 0; i < cnt; i++){
+          const item = document.createElement('div');
+          item.className = 'calib-frame-item';
+          const c = document.createElement('canvas');
+          c.width = 48; c.height = 48;
+          const cx = c.getContext('2d');
+          cx.imageSmoothingEnabled = false;
+          cx.drawImage(img, i*fw + ox, row*fh + oy, fw, fh, 0, 0, 48, 48);
+          item.appendChild(c);
+          const lbl = document.createElement('span');
+          lbl.className = 'lbl';
+          lbl.textContent = i;
+          item.appendChild(lbl);
+          const slbl = document.createElement('span');
+          slbl.className = 'state-lbl';
+          slbl.textContent = stateName;
+          item.appendChild(slbl);
+          list.appendChild(item);
+        }
+      });
+    } else {
+      const order = ['idle','move','attack','hurt','death'];
+      let idx = 0;
+      order.forEach(stateName => {
+        const cnt = cfg.frames[stateName] || 1;
+        for (let i = 0; i < cnt; i++){
+          const item = document.createElement('div');
+          item.className = 'calib-frame-item';
+          const c = document.createElement('canvas');
+          c.width = 48; c.height = 48;
+          const cx = c.getContext('2d');
+          cx.imageSmoothingEnabled = false;
+          cx.drawImage(img, idx*fw + ox, oy, fw, fh, 0, 0, 48, 48);
+          item.appendChild(c);
+          const lbl = document.createElement('span');
+          lbl.className = 'lbl';
+          lbl.textContent = idx;
+          item.appendChild(lbl);
+          const slbl = document.createElement('span');
+          slbl.className = 'state-lbl';
+          slbl.textContent = stateName;
+          item.appendChild(slbl);
+          list.appendChild(item);
+          idx++;
+        }
+      });
+    }
+  },
+  save(){
+    const fw = parseFloat(document.getElementById('calibFw').value) || 64;
+    const fh = parseFloat(document.getElementById('calibFh').value) || 64;
+    const ox = parseFloat(document.getElementById('calibOx').value) || 0;
+    const oy = parseFloat(document.getElementById('calibOy').value) || 0;
+    const displayH = parseInt(document.getElementById('calibDisplayH').value) || 56;
+    const drawY = parseFloat(document.getElementById('calibDrawY').value) || 0;
+
+    const key = this.currentType + '_' + this.currentKey;
+    Calib.set(key, { fw, fh, ox, oy, displayH, drawY });
+
+    // Apply trực tiếp vào object đang dùng
+    if (this.currentType === 'player'){
+      const cfg = PLAYER_SKINS[this.currentKey];
+      cfg.fw = fw; cfg.fh = fh;
+      cfg.ox = ox; cfg.oy = oy;
+      cfg.displayH = displayH;
+      cfg.drawY = drawY;
+    } else {
+      const dims = MOB_DIMS[this.currentKey];
+      if (dims){
+        dims.fw = fw; dims.fh = fh;
+        dims.ox = ox; dims.oy = oy;
+        dims.displayH = displayH;
+        dims.drawY = drawY;
+      }
+    }
+
+    // Flash effect
+    const info = document.getElementById('calibInfo');
+    info.innerHTML = `<b style="color:#7fff7f">✅ ĐÃ LƯU!</b> Bây giờ sprite sẽ hiển thị theo giá trị mới.`;
+    setTimeout(() => {
+      info.innerHTML = `<b>${this.allSprites[this.currentIdx].label}</b> — Đã lưu cấu hình.`;
+    }, 1500);
+  },
+  reset(){
+    const key = this.currentType + '_' + this.currentKey;
+    Calib.reset(key);
+    // Reset về auto
+    if (this.currentType === 'player'){
+      const cfg = PLAYER_SKINS[this.currentKey];
+      const img = PLAYER_IMGS[this.currentKey];
+      cfg.fw = img.width / cfg.cols;
+      cfg.fh = img.height / cfg.rows;
+      cfg.ox = 0; cfg.oy = 0;
+      cfg.drawY = 0;
+      cfg.displayH = 56;
+    } else {
+      const img = MOB_IMGS[this.currentKey];
+      const cfg = MOB_SPRITE_CFG[this.currentKey];
+      const total = Object.values(cfg.frames).reduce((s,n)=>s+n, 0);
+      const dims = MOB_DIMS[this.currentKey];
+      dims.fw = img.width / total;
+      dims.fh = img.height;
+      dims.ox = 0; dims.oy = 0;
+      dims.displayH = cfg.displayH;
+      dims.drawY = 0;
+    }
+    this.loadValues();
+    this.drawPreview();
+    this.buildFrameList();
+    document.getElementById('calibInfo').innerHTML =
+      `<b style="color:#ffd54a">↺ ĐÃ RESET</b> về giá trị tự động.`;
+  }
+};
+
+/* Wire inputs */
+['calibFw','calibFh','calibOx','calibOy'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    CalibUI.drawPreview();
+    CalibUI.buildFrameList();
+  });
+});
+document.getElementById('calibSave').addEventListener('click', () => CalibUI.save());
+document.getElementById('calibReset').addEventListener('click', () => CalibUI.reset());
+document.getElementById('calibClose').addEventListener('click', () => CalibUI.closePanel());
+document.getElementById('calibClose2').addEventListener('click', () => CalibUI.closePanel());
+document.getElementById('calibMenuBtn').addEventListener('click', () => CalibUI.openPanel());
+document.getElementById('calibBtn').addEventListener('click', () => CalibUI.openPanel());
 
 /* ============================================================
    INPUT
@@ -2142,27 +2420,26 @@ function handleTouchStart(e){
     }
     if (isInCircle(p.x, p.y, UI.place, UI.place.r+15)){
       G.buildMode = !G.buildMode;
-      addText(G.players.find(x=>x.isLocal).x, G.players.find(x=>x.isLocal).y-50,
-        G.buildMode ? '🔨 XÂY' : '⛏ ĐÀO', '#7fff7f');
+      const me = G.players.find(x=>x.isLocal);
+      if (me) addText(me.x, me.y-50, G.buildMode ? '🔨 XÂY' : '⛏ ĐÀO', '#7fff7f');
       continue;
     }
     if (isInCircle(p.x, p.y, UI.tool, UI.tool.r+15)){
       G.currentTool = (G.currentTool+1) % TOOLS.length;
-      addText(G.players.find(x=>x.isLocal).x, G.players.find(x=>x.isLocal).y-50,
-        TOOLS[G.currentTool].name, '#c890ff');
+      const me = G.players.find(x=>x.isLocal);
+      if (me) addText(me.x, me.y-50, TOOLS[G.currentTool].name, '#c890ff');
       continue;
     }
     const hb = UI.hotbar;
-    if (p.y >= hb.y-4 && p.y <= hb.y+hb.h+4){
+    if (hb && p.y >= hb.y-4 && p.y <= hb.y+hb.h+4){
       for (let i=0;i<6;i++){
         const bx = hb.startX + i*(hb.w+hb.gap);
         if (p.x >= bx-2 && p.x <= bx+hb.w+2){ G.hotbarSel = i; break; }
       }
       continue;
     }
-    if (G.buildMode){
-      tryPlaceBlock(p.x, p.y);
-    } else {
+    if (G.buildMode) tryPlaceBlock(p.x, p.y);
+    else {
       const wx = p.x + G.cam.x, wy = p.y + G.cam.y;
       G.mining.tx = Math.floor(wx/TILE);
       G.mining.ty = Math.floor(wy/TILE);
@@ -2228,7 +2505,7 @@ addEventListener('keydown', (e) => {
 addEventListener('keyup', (e) => { input.keys[e.key.toLowerCase()] = false; });
 
 /* ============================================================
-   NETWORK — MULTI-PLAYER (HOST + up to 4 CLIENTS)
+   NETWORK
    ============================================================ */
 const ICE_CONFIG = {
   iceServers: [
@@ -2240,19 +2517,13 @@ const ICE_CONFIG = {
 };
 
 const Net = {
-  peer:null,
-  conns:{},           // host: { peerId: conn }
-  hostConn:null,      // client: connection to host
+  peer:null, conns:{}, hostConn:null,
   isHost:false, connected:false,
-  roomCode:'', hostPeerId:'',
-  myPeerId:'',
-  sendRate: 1/20,
-  lastSendT: 0,
-  connectTimeout: null,
-  gameStarted: false,
+  roomCode:'', hostPeerId:'', myPeerId:'',
+  sendRate: 1/20, lastSendT: 0,
+  connectTimeout: null, gameStarted: false,
   pendingJoinCode: '',
-  clientPlayers: {},  // host: { peerId: { skin, hp, x, y, ... } }
-  clientInputs: {}    // host: { peerId: inputState }
+  clientPlayers: {}, clientInputs: {}
 };
 
 function cleanCode(str){ return (str || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, ''); }
@@ -2267,33 +2538,49 @@ function updatePlayersList(){
   const el = document.getElementById('playersList');
   if (!el) return;
   el.innerHTML = '';
-  let count = 0;
   for (const p of G.players){
     const chip = document.createElement('span');
     chip.className = 'p-chip' + (p.id === 'host' ? ' host' : '');
     const label = p.id === 'host' ? '👑 HOST' :
-                  (p.id === Net.myPeerId ? '⭐ BẠN' : ('P' + (p.id ? p.id.slice(-4) : '?')));
+                  (p.id === Net.myPeerId ? '⭐ BẠN' : ('P' + String(p.id||'').slice(-4)));
     chip.textContent = label;
     el.appendChild(chip);
-    count++;
-  }
-  if (count >= 1){
-    const note = document.createElement('span');
-    note.style.cssText = 'font-size:9px;color:#7a9a7a;width:100%;text-align:center;margin-top:4px';
-    note.textContent = `${count}/${MAX_PLAYERS} người`;
-    el.appendChild(note);
   }
 }
+function updateHostList(){
+  const el = document.getElementById('playersList');
+  if (!el || G.state === 'playing') return;
+  el.innerHTML = '<div class="p-chip host">👑 Bạn (HOST)</div>';
+  for (const peerId in Net.conns){
+    const chip = document.createElement('span');
+    chip.className = 'p-chip';
+    chip.textContent = 'P' + peerId.slice(-4);
+    el.appendChild(chip);
+  }
+}
+function randomSkin(){
+  const keys = Object.keys(PLAYER_SKINS);
+  const avail = keys.filter(k => k !== selectedSkin);
+  return avail[Math.floor(Math.random() * avail.length)] || keys[0];
+}
+function findSpawnNear(ref){
+  if (!ref) return { x: WORLD_W/2*TILE, y: WORLD_H/2*TILE };
+  for (let r = 60; r < 400; r += 40){
+    const angle = Math.random() * Math.PI * 2;
+    const x = clamp(ref.x + Math.cos(angle)*r, 40, WORLD_W*TILE - 40);
+    const y = clamp(ref.y + Math.sin(angle)*r, 40, WORLD_H*TILE - 40);
+    const tx = Math.floor(x/TILE), ty = Math.floor(y/TILE);
+    if (!isSolid(tx, ty)) return { x, y };
+  }
+  return { x: ref.x + 60, y: ref.y + 60 };
+}
 
-/* ---------------- HOST ---------------- */
 function startHost(){
   const code = 'SC' + Math.random().toString(36).substring(2, 8).toUpperCase();
   Net.roomCode = code;
   Net.isHost = true;
   Net.gameStarted = false;
-  Net.conns = {};
-  Net.clientPlayers = {};
-  Net.clientInputs = {};
+  Net.conns = {}; Net.clientPlayers = {}; Net.clientInputs = {};
 
   setStatus('hostStatus', '⏳ Đang khởi tạo phòng...', '');
   document.getElementById('roomCode').textContent = code + ' (đang kết nối...)';
@@ -2307,35 +2594,30 @@ function startHost(){
     Net.myPeerId = id;
     document.getElementById('roomCode').textContent = id;
     setStatus('hostStatus', '✅ Phòng sẵn sàng! Chờ bạn bè (tối đa 4)...', 'ok');
-
-    // ⚡ HOST VÀO GAME NGAY, KHÔNG CHỜ AI
-    setTimeout(() => {
+    if (!Net.gameStarted){
+      Net.gameStarted = true;
       startGame('host');
-    }, 800);
+    }
   });
 
   Net.peer.on('connection', (conn) => {
-    // Kiểm tra số người
     const currentCount = Object.keys(Net.conns).length + 1;
     if (currentCount >= MAX_PLAYERS){
       try { conn.send({ type:'full' }); } catch(e){}
-      setTimeout(() => conn.close(), 500);
+      setTimeout(() => { try { conn.close(); } catch(e){} }, 500);
       return;
     }
-
     Net.conns[conn.peer] = conn;
 
     conn.on('open', () => {
-      console.log(`[Net] Client ${conn.peer} connected (${currentCount}/${MAX_PLAYERS})`);
-      // Tạo player cho client
-      const spawn = findSpawnNear(G.players[0]);
-      const clientPlayer = createPlayer(conn.peer, false, spawn.x, spawn.y, randomSkin());
-      G.players.push(clientPlayer);
-      Net.clientPlayers[conn.peer] = clientPlayer;
+      if (G.players.length === 0){ setTimeout(() => conn.close(), 1000); return; }
+      const host = G.players.find(p => p.isLocal) || G.players[0];
+      const spawn = findSpawnNear(host);
+      const cp = createPlayer(conn.peer, false, spawn.x, spawn.y, randomSkin());
+      G.players.push(cp);
+      Net.clientPlayers[conn.peer] = cp;
 
-      // Gửi init cho client mới
-      const others = G.players
-        .filter(pl => pl.id !== conn.peer)
+      const others = G.players.filter(pl => pl.id !== conn.peer)
         .map(pl => ({ id: pl.id, x: pl.x, y: pl.y, hp: pl.hp, skin: pl.skin }));
 
       try {
@@ -2349,31 +2631,23 @@ function startHost(){
           players: others,
           spawnX: spawn.x, spawnY: spawn.y
         });
-      } catch(e){ console.error('[Net] send init fail', e); }
+      } catch(e){}
 
-      // Cập nhật UI
-      setStatus('hostStatus', `✅ ${currentCount}/${MAX_PLAYERS} người trong phòng`, 'ok');
-      if (G.state === 'playing' || G.state === 'paused-rot'){
-        updatePlayersList();
-      } else {
-        updateHostList();
-      }
+      const count = Object.keys(Net.conns).length + 1;
+      setStatus('hostStatus', `✅ ${count}/${MAX_PLAYERS} người trong phòng`, 'ok');
+      updatePlayersList();
     });
 
     conn.on('data', (data) => handleNetDataFromClient(conn.peer, data));
-
     conn.on('close', () => {
-      console.log(`[Net] Client ${conn.peer} disconnected`);
       delete Net.conns[conn.peer];
       delete Net.clientPlayers[conn.peer];
       delete Net.clientInputs[conn.peer];
       G.players = G.players.filter(pl => pl.id !== conn.peer);
       const count = Object.keys(Net.conns).length + 1;
       setStatus('hostStatus', `✅ ${count}/${MAX_PLAYERS} người trong phòng`, 'ok');
-      updateHostList();
       updatePlayersList();
     });
-
     conn.on('error', (err) => console.error('[Net] Conn error:', err));
   });
 
@@ -2388,49 +2662,12 @@ function startHost(){
   });
 }
 
-function updateHostList(){
-  const el = document.getElementById('playersList');
-  if (!el || G.state === 'playing') return;
-  el.innerHTML = '<div style="font-size:10px;color:#7a9a7a;width:100%;text-align:center">👑 Bạn (HOST)</div>';
-  for (const peerId in Net.conns){
-    const chip = document.createElement('span');
-    chip.className = 'p-chip';
-    chip.textContent = 'P' + peerId.slice(-4);
-    el.appendChild(chip);
-  }
-}
-
-function randomSkin(){
-  const keys = Object.keys(PLAYER_SKINS);
-  // Tránh trùng với host
-  const hostSkin = selectedSkin;
-  const avail = keys.filter(k => k !== hostSkin);
-  return avail[Math.floor(Math.random() * avail.length)] || keys[0];
-}
-
-function findSpawnNear(ref){
-  for (let r = 60; r < 400; r += 40){
-    const angle = Math.random() * Math.PI * 2;
-    const x = clamp(ref.x + Math.cos(angle)*r, 40, WORLD_W*TILE - 40);
-    const y = clamp(ref.y + Math.sin(angle)*r, 40, WORLD_H*TILE - 40);
-    const tx = Math.floor(x/TILE), ty = Math.floor(y/TILE);
-    if (!isSolid(tx, ty)) return { x, y };
-  }
-  return { x: ref.x + 60, y: ref.y + 60 };
-}
-
-/* ---------------- CLIENT ---------------- */
 function startClient(hostCode){
   const code = cleanCode(hostCode);
   if (!code){ setStatus('joinStatus', '❌ Mã không hợp lệ', 'err'); return; }
-
   Net.pendingJoinCode = code;
-  Net.isHost = false;
-  Net.roomCode = code;
-  Net.gameStarted = false;
-
+  Net.isHost = false; Net.roomCode = code; Net.gameStarted = false;
   setStatus('joinStatus', '⏳ Đang khởi tạo...', '');
-
   if (Net.peer){ try { Net.peer.destroy(); } catch(e){} Net.peer = null; }
   if (Net.hostConn){ try { Net.hostConn.close(); } catch(e){} Net.hostConn = null; }
 
@@ -2438,13 +2675,11 @@ function startClient(hostCode){
     host: PEER_HOST, path: PEER_PATH, secure: true,
     debug: 1, config: ICE_CONFIG
   });
-
   Net.peer.on('open', (id) => {
     Net.myPeerId = id;
     setStatus('joinStatus', '⏳ Đang kết nối đến ' + code + '...', '');
     doConnect(code);
   });
-
   Net.peer.on('error', (err) => handleJoinError(err.type, err.message));
 }
 
@@ -2453,30 +2688,25 @@ function doConnect(code){
   let conn;
   try { conn = Net.peer.connect(code, { reliable: false }); }
   catch(e){ handleJoinError('connect-fail', e.message); return; }
-
   Net.hostConn = conn;
 
   conn.on('open', () => {
     Net.connected = true;
     if (Net.connectTimeout) clearTimeout(Net.connectTimeout);
-    setStatus('joinStatus', '✅ Đã kết nối! Đang chờ host gửi dữ liệu...', 'ok');
+    setStatus('joinStatus', '✅ Đã kết nối! Đang chờ host...', 'ok');
     document.getElementById('retryJoinBtn').style.display = 'none';
   });
-
   conn.on('data', (data) => handleNetDataFromHost(data));
-
   conn.on('close', () => {
     Net.connected = false;
     if (G.state === 'playing' || G.state === 'paused-rot'){
       setTimeout(() => {
-        if (!confirm('Mất kết nối với host.\nOK để quay về menu.')) return;
-        returnToMenu();
+        if (confirm('Mất kết nối với host.\nQuay về menu?')) returnToMenu();
       }, 100);
     }
   });
-
   conn.on('error', (err) => {
-    console.error('[Net] Client conn error:', err);
+    console.error('[Net] Client error:', err);
     if (!Net.connected) handleJoinError(err.type || 'conn-error', err.message);
   });
 
@@ -2494,7 +2724,7 @@ function handleJoinError(type, msg){
   } else if (type === 'timeout'){
     userMsg += '→ Timeout.\n\n• Tắt VPN\n• Đổi WiFi\n• Bấm THỬ LẠI';
   } else if (type === 'network' || type === 'server-error'){
-    userMsg += '→ Lỗi server. Render free có thể ngủ 30s. Bấm THỬ LẠI.';
+    userMsg += '→ Lỗi server. Render free có thể cần 30s khởi động.';
   } else {
     userMsg += '→ ' + (msg || type);
   }
@@ -2502,7 +2732,6 @@ function handleJoinError(type, msg){
   document.getElementById('retryJoinBtn').style.display = 'block';
 }
 
-/* ---------------- DATA HANDLERS ---------------- */
 function handleNetDataFromClient(peerId, data){
   if (!data) return;
   if (data.type === 'input'){
@@ -2512,23 +2741,15 @@ function handleNetDataFromClient(peerId, data){
   } else if (data.type === 'skin'){
     const pl = Net.clientPlayers[peerId];
     if (pl) pl.skin = data.skin;
-  } else if (data.type === 'block'){
-    // Client xin đổi block
-    setTile(data.tx, data.ty, data.t);
   }
 }
-
 function handleNetDataFromHost(data){
   if (!data) return;
-  if (data.type === 'state'){
-    applyNetState(data);
-  } else if (data.type === 'init'){
-    applyInit(data);
-  } else if (data.type === 'full'){
+  if (data.type === 'state') applyNetState(data);
+  else if (data.type === 'init') applyInit(data);
+  else if (data.type === 'full'){
     setStatus('joinStatus', '❌ Phòng đã đủ người (5/5)', 'err');
     if (Net.hostConn) try { Net.hostConn.close(); } catch(e){}
-  } else if (data.type === 'block'){
-    setTile(data.tx, data.ty, data.t);
   }
 }
 
@@ -2536,23 +2757,19 @@ function applyInit(data){
   if (data.world) G.world = data.world;
   G.dayTime = data.dayTime || 0.25;
   G.dayCount = data.dayCount || 1;
-
   G.players = [];
-  // Host player
   if (data.players){
     for (const pd of data.players){
-      const pl = createPlayer(pd.id, pd.id === data.myId, pd.x, pd.y, pd.skin || 'nam_trang');
+      if (pd.id === data.myId) continue;
+      const pl = createPlayer(pd.id, false, pd.x, pd.y, pd.skin || 'nam_trang');
       pl.hp = pd.hp;
       G.players.push(pl);
     }
   }
-  // Player của chính mình
   const me = createPlayer(data.myId, true, data.spawnX, data.spawnY, selectedSkin);
   G.players.push(me);
-
   G.myPlayerId = data.myId;
   Net.hostPeerId = data.hostId;
-
   G.cam.x = me.x - VW/2;
   G.cam.y = me.y - VH/2;
 
@@ -2570,11 +2787,7 @@ function applyInit(data){
   updateNetHud();
   buildInvFilter();
   checkOrientation();
-
-  // Gửi skin cho host biết
-  try {
-    if (Net.hostConn) Net.hostConn.send({ type:'skin', skin: selectedSkin });
-  } catch(e){}
+  try { if (Net.hostConn) Net.hostConn.send({ type:'skin', skin: selectedSkin }); } catch(e){}
 }
 
 function sendInput(){
@@ -2598,6 +2811,7 @@ function sendInput(){
 
 function sendState(){
   if (!Net.connected || !Net.isHost) return;
+  if (Object.keys(Net.conns).length === 0) return;
   const now = performance.now();
   if (now - Net.lastSendT < Net.sendRate*1000) return;
   Net.lastSendT = now;
@@ -2608,8 +2822,7 @@ function sendState(){
     players: G.players.map(p => ({
       id:p.id, x:Math.round(p.x), y:Math.round(p.y),
       hp:Math.round(p.hp), state:p.state, facing:p.facing,
-      aimX:p.aimX, aimY:p.aimY, stateT:p.stateT,
-      skin:p.skin
+      aimX:p.aimX, aimY:p.aimY, stateT:p.stateT, skin:p.skin
     })),
     enemies: G.enemies.map(e => ({
       type:e.type, x:Math.round(e.x), y:Math.round(e.y),
@@ -2624,7 +2837,6 @@ function sendState(){
       dead:m.dead, deathTimer:m.deathTimer, animStartT:m.animStartT
     }))
   };
-
   for (const peerId in Net.conns){
     const conn = Net.conns[peerId];
     if (!conn || !conn.open) continue;
@@ -2636,11 +2848,9 @@ function applyNetState(data){
   G.time = data.t; G.kills = data.kills;
   if (data.dayTime !== undefined){ G.dayTime = data.dayTime; G.dayCount = data.dayCount; }
 
-  // Cập nhật players
   for (const pd of data.players){
     let p = G.players.find(pl => pl.id === pd.id);
     if (!p){
-      // Player mới xuất hiện
       p = createPlayer(pd.id, pd.id === Net.myPeerId, pd.x, pd.y, pd.skin || 'nam_trang');
       G.players.push(p);
     }
@@ -2652,19 +2862,14 @@ function applyNetState(data){
       }
     } else {
       p.rx = pd.x; p.ry = pd.y; p.hasTarget = true;
-      p.hp = pd.hp;
-      p.state = pd.state;
-      p.facing = pd.facing;
-      p.aimX = pd.aimX; p.aimY = pd.aimY;
-      p.stateT = pd.stateT;
+      p.hp = pd.hp; p.state = pd.state; p.facing = pd.facing;
+      p.aimX = pd.aimX; p.aimY = pd.aimY; p.stateT = pd.stateT;
       p.skin = pd.skin || p.skin;
     }
   }
-  // Xoá players không còn
   const ids = data.players.map(x => x.id);
   G.players = G.players.filter(p => ids.includes(p.id) || p.isLocal);
 
-  // Cập nhật enemies
   G.enemies = data.enemies.map((ed, i) => {
     const old = G.enemies[i];
     return {
@@ -2679,7 +2884,6 @@ function applyNetState(data){
     };
   });
 
-  // Cập nhật mobs
   if (data.mobs){
     G.mobs = data.mobs.map((md, i) => {
       const old = G.mobs[i];
@@ -2710,30 +2914,21 @@ const RECIPES = [
   { in:{120:1}, out:{140:4} },
   { in:{2:6}, out:{86:1} },
   { in:{140:3}, out:{203:2} },
-  { in:{6:4}, out:{2:1} },
   { in:{1:4}, out:{0:4} },
   { in:{160:6}, out:{140:3} },
   { in:{2:4}, out:{90:4} },
-  { in:{2:4, 6:1}, out:{101:4} },
   { in:{2:4}, out:{80:4} },
   { in:{2:4}, out:{82:4} },
   { in:{2:4}, out:{84:4} },
   { in:{3:1, 6:4}, out:{200:4} },
-  { in:{200:1}, out:{202:16} },
   { in:{140:4}, out:{212:1} },
   { in:{140:8}, out:{225:1} },
-  { in:{70:3, 2:4}, out:{216:1} },
-  { in:{140:8, 50:1}, out:{230:1} },
-  { in:{140:6, 50:3}, out:{235:1} },
-  { in:{70:3}, out:{228:1} },
   { in:{140:6}, out:{244:1} },
   { in:{50:8}, out:{69:1} },
   { in:{51:8}, out:{70:1} },
   { in:{53:8}, out:{72:1} },
   { in:{56:8}, out:{75:1} },
-  { in:{57:8}, out:{76:1} },
-  { in:{70:9, 69:1}, out:{77:1} },
-  { in:{304:1, 203:1}, out:{306:1} }
+  { in:{57:8}, out:{76:1} }
 ];
 
 function blockColor(t){ return BLOCKS[t] ? BLOCKS[t].color : '#444'; }
@@ -2800,7 +2995,6 @@ function refreshCraft(){
       if (have < need) canCraft = false;
       const it = document.createElement('div');
       it.className = 'craft-item';
-      it.title = BLOCKS[t] ? BLOCKS[t].name : ('#'+t);
       it.innerHTML =
         `<div class="ico" style="background:${blockColor(t)};border-top:4px solid ${blockTop(t)}"></div>
          <div class="need ${have >= need ? 'ok' : 'no'}">${have}/${need}</div>`;
@@ -2815,7 +3009,6 @@ function refreshCraft(){
       const amt = r.out[k];
       const it = document.createElement('div');
       it.className = 'craft-item';
-      it.title = BLOCKS[t] ? BLOCKS[t].name : ('#'+t);
       it.innerHTML =
         `<div class="ico" style="background:${blockColor(t)};border-top:4px solid ${blockTop(t)}"></div>
          <div class="need ok">+${amt}</div>`;
@@ -2854,16 +3047,16 @@ function doCraft(r){
 }
 
 function refreshInvUI(){
-  const bagPanel = document.getElementById('bagPanel');
-  const craftPanel = document.getElementById('craftPanel');
-  if (bagPanel && bagPanel.classList.contains('show')) refreshBag();
-  if (craftPanel && craftPanel.classList.contains('show')) refreshCraft();
+  const bag = document.getElementById('bagPanel');
+  const craft = document.getElementById('craftPanel');
+  if (bag && bag.classList.contains('show')) refreshBag();
+  if (craft && craft.classList.contains('show')) refreshCraft();
 }
 
 function buildInvFilter(){
   const f = document.getElementById('invFilter');
   if (!f) return;
-  const cats = ['all','natural','stone','ore','wood','leaves','flower','build','wool','concrete','terra','glass','special','func'];
+  const cats = ['all','natural','stone','ore','wood','leaves','flower','build','wool','concrete','glass','special','func'];
   f.innerHTML = '';
   for (const c of cats){
     const b = document.createElement('button');
@@ -2919,7 +3112,20 @@ function updateTimeBadge(){
   el.style.color = night ? '#7ff0ff' : '#ffd54a';
   el.style.display = (G.state === 'playing') ? 'block' : 'none';
   updateInvToggle();
-  updatePlayersList();
+  if (G.mode !== 'solo') updateNetHud();
+  const calBtn = document.getElementById('calibBtn');
+  if (G.state === 'playing') calBtn.classList.add('show');
+  else calBtn.classList.remove('show');
+}
+
+function updateNetHud(){
+  const hud = document.getElementById('netHud');
+  if (G.mode === 'solo'){ hud.style.display = 'none'; return; }
+  hud.style.display = 'block';
+  const role = G.mode === 'host' ? 'HOST' : 'CLIENT';
+  const conn = Net.connected ? '🟢' : '🔴';
+  const count = G.players.length;
+  hud.textContent = `${conn} ${role} · ${count}/${MAX_PLAYERS}`;
 }
 
 function buildSkinPicker(){
@@ -2939,7 +3145,7 @@ function buildSkinPicker(){
       c.width = cfg.fw; c.height = cfg.fh;
       const cc = c.getContext('2d');
       cc.imageSmoothingEnabled = false;
-      cc.drawImage(img, 0, 0, cfg.fw, cfg.fh, 0, 0, cfg.fw, cfg.fh);
+      cc.drawImage(img, (cfg.ox||0), (cfg.oy||0), cfg.fw, cfg.fh, 0, 0, cfg.fw, cfg.fh);
       div.appendChild(c);
     } else {
       const span = document.createElement('span');
@@ -2973,13 +3179,10 @@ const hostView = document.getElementById('hostView');
 const joinView = document.getElementById('joinView');
 
 document.getElementById('soloBtn').addEventListener('click', () => {
-  G.mode = 'solo';
-  G.myPlayerId = 'me';
-  startGame('solo');
+  G.mode = 'solo'; G.myPlayerId = 'me'; startGame('solo');
 });
 document.getElementById('multiBtn').addEventListener('click', () => {
-  menuMain.style.display = 'none';
-  menuMulti.style.display = 'block';
+  menuMain.style.display = 'none'; menuMulti.style.display = 'block';
 });
 document.getElementById('backMenuBtn').addEventListener('click', () => {
   if (Net.peer){ try{ Net.peer.destroy(); }catch(e){} Net.peer = null; }
@@ -3039,13 +3242,9 @@ function startGame(mode){
   G.mining = { tx:-1, ty:-1, progress:0 };
   G.activeFilter = 'all';
 
-  if (mode === 'client'){
-    // Client đợi init từ host, không tự spawn
-    return;
-  }
+  if (mode === 'client') return;
 
   G.world = generateWorld(G.netSeed);
-
   let spawnX = WORLD_W/2 * TILE, spawnY = WORLD_H/2 * TILE;
   for (let r = 0; r < 50; r++){
     let found = false;
@@ -3063,7 +3262,6 @@ function startGame(mode){
     }
     if (found) break;
   }
-
   G.myPlayerId = (mode === 'host') ? 'host' : 'me';
   const me = createPlayer(G.myPlayerId, true, spawnX, spawnY, selectedSkin);
   G.players.push(me);
@@ -3076,20 +3274,7 @@ function startGame(mode){
   updateNetHud();
   buildInvFilter();
   checkOrientation();
-
-  if (mode === 'host'){
-    updatePlayersList();
-  }
-}
-
-function updateNetHud(){
-  const hud = document.getElementById('netHud');
-  if (G.mode === 'solo'){ hud.style.display = 'none'; return; }
-  hud.style.display = 'block';
-  const role = G.mode === 'host' ? 'HOST' : 'CLIENT';
-  const conn = Net.connected ? '🟢' : '🔴';
-  const count = G.players.length;
-  hud.textContent = `${conn} ${role} · ${Net.roomCode} · ${count}/${MAX_PLAYERS}`;
+  updatePlayersList();
 }
 
 function gameOver(){
@@ -3108,7 +3293,7 @@ function gameOver(){
 }
 
 /* ============================================================
-   INIT / BOOT
+   INIT
    ============================================================ */
 async function init(){
   resizeCanvas();
@@ -3139,9 +3324,8 @@ async function init(){
 }
 
 async function boot(){
-  try {
-    await init();
-  } catch(e){
+  try { await init(); }
+  catch(e){
     console.error('[Boot]', e);
     document.getElementById('loading').classList.remove('show');
     document.getElementById('menu').classList.remove('hide');
