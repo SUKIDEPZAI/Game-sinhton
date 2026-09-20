@@ -48,7 +48,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 #toast.show{opacity:1}
 .menu-panel{background:linear-gradient(180deg,#3a4438 0%,#2a3328 100%);border:3px solid #0a0d08;
   box-shadow:inset 0 0 0 2px #5a6850,inset 0 0 0 4px #8a9878,0 8px 0 #000,0 12px 30px rgba(0,0,0,.7);
-  padding:24px 28px;text-align:center;max-width:480px;width:100%;max-height:92vh;overflow-y:auto;
+  padding:24px 28px;text-align:center;max-width:520px;width:100%;max-height:92vh;overflow-y:auto;
   border-radius:6px;position:relative;z-index:1}
 .logo{font-size:30px;font-weight:900;letter-spacing:2px;
   background:linear-gradient(180deg,#ffe888 0%,#ff6020 55%,#8a1a00 100%);
@@ -83,13 +83,13 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   text-shadow:0 0 12px rgba(136,255,96,.6);text-align:center}
 .status-text{font-size:11px;color:#a8b498;margin-top:10px;min-height:16px;font-family:Consolas,monospace}
 .setting-row{display:flex;align-items:center;gap:10px;margin:10px 0}
-.setting-row label{flex:0 0 130px;font-size:11px;color:#a8b498;text-align:left;margin:0}
+.setting-row label{flex:0 0 140px;font-size:11px;color:#a8b498;text-align:left;margin:0}
 .setting-row input[type=range]{flex:1;-webkit-appearance:none;height:14px;background:#1a2018;
   border:2px solid #0a0d08;border-radius:8px;box-shadow:inset 0 2px 3px rgba(0,0,0,.6)}
 .setting-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
   background:linear-gradient(180deg,#a8b898 0%,#68765a 100%);border:2px solid #0a0d08;border-radius:50%;
   cursor:pointer;box-shadow:0 2px 0 #1a1f14}
-.setting-row .val{font-size:11px;color:#88ff60;font-family:Consolas,monospace;min-width:36px;text-align:right}
+.setting-row .val{font-size:11px;color:#88ff60;font-family:Consolas,monospace;min-width:44px;text-align:right}
 .pause-panel{background:linear-gradient(180deg,#3a4438 0%,#2a3328 100%);border:3px solid #0a0d08;
   box-shadow:inset 0 0 0 2px #5a6850,inset 0 0 0 4px #8a9878,0 8px 0 #000,0 12px 30px rgba(0,0,0,.7);
   padding:24px 28px;text-align:center;max-width:360px;width:100%;border-radius:6px;
@@ -126,16 +126,22 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 #rotate{display:none;position:fixed;inset:0;background:#0a0d08;color:#e8f0d8;z-index:200;
   align-items:center;justify-content:center;text-align:center;padding:30px;font-size:16px;letter-spacing:2px}
 @media (orientation:portrait) and (max-width:900px){ #rotate{display:flex} }
-#loadError{position:fixed;top:60px;left:50%;transform:translateX(-50%);
-  background:rgba(180,30,30,.95);color:#fff;padding:14px 20px;border-radius:6px;
-  font-family:Consolas,monospace;font-size:12px;z-index:999;max-width:92vw;
-  text-align:left;border:2px solid #600;line-height:1.7;white-space:pre-wrap;word-break:break-all}
-#loadError a{color:#ffd; text-decoration:underline}
-#loadError code{background:rgba(0,0,0,.3);padding:2px 4px;border-radius:2px}
-#loadOK{position:fixed;top:60px;left:50%;transform:translateX(-50%);
-  background:rgba(30,120,40,.92);color:#fff;padding:8px 16px;border-radius:6px;
-  font-family:Consolas,monospace;font-size:12px;z-index:999;border:2px solid #060;
-  transition:opacity .4s}
+
+/* Frame Tuner */
+#tuner{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:200;
+  display:none;align-items:center;justify-content:center;padding:14px;overflow:auto}
+#tuner.show{display:flex}
+.tuner-box{background:#2a3328;border:3px solid #0a0d08;padding:16px;border-radius:6px;
+  max-width:96vw;max-height:96vh;overflow:auto;
+  box-shadow:inset 0 0 0 2px #5a6850,0 8px 0 #000;display:flex;flex-direction:column;gap:10px}
+.tuner-box h3{font-family:Consolas,monospace;color:#88ff60;font-size:13px;
+  letter-spacing:2px;margin:0}
+.tuner-box .info{font-family:Consolas,monospace;font-size:11px;color:#a8b498;line-height:1.6}
+#tunerCanvas{border:2px solid #0a0d08;background:#1a1a1a;image-rendering:pixelated;
+  display:block;max-width:100%;cursor:crosshair}
+.tuner-controls{display:flex;flex-direction:column;gap:6px}
+.tuner-controls .setting-row{margin:2px 0}
+.tuner-controls label{flex:0 0 110px;font-size:11px}
 </style>
 </head>
 <body>
@@ -158,6 +164,41 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   <button class="tb jump" id="btnJump">⤒</button>
 </div>
 <button id="settingsBtn" onclick="Game.showSettings()" title="Cài đặt (M)">⚙</button>
+
+<!-- Frame Tuner -->
+<div id="tuner">
+  <div class="tuner-box">
+    <h3>🔧 TINH CHỈNH FRAME SPRITE</h3>
+    <div class="info" id="tunerInfo">Đang tải...</div>
+    <canvas id="tunerCanvas" width="900" height="500"></canvas>
+    <div class="tuner-controls">
+      <div class="setting-row">
+        <label>Frame W</label>
+        <input type="range" id="tuneFW" min="60" max="400" value="192">
+        <span class="val" id="valFW">192</span>
+      </div>
+      <div class="setting-row">
+        <label>Frame H</label>
+        <input type="range" id="tuneFH" min="60" max="400" value="205">
+        <span class="val" id="valFH">205</span>
+      </div>
+      <div class="setting-row">
+        <label>Offset X</label>
+        <input type="range" id="tuneOX" min="-100" max="100" value="0">
+        <span class="val" id="valOX">0</span>
+      </div>
+      <div class="setting-row">
+        <label>Offset Y</label>
+        <input type="range" id="tuneOY" min="-100" max="100" value="0">
+        <span class="val" id="valOY">0</span>
+      </div>
+    </div>
+    <button class="mbtn primary" onclick="FrameTuner.save()">💾 Lưu cấu hình</button>
+    <button class="mbtn" onclick="FrameTuner.reset()">↺ Reset về mặc định</button>
+    <button class="mbtn back" onclick="FrameTuner.close()">Đóng</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 <div id="pause" class="modal hidden">
   <div class="pause-panel">
@@ -175,6 +216,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
       <button class="mbtn primary" onclick="Game.startSingleplayer()">🎮 Chơi đơn</button>
       <button class="mbtn primary" onclick="Game.showMP()">🌐 Chơi mạng (PvP)</button>
       <button class="mbtn" onclick="Game.showSettings()">⚙ Cài đặt</button>
+      <button class="mbtn" onclick="FrameTuner.open()">🔧 Tinh chỉnh frame sprite</button>
       <div style="font-size:10px;color:#586850;margin-top:14px;font-family:Consolas,monospace;line-height:1.6">
         <b style="color:#88ff60">WASD</b> di chuyển · <b style="color:#88ff60">Space</b> nhảy<br>
         <b style="color:#88ff60">Chuột trái</b> tấn công · <b style="color:#88ff60">1-4</b> chọn kiếm
@@ -238,12 +280,14 @@ let rng = Math.random, SEED = 0;
 function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 
 /* ============================================================
-   SPRITE CONFIG — Grid 8 cột × 5 hàng
+   SPRITE CONFIG — có thể chỉnh qua FrameTuner
    ============================================================ */
-const SPRITE = {
+const DEFAULT_SPRITE = {
   src: 'assets/player.png',
-  cols: 8,
-  rows: 5,
+  frameW: 192,
+  frameH: 205,
+  offsetX: 0,
+  offsetY: 0,
   animations: {
     idle:   { row: 0, frames: 7, fps: 5,  loop: true  },
     run:    { row: 1, frames: 8, fps: 10, loop: true  },
@@ -252,6 +296,20 @@ const SPRITE = {
     hurt:   { row: 4, frames: 8, fps: 12, loop: false }
   }
 };
+
+/* Load config từ localStorage (nếu user đã lưu) */
+let SPRITE = JSON.parse(JSON.stringify(DEFAULT_SPRITE));
+try {
+  const saved = localStorage.getItem('spriteConfig_v1');
+  if (saved) {
+    const cfg = JSON.parse(saved);
+    SPRITE.frameW = cfg.frameW || SPRITE.frameW;
+    SPRITE.frameH = cfg.frameH || SPRITE.frameH;
+    SPRITE.offsetX = cfg.offsetX || 0;
+    SPRITE.offsetY = cfg.offsetY || 0;
+    console.log('✓ Loaded custom sprite config from localStorage');
+  }
+} catch(e){}
 
 const ATTACK_DURATION = 8 / 14;
 const HURT_DURATION   = 8 / 12;
@@ -262,76 +320,159 @@ const FOOT_OFFSET = 14;
 
 const playerSprite = new Image();
 let spriteLoaded = false;
-let FRAME_W = 0, FRAME_H = 0;
-let loadAttempt = 0;
 
 playerSprite.onload = () => {
   spriteLoaded = true;
-  FRAME_W = playerSprite.width / SPRITE.cols;
-  FRAME_H = playerSprite.height / SPRITE.rows;
   console.log('══════════════════════════════════════');
-  console.log('✓ SPRITE LOADED OK');
-  console.log('  URL      :', playerSprite.src);
-  console.log('  Image    :', playerSprite.width + '×' + playerSprite.height);
-  console.log('  Grid     :', SPRITE.cols + '×' + SPRITE.rows);
-  console.log('  Frame    :', FRAME_W.toFixed(2) + '×' + FRAME_H.toFixed(2));
+  console.log('✓ SPRITE LOADED');
+  console.log('  Image   :', playerSprite.width + '×' + playerSprite.height);
+  console.log('  FrameW  :', SPRITE.frameW);
+  console.log('  FrameH  :', SPRITE.frameH);
+  console.log('  Offset  :', SPRITE.offsetX + ', ' + SPRITE.offsetY);
+  console.log('  Cols fit:', Math.floor(playerSprite.width / SPRITE.frameW));
+  console.log('  Rows fit:', Math.floor(playerSprite.height / SPRITE.frameH));
   console.log('══════════════════════════════════════');
-  /* Xóa thông báo lỗi (nếu có) */
-  const errEl = document.getElementById('loadError');
-  if (errEl) errEl.remove();
-  /* Hiện thông báo OK trong 2 giây */
-  const okEl = document.createElement('div');
-  okEl.id = 'loadOK';
-  okEl.textContent = `✓ Sprite OK · ${playerSprite.width}×${playerSprite.height}px · Frame ${FRAME_W.toFixed(0)}×${FRAME_H.toFixed(0)}`;
-  document.body.appendChild(okEl);
-  setTimeout(() => { okEl.style.opacity = '0'; setTimeout(() => okEl.remove(), 500); }, 2500);
-};
 
+  /* Cảnh báo nếu frame không khớp */
+  const colsFit = playerSprite.width / SPRITE.frameW;
+  const rowsFit = playerSprite.height / SPRITE.frameH;
+  if (Math.abs(colsFit - Math.round(colsFit)) > 0.01){
+    console.warn('⚠ Ảnh width không chia hết cho FrameW —', colsFit.toFixed(2), 'cột');
+  }
+  if (Math.abs(rowsFit - Math.round(rowsFit)) > 0.01){
+    console.warn('⚠ Ảnh height không chia hết cho FrameH —', rowsFit.toFixed(2), 'hàng');
+  }
+};
 playerSprite.onerror = () => {
   spriteLoaded = false;
-  loadAttempt++;
-  const absURL = new URL(SPRITE.src, window.location.href).href;
-  console.error('✗ SPRITE FAILED to load:', absURL);
-
-  /* Hiện thông báo lỗi đỏ trên màn hình */
-  let errEl = document.getElementById('loadError');
-  if (!errEl){
-    errEl = document.createElement('div');
-    errEl.id = 'loadError';
-    document.body.appendChild(errEl);
-  }
-
-  errEl.innerHTML =
-    `❌ KHÔNG TẢI ĐƯỢC SPRITE\n` +
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-    `URL đang tìm:\n${absURL}\n\n` +
-    `→ Mở URL trên để kiểm tra:\n` +
-    `  • Nếu hiện ảnh → lỗi khác\n` +
-    `  • Nếu 404 → file sai đường dẫn\n\n` +
-    `📁 Cấu trúc repo đúng phải là:\n` +
-    `  index.html\n` +
-    `  CNAME\n` +
-    `  assets/player.png   ← chữ thường hết!\n\n` +
-    `Kiểm tra lại:\n` +
-    `  1. Folder tên assets (không phải Assets)\n` +
-    `  2. File tên player.png (không phải Player.PNG)\n` +
-    `  3. File nằm TRONG folder assets\n` +
-    `  4. Hard refresh (Ctrl+Shift+R)`;
-
-  /* Thử fetch HEAD để lấy status code */
-  fetch(absURL, { method: 'HEAD', cache: 'no-store' })
-    .then(r => {
-      if (r.ok){
-        errEl.innerHTML += `\n\n⚠ File tồn tại (HTTP ${r.status}) nhưng Image load thất bại.\nCó thể do ảnh bị lỗi. Thử upload lại ảnh khác.`;
-      } else {
-        errEl.innerHTML += `\n\n🚫 Server trả về: HTTP ${r.status} ${r.statusText}\n→ File KHÔNG tồn tại ở đường dẫn này.`;
-      }
-    })
-    .catch(() => {
-      errEl.innerHTML += `\n\n⚠ Không kiểm tra được URL (network error).`;
-    });
+  console.error('✗ Không tải được sprite:', SPRITE.src);
 };
 playerSprite.src = SPRITE.src;
+
+/* ============================================================
+   FRAME TUNER — UI chỉnh frame
+   ============================================================ */
+const FrameTuner = {
+  open(){
+    document.getElementById('tuner').classList.add('show');
+    document.getElementById('tuneFW').value = SPRITE.frameW;
+    document.getElementById('tuneFH').value = SPRITE.frameH;
+    document.getElementById('tuneOX').value = SPRITE.offsetX;
+    document.getElementById('tuneOY').value = SPRITE.offsetY;
+    this.update();
+  },
+  close(){
+    document.getElementById('tuner').classList.remove('show');
+  },
+  update(){
+    const fw = +document.getElementById('tuneFW').value;
+    const fh = +document.getElementById('tuneFH').value;
+    const ox = +document.getElementById('tuneOX').value;
+    const oy = +document.getElementById('tuneOY').value;
+    document.getElementById('valFW').textContent = fw;
+    document.getElementById('valFH').textContent = fh;
+    document.getElementById('valOX').textContent = ox;
+    document.getElementById('valOY').textContent = oy;
+
+    /* Live preview */
+    SPRITE.frameW = fw;
+    SPRITE.frameH = fh;
+    SPRITE.offsetX = ox;
+    SPRITE.offsetY = oy;
+
+    this.render();
+  },
+  render(){
+    if (!spriteLoaded) return;
+    const cnv = document.getElementById('tunerCanvas');
+    const tctx = cnv.getContext('2d');
+
+    /* Fit ảnh vào canvas */
+    const maxW = 880, maxH = 480;
+    const scale = Math.min(maxW / playerSprite.width, maxH / playerSprite.height);
+    const w = Math.round(playerSprite.width * scale);
+    const h = Math.round(playerSprite.height * scale);
+
+    cnv.width = w;
+    cnv.height = h;
+    tctx.imageSmoothingEnabled = false;
+    tctx.clearRect(0, 0, w, h);
+    tctx.drawImage(playerSprite, 0, 0, w, h);
+
+    /* Vẽ lưới frame */
+    const cols = SPRITE.animations.idle.frames > 0
+      ? Math.ceil(playerSprite.width / SPRITE.frameW)
+      : 8;
+    const rows = Math.ceil(playerSprite.height / SPRITE.frameH);
+
+    tctx.strokeStyle = 'rgba(255, 60, 60, 0.9)';
+    tctx.lineWidth = 1;
+    for (let c = 0; c <= cols; c++){
+      const x = Math.round((c * SPRITE.frameW + SPRITE.offsetX) * scale) + 0.5;
+      if (x < 0 || x > w) continue;
+      tctx.beginPath(); tctx.moveTo(x, 0); tctx.lineTo(x, h); tctx.stroke();
+    }
+    for (let r = 0; r <= rows; r++){
+      const y = Math.round((r * SPRITE.frameH + SPRITE.offsetY) * scale) + 0.5;
+      if (y < 0 || y > h) continue;
+      tctx.beginPath(); tctx.moveTo(0, y); tctx.lineTo(w, y); tctx.stroke();
+    }
+
+    /* Highlight frame đầu của mỗi animation */
+    const anims = SPRITE.animations;
+    const colors = {
+      idle:'#88ff60', run:'#40c0ff', jump:'#ffcc40',
+      attack:'#ff4060', hurt:'#c040ff'
+    };
+    for (const name in anims){
+      const a = anims[name];
+      const cx = Math.round((0 + SPRITE.offsetX + SPRITE.frameW/2) * scale);
+      const cy = Math.round((a.row * SPRITE.frameH + SPRITE.offsetY + SPRITE.frameH/2) * scale);
+      tctx.fillStyle = colors[name];
+      tctx.beginPath(); tctx.arc(cx, cy, 6, 0, Math.PI*2); tctx.fill();
+      tctx.fillStyle = '#fff';
+      tctx.font = 'bold 11px Consolas, monospace';
+      tctx.textAlign = 'center';
+      tctx.fillText(name, cx + 30, cy + 4);
+      tctx.textAlign = 'left';
+    }
+
+    /* Info */
+    const colsFit = (playerSprite.width / SPRITE.frameW).toFixed(2);
+    const rowsFit = (playerSprite.height / SPRITE.frameH).toFixed(2);
+    const info = document.getElementById('tunerInfo');
+    info.innerHTML =
+      `Ảnh: <b>${playerSprite.width}×${playerSprite.height}px</b><br>` +
+      `FrameW=<b>${SPRITE.frameW}</b> → ${colsFit} cột (cần nguyên)<br>` +
+      `FrameH=<b>${SPRITE.frameH}</b> → ${rowsFit} hàng (cần nguyên)<br>` +
+      `<span style="color:#ffcc40">⚠ Kéo slider cho tới khi "cột" và "hàng" đều là số nguyên (8.00, 5.00).</span><br>` +
+      `<span style="color:#88ff60">✓ Ảnh đúng: FrameW=${Math.round(playerSprite.width/8)}, FrameH=${Math.round(playerSprite.height/5)}</span>`;
+  },
+  save(){
+    localStorage.setItem('spriteConfig_v1', JSON.stringify({
+      frameW: SPRITE.frameW,
+      frameH: SPRITE.frameH,
+      offsetX: SPRITE.offsetX,
+      offsetY: SPRITE.offsetY
+    }));
+    toast('💾 Đã lưu cấu hình frame');
+    this.close();
+  },
+  reset(){
+    SPRITE.frameW = DEFAULT_SPRITE.frameW;
+    SPRITE.frameH = DEFAULT_SPRITE.frameH;
+    SPRITE.offsetX = 0;
+    SPRITE.offsetY = 0;
+    localStorage.removeItem('spriteConfig_v1');
+    this.open();
+    toast('↺ Reset về mặc định');
+  }
+};
+
+/* Bind sliders */
+['tuneFW','tuneFH','tuneOX','tuneOY'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => FrameTuner.update());
+});
 
 /* ============================================================
    AUDIO
@@ -527,6 +668,7 @@ addEventListener('keydown', e => {
   if (e.code === 'Escape'){ if (gameStarted){ togglePause(); e.preventDefault(); } return; }
   if (!gameStarted || paused) return;
   if (e.code === 'KeyM'){ e.preventDefault(); toggleSettings(); }
+  if (e.code === 'KeyT'){ e.preventDefault(); FrameTuner.open(); }
   if (e.code === 'Space'){ e.preventDefault(); tryJump(); }
   if (e.code.startsWith('Digit')){
     const n = parseInt(e.code.slice(5));
@@ -682,7 +824,8 @@ function updatePlayer(dt){
   }
   const mag = Math.hypot(dx, dy);
   if (mag > 1){ dx /= mag; dy /= mag; }
-  if (Math.abs(dx) > 0.1) player.facing = dx > 0 ? 1 : -1;
+  /* Chỉ đổi facing khi có input thực sự, tránh lật qua lật lại */
+  if (Math.abs(dx) > 0.3) player.facing = dx > 0 ? 1 : -1;
 
   player.x += dx * player.speed * dt;
   player.y += dy * player.speed * dt;
@@ -924,20 +1067,17 @@ function getNightFactor(){
   return (1 - Math.cos(t)) / 2;
 }
 
-/* ============================================================
-   DRAW PLAYER — sprite 8×5 grid
-   ============================================================ */
 function drawPlayer(){
   const sx = player.x - cam.x;
   const syGround = player.y - cam.y;
   const sySprite = syGround + player.jumpY;
 
-  if (!spriteLoaded || FRAME_W <= 0){
+  if (!spriteLoaded){
     drawFallbackBody(sx, sySprite, player.animT, player.currentAnim, player.facing, LOCAL_COLORS);
     return;
   }
 
-  /* Shadow ở mặt đất */
+  /* Shadow */
   const shadowScale = 1 - Math.abs(player.jumpY) / 60;
   ctx.fillStyle = `rgba(0,0,0,${0.35 * shadowScale})`;
   ctx.beginPath();
@@ -951,7 +1091,6 @@ function drawSpriteFrame(animName, animTime, sx, sy, facing){
   const anim = SPRITE.animations[animName];
   if (!anim) return;
 
-  /* Tính frame index */
   const rawIdx = Math.floor(animTime * anim.fps);
   let localIdx;
   if (anim.loop){
@@ -960,15 +1099,14 @@ function drawSpriteFrame(animName, animTime, sx, sy, facing){
     localIdx = Math.max(0, Math.min(anim.frames - 1, rawIdx));
   }
 
-  /* Cắt frame từ sprite sheet */
-  const srcX = Math.round(localIdx * FRAME_W);
-  const srcY = Math.round(anim.row * FRAME_H);
-  const srcW = Math.round(FRAME_W);
-  const srcH = Math.round(FRAME_H);
+  /* Cắt frame với offset tinh chỉnh */
+  const srcX = Math.round(localIdx * SPRITE.frameW + SPRITE.offsetX);
+  const srcY = Math.round(anim.row * SPRITE.frameH + SPRITE.offsetY);
+  const srcW = Math.round(SPRITE.frameW);
+  const srcH = Math.round(SPRITE.frameH);
 
-  /* Kích thước vẽ */
   const DEST_H = DEST_HEIGHT;
-  const DEST_W = Math.round(DEST_H * (FRAME_W / FRAME_H));
+  const DEST_W = Math.round(DEST_H * (SPRITE.frameW / SPRITE.frameH));
   const drawX = Math.round(sx - DEST_W / 2);
   const drawY = Math.round(sy + FOOT_OFFSET - DEST_H);
 
