@@ -6,9 +6,7 @@
 <title>Dragon Hunter</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
-:root{
-  --text:#e8f0d8;--text-dim:#a8b498;--accent:#6fbf4a;--border:#0a0d08;
-}
+:root{--text:#e8f0d8;--text-dim:#a8b498;--accent:#6fbf4a;--border:#0a0d08}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#14180f;
   font-family:'Segoe UI',Arial,sans-serif;color:var(--text);
@@ -34,7 +32,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   display:flex;align-items:center;gap:8px;padding:6px 14px;
   background:rgba(0,0,0,.7);border:2px solid #000;border-radius:8px;
   z-index:5;pointer-events:none;font-family:Consolas,monospace;
-  box-shadow:0 2px 0 rgba(0,0,0,.5)}
+  box-shadow:0 2px 0 rgba(0,0,0,.5);transition:box-shadow .2s}
 #hpBar .heartIcon{font-size:16px}
 #hpFill{width:180px;height:12px;background:#3a1010;border:1px solid #000;position:relative;overflow:hidden;border-radius:2px}
 #hpFillInner{height:100%;width:100%;background:linear-gradient(180deg,#ff6b6b,#c02020);transition:width .2s}
@@ -67,8 +65,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 .logo{font-size:30px;font-weight:900;letter-spacing:2px;
   background:linear-gradient(180deg,#ffe888 0%,#ff6020 55%,#8a1a00 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  text-shadow:0 2px 0 rgba(0,0,0,.4);margin-bottom:4px;font-family:Consolas,monospace;
-  line-height:1.1}
+  text-shadow:0 2px 0 rgba(0,0,0,.4);margin-bottom:4px;font-family:Consolas,monospace;line-height:1.1}
 .logo-sub{font-size:10px;color:#8a9878;letter-spacing:3px;margin-bottom:20px;
   font-family:Consolas,monospace;text-transform:uppercase}
 .menu-page{display:flex;flex-direction:column;gap:10px}
@@ -81,8 +78,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   padding:13px 18px;font-size:14px;font-weight:bold;cursor:pointer;letter-spacing:1px;
   border-radius:3px;font-family:inherit;transition:all .08s;
   display:flex;align-items:center;justify-content:center;gap:8px;
-  position:relative;z-index:2;user-select:none;-webkit-user-select:none;
-  width:100%}
+  position:relative;z-index:2;user-select:none;-webkit-user-select:none;width:100%}
 .mbtn:hover{background:linear-gradient(180deg,#7a8870 0%,#5a6450 100%)}
 .mbtn:active{transform:translateY(2px);box-shadow:inset 0 1px 0 #98a888,0 2px 0 #1a1f14}
 .mbtn.primary{background:linear-gradient(180deg,#88d858 0%,#4a8a30 100%);
@@ -92,7 +88,6 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   box-shadow:inset 0 1px 0 #ff9888,0 4px 0 #3a0a06;color:#fff}
 .mbtn.back{background:linear-gradient(180deg,#5a5850 0%,#3a3830 100%);font-size:12px;padding:10px;
   margin-top:8px;box-shadow:inset 0 1px 0 #888878,0 4px 0 #1a1810}
-.mbtn[disabled]{opacity:.5;cursor:not-allowed}
 
 .menu-page label{font-size:11px;color:#a8b498;text-align:left;display:block;margin:8px 0 4px;letter-spacing:1px}
 .menu-page input[type=text]{
@@ -113,6 +108,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 .setting-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
   background:linear-gradient(180deg,#a8b898 0%,#68765a 100%);border:2px solid #0a0d08;border-radius:50%;
   cursor:pointer;box-shadow:0 2px 0 #1a1f14}
+.setting-row input[type=checkbox]{width:20px;height:20px;accent-color:#6fbf4a;cursor:pointer}
 .setting-row .val{font-size:11px;color:#88ff60;font-family:Consolas,monospace;min-width:36px;text-align:right}
 
 .pause-panel{background:linear-gradient(180deg,#3a4438 0%,#2a3328 100%);
@@ -151,9 +147,38 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 #settingsBtn.show{display:flex}
 #settingsBtn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.5)}
 
+#framePanel{position:fixed;top:56px;right:8px;width:400px;max-width:calc(100vw - 16px);
+  max-height:calc(100vh - 72px);background:linear-gradient(180deg,#3a4438 0%,#2a3328 100%);
+  border:3px solid #0a0d08;border-radius:6px;
+  box-shadow:inset 0 0 0 2px #5a6850,inset 0 0 0 4px #8a9878,0 8px 0 #000,0 12px 30px rgba(0,0,0,.7);
+  z-index:40;display:flex;flex-direction:column;color:#e8f0d8}
+#framePanel.hidden{display:none}
+.fp-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;
+  border-bottom:2px solid #0a0d08;font-size:12px;font-weight:bold;letter-spacing:1px;
+  font-family:Consolas,monospace;color:#88ff60}
+.fp-header button{background:#1a2018;border:2px solid #0a0d08;color:#e8f0d8;
+  font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:Consolas,monospace;
+  box-shadow:0 2px 0 rgba(0,0,0,.5);touch-action:manipulation}
+.fp-header button.on{background:#4a8a30;color:#e8ffb0}
+.fp-body{padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+#fpPreview{width:100%;border:2px solid #0a0d08;background:#000;image-rendering:pixelated;border-radius:3px}
+.fp-meta{display:flex;justify-content:space-between;font-size:10px;color:#a8b498;font-family:Consolas,monospace}
+.fp-actions{display:flex;gap:8px}
+.fp-actions .mbtn{flex:1;padding:10px;font-size:12px}
+.fp-result{background:#1a2018;border:2px solid #0a0d08;border-radius:3px;
+  padding:10px 12px;font-size:12px;line-height:1.65;min-height:120px;max-height:340px;
+  overflow-y:auto;white-space:pre-wrap;font-family:Consolas,monospace;color:#c8d8b8}
+.fp-result .loading{color:#ffd54a;font-style:italic}
+.fp-result .error{color:#ff6060}
+.fp-result .entry{border-top:1px dashed #3a4438;padding-top:8px;margin-top:8px}
+.fp-result .entry:first-child{border-top:none;padding-top:0;margin-top:0}
+.fp-result .ts{color:#6a7860;font-size:10px}
+.fp-result .tag{color:#88ff60;font-size:10px}
+
 #rotate{display:none;position:fixed;inset:0;background:#0a0d08;color:#e8f0d8;z-index:200;
   align-items:center;justify-content:center;text-align:center;padding:30px;font-size:16px;letter-spacing:2px}
 @media (orientation:portrait) and (max-width:900px){ #rotate{display:flex} }
+@media (max-width:520px){ #framePanel{width:calc(100vw - 16px)} }
 </style>
 </head>
 <body>
@@ -182,6 +207,30 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 
 <button id="settingsBtn" onclick="Game.showSettings()" title="Cài đặt (M)">⚙</button>
 
+<div id="framePanel" class="hidden">
+  <div class="fp-header">
+    <span>🔍 AI PHÂN TÍCH</span>
+    <div>
+      <button id="fpAuto">⏺ Auto: OFF</button>
+      <button id="fpClose">✕</button>
+    </div>
+  </div>
+  <div class="fp-body">
+    <canvas id="fpPreview" width="400" height="225"></canvas>
+    <div class="fp-meta">
+      <span id="fpFocusLabel">🎯 Toàn diện</span>
+      <span id="fpIntervalLabel">⏱️ 8s</span>
+    </div>
+    <div class="fp-actions">
+      <button class="mbtn primary" id="fpCapture">📸 Phân tích ngay</button>
+      <button class="mbtn" id="fpClear">🗑️ Xóa log</button>
+    </div>
+    <div class="fp-result" id="fpResult">
+      <em>Đang chờ dữ liệu...</em>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <div id="pause" class="modal hidden">
@@ -204,7 +253,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
       <button class="mbtn" onclick="Game.showSettings()">⚙ Cài đặt</button>
       <div style="font-size:10px;color:#586850;margin-top:14px;font-family:Consolas,monospace;line-height:1.6">
         <b style="color:#88ff60">WASD</b> di chuyển · <b style="color:#88ff60">Chuột trái</b> tấn công<br>
-        <b style="color:#88ff60">1-4</b> chọn kiếm · <b style="color:#88ff60">F</b> bay · <b style="color:#88ff60">P</b> AI phân tích
+        <b style="color:#88ff60">1-4</b> chọn kiếm · <b style="color:#88ff60">F</b> bay · <b style="color:#88ff60">P</b> AI panel
       </div>
     </div>
 
@@ -215,14 +264,14 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 
       <div id="hostPanel" class="hidden" style="margin-top:10px">
         <label>TÊN CỦA BẠN</label>
-        <input type="text" id="hostName" maxlength="12" placeholder="Rồng Con" value="Hunter">
+        <input type="text" id="hostName" maxlength="12" placeholder="Hunter" value="Hunter">
         <div id="roomCodeDisplay" class="code-display hidden"></div>
         <div class="status-text" id="hostStatus"></div>
       </div>
 
       <div id="joinPanel" class="hidden" style="margin-top:10px">
         <label>TÊN CỦA BẠN</label>
-        <input type="text" id="joinName" maxlength="12" placeholder="Thợ Săn" value="Hunter">
+        <input type="text" id="joinName" maxlength="12" placeholder="Hunter" value="Hunter">
         <label>MÃ PHÒNG</label>
         <input type="text" id="joinCode" maxlength="6" placeholder="ABC123"
           style="text-transform:uppercase;font-size:18px;letter-spacing:4px">
@@ -241,11 +290,22 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
         <input type="range" id="setMusic" min="0" max="100" value="35"><span class="val" id="valMusic">35</span></div>
       <div class="setting-row"><label>🔔 SFX</label>
         <input type="range" id="setSfx" min="0" max="100" value="80"><span class="val" id="valSfx">80</span></div>
-      <div class="setting-row"><label>🌲 Môi trường</label>
-        <input type="range" id="setAmbient" min="0" max="100" value="50"><span class="val" id="valAmbient">50</span></div>
-      <div style="font-size:10px;color:#586850;margin-top:16px;font-family:Consolas,monospace;text-align:left;line-height:1.6">
-        Nhấn <b style="color:#88ff60">M</b> trong game để mở nhanh.
-      </div>
+
+      <h3 style="margin-top:14px">AI PHÂN TÍCH</h3>
+      <div class="setting-row"><label>🔍 Auto analyze</label>
+        <input type="checkbox" id="setAutoFrame" checked></div>
+      <div class="setting-row"><label>⏱️ Chu kỳ (giây)</label>
+        <input type="range" id="setFrameInterval" min="4" max="30" value="8">
+        <span class="val" id="valInterval">8</span></div>
+      <div class="setting-row"><label>🎯 Focus</label>
+        <select id="setFrameFocus" style="flex:1;padding:6px;background:#1a2018;color:#e8f0d8;
+          border:2px solid #0a0d08;border-radius:3px">
+          <option value="full">Toàn diện</option>
+          <option value="combat">Chiến đấu</option>
+          <option value="terrain">Địa hình</option>
+          <option value="resource">Tài nguyên</option>
+        </select></div>
+
       <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
     </div>
   </div>
@@ -255,15 +315,12 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 
 <script>
 "use strict";
-/* ============================================================
-   DRAGON HUNTER — PvP Edition
-   ============================================================ */
-
-/* -------- GLOBAL ERROR HANDLER -------- */
-window.addEventListener('error', e => console.error('[GLOBAL ERROR]', e.error || e.message));
+window.addEventListener('error', e => console.error('[ERROR]', e.error || e.message));
 window.addEventListener('unhandledrejection', e => console.error('[PROMISE]', e.reason));
 
-/* -------- BACKEND CONFIG -------- */
+/* ============================================================
+   BACKEND
+   ============================================================ */
 const BACKEND = {
   host: 'game-sinhton.onrender.com',
   port: 443,
@@ -288,29 +345,50 @@ let rng = Math.random, SEED = 0;
 function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 
 /* ============================================================
+   SPRITE CONFIG
+   ============================================================ */
+const SPRITE = {
+  src: 'assets/player.png',
+  frameW: 192,
+  frameH: 205,
+  cols: 8,
+  rows: 5,
+  animations: {
+    idle:   { row: 0, frames: 7, fps: 6,  loop: true  },
+    run:    { row: 1, frames: 8, fps: 14, loop: true  },
+    jump:   { row: 2, frames: 8, fps: 10, loop: false },
+    attack: { row: 3, frames: 8, fps: 18, loop: false },
+    hurt:   { row: 4, frames: 8, fps: 10, loop: false }
+  }
+};
+const playerSprite = new Image();
+let spriteLoaded = false;
+playerSprite.onload = () => { spriteLoaded = true; console.log('✓ Sprite loaded:', SPRITE.src); };
+playerSprite.onerror = () => { spriteLoaded = false; console.warn('✗ Sprite not found, using fallback rect'); };
+playerSprite.src = SPRITE.src;
+
+/* ============================================================
    AUDIO
    ============================================================ */
 const Audio2D = (() => {
   let ctx = null, enabled = true;
-  let masterGain, musicGain, sfxGain, ambientGain, noiseBuf = null;
+  let masterGain, musicGain, sfxGain, noiseBuf = null;
   let musicPlaying = false, currentDayPhase = -1;
   function init(){
     if (ctx){ if (ctx.state==='suspended') ctx.resume(); return; }
     try {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = ctx.createGain(); musicGain = ctx.createGain();
-      sfxGain = ctx.createGain(); ambientGain = ctx.createGain();
+      masterGain = ctx.createGain(); musicGain = ctx.createGain(); sfxGain = ctx.createGain();
       musicGain.connect(masterGain); sfxGain.connect(masterGain);
-      ambientGain.connect(masterGain); masterGain.connect(ctx.destination);
-      masterGain.gain.value = 0.7; musicGain.gain.value = 0.35;
-      sfxGain.gain.value = 0.8; ambientGain.gain.value = 0.5;
+      masterGain.connect(ctx.destination);
+      masterGain.gain.value = 0.7; musicGain.gain.value = 0.35; sfxGain.gain.value = 0.8;
       const len = Math.floor(ctx.sampleRate * 2);
       noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
       const d = noiseBuf.getChannelData(0);
       for (let i=0;i<len;i++) d[i] = Math.random()*2-1;
     } catch(e){ enabled = false; }
   }
-  function noise(dur, ftype, freq, gain, q, out){
+  function noise(dur, ftype, freq, gain, q){
     if (!enabled) return; init(); if (!ctx) return;
     const t = ctx.currentTime;
     const src = ctx.createBufferSource(); src.buffer = noiseBuf;
@@ -319,10 +397,10 @@ const Audio2D = (() => {
     const g = ctx.createGain();
     g.gain.setValueAtTime(gain||0.5, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
-    src.connect(f); f.connect(g); g.connect(out||sfxGain);
+    src.connect(f); f.connect(g); g.connect(sfxGain);
     src.start(t); src.stop(t+dur+0.02);
   }
-  function tone(freq, dur, gain, type, freqEnd, out){
+  function tone(freq, dur, gain, type, freqEnd){
     if (!enabled) return; init(); if (!ctx) return;
     const t = ctx.currentTime;
     const o = ctx.createOscillator(); o.type = type||'sine';
@@ -331,40 +409,8 @@ const Audio2D = (() => {
     const g = ctx.createGain();
     g.gain.setValueAtTime(gain||0.3, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
-    o.connect(g); g.connect(out||sfxGain);
+    o.connect(g); g.connect(sfxGain);
     o.start(t); o.stop(t+dur+0.02);
-  }
-  let windNode = null, ambientScheduler = null;
-  function startAmbient(){
-    if (!enabled) return; init(); if (!ctx || windNode) return;
-    const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
-    const f = ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=600; f.Q.value=0.7;
-    const g = ctx.createGain(); g.gain.value = 0.09;
-    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.09;
-    const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.035;
-    lfo.connect(lfoGain); lfoGain.connect(g.gain);
-    src.connect(f); f.connect(g); g.connect(ambientGain);
-    src.start(); lfo.start(); windNode = src;
-    scheduleAmbientChirp();
-  }
-  function scheduleAmbientChirp(){
-    const delay = 1500 + Math.random()*4000;
-    ambientScheduler = setTimeout(() => {
-      if (!enabled || !ctx) return;
-      if (currentDayPhase === 0){
-        const base = 1800 + Math.random()*1200;
-        for (let i=0;i<3;i++) setTimeout(()=>tone(base+i*80,0.08,0.05,'sine',base+i*180,ambientGain),i*70);
-      } else if (currentDayPhase === 1){
-        const base = 3200 + Math.random()*600;
-        for (let i=0;i<4;i++) setTimeout(()=>tone(base,0.03,0.035,'square',base-200,ambientGain),i*60);
-      }
-      scheduleAmbientChirp();
-    }, delay);
-  }
-  function setNight(isNight){
-    const phase = isNight ? 1 : 0;
-    if (phase === currentDayPhase) return;
-    currentDayPhase = phase;
   }
   function startMusic(){
     if (!enabled) return; init(); if (!ctx || musicPlaying) return;
@@ -385,8 +431,8 @@ const Audio2D = (() => {
     g1.gain.linearRampToValueAtTime(0.0, t+5);
     o1.connect(g1); g1.connect(musicGain);
     o1.start(t); o1.stop(t+5.2);
-    const noteCount = 2 + Math.floor(Math.random()*3);
-    for (let i=0;i<noteCount;i++){
+    const n = 2 + Math.floor(Math.random()*3);
+    for (let i=0;i<n;i++){
       const delay = Math.random()*3;
       const freq = scale[Math.floor(Math.random()*scale.length)];
       const dur = 1.2 + Math.random()*1.8;
@@ -406,35 +452,25 @@ const Audio2D = (() => {
     }
     setTimeout(() => playMusicNotes(), 4500 + Math.random()*2000);
   }
-  function setMasterVolume(v){ init(); if (masterGain) masterGain.gain.value = Math.max(0,Math.min(1,v)); }
-  function setMusicVolume(v){ init(); if (musicGain) musicGain.gain.value = Math.max(0,Math.min(1,v)); }
-  function setSfxVolume(v){ init(); if (sfxGain) sfxGain.gain.value = Math.max(0,Math.min(1,v)); }
-  function setAmbientVolume(v){ init(); if (ambientGain) ambientGain.gain.value = Math.max(0,Math.min(1,v)); }
+  function setNight(isNight){
+    const phase = isNight ? 1 : 0;
+    if (phase === currentDayPhase) return;
+    currentDayPhase = phase;
+  }
   const sfx = {
-    step(mat){ const f = mat==='grass'?450:mat==='sand'?900:mat==='wood'?500:220;
-      noise(0.06,'bandpass',f*(0.9+Math.random()*0.2),0.10,1.5); },
+    step(){ noise(0.05,'bandpass',400+Math.random()*200,0.08,1.5); },
     swordHit(){ noise(0.08,'bandpass',1800,0.20,3); tone(900,0.08,0.15,'square',400); },
     swordSwing(){ noise(0.10,'highpass',2400,0.10,2); },
     hurt(){ tone(280,0.14,0.22,'sawtooth',140); noise(0.10,'lowpass',500,0.12); },
     kill(){ tone(180,0.4,0.3,'sawtooth',60); setTimeout(()=>tone(140,0.3,0.2,'square',50),100); },
-    pickup(){ tone(880,0.06,0.12,'sine',1320); setTimeout(()=>tone(1320,0.06,0.09,'sine'),30); },
-    click(){ tone(1200,0.02,0.08,'square'); },
-    zombieGrowl(d){ const v = 0.22*d; tone(70+Math.random()*20,0.35,v,'sawtooth',45); tone(140,0.28,v*0.5,'square',90); },
-    skeletonRattle(d){ const v = 0.18*d;
-      for (let i=0;i<5;i++) setTimeout(()=>noise(0.03,'bandpass',2600+Math.random()*600,v,3), i*45); },
-    mobHurt(type,d){ const v = 0.2*d;
-      if (type==='zombie') tone(180,0.18,v,'sawtooth',80);
-      else if (type==='creeper') tone(320,0.14,v,'sawtooth',140);
-      else tone(420,0.10,v,'square',220); },
-    mobDie(type,d){ const v = 0.3*d;
-      if (type==='zombie'){ tone(150,0.35,v,'sawtooth',60); noise(0.3,'lowpass',300,v*0.5); }
-      else if (type==='creeper'){ noise(0.3,'lowpass',400,v,1); }
-      else for (let i=0;i<6;i++) setTimeout(()=>noise(0.03,'bandpass',2200,v,2), i*50); }
+    click(){ tone(1200,0.02,0.08,'square'); }
   };
   return {
-    init, startAmbient, setNight, startMusic,
-    setMasterVolume, setMusicVolume, setSfxVolume, setAmbientVolume,
-    sfx, get enabled(){ return enabled; }
+    init, setNight, startMusic,
+    setMasterVolume: v => { init(); if (masterGain) masterGain.gain.value = Math.max(0,Math.min(1,v)); },
+    setMusicVolume: v => { init(); if (musicGain) musicGain.gain.value = Math.max(0,Math.min(1,v)); },
+    setSfxVolume: v => { init(); if (sfxGain) sfxGain.gain.value = Math.max(0,Math.min(1,v)); },
+    sfx
   };
 })();
 
@@ -442,12 +478,9 @@ const Audio2D = (() => {
    TILES
    ============================================================ */
 const TILE = 32;
-const T = {
-  AIR:0, GRASS:1, DIRT:2, STONE:3, COBBLE:4, LOG:5, LEAVES:6, PLANK:7,
-  SAND:8, SANDSTONE:9, GLASS:11, COAL_ORE:12, IRON_ORE:13,
-  GOLD_ORE:14, DIAMOND_ORE:15, BRICK:16, BEDROCK:17, OBSIDIAN:18,
-  SNOW:19, GRAVEL:21, CRAFTING:22, FURNACE:23, CHEST:24, TORCH:25
-};
+const T = { AIR:0, GRASS:1, DIRT:2, STONE:3, COBBLE:4, LOG:5, LEAVES:6, PLANK:7,
+  SAND:8, SANDSTONE:9, GLASS:11, COAL_ORE:12, IRON_ORE:13, GOLD_ORE:14, DIAMOND_ORE:15,
+  BRICK:16, BEDROCK:17, OBSIDIAN:18, SNOW:19, GRAVEL:21, CRAFTING:22, FURNACE:23, CHEST:24, TORCH:25 };
 const TILES = {};
 const reg = (id, def) => TILES[id] = { id, ...def };
 reg(T.GRASS,    { name:'Cỏ', colors:['#6fbf4a','#5a9a48','#4a7a3a'], solid:false, floor:true });
@@ -509,10 +542,7 @@ function computeLight(){
       const t = wGet(nx,ny); const td = TILES[t];
       if (td && td.solid !== false && !td.light && !td.transparent) continue;
       const nv = v - 1;
-      if (nv > lightMap[ny*WORLD_W+nx]){
-        lightMap[ny*WORLD_W+nx] = nv;
-        queue.push(nx,ny,nv);
-      }
+      if (nv > lightMap[ny*WORLD_W+nx]){ lightMap[ny*WORLD_W+nx] = nv; queue.push(nx,ny,nv); }
     }
   }
 }
@@ -557,13 +587,12 @@ function placeTree(x,y){
 }
 
 /* ============================================================
-   INVENTORY (đơn giản — chỉ hotbar với 4 kiếm)
+   INVENTORY (chỉ kiếm)
    ============================================================ */
 const inv = { hotbar: new Array(9).fill(null) };
 function isBlockId(id){ return typeof id === 'string' && id.startsWith('block_'); }
 function getBlockType(id){ return parseInt(id.slice(6)); }
 function defOf(id){ return isBlockId(id) ? TILES[getBlockType(id)] : ITEMS[id]; }
-function maxStack(id){ const d = defOf(id); return d?.stack ?? 64; }
 function newStack(id, n){
   const def = defOf(id);
   const s = { id, n };
@@ -579,33 +608,20 @@ function initInv(){
 }
 
 /* ============================================================
-   PLAYER / MOBS
+   PLAYER
    ============================================================ */
 const player = {
   x: WORLD_W*TILE/2, y: WORLD_H*TILE/2,
   hp: 20, maxHp: 20,
   radius: 12, speed: 160, flying: false,
   facing: 1, selected: 0, animT: 0,
-  state: 'idle', _stepAcc: 0, attackAnimT: 0
+  state: 'idle',
+  currentAnim: 'idle',
+  animTime: 0,
+  _stepAcc: 0,
+  attackAnimT: 0,
+  hurtT: 0
 };
-const mobs = [];
-function spawnMob(type){
-  const px = player.x / TILE, py = player.y / TILE;
-  const angle = Math.random()*Math.PI*2;
-  const d = 12 + Math.random()*8;
-  const x = Math.floor(px + Math.cos(angle)*d);
-  const y = Math.floor(py + Math.sin(angle)*d);
-  if (x<2||y<2||x>=WORLD_W-2||y>=WORLD_H-2) return;
-  if (wSolid(x,y)) return;
-  const def = type === 'zombie'  ? { hp:20, dmg:3, speed:50, color:'#4a7a4a' }
-            : type === 'creeper' ? { hp:20, dmg:12, speed:55, color:'#4aa84a' }
-            :                      { hp:15, dmg:4, speed:45, color:'#d0d0d0' };
-  mobs.push({
-    type, x: x*TILE+TILE/2, y: y*TILE+TILE/2,
-    hp: def.hp, maxHp: def.hp, dmg: def.dmg, speed: def.speed, color: def.color,
-    size: 12, facing: 1, animT: Math.random()*10, attackCd: 0, soundCd: 1 + Math.random()*3
-  });
-}
 
 /* ============================================================
    CAMERA / CANVAS
@@ -642,6 +658,7 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyF'){ player.flying = !player.flying;
     toast(player.flying ? '✦ Bay: BẬT' : '✦ Bay: TẮT'); Audio2D.sfx.click(); }
   if (e.code === 'KeyM'){ e.preventDefault(); toggleSettings(); }
+  if (e.code === 'KeyP'){ e.preventDefault(); FrameAnalyzer.toggle(); }
   if (e.code.startsWith('Digit')){
     const n = parseInt(e.code.slice(5));
     if (n>=1 && n<=9){ player.selected = n-1; renderHotbar(); }
@@ -724,7 +741,6 @@ function endLook(e){ if (e.pointerId === lookId) lookId = null; }
 addEventListener('pointerup', endLook);
 addEventListener('pointercancel', endLook);
 
-/* Touch buttons */
 function bindBtn(id, downFn, upFn){
   const el = document.getElementById(id);
   if (!el) return;
@@ -738,13 +754,13 @@ function bindBtn(id, downFn, upFn){
   el.addEventListener('pointercancel', up);
   el.addEventListener('pointerleave', up);
 }
-let attackTouch = false, attackTouchCd = 0;
+let attackTouch = false;
 bindBtn('btnAttack', () => { attackTouch = true; tryAttack(); }, () => { attackTouch = false; });
 bindBtn('btnFly', () => { player.flying = !player.flying;
   toast(player.flying ? '✦ Bay: BẬT' : '✦ Bay: TẮT'); });
 
 /* ============================================================
-   ATTACK SYSTEM
+   ATTACK (chỉ PvP)
    ============================================================ */
 let lastAttackT = 0;
 function tryAttack(){
@@ -752,61 +768,30 @@ function tryAttack(){
   const now = performance.now();
   if (now - lastAttackT < 350) return;
   lastAttackT = now;
-  player.attackAnimT = 0.3;
+  player.attackAnimT = 0.45;
+  player.currentAnim = 'attack';
+  player.animTime = 0;
   Audio2D.sfx.swordSwing();
 
+  if (!net.active) return;
   const wx = mouse.x + cam.x;
   const wy = mouse.y + cam.y;
   const range = 72;
 
-  /* Ưu tiên player khác trong multiplayer */
-  if (net.active && net.players.size > 0){
-    let target = null, minD = range;
-    for (const [id, p] of net.players){
-      const d = Math.hypot(p.x - wx, p.y - wy);
-      if (d < minD){ minD = d; target = { id, p }; }
-    }
-    if (target){
-      const held = inv.hotbar[player.selected];
-      const heldDef = held ? defOf(held.id) : null;
-      const isSword = heldDef && heldDef.tool === 'sword';
-      const dmg = isSword ? (heldDef.dmg || 1) : 1;
-      net.send({
-        t: 'hit',
-        target: target.id,
-        from: net.myId,
-        fromName: net.name,
-        dmg
-      });
-      burstHitVisual(target.p.x, target.p.y);
-      Audio2D.sfx.swordHit();
-      toast(`⚔️ Đánh ${target.p.name} -${dmg} HP`);
-      return;
-    }
-  }
-
-  /* Đánh mob (chế độ đơn) */
   let target = null, minD = range;
-  for (const m of mobs){
-    const d = Math.hypot(m.x - wx, m.y - wy);
-    if (d < minD){ minD = d; target = m; }
+  for (const [id, p] of net.players){
+    const d = Math.hypot(p.x - wx, p.y - wy);
+    if (d < minD){ minD = d; target = { id, p }; }
   }
   if (target){
     const held = inv.hotbar[player.selected];
     const heldDef = held ? defOf(held.id) : null;
     const isSword = heldDef && heldDef.tool === 'sword';
     const dmg = isSword ? (heldDef.dmg || 1) : 1;
-    target.hp -= dmg;
-    target.attackCd = 0.4;
+    net.send({ t:'hit', target: target.id, from: net.myId, fromName: net.name, dmg });
+    burstHitVisual(target.p.x, target.p.y);
     Audio2D.sfx.swordHit();
-    Audio2D.sfx.mobHurt(target.type, 1.0);
-    burstHitVisual(target.x, target.y);
-    if (target.hp <= 0){
-      Audio2D.sfx.mobDie(target.type, 1.0);
-      const idx = mobs.indexOf(target);
-      if (idx >= 0) mobs.splice(idx, 1);
-      toast(`💀 Hạ ${target.type}!`);
-    }
+    toast(`⚔️ Đánh ${target.p.name} -${dmg} HP`);
   }
 }
 function burstHitVisual(x, y){
@@ -851,61 +836,32 @@ function updatePlayer(dt){
   player.y = Math.max(nr, Math.min(WORLD_H*TILE - nr, player.y));
   player.animT += dt;
   if (player.attackAnimT > 0) player.attackAnimT -= dt;
-  if (attackTouch && player.attackAnimT <= 0){
-    tryAttack();
+  if (player.hurtT > 0) player.hurtT -= dt;
+  if (attackTouch && player.attackAnimT <= 0) tryAttack();
+
+  /* Chọn animation */
+  let targetAnim = 'idle';
+  if (player.attackAnimT > 0) targetAnim = 'attack';
+  else if (player.hurtT > 0) targetAnim = 'hurt';
+  else if (player.flying) targetAnim = 'jump';
+  else if (mag > 0.1) targetAnim = 'run';
+  if (targetAnim !== player.currentAnim){
+    player.currentAnim = targetAnim;
+    player.animTime = 0;
   }
+  player.animTime += dt;
+  player.state = mag > 0.1 ? 'walk' : 'idle';
+
   if (mag > 0.1){
-    player.state = 'walk';
     player._stepAcc += speed*dt;
-    if (player._stepAcc > 24){
-      player._stepAcc = 0;
-      const tx = Math.floor(player.x/TILE), ty = Math.floor(player.y/TILE);
-      const under = wGet(tx, ty);
-      Audio2D.sfx.step(TILES[under]?.mat || 'grass');
-    }
-  } else { player.state = 'idle'; player._stepAcc = 0; }
+    if (player._stepAcc > 24){ player._stepAcc = 0; Audio2D.sfx.step(); }
+  } else player._stepAcc = 0;
 }
 function tileCollide(px, py){ return wSolid(Math.floor(px/TILE), Math.floor(py/TILE)); }
-
-function updateMobs(dt){
-  if (net.active) return;
-  for (let i = mobs.length - 1; i >= 0; i--){
-    const m = mobs[i];
-    const dx = player.x - m.x, dy = player.y - m.y;
-    const d = Math.hypot(dx, dy);
-    if (d > 40*TILE){ mobs.splice(i,1); continue; }
-    if (m.attackCd > 0) m.attackCd -= dt;
-    const tileDist = d / TILE;
-    const attn = Math.max(0, Math.min(1, 1 - (tileDist - 5) / 13));
-    m.soundCd -= dt;
-    if (m.soundCd <= 0 && attn > 0.05){
-      m.soundCd = 2.5 + Math.random() * 4;
-      if (m.type === 'zombie') Audio2D.sfx.zombieGrowl(attn);
-      else if (m.type === 'skeleton') Audio2D.sfx.skeletonRattle(attn);
-    }
-    if (d < 1.2*TILE && m.attackCd <= 0){
-      player.hp = Math.max(0, player.hp - m.dmg);
-      m.attackCd = 1;
-      flashDamage();
-      Audio2D.sfx.hurt();
-      if (player.hp <= 0) respawnPlayer();
-    }
-    if (d > 0.9*TILE && d < 30*TILE){
-      const sp = m.speed * dt / TILE;
-      const nx = m.x + dx/d * sp * TILE;
-      const ny = m.y + dy/d * sp * TILE;
-      if (!tileCollide(nx - m.size, m.y) && !tileCollide(nx + m.size, m.y)) m.x = nx;
-      if (!tileCollide(m.x, ny - m.size) && !tileCollide(m.x, ny + m.size)) m.y = ny;
-      if (dx > 0.5) m.facing = 1; else if (dx < -0.5) m.facing = -1;
-    }
-    m.animT += dt;
-  }
-}
 
 function respawnPlayer(){
   player.hp = player.maxHp;
   toast('💀 Bạn đã bị hạ. Hồi sinh!');
-  /* Teleport về giữa map */
   player.x = WORLD_W*TILE/2;
   player.y = WORLD_H*TILE/2;
   cam.x = player.x - VW/2;
@@ -918,17 +874,12 @@ function respawnPlayer(){
    NETWORK
    ============================================================ */
 const PEER_OPTS = {
-  host: BACKEND.host,
-  port: BACKEND.port,
-  path: BACKEND.peerPath,
-  secure: BACKEND.secure,
-  debug: 0,
-  config: {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' }
-    ]
-  }
+  host: BACKEND.host, port: BACKEND.port, path: BACKEND.peerPath,
+  secure: BACKEND.secure, debug: 0,
+  config: { iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' }
+  ]}
 };
 const net = {
   active: false, mode: null, peer: null, hostConn: null,
@@ -1003,8 +954,7 @@ const net = {
   _onData(d, conn){
     if (d.t === 'world'){
       initRNG(d.seed);
-      const arr = b64ToU8(d.data);
-      world.set(arr);
+      world.set(b64ToU8(d.data));
       computeLight();
       resetPlayerPosition();
       if (this.onWorldReady) this.onWorldReady();
@@ -1023,18 +973,16 @@ const net = {
     } else if (d.t === 'hit'){
       if (d.target === this.myId){
         player.hp = Math.max(0, player.hp - d.dmg);
+        player.hurtT = 0.5;
+        player.currentAnim = 'hurt';
+        player.animTime = 0;
         flashDamage();
         Audio2D.sfx.hurt();
         updateHpBar();
         toast(`⚔️ ${d.fromName} gây ${d.dmg} sát thương!`);
-        if (player.hp <= 0){
-          Audio2D.sfx.kill();
-          respawnPlayer();
-        } else {
-          this.broadcastPos();
-        }
+        if (player.hp <= 0){ Audio2D.sfx.kill(); respawnPlayer(); }
+        else this.broadcastPos();
       }
-      /* Relay nếu là host */
       if (this.mode === 'host' && conn){
         for (const [id, c] of this.clients){
           if (c === conn) continue;
@@ -1074,9 +1022,7 @@ function genRoomCode(){
 function u8ToB64(u8){
   let s = '';
   const chunk = 0x8000;
-  for (let i=0;i<u8.length;i+=chunk){
-    s += String.fromCharCode.apply(null, u8.subarray(i, i+chunk));
-  }
+  for (let i=0;i<u8.length;i+=chunk) s += String.fromCharCode.apply(null, u8.subarray(i, i+chunk));
   return btoa(s);
 }
 function b64ToU8(s){
@@ -1091,9 +1037,7 @@ function startNetSync(){
   netSyncTimer = setInterval(() => {
     if (net.active && gameStarted && !paused) net.broadcastPos();
     const now = performance.now();
-    for (const [id, p] of net.players){
-      if (now - p.lastSeen > 5000) net.players.delete(id);
-    }
+    for (const [id, p] of net.players) if (now - p.lastSeen > 5000) net.players.delete(id);
     updateNetHud();
   }, 100);
 }
@@ -1112,45 +1056,34 @@ function drawTile(x, y, id, sx, sy){
   const def = TILES[id];
   if (!def) return;
   if (def.floor){
-    ctx.fillStyle = def.colors[0];
-    ctx.fillRect(sx, sy, TILE, TILE);
+    ctx.fillStyle = def.colors[0]; ctx.fillRect(sx, sy, TILE, TILE);
     const h = (x*73856093 ^ y*19349663) >>> 0;
     ctx.fillStyle = def.colors[2];
     for (let i=0;i<3;i++){
       const hh = (h >> (i*5)) & 0xFF;
-      const dx = 3 + (hh % (TILE-8));
-      const dy = 4 + ((hh >> 4) % (TILE-10));
-      ctx.fillRect(sx+dx, sy+dy, 3, 3);
+      ctx.fillRect(sx + 3 + (hh % (TILE-8)), sy + 4 + ((hh >> 4) % (TILE-10)), 3, 3);
     }
     return;
   }
   if (def.transparent){
     ctx.globalAlpha = 0.7;
-    ctx.fillStyle = def.colors[0];
-    ctx.fillRect(sx, sy, TILE, TILE);
+    ctx.fillStyle = def.colors[0]; ctx.fillRect(sx, sy, TILE, TILE);
     ctx.globalAlpha = 1;
-    ctx.fillStyle = def.colors[1];
-    ctx.fillRect(sx, sy, TILE, 2);
+    ctx.fillStyle = def.colors[1]; ctx.fillRect(sx, sy, TILE, 2);
     return;
   }
-  ctx.fillStyle = def.colors[0];
-  ctx.fillRect(sx, sy, TILE, TILE);
-  ctx.fillStyle = def.colors[1];
-  ctx.fillRect(sx, sy, TILE, 3);
+  ctx.fillStyle = def.colors[0]; ctx.fillRect(sx, sy, TILE, TILE);
+  ctx.fillStyle = def.colors[1]; ctx.fillRect(sx, sy, TILE, 3);
   const h = (x*73856093 ^ y*19349663) >>> 0;
   ctx.fillStyle = def.colors[2];
   for (let i=0;i<3;i++){
     const hh = (h >> (i*5)) & 0xFF;
-    const dx = 3 + (hh % (TILE-8));
-    const dy = 4 + ((hh >> 4) % (TILE-10));
-    ctx.fillRect(sx+dx, sy+dy, 3, 3);
+    ctx.fillRect(sx + 3 + (hh % (TILE-8)), sy + 4 + ((hh >> 4) % (TILE-10)), 3, 3);
   }
   ctx.fillStyle = 'rgba(0,0,0,0.20)';
-  ctx.fillRect(sx, sy+TILE-2, TILE, 2);
-  ctx.fillRect(sx+TILE-2, sy, 2, TILE);
+  ctx.fillRect(sx, sy+TILE-2, TILE, 2); ctx.fillRect(sx+TILE-2, sy, 2, TILE);
   ctx.fillStyle = 'rgba(255,255,255,0.12)';
-  ctx.fillRect(sx, sy, TILE, 1);
-  ctx.fillRect(sx, sy, 1, TILE);
+  ctx.fillRect(sx, sy, TILE, 1); ctx.fillRect(sx, sy, 1, TILE);
 }
 function getNightFactor(){
   const t = worldTime * Math.PI * 2;
@@ -1165,42 +1098,19 @@ function render(){
   ctx.fillStyle = nightFactor > 0.6 ? '#0a0a14' : '#0f180f';
   ctx.fillRect(0, 0, VW, VH);
   for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
-    const id = wGet(x, y);
-    if (!id) continue;
+    const id = wGet(x, y); if (!id) continue;
     const def = TILES[id];
     if (def && def.floor) drawTile(x, y, id, x*TILE - cam.x, y*TILE - cam.y);
   }
   for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
-    const id = wGet(x, y);
-    if (!id) continue;
+    const id = wGet(x, y); if (!id) continue;
     const def = TILES[id];
     if (!def || def.floor) continue;
     drawTile(x, y, id, x*TILE - cam.x, y*TILE - cam.y);
   }
 
-  /* Mũi tên tấn công khi vung kiếm */
-  if (player.attackAnimT > 0){
-    const held = inv.hotbar[player.selected];
-    if (held){
-      const sx = player.x - cam.x, sy = player.y - cam.y;
-      const face = player.facing;
-      const prog = 1 - player.attackAnimT / 0.3;
-      const offX = face * (18 + Math.sin(prog * Math.PI) * 22);
-      const offY = -6 - Math.cos(prog * Math.PI) * 8;
-      ctx.strokeStyle = 'rgba(255,255,255,' + (1 - prog) * 0.9 + ')';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(sx + offX, sy + offY);
-      ctx.lineTo(sx + offX + face * 16, sy + offY + 4);
-      ctx.stroke();
-    }
-  }
-
   const ents = [];
-  for (const m of mobs) ents.push({ y: m.y, draw: () => drawMob(m) });
-  for (const [id, p] of net.players){
-    ents.push({ y: p.y, draw: () => drawRemotePlayer(p) });
-  }
+  for (const [id, p] of net.players) ents.push({ y: p.y, draw: () => drawRemotePlayer(p) });
   ents.push({ y: player.y, draw: () => drawPlayer() });
   ents.sort((a,b) => a.y - b.y);
   for (const e of ents) e.draw();
@@ -1252,7 +1162,56 @@ function applyLighting(nightFactor){
   ctx.globalCompositeOperation = 'source-over';
 }
 
-function drawEntityBody(sx, sy, animT, state, facing, colors, held){
+/* ============================================================
+   DRAW PLAYER (sprite + fallback)
+   ============================================================ */
+function drawPlayer(){
+  const sx = player.x - cam.x, sy = player.y - cam.y;
+  if (spriteLoaded){
+    drawSpriteFrame(player.currentAnim, player.animTime, sx, sy, player.facing);
+  } else {
+    drawFallbackBody(sx, sy, player.animT, player.state, player.facing, LOCAL_COLORS);
+  }
+  /* Vẽ kiếm nếu không dùng sprite */
+  if (!spriteLoaded){
+    const held = inv.hotbar[player.selected];
+    if (held && defOf(held.id)?.tool === 'sword'){
+      const col = defOf(held.id).color;
+      const ix = sx + (player.facing > 0 ? 12 : -18);
+      const iy = sy - 8;
+      ctx.fillStyle = col;
+      ctx.fillRect(ix, iy, 3, 10);
+      ctx.fillRect(ix - (player.facing > 0 ? 0 : 3), iy + 8, 6, 2);
+    }
+  }
+}
+function drawSpriteFrame(animName, animTime, sx, sy, facing){
+  const anim = SPRITE.animations[animName];
+  if (!anim) return;
+  const frameIndex = Math.floor(animTime * anim.fps) % anim.frames;
+  const srcX = frameIndex * SPRITE.frameW;
+  const srcY = anim.row * SPRITE.frameH;
+  const DEST_W = 64;
+  const DEST_H = 68;
+  const drawX = sx - DEST_W / 2;
+  const drawY = sy - DEST_H + 16;
+
+  ctx.save();
+  if (facing < 0){
+    ctx.translate(sx, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(playerSprite,
+      srcX, srcY, SPRITE.frameW, SPRITE.frameH,
+      -DEST_W/2, drawY, DEST_W, DEST_H);
+  } else {
+    ctx.drawImage(playerSprite,
+      srcX, srcY, SPRITE.frameW, SPRITE.frameH,
+      drawX, drawY, DEST_W, DEST_H);
+  }
+  ctx.restore();
+}
+const LOCAL_COLORS = { legs:'#2a3a5a', shoes:'#1a1a1a', body:'#3a5a9a', bodyShade:'#2a4a7a', skin:'#f0c8a0', hair:'#3a2010' };
+function drawFallbackBody(sx, sy, animT, state, facing, colors){
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.beginPath(); ctx.ellipse(sx, sy+14, 12, 4, 0, 0, Math.PI*2); ctx.fill();
   const bounce = state === 'walk' ? Math.sin(animT*12)*1.5 : Math.sin(animT*3)*0.6;
@@ -1288,21 +1247,8 @@ function drawEntityBody(sx, sy, animT, state, facing, colors, held){
     ctx.fillRect(sx-7, sy-22+bounce, 2, 2);
   }
 }
-const LOCAL_COLORS = { legs:'#2a3a5a', shoes:'#1a1a1a', body:'#3a5a9a', bodyShade:'#2a4a7a', skin:'#f0c8a0', hair:'#3a2010' };
-function drawPlayer(){
-  const sx = player.x - cam.x, sy = player.y - cam.y;
-  drawEntityBody(sx, sy, player.animT, player.state, player.facing, LOCAL_COLORS, null);
-  /* Vẽ kiếm trên tay */
-  const held = inv.hotbar[player.selected];
-  if (held && defOf(held.id)?.tool === 'sword'){
-    const col = defOf(held.id).color;
-    const ix = sx + (player.facing > 0 ? 12 : -18);
-    const iy = sy - 8;
-    ctx.fillStyle = col;
-    ctx.fillRect(ix, iy, 3, 10);
-    ctx.fillRect(ix - (player.facing > 0 ? 0 : 3), iy + 8, 6, 2);
-  }
-}
+
+/* Remote player (PvP) — vẫn dùng rect để phân biệt màu */
 const REMOTE_PALETTE = [
   { legs:'#5a2a3a', shoes:'#2a1020', body:'#d04a5a', bodyShade:'#a02a3a', skin:'#f0c8a0', hair:'#2a1010' },
   { legs:'#2a3a5a', shoes:'#1a1a3a', body:'#4a6ad0', bodyShade:'#2a4aa0', skin:'#f0c8a0', hair:'#202010' },
@@ -1316,7 +1262,7 @@ function drawRemotePlayer(p){
   if (sx < -60 || sx > VW+60 || sy < -60 || sy > VH+60) return;
   const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name)) % REMOTE_PALETTE.length];
   p.animT = (p.animT || 0) + 0.016;
-  drawEntityBody(sx, sy, p.animT, 'idle', p.facing, pal, null);
+  drawFallbackBody(sx, sy, p.animT, 'idle', p.facing, pal);
   ctx.font = 'bold 10px Consolas, monospace';
   ctx.textAlign = 'center';
   const text = p.name;
@@ -1325,7 +1271,6 @@ function drawRemotePlayer(p){
   ctx.fillRect(sx - w/2, sy - 44, w, 13);
   ctx.fillStyle = '#88ffd8';
   ctx.fillText(text, sx, sy - 34);
-  /* HP bar cho đối thủ */
   const hpPct = Math.max(0, Math.min(1, (p.hp ?? 20) / 20));
   const bw = 26;
   ctx.fillStyle = 'rgba(0,0,0,0.8)';
@@ -1333,36 +1278,6 @@ function drawRemotePlayer(p){
   ctx.fillStyle = hpPct > 0.5 ? '#4ade4a' : hpPct > 0.25 ? '#ffcc40' : '#e8503a';
   ctx.fillRect(sx - bw/2, sy - 29, bw * hpPct, 3);
   ctx.textAlign = 'left';
-}
-function drawMob(m){
-  const sx = m.x - cam.x, sy = m.y - cam.y;
-  if (sx < -50 || sx > VW+50 || sy < -50 || sy > VH+50) return;
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.beginPath(); ctx.ellipse(sx, sy+10, 10, 3, 0, 0, Math.PI*2); ctx.fill();
-  const legSwing = Math.sin(m.animT*8)*2;
-  ctx.fillStyle = '#2a2a2a';
-  ctx.fillRect(sx-5+legSwing, sy, 3, 8);
-  ctx.fillRect(sx+2-legSwing, sy, 3, 8);
-  ctx.fillStyle = m.color;
-  ctx.fillRect(sx-6, sy-12, 12, 14);
-  ctx.fillRect(sx-9, sy-10, 3, 10);
-  ctx.fillRect(sx+6, sy-10, 3, 10);
-  ctx.fillRect(sx-5, sy-20, 10, 8);
-  ctx.fillStyle = '#ff2020';
-  if (m.facing > 0){
-    ctx.fillRect(sx-1, sy-17, 2, 2);
-    ctx.fillRect(sx+2, sy-17, 2, 2);
-  } else {
-    ctx.fillRect(sx-3, sy-17, 2, 2);
-    ctx.fillRect(sx-6, sy-17, 2, 2);
-  }
-  if (m.hp < m.maxHp){
-    const w = 18, h = 2;
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(sx-w/2-1, sy-26, w+2, h+2);
-    ctx.fillStyle = '#e8503a';
-    ctx.fillRect(sx-w/2, sy-25, w * (m.hp/m.maxHp), h);
-  }
 }
 
 function updateCam(){
@@ -1377,21 +1292,10 @@ function updateCam(){
 let worldTime = 0.25;
 const DAY_DURATION = 300;
 let dayCount = 1;
-let lastNight = false;
 function updateDayNight(dt){
   worldTime += dt / DAY_DURATION;
   if (worldTime >= 1){ worldTime -= 1; dayCount++; }
-  const night = getNightFactor() > 0.6;
-  Audio2D.setNight(night);
-  if (night && !lastNight){
-    if (!net.active){
-      const count = 3 + Math.floor(Math.random()*3);
-      for (let i=0;i<count;i++) spawnMob(['zombie','creeper','skeleton'][Math.floor(Math.random()*3)]);
-    }
-    toast('🌙 Màn đêm buông xuống...');
-  }
-  if (!night && lastNight){ toast('☀ Bình minh lên!'); }
-  lastNight = night;
+  Audio2D.setNight(getNightFactor() > 0.6);
 }
 function getClockString(){
   const h = Math.floor(worldTime * 24);
@@ -1410,7 +1314,6 @@ function renderHotbar(){
     slot.className = 'hslot' + (i === player.selected ? ' active' : '');
     const item = inv.hotbar[i];
     if (item){
-      const def = defOf(item.id);
       const ic = document.createElement('div');
       ic.className = 'ic';
       ic.style.background = getItemColor(item.id);
@@ -1456,7 +1359,139 @@ function toast(msg){
 }
 
 /* ============================================================
-   MENU ACTIONS (được gọi từ inline onclick)
+   FRAME ANALYZER — auto phân tích
+   ============================================================ */
+const FrameAnalyzer = (() => {
+  const panel = document.getElementById('framePanel');
+  const preview = document.getElementById('fpPreview');
+  const resultEl = document.getElementById('fpResult');
+  const btnCapture = document.getElementById('fpCapture');
+  const btnAuto = document.getElementById('fpAuto');
+  const btnClear = document.getElementById('fpClear');
+  const btnClose = document.getElementById('fpClose');
+  const pctx = preview.getContext('2d');
+  let capturedDataURL = null;
+  let busy = false;
+  let autoOn = false;
+  let autoTimer = null;
+  let intervalSec = 8;
+  let focus = 'full';
+  const FOCUS_LABELS = { full:'🎯 Toàn diện', combat:'⚔️ Chiến đấu', terrain:'🗺️ Địa hình', resource:'⛏️ Tài nguyên' };
+
+  function toggle(){ panel.classList.toggle('hidden'); }
+  function close(){ panel.classList.add('hidden'); }
+
+  btnClose.addEventListener('click', close);
+  btnClear.addEventListener('click', () => { resultEl.innerHTML = '<em>Log đã xóa.</em>'; });
+
+  btnAuto.addEventListener('click', () => {
+    autoOn = !autoOn;
+    btnAuto.classList.toggle('on', autoOn);
+    btnAuto.textContent = '⏺ Auto: ' + (autoOn ? 'ON' : 'OFF');
+    const chk = document.getElementById('setAutoFrame');
+    if (chk) chk.checked = autoOn;
+    if (autoOn){ runOnce(); autoTimer = setInterval(runOnce, intervalSec * 1000); }
+    else { clearInterval(autoTimer); autoTimer = null; }
+    Audio2D.sfx.click();
+  });
+
+  btnCapture.addEventListener('click', () => runOnce(true));
+
+  function capture(){
+    const W = preview.width, H = preview.height;
+    pctx.drawImage(cv, 0, 0, cv.width, cv.height, 0, 0, W, H);
+    capturedDataURL = preview.toDataURL('image/jpeg', 0.72);
+  }
+
+  async function runOnce(manual){
+    if (busy || !gameStarted || paused) return;
+    busy = true;
+    capture();
+    const ts = new Date().toLocaleTimeString('vi-VN');
+    const pendingId = 'p' + Date.now() + '_' + Math.floor(Math.random()*1000);
+    appendEntry(pendingId, manual
+      ? '<span class="loading">🤖 Đang phân tích...</span>'
+      : '<span class="loading">🤖 Auto phân tích...</span>');
+    try {
+      const data = await callServer(capturedDataURL, buildContext(), focus);
+      updateEntry(pendingId, escapeHtml(data.result));
+    } catch(e){
+      updateEntry(pendingId, '<span class="error">❌ ' + escapeHtml(e.message) + '</span>');
+    } finally { busy = false; }
+  }
+
+  function buildContext(){
+    const px = (player.x / TILE).toFixed(1), py = (player.y / TILE).toFixed(1);
+    const held = inv.hotbar[player.selected];
+    const heldName = held ? (defOf(held.id)?.name || held.id) : 'tay không';
+    const night = getNightFactor() > 0.6;
+    const others = net.players.size > 0
+      ? [...net.players.values()].map(p => `${p.name} @ ${(p.x/TILE).toFixed(0)},${(p.y/TILE).toFixed(0)} (${p.hp}hp)`).join('; ')
+      : 'không có';
+    return `Context gameplay:
+- Vị trí người chơi: (${px}, ${py}) tile
+- Máu: ${player.hp}/20 | Đang cầm: ${heldName}
+- Thời gian: ${getClockString()} · Ngày ${dayCount} · ${night ? 'Đêm' : 'Ngày'}
+- Người chơi khác: ${others}
+- Chế độ: ${net.active ? net.mode : 'singleplayer'}
+- Camera: ${Math.round(VW)}×${Math.round(VH)}px, tile 32px`;
+  }
+
+  async function callServer(image, context, focusMode){
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image, context, focus: focusMode })
+    });
+    if (!res.ok){
+      const err = await res.json().catch(() => ({ error: 'HTTP ' + res.status }));
+      throw new Error(err.error || ('HTTP ' + res.status));
+    }
+    return await res.json();
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  function appendEntry(id, html){
+    const empty = resultEl.querySelector('em');
+    if (empty) resultEl.innerHTML = '';
+    const ts = new Date().toLocaleTimeString('vi-VN');
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.id = 'fa_' + id;
+    div.innerHTML = `<div class="ts">${ts} · <span class="tag">${FOCUS_LABELS[focus]}</span></div><div class="body">${html}</div>`;
+    resultEl.insertBefore(div, resultEl.firstChild);
+    while (resultEl.children.length > 20) resultEl.removeChild(resultEl.lastChild);
+  }
+  function updateEntry(id, html){
+    const el = document.getElementById('fa_' + id);
+    if (!el) return;
+    const b = el.querySelector('.body');
+    if (b) b.innerHTML = html;
+  }
+
+  function setIntervalSec(sec){
+    intervalSec = sec;
+    document.getElementById('fpIntervalLabel').textContent = '⏱️ ' + sec + 's';
+    if (autoOn){ clearInterval(autoTimer); autoTimer = setInterval(runOnce, sec * 1000); }
+  }
+  function setFocus(f){
+    focus = f;
+    document.getElementById('fpFocusLabel').textContent = FOCUS_LABELS[f];
+  }
+  function enableAuto(){
+    if (autoOn) return;
+    btnAuto.click();
+  }
+  return { toggle, setInterval: setIntervalSec, setFocus, enableAuto, get autoOn(){ return autoOn; } };
+})();
+
+/* ============================================================
+   MENU / UI
    ============================================================ */
 window.Game = {
   startSingleplayer: () => startSingleplayer(),
@@ -1494,9 +1529,8 @@ function showMenuPage(name){
 }
 
 async function hostRoom(){
-  const panel = document.getElementById('hostPanel');
-  const join = document.getElementById('joinPanel');
-  panel.classList.remove('hidden'); join.classList.add('hidden');
+  document.getElementById('hostPanel').classList.remove('hidden');
+  document.getElementById('joinPanel').classList.add('hidden');
   const name = document.getElementById('hostName').value.trim() || 'Host';
   const status = document.getElementById('hostStatus');
   const codeEl = document.getElementById('roomCodeDisplay');
@@ -1537,7 +1571,6 @@ async function joinRoom(){
   }
 }
 
-/* Settings sliders */
 function bindSlider(id, valId, cb){
   const s = document.getElementById(id), v = document.getElementById(valId);
   if (!s) return;
@@ -1548,19 +1581,28 @@ function bindSlider(id, valId, cb){
 bindSlider('setMaster', 'valMaster', v => Audio2D.setMasterVolume(v));
 bindSlider('setMusic', 'valMusic', v => Audio2D.setMusicVolume(v));
 bindSlider('setSfx', 'valSfx', v => Audio2D.setSfxVolume(v));
-bindSlider('setAmbient', 'valAmbient', v => Audio2D.setAmbientVolume(v));
 
-/* Settings floater */
-let settingsPanelOpen = false;
+document.getElementById('setAutoFrame').addEventListener('change', e => {
+  if (e.target.checked !== FrameAnalyzer.autoOn) document.getElementById('fpAuto').click();
+});
+const intSlider = document.getElementById('setFrameInterval');
+intSlider.addEventListener('input', e => {
+  document.getElementById('valInterval').textContent = e.target.value;
+  FrameAnalyzer.setInterval(+e.target.value);
+});
+document.getElementById('valInterval').textContent = intSlider.value;
+FrameAnalyzer.setInterval(+intSlider.value);
+document.getElementById('setFrameFocus').addEventListener('change', e => {
+  FrameAnalyzer.setFocus(e.target.value);
+});
+
 function toggleSettings(){
   if (gameStarted){
-    paused = !paused;
-    document.getElementById('pause').classList.toggle('hidden', !paused);
-    document.getElementById('settingsBtn').classList.toggle('show', !paused);
-  }
-  if (!paused && gameStarted) return;
-  backToMenu();
-  showMenuPage('settings');
+    paused = true;
+    document.getElementById('pause').classList.add('hidden');
+    document.getElementById('menu').classList.remove('hidden');
+    showMenuPage('settings');
+  } else showMenuPage('settings');
 }
 
 /* ============================================================
@@ -1584,8 +1626,6 @@ function startGame(mode){
   paused = false;
   Audio2D.init();
   Audio2D.startMusic();
-  Audio2D.startAmbient();
-  Audio2D.setNight(getNightFactor() > 0.6);
   renderHotbar();
   updateHpBar();
   startNetSync();
@@ -1593,6 +1633,10 @@ function startGame(mode){
   toast(mode === 'sp' ? '🎮 Chơi đơn' :
         mode === 'host' ? '🏠 Phòng: ' + net.roomCode :
         '⚔️ Đã vào phòng');
+  /* Auto enable AI frame analysis */
+  if (document.getElementById('setAutoFrame').checked){
+    setTimeout(() => FrameAnalyzer.enableAuto(), 1200);
+  }
 }
 function togglePause(){
   if (!gameStarted) return;
@@ -1623,7 +1667,6 @@ function resetPlayerPosition(){
   }
   cam.x = player.x - VW/2;
   cam.y = player.y - VH/2;
-  mobs.length = 0;
 }
 
 /* ============================================================
@@ -1637,13 +1680,11 @@ function loop(now){
     lastT = now;
     if (gameStarted && !paused){
       updatePlayer(dt);
-      updateMobs(dt);
       updateDayNight(dt);
     }
     for (const p of G.particles){
       p.life -= dt;
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt;
       p.vx *= 0.94; p.vy *= 0.94;
     }
     G.particles = G.particles.filter(p => p.life > 0);
