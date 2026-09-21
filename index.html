@@ -94,39 +94,118 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   display:flex;flex-direction:column;gap:10px}
 .pause-panel h2{font-family:Consolas,monospace;font-size:22px;letter-spacing:4px;color:#e8f0d8;
   margin-bottom:10px;text-shadow:0 2px 0 rgba(0,0,0,.5)}
-#touchUI{display:none;position:fixed;inset:0;pointer-events:none;z-index:8}
+#touchUI{
+  display:none;
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:8;
+  padding:
+    0
+    max(12px,env(safe-area-inset-right))
+    max(12px,env(safe-area-inset-bottom))
+    max(12px,env(safe-area-inset-left));
+}
 @media (pointer:coarse){
   #touchUI{display:block}
-  #hotbar{transform:translateX(-50%) scale(.72);bottom:4px}
-  #hpBar{bottom:62px;transform:translateX(-50%) scale(.85)}
+  #hotbar{
+    transform:translateX(-50%) scale(.72);
+    bottom:4px;
+  }
+  #hpBar{
+    bottom:62px;
+    transform:translateX(-50%) scale(.85);
+  }
 }
 .gameBtn{
   position:absolute;
-  width:72px;height:72px;
+  width:76px;
+  height:76px;
   border-radius:50%;
-  border:2px solid rgba(255,255,255,.28);
-  background:rgba(25,32,48,.72);
+  border:2px solid rgba(255,255,255,.30);
+  background:
+    radial-gradient(circle at 34% 25%,
+      rgba(255,255,255,.18),
+      rgba(31,40,60,.82) 52%,
+      rgba(9,13,22,.90));
   color:#fff;
-  display:flex;align-items:center;justify-content:center;
-  font-size:30px;font-weight:800;
-  box-shadow:0 5px 16px rgba(0,0,0,.35),inset 0 0 10px rgba(255,255,255,.06);
-  pointer-events:auto;touch-action:none;
-  -webkit-user-select:none;user-select:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+  font-weight:900;
+  pointer-events:auto;
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+  box-shadow:
+    0 7px 18px rgba(0,0,0,.42),
+    inset 0 2px 5px rgba(255,255,255,.11),
+    inset 0 -5px 10px rgba(0,0,0,.25);
+  transition:transform .06s ease,filter .06s ease;
+}
+.gameBtn::after{
+  content:"";
+  position:absolute;
+  inset:7px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.10);
+  pointer-events:none;
 }
 .gameBtn:active,.gameBtn.pressed{
-  transform:scale(.92);
-  background:rgba(65,82,120,.92);
+  transform:scale(.87);
+  filter:brightness(1.28);
+  background:
+    radial-gradient(circle at 35% 25%,
+      rgba(255,255,255,.22),
+      rgba(55,70,105,.96) 55%,
+      rgba(12,17,29,.96));
 }
-.gameBtn.left{left:24px;bottom:28px}
-.gameBtn.right{left:108px;bottom:28px}
-.gameBtn.jump{right:116px;bottom:28px}
+.gameBtn.left{
+  left:max(20px,env(safe-area-inset-left));
+  bottom:max(28px,env(safe-area-inset-bottom));
+}
+.gameBtn.right{
+  left:calc(max(20px,env(safe-area-inset-left)) + 88px);
+  bottom:max(28px,env(safe-area-inset-bottom));
+}
+.gameBtn.jump{
+  right:calc(max(20px,env(safe-area-inset-right)) + 94px);
+  bottom:max(28px,env(safe-area-inset-bottom));
+}
 .gameBtn.attack{
-  right:24px;bottom:22px;
-  width:82px;height:82px;
-  background:rgba(45,58,100,.82);
+  right:max(16px,env(safe-area-inset-right));
+  bottom:max(22px,env(safe-area-inset-bottom));
+  width:92px;
+  height:92px;
+  font-size:36px;
+  border-color:rgba(120,165,255,.48);
+  background:
+    radial-gradient(circle at 34% 24%,
+      rgba(130,175,255,.28),
+      rgba(39,58,110,.92) 56%,
+      rgba(10,16,34,.96));
+  box-shadow:
+    0 8px 22px rgba(0,0,0,.48),
+    0 0 18px rgba(75,125,255,.14),
+    inset 0 2px 6px rgba(255,255,255,.13);
+}
+@media (max-width:520px){
+  .gameBtn{width:68px;height:68px;font-size:27px}
+  .gameBtn.right{
+    left:calc(max(18px,env(safe-area-inset-left)) + 78px);
+  }
+  .gameBtn.jump{
+    right:calc(max(18px,env(safe-area-inset-right)) + 82px);
+  }
+  .gameBtn.attack{
+    width:84px;height:84px;font-size:32px;
+  }
 }
 @media (min-width:900px){
-  .gameBtn{opacity:.35}
+  .gameBtn{opacity:.42}
+  .gameBtn:hover{opacity:.78}
 }
 #settingsBtn{position:fixed;top:8px;right:8px;z-index:13;width:36px;height:36px;
   background:rgba(20,24,16,.9);border:2px solid #0a0d08;border-radius:6px;color:#e8f0d8;font-size:16px;
@@ -153,9 +232,9 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 </div>
 <div id="hotbar"></div>
 <div id="touchUI">
-  <button class="gameBtn left" id="btnLeft" aria-label="Trái">←</button>
-  <button class="gameBtn right" id="btnRight" aria-label="Phải">→</button>
-  <button class="gameBtn jump" id="btnJump" aria-label="Nhảy">↑</button>
+  <button class="gameBtn left" id="btnLeft" aria-label="Trái">◀</button>
+  <button class="gameBtn right" id="btnRight" aria-label="Phải">▶</button>
+  <button class="gameBtn jump" id="btnJump" aria-label="Nhảy">▲</button>
   <button class="gameBtn attack" id="btnAttack" aria-label="Đánh">⚔</button>
 </div>
 <button id="settingsBtn" onclick="Game.showSettings()" title="Cài đặt (M)">⚙</button>
@@ -672,21 +751,43 @@ let touchRight = false;
 function bindGameButton(id, downFn, upFn){
   const el = document.getElementById(id);
   if (!el) return;
-  el.addEventListener('pointerdown', e => {
-    e.preventDefault();
-    e.stopPropagation();
-    el.classList.add('pressed');
-    buzz(8);
-    downFn();
-  }, {passive:false});
-  const up = e => {
-    if (e) { e.preventDefault(); e.stopPropagation(); }
+
+  let held = false;
+
+  const release = e => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!held) return;
+    held = false;
     el.classList.remove('pressed');
     upFn();
   };
-  el.addEventListener('pointerup', up, {passive:false});
-  el.addEventListener('pointercancel', up, {passive:false});
-  el.addEventListener('pointerleave', up, {passive:false});
+
+  el.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (held) return;
+    held = true;
+
+    el.classList.add('pressed');
+    buzz(8);
+
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+
+    downFn();
+  }, {passive:false});
+
+  el.addEventListener('pointerup', release, {passive:false});
+  el.addEventListener('pointercancel', release, {passive:false});
+  el.addEventListener('lostpointercapture', release, {passive:false});
+
+  window.addEventListener('blur', release);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) release();
+  });
 }
 
 bindGameButton('btnLeft', () => touchLeft = true, () => touchLeft = false);
@@ -1493,4 +1594,4 @@ showMenuPage('main');
 requestAnimationFrame(loop);
 </script>
 </body>
-  </html>
+      </html>
