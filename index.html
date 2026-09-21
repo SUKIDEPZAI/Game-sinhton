@@ -47,7 +47,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 #toast.show{opacity:1}
 .menu-panel{background:linear-gradient(180deg,#3a4438 0%,#2a3328 100%);border:3px solid #0a0d08;
   box-shadow:inset 0 0 0 2px #5a6850,inset 0 0 0 4px #8a9878,0 8px 0 #000,0 12px 30px rgba(0,0,0,.7);
-  padding:24px 28px;text-align:center;max-width:520px;width:100%;max-height:92vh;overflow-y:auto;
+  padding:24px 28px;text-align:center;max-width:480px;width:100%;max-height:92vh;overflow-y:auto;
   border-radius:6px;position:relative;z-index:1}
 .logo{font-size:30px;font-weight:900;letter-spacing:2px;
   background:linear-gradient(180deg,#ffe888 0%,#ff6020 55%,#8a1a00 100%);
@@ -230,46 +230,43 @@ let rng = Math.random, SEED = 0;
 function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 
 /* ============================================================
-   SPRITE — 5 file PNG riêng biệt, mỗi file 1 hàng ngang
-   frameW = ảnh.width / frames  (tự tính, không cần đo)
-   frameH = ảnh.height
+   SPRITE — 5 file riêng, không fallback
+   Tên file khớp với ảnh user cung cấp
    ============================================================ */
-const SPRITES = {
-  idle:   { src:'assets/idle.png',   frames:7, fps:5,  loop:true  },
-  run:    { src:'assets/run.png',    frames:8, fps:12, loop:true  },
-  jump:   { src:'assets/jump.png',   frames:8, fps:12, loop:false },
-  attack: { src:'assets/attack.png', frames:8, fps:14, loop:false },
-  hurt:   { src:'assets/hurt.png',   frames:8, fps:8,  loop:false }
+const SPRITE_FILES = {
+  idle:   { src:'assets/player_idle.png',   frames:7, fps:5,  loop:true  },
+  run:    { src:'assets/player_run.png',    frames:8, fps:12, loop:true  },
+  jump:   { src:'assets/player_jump.png',   frames:8, fps:12, loop:false },
+  attack: { src:'assets/player_attack.png', frames:8, fps:14, loop:false },
+  hurt:   { src:'assets/player_death.png',  frames:8, fps:8,  loop:false }
 };
 
-let spriteLoadedCount = 0;
-let spriteTotalCount = 0;
-const spriteStatus = {};
+const DEST_HEIGHT = 120;
+const FOOT_OFFSET = 14;
 
-/* Kích thước vẽ trên canvas */
-const DEST_HEIGHT = 120;   // chiều cao nhân vật khi vẽ (tăng/giảm để to/nhỏ)
-const FOOT_OFFSET = 14;    // offset chân so với player.y
+const ATTACK_DURATION = 8 / 14;
+const HURT_DURATION   = 8 / 8;
+const JUMP_DURATION   = 0.65;
 
-for (const name in SPRITES){
-  const s = SPRITES[name];
-  spriteTotalCount++;
+const loadReport = { files: {} };
+
+for (const name in SPRITE_FILES){
+  const s = SPRITE_FILES[name];
   s.img = new Image();
   s.loaded = false;
   s.frameW = 0;
   s.frameH = 0;
-
   s.img.onload = () => {
     s.loaded = true;
     s.frameW = s.img.width / s.frames;
     s.frameH = s.img.height;
-    spriteLoadedCount++;
-    spriteStatus[name] = 'ok';
-    console.log(`✓ ${name.padEnd(7)} : ${s.img.width}×${s.img.height} → frame ${s.frameW.toFixed(1)}×${s.frameH.toFixed(1)} (${s.frames} fr)`);
+    loadReport.files[name] = 'ok';
+    console.log(`✓ ${name.padEnd(7)} : ${s.img.width}×${s.img.height} → frame ${s.frameW.toFixed(2)}×${s.frameH.toFixed(2)} (${s.frames} fr)`);
     updateLoadStatus();
   };
   s.img.onerror = () => {
     s.loaded = false;
-    spriteStatus[name] = 'err';
+    loadReport.files[name] = 'err';
     console.error(`✗ ${name.padEnd(7)} : KHÔNG TẢI ĐƯỢC ${s.src}`);
     updateLoadStatus();
   };
@@ -278,20 +275,35 @@ for (const name in SPRITES){
 
 function updateLoadStatus(){
   const el = document.getElementById('loadStatus');
-  if (spriteLoadedCount === 0){ el.classList.add('hidden'); return; }
+  const total = Object.keys(SPRITE_FILES).length;
+  const ok = Object.values(loadReport.files).filter(v => v === 'ok').length;
+  const err = Object.values(loadReport.files).filter(v => v === 'err').length;
+
+  if (ok === 0 && err === 0){ el.classList.add('hidden'); return; }
   el.classList.remove('hidden');
-  let html = `<b>SPRITE LOAD: ${spriteLoadedCount}/${spriteTotalCount}</b><br>`;
-  for (const name in SPRITES){
-    const s = SPRITES[name];
-    const status = spriteStatus[name];
+
+  let html;
+  if (ok === total){
+    html = `<b><span class="ok">✓ SPRITE OK — ${total}/${total} files</span></b><br>`;
+  } else {
+    html = `<b><span class="err">⚠ SPRITE THIẾU (${ok}/${total} OK)</span></b><br>`;
+  }
+  for (const name in SPRITE_FILES){
+    const s = SPRITE_FILES[name];
+    const status = loadReport.files[name];
     const icon = status === 'ok' ? '<span class="ok">✓</span>' :
                  status === 'err' ? '<span class="err">✗</span>' : '…';
-    html += `${icon} ${name.padEnd(7)}`;
-    if (s.loaded) html += ` <span style="color:#6a7860">(${s.img.width}×${s.img.height}, ${s.frames} fr)</span>`;
+    html += `${icon} ${name.padEnd(7)} ${s.src}`;
+    if (s.loaded) html += ` <span style="color:#6a7860">(${s.img.width}×${s.img.height})</span>`;
+    else if (status === 'err') html += ` <span class="err">THIẾU</span>`;
     html += '<br>';
   }
+  if (err > 0){
+    html += '<br><span style="color:#ffcc40">Kiểm tra URL của file bị thiếu trên trình duyệt.<br>Nếu 404 → upload file lên folder assets/ trên GitHub.</span>';
+  }
   el.innerHTML = html;
-  if (spriteLoadedCount === spriteTotalCount && Object.values(spriteStatus).every(v => v==='ok')){
+
+  if (ok === total){
     setTimeout(() => el.classList.add('hidden'), 5000);
   }
 }
@@ -447,11 +459,6 @@ const player = {
   animT: 0, currentAnim: 'idle', animTime: 0,
   _stepAcc: 0, attackT: 0, hurtT: 0, jumpT: 0, jumpY: 0
 };
-
-/* Thời gian action đồng bộ với animation */
-const ATTACK_DURATION = 8 / 14;
-const HURT_DURATION   = 8 / 8;
-const JUMP_DURATION   = 0.65;
 
 /* ============================================================
    CAMERA / CANVAS
@@ -880,13 +887,12 @@ function drawPlayer(){
   ctx.ellipse(sx, syGround + FOOT_OFFSET, 16 * shadowScale, 5 * shadowScale, 0, 0, Math.PI*2);
   ctx.fill();
 
-  const s = SPRITES[player.currentAnim];
+  const s = SPRITE_FILES[player.currentAnim];
   if (!s || !s.loaded || s.frameW <= 0){
     drawFallbackBody(sx, sySprite, player.animT, player.currentAnim, player.facing, LOCAL_COLORS);
     return;
   }
 
-  /* Tính frame index */
   const rawIdx = Math.floor(player.animTime * s.fps);
   let idx;
   if (s.loop){
@@ -895,13 +901,11 @@ function drawPlayer(){
     idx = Math.max(0, Math.min(s.frames - 1, rawIdx));
   }
 
-  /* Source rect */
   const srcX = Math.round(idx * s.frameW);
   const srcY = 0;
   const srcW = Math.round(s.frameW);
   const srcH = Math.round(s.frameH);
 
-  /* Dest rect */
   const DEST_H = DEST_HEIGHT;
   const DEST_W = Math.round(DEST_H * (s.frameW / s.frameH));
   const drawX = Math.round(sx - DEST_W / 2);
@@ -1252,4 +1256,4 @@ showMenuPage('main');
 requestAnimationFrame(loop);
 </script>
 </body>
-  </html>
+          </html>
