@@ -106,15 +106,26 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 #joyKnob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin-left:-27px;margin-top:-27px;
   background:#889878;border:3px solid #1a1f14;border-radius:50%;
   box-shadow:inset 0 0 0 2px #c8d8b8,3px 3px 0 rgba(0,0,0,.6)}
+#joyZoneR{position:absolute;right:16px;bottom:80px;width:130px;height:130px;
+  pointer-events:auto;touch-action:none}
+#joyBaseR{width:100%;height:100%;border-radius:50%;background:rgba(0,0,0,.3);
+  border:3px solid rgba(255,255,255,.4);position:relative}
+#joyKnobR{position:absolute;left:50%;top:50%;width:54px;height:54px;
+  margin-left:-27px;margin-top:-27px;
+  background:rgba(220,220,220,.85);border:3px solid #1a1f14;border-radius:50%;
+  box-shadow:inset 0 0 0 2px #fff,3px 3px 0 rgba(0,0,0,.6)}
 .tb{position:absolute;border-radius:50%;background:rgba(180,80,60,.9);border:3px solid #1a1f14;
   box-shadow:inset 0 0 0 2px #e89888,3px 3px 0 rgba(0,0,0,.6);color:#fff;font-size:24px;font-weight:900;
   text-shadow:2px 2px 0 #1a1f14;pointer-events:auto;touch-action:none;padding:0;line-height:1;
   display:flex;align-items:center;justify-content:center;cursor:pointer}
 .tb.jump{background:rgba(80,140,200,.9);box-shadow:inset 0 0 0 2px #88c8e8,3px 3px 0 rgba(0,0,0,.6)}
+.tb.sit{background:rgba(140,120,60,.9);box-shadow:inset 0 0 0 2px #ffe088,3px 3px 0 rgba(0,0,0,.6)}
 .tb.pressed{background:#d8a898;border-color:#fff;box-shadow:none;transform:translate(2px,2px)}
 .tb.jump.pressed{background:#88c8e8}
+.tb.sit.pressed{background:#e8c898}
 #btnAttack{right:16px;bottom:16px;width:72px;height:72px;font-size:30px}
 #btnJump{right:96px;bottom:16px;width:64px;height:64px;font-size:28px}
+#btnSit{right:96px;bottom:88px;width:56px;height:56px;font-size:20px}
 #settingsBtn{position:fixed;top:8px;right:8px;z-index:13;width:36px;height:36px;
   background:rgba(20,24,16,.9);border:2px solid #0a0d08;border-radius:6px;color:#e8f0d8;font-size:16px;
   display:none;align-items:center;justify-content:center;cursor:pointer;
@@ -149,8 +160,10 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 <div id="hotbar"></div>
 <div id="touchUI">
   <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
+  <div id="joyZoneR"><div id="joyBaseR"><div id="joyKnobR"></div></div></div>
   <button class="tb" id="btnAttack">⚔</button>
   <button class="tb jump" id="btnJump">⤒</button>
+  <button class="tb sit" id="btnSit">🪑</button>
 </div>
 <button id="settingsBtn" onclick="Game.showSettings()">⚙</button>
 <div id="loadStatus" class="hidden"></div>
@@ -173,7 +186,8 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
       <button class="mbtn" onclick="Game.showSettings()">⚙ Cài đặt</button>
       <div style="font-size:10px;color:#586850;margin-top:14px;font-family:Consolas,monospace;line-height:1.6">
         <b style="color:#88ff60">WASD</b> di chuyển · <b style="color:#88ff60">Space</b> nhảy<br>
-        <b style="color:#88ff60">Chuột trái</b> tấn công · <b style="color:#88ff60">1-4</b> chọn kiếm
+        <b style="color:#88ff60">Chuột trái</b> tấn công · <b style="color:#88ff60">C</b> ngồi<br>
+        <b style="color:#88ff60">1-4</b> chọn kiếm · <b style="color:#88ff60">T</b> chỉnh frame
       </div>
     </div>
     <div id="menuMP" class="menu-page hidden">
@@ -234,95 +248,102 @@ function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
    SPRITE CONFIG
    ============================================================ */
 const SPRITE_FILES = {
-  idle:   { src:'assets/player_idle.png',   frames:7, fps:5,  loop:true,  label:'Idle' },
-  run:    { src:'assets/player_run.png',    frames:8, fps:12, loop:true,  label:'Run' },
-  jump:   { src:'assets/player_jump.png',   frames:8, fps:12, loop:false, label:'Jump' },
-  attack: { src:'assets/player_attack.png', frames:8, fps:14, loop:false, label:'Attack' },
-  hurt:   { src:'assets/player_death.png',  frames:8, fps:8,  loop:false, label:'Death' }
+  idle:   { src:'assets/player_idle.png',   frames:10, fps:6,  loop:true,  label:'Idle' },
+  run:    { src:'assets/player_run.png',    frames:10, fps:14, loop:true,  label:'Run' },
+  jump:   { src:'assets/player_jump.png',   frames:9,  fps:12, loop:false, label:'Jump' },
+  attack: { src:'assets/player_attack.png', frames:10, fps:16, loop:false, label:'Attack' },
+  sit:    { src:'assets/player_sit.png',    frames:10, fps:6,  loop:true,  label:'Sit' },
+  hurt:   { src:'assets/player_death.png',  frames:8,  fps:8,  loop:false, label:'Death' }
 };
 
 const DEST_HEIGHT = 120;
 const FOOT_OFFSET = 14;
-const ATTACK_DURATION = 8 / 14;
+const ATTACK_DURATION = 10 / 16;
 const HURT_DURATION   = 8 / 8;
 const JUMP_DURATION   = 0.65;
 
 /* ============================================================
-   METADATA DECODER
+   METADATA DECODER v2
    ============================================================ */
 function decodeSpriteMetadata(img){
   try {
     const cnv = document.createElement('canvas');
-    cnv.width = img.width;
-    cnv.height = 1;
+    cnv.width = img.width; cnv.height = 1;
     const c = cnv.getContext('2d', { willReadFrequently: true });
     c.drawImage(img, 0, img.height - 1, img.width, 1, 0, 0, img.width, 1);
     const d = c.getImageData(0, 0, img.width, 1).data;
-
     if (d[0] !== 0x44 || d[1] !== 0x48 || d[2] !== 0x55 || d[3] !== 0x4E) return null;
-
+    const version = d[4] | (d[5] << 8);
     const len = d[6] | (d[7] << 8) | (d[8] << 16) | (d[9] << 24);
-    if (len <= 0 || len > 100000) return null;
-
+    if (len <= 0 || len > 200000) return null;
     const bytes = [];
     for (let i = 0; i < len; i++){
       const pos = 10 + i;
-      const p = Math.floor(pos / 3);
-      const ch = pos % 3;
+      const p = Math.floor(pos / 3), ch = pos % 3;
       if (p * 4 + ch >= d.length) break;
       bytes.push(d[p * 4 + ch]);
     }
-    const jsonStr = new TextDecoder().decode(new Uint8Array(bytes));
-    return JSON.parse(jsonStr);
-  } catch(e){
-    console.warn('Metadata decode error:', e);
-    return null;
-  }
+    const meta = JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
+    meta._version = version;
+    return meta;
+  } catch(e){ return null; }
 }
 
 /* ============================================================
-   AUTO-DETECT FRAME BOUNDARIES
-   Quét pixel tìm khoảng trống giữa các nhân vật
+   AUTO-DETECT 4-CẠNH (fallback khi không có metadata)
    ============================================================ */
 function autoDetectFrameLines(canvas, minGap){
-  const W = canvas.width;
-  const H = canvas.height;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  const data = ctx.getImageData(0, 0, W, H).data;
-
+  const W = canvas.width, H = canvas.height;
+  const ctx2 = canvas.getContext('2d', { willReadFrequently: true });
+  const data = ctx2.getImageData(0, 0, W, H).data;
   minGap = minGap || 3;
-  const emptyCols = new Uint8Array(W);
+  const empty = new Uint8Array(W);
   for (let x = 0; x < W; x++){
-    let hasContent = 0;
+    let has = 0;
     for (let y = 0; y < H; y++){
-      const i = (y * W + x) * 4;
-      if (data[i+3] > 5){ hasContent = 1; break; }
+      if (data[(y * W + x) * 4 + 3] > 5){ has = 1; break; }
     }
-    emptyCols[x] = hasContent ? 0 : 1;
+    empty[x] = has ? 0 : 1;
   }
-
   const lines = [0];
   let i = 0;
-  while (i < W && emptyCols[i]) i++;
+  while (i < W && empty[i]) i++;
   if (i >= W) return null;
-
   while (i < W){
-    while (i < W && !emptyCols[i]) i++;
-    const gapStart = i;
-    while (i < W && emptyCols[i]) i++;
-    const gapEnd = i;
+    while (i < W && !empty[i]) i++;
+    const gs = i;
+    while (i < W && empty[i]) i++;
+    const ge = i;
     if (i >= W) break;
-    if (gapEnd - gapStart >= minGap){
-      lines.push(Math.round((gapStart + gapEnd) / 2));
-    }
+    if (ge - gs >= minGap) lines.push(Math.round((gs + ge) / 2));
   }
   lines.push(W);
-
   return lines.length >= 3 ? lines : null;
 }
 
+function detectBBoxFromCanvas(canvas, x1, y1, x2, y2){
+  const W = canvas.width;
+  const ctx2 = canvas.getContext('2d', { willReadFrequently: true });
+  const d = ctx2.getImageData(x1, y1, x2 - x1, y2 - y1).data;
+  const w = x2 - x1, h = y2 - y1;
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++){
+    for (let x = 0; x < w; x++){
+      const i = (y * w + x) * 4;
+      if (d[i+3] > 10){
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) return null;
+  return { x: x1 + minX, y: y1 + minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+}
+
 /* ============================================================
-   LOAD 5 SPRITE FILES
+   LOAD 6 SPRITE FILES
    ============================================================ */
 const loadReport = { files: {} };
 
@@ -331,15 +352,14 @@ for (const name in SPRITE_FILES){
   s.img = new Image();
   s.loaded = false;
   s.hasMeta = false;
-  s.vLines = null;      // đường kẻ dọc chính xác (từ metadata hoặc auto-detect)
-  s.spriteH = 0;        // chiều cao thực của sprite (không tính metadata row)
+  s.vLines = null;
+  s.anchors = null;         // [{x, y}] — tọa độ tuyệt đối trong ảnh gốc
+  s.spriteH = 0;
   s.frameW = 0;
   s.frameH = 0;
 
   s.img.onload = () => {
     s.loaded = true;
-
-    /* 1. Thử đọc metadata */
     const meta = decodeSpriteMetadata(s.img);
     let realImg;
 
@@ -351,19 +371,25 @@ for (const name in SPRITE_FILES){
       if (meta.fps) s.fps = meta.fps;
       if (typeof meta.loop === 'boolean') s.loop = meta.loop;
 
+      /* Anchors: [[x,y], ...] → [{x,y}] */
+      if (meta.anchors && Array.isArray(meta.anchors)){
+        s.anchors = meta.anchors.map(a => Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null));
+      }
+
       /* Cắt bỏ metadata row → canvas chỉ chứa sprite */
       const cnv = document.createElement('canvas');
       cnv.width = s.img.width;
       cnv.height = s.spriteH;
-      const cc = cnv.getContext('2d');
+      const cc = cnv.getContext('2d', { willReadFrequently: true });
       cc.imageSmoothingEnabled = false;
       cc.drawImage(s.img, 0, 0, s.img.width, s.spriteH, 0, 0, s.img.width, s.spriteH);
       realImg = cnv;
       s.renderImg = cnv;
+      s.canvasCache = cnv;
 
-      console.log(`✓ ${name.padEnd(7)} [META] ${s.img.width}×${s.img.height} · ${s.frames} frames · vLines=[${s.vLines.join(',')}]`);
+      console.log(`✓ ${name.padEnd(7)} [META v${meta._version||1}] ${s.img.width}×${s.spriteH} · ${s.frames} frames · ${s.anchors ? s.anchors.filter(a=>a).length + ' anchors' : 'no anchors'}`);
     } else {
-      /* 2. Không có metadata → auto-detect từ pixel */
+      /* Không có metadata → auto-detect */
       const cnv = document.createElement('canvas');
       cnv.width = s.img.width;
       cnv.height = s.img.height;
@@ -372,19 +398,44 @@ for (const name in SPRITE_FILES){
       cc.drawImage(s.img, 0, 0);
       realImg = cnv;
       s.renderImg = cnv;
+      s.canvasCache = cnv;
       s.spriteH = s.img.height;
 
       const detected = autoDetectFrameLines(cnv, 3);
       if (detected && detected.length - 1 >= 2){
         s.vLines = detected;
         s.frames = detected.length - 1;
-        console.log(`✓ ${name.padEnd(7)} [AUTO] ${s.img.width}×${s.img.height} · phát hiện ${s.frames} frames · vLines=[${detected.join(',')}]`);
+
+        /* Tự tính anchor cho mỗi frame từ bbox */
+        s.anchors = [];
+        for (let i = 0; i < s.frames; i++){
+          const bbox = detectBBoxFromCanvas(cnv, detected[i], 0, detected[i+1], s.spriteH);
+          if (bbox){
+            s.anchors.push({ x: bbox.x + bbox.w / 2, y: bbox.y + bbox.h });
+          } else {
+            s.anchors.push(null);
+          }
+        }
+        console.log(`✓ ${name.padEnd(7)} [AUTO] ${s.img.width}×${s.spriteH} · ${s.frames} frames · ${s.anchors.filter(a=>a).length} anchors`);
       } else {
-        /* 3. Fallback chia đều */
+        /* Fallback chia đều */
         s.vLines = null;
         s.frameW = s.img.width / s.frames;
         s.frameH = s.img.height;
-        console.log(`✓ ${name.padEnd(7)} [EQUAL] ${s.img.width}×${s.img.height} · chia đều ${s.frames} frames`);
+
+        /* Tự tính anchor */
+        s.anchors = [];
+        for (let i = 0; i < s.frames; i++){
+          const x1 = Math.round(i * s.frameW);
+          const x2 = Math.round((i+1) * s.frameW);
+          const bbox = detectBBoxFromCanvas(cnv, x1, 0, x2, s.spriteH);
+          if (bbox){
+            s.anchors.push({ x: bbox.x + bbox.w / 2, y: bbox.y + bbox.h });
+          } else {
+            s.anchors.push(null);
+          }
+        }
+        console.log(`✓ ${name.padEnd(7)} [EQUAL] ${s.img.width}×${s.spriteH} · chia đều ${s.frames} frames · ${s.anchors.filter(a=>a).length} anchors`);
       }
     }
 
@@ -409,7 +460,6 @@ function updateLoadStatus(){
   const err = Object.values(loadReport.files).filter(v => v === 'err').length;
   if (ok === 0 && err === 0){ el.classList.add('hidden'); return; }
   el.classList.remove('hidden');
-
   let html = ok === total
     ? `<b><span class="ok">✓ SPRITE OK — ${total}/${total}</span></b><br>`
     : `<b><span class="err">⚠ SPRITE THIẾU (${ok}/${total})</span></b><br>`;
@@ -423,7 +473,8 @@ function updateLoadStatus(){
       const tag = s.hasMeta
         ? `<span class="meta">[META]</span>`
         : (s.vLines ? `<span class="meta">[AUTO]</span>` : `[EQUAL]`);
-      html += ` ${tag} <span style="color:#6a7860">${s.img.width}×${s.spriteH} · ${s.frames} frame</span>`;
+      const anchorCount = s.anchors ? s.anchors.filter(a=>a).length : 0;
+      html += ` ${tag} <span style="color:#6a7860">${s.img.width}×${s.spriteH} · ${s.frames} fr · ${anchorCount} ⚓</span>`;
     } else if (status === 'err'){
       html += ` <span class="err">THIẾU</span>`;
     }
@@ -434,7 +485,7 @@ function updateLoadStatus(){
 }
 
 /* ============================================================
-   AUDIO
+   AUDIO (giữ nguyên)
    ============================================================ */
 const Audio2D = (() => {
   let ctx = null, enabled = true;
@@ -559,9 +610,6 @@ function generateWorld(){
   for (let y=0;y<WORLD_H;y++) for (let x=0;x<WORLD_W;x++) wSet(x,y,T.GRASS);
 }
 
-/* ============================================================
-   INVENTORY
-   ============================================================ */
 const inv = { hotbar: new Array(9).fill(null) };
 function defOf(id){ return ITEMS[id]; }
 function initInv(){
@@ -581,12 +629,10 @@ const player = {
   radius: 12, speed: 160,
   facing: 1, selected: 0,
   animT: 0, currentAnim: 'idle', animTime: 0,
-  _stepAcc: 0, attackT: 0, hurtT: 0, jumpT: 0, jumpY: 0
+  _stepAcc: 0, attackT: 0, hurtT: 0, jumpT: 0, jumpY: 0,
+  sitting: false
 };
 
-/* ============================================================
-   CAMERA / CANVAS
-   ============================================================ */
 const cam = { x: 0, y: 0 };
 const cv = document.getElementById('cv');
 const ctx = cv.getContext('2d');
@@ -602,6 +648,47 @@ addEventListener('orientationchange', () => setTimeout(resize, 100));
 resize();
 
 /* ============================================================
+   AIM SYSTEM
+   ============================================================ */
+const aim = { angle: 0, joyId: null, joyX: 0, joyY: 0, autoAttack: false, cx: 0, cy: 0 };
+const joyZoneR = document.getElementById('joyZoneR');
+const joyKnobR = document.getElementById('joyKnobR');
+
+joyZoneR.addEventListener('pointerdown', e => {
+  if (aim.joyId !== null) return;
+  e.preventDefault();
+  aim.joyId = e.pointerId;
+  const r = joyZoneR.getBoundingClientRect();
+  aim.cx = r.left + r.width/2; aim.cy = r.top + r.height/2;
+  moveAimJoy(e.clientX, e.clientY);
+  try { joyZoneR.setPointerCapture(e.pointerId); } catch(err){}
+});
+function moveAimJoy(cx, cy){
+  let dx = cx - aim.cx, dy = cy - aim.cy;
+  const d = Math.hypot(dx, dy), max = 52;
+  if (d > max){ dx = dx/d*max; dy = dy/d*max; }
+  aim.joyX = dx / max; aim.joyY = dy / max;
+  joyKnobR.style.transform = `translate(${dx}px, ${dy}px)`;
+  if (d > 8){
+    aim.angle = Math.atan2(aim.joyY, aim.joyX);
+    aim.autoAttack = d > 15;
+  } else {
+    aim.autoAttack = false;
+  }
+}
+function endAimJoy(e){
+  if (e.pointerId !== aim.joyId) return;
+  aim.joyId = null; aim.autoAttack = false;
+  aim.joyX = 0; aim.joyY = 0;
+  joyKnobR.style.transform = 'translate(0,0)';
+}
+addEventListener('pointermove', e => {
+  if (e.pointerId === aim.joyId){ e.preventDefault(); moveAimJoy(e.clientX, e.clientY); }
+}, { passive: false });
+addEventListener('pointerup', endAimJoy);
+addEventListener('pointercancel', endAimJoy);
+
+/* ============================================================
    INPUT
    ============================================================ */
 const keys = {};
@@ -615,6 +702,7 @@ addEventListener('keydown', e => {
   if (!gameStarted || paused) return;
   if (e.code === 'KeyM'){ e.preventDefault(); toggleSettings(); }
   if (e.code === 'Space'){ e.preventDefault(); tryJump(); }
+  if (e.code === 'KeyC'){ e.preventDefault(); trySit(); }
   if (e.code.startsWith('Digit')){
     const n = parseInt(e.code.slice(5));
     if (n>=1 && n<=9){ player.selected = n-1; renderHotbar(); }
@@ -641,6 +729,7 @@ addEventListener('wheel', e => {
   renderHotbar();
 }, { passive:true });
 
+/* Joystick trái */
 const joy = { id:null, x:0, y:0, cx:0, cy:0 };
 const joyZone = document.getElementById('joyZone');
 const joyKnob = document.getElementById('joyKnob');
@@ -671,6 +760,7 @@ addEventListener('pointermove', e => {
 addEventListener('pointerup', endJoy);
 addEventListener('pointercancel', endJoy);
 
+/* Touch look */
 let lookId = null, lookX = 0, lookY = 0;
 cv.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch') return;
@@ -704,6 +794,7 @@ function bindBtn(id, downFn, upFn){
 let attackTouch = false;
 bindBtn('btnAttack', () => { attackTouch = true; tryAttack(); }, () => { attackTouch = false; });
 bindBtn('btnJump', () => tryJump(), null);
+bindBtn('btnSit', () => trySit(), null);
 
 /* ============================================================
    ACTIONS
@@ -711,23 +802,33 @@ bindBtn('btnJump', () => tryJump(), null);
 function tryJump(){
   if (!gameStarted || paused) return;
   if (player.jumpT > 0) return;
+  player.sitting = false;
   player.jumpT = JUMP_DURATION;
   Audio2D.sfx.jump();
+}
+function trySit(){
+  if (!gameStarted || paused) return;
+  if (player.jumpT > 0) return;
+  if (player.attackT > 0) return;
+  player.sitting = !player.sitting;
+  Audio2D.sfx.click();
 }
 let lastAttackT = 0;
 function tryAttack(){
   if (!gameStarted || paused) return;
+  if (player.sitting) player.sitting = false;
   const now = performance.now();
   if (now - lastAttackT < ATTACK_DURATION * 1000) return;
   lastAttackT = now;
   player.attackT = ATTACK_DURATION;
   Audio2D.sfx.swordSwing();
   if (!net.active) return;
-  const wx = mouse.x + cam.x, wy = mouse.y + cam.y;
+  const hitX = player.x + Math.cos(aim.angle) * 50;
+  const hitY = player.y + Math.sin(aim.angle) * 50;
   const range = 72;
   let target = null, minD = range;
   for (const [id, p] of net.players){
-    const d = Math.hypot(p.x - wx, p.y - wy);
+    const d = Math.hypot(p.x - hitX, p.y - hitY);
     if (d < minD){ minD = d; target = { id, p }; }
   }
   if (target){
@@ -764,7 +865,19 @@ function updatePlayer(dt){
   }
   const mag = Math.hypot(dx, dy);
   if (mag > 1){ dx /= mag; dy /= mag; }
-  if (Math.abs(dx) > 0.3) player.facing = dx > 0 ? 1 : -1;
+
+  if (player.sitting && mag > 0.15) player.sitting = false;
+  if (player.sitting){ dx = 0; dy = 0; }
+
+  /* Aim */
+  if (aim.joyId !== null){
+    /* dùng aim.angle */
+  } else {
+    const wx = mouse.x + cam.x, wy = mouse.y + cam.y;
+    aim.angle = Math.atan2(wy - player.y, wx - player.x);
+  }
+  const cosA = Math.cos(aim.angle);
+  if (Math.abs(cosA) > 0.15) player.facing = cosA > 0 ? 1 : -1;
 
   player.x += dx * player.speed * dt;
   player.y += dy * player.speed * dt;
@@ -780,12 +893,15 @@ function updatePlayer(dt){
     const prog = 1 - player.jumpT / JUMP_DURATION;
     player.jumpY = -Math.sin(prog * Math.PI) * 32;
   } else player.jumpY = 0;
+
+  if (aim.autoAttack && player.attackT <= 0) tryAttack();
   if (attackTouch && player.attackT <= 0) tryAttack();
 
   let target = 'idle';
   if (player.attackT > 0)     target = 'attack';
   else if (player.hurtT > 0)  target = 'hurt';
   else if (player.jumpT > 0)  target = 'jump';
+  else if (player.sitting)    target = 'sit';
   else if (mag > 0.1)         target = 'run';
   if (target !== player.currentAnim){
     player.currentAnim = target;
@@ -798,12 +914,14 @@ function updatePlayer(dt){
     if (player._stepAcc > 26){ player._stepAcc = 0; Audio2D.sfx.step(); }
   } else player._stepAcc = 0;
 }
+
 function respawnPlayer(){
   player.hp = player.maxHp;
   toast('💀 Bạn đã bị hạ. Hồi sinh!');
   player.x = WORLD_W*TILE/2; player.y = WORLD_H*TILE/2;
   player.jumpT = 0; player.jumpY = 0;
   player.attackT = 0; player.hurtT = 0;
+  player.sitting = false;
   cam.x = player.x - VW/2; cam.y = player.y - VH/2;
   if (net.active) net.broadcastPos();
   updateHpBar();
@@ -825,8 +943,7 @@ const net = {
   clients: new Map(), myId: null, name: 'Hunter', roomCode: null,
   players: new Map(), onWorldReady: null,
   startHost(name){
-    this.name = name || 'Host'; this.mode = 'host';
-    this.players.clear();
+    this.name = name || 'Host'; this.mode = 'host'; this.players.clear();
     const code = genRoomCode(); this.roomCode = code;
     return new Promise((resolve, reject) => {
       try { this.peer = new Peer('dragonhunter-' + code, PEER_OPTS); }
@@ -994,19 +1111,65 @@ function getNightFactor(){
 }
 
 /* ============================================================
-   DRAW PLAYER
-   Vẽ sprite dùng vLines chính xác (từ metadata hoặc auto-detect)
+   DRAW PLAYER — dùng vLines + anchors
    ============================================================ */
+function drawSpriteFor(s, idx, cx, cy, facing, alpha){
+  /* cx, cy = vị trí anchor muốn đặt (điểm chân nhân vật) */
+  if (!s || !s.loaded) return;
+
+  let srcX, srcW;
+  if (s.vLines && s.vLines[idx + 1] !== undefined){
+    srcX = s.vLines[idx];
+    srcW = s.vLines[idx + 1] - s.vLines[idx];
+  } else {
+    srcX = Math.round(idx * s.frameW);
+    srcW = Math.round(s.frameW);
+  }
+  const srcH = s.spriteH;
+
+  /* Lấy anchor của frame */
+  let anchor;
+  if (s.anchors && s.anchors[idx]){
+    anchor = s.anchors[idx];
+  } else {
+    /* Fallback: giữa đáy cell */
+    anchor = { x: srcX + srcW/2, y: srcH };
+  }
+
+  const scale = DEST_HEIGHT / srcH;
+  const anchorLocalX = anchor.x - srcX;
+
+  /* Vẽ sao cho anchor rơi vào (cx, cy) */
+  const drawX = Math.round(cx - anchorLocalX * scale);
+  const drawY = Math.round(cy - anchor.y * scale);
+  const drawW = Math.round(srcW * scale);
+  const drawH = Math.round(srcH * scale);
+
+  ctx.save();
+  if (alpha !== undefined) ctx.globalAlpha = alpha;
+  if (facing < 0){
+    ctx.translate(cx, 0);
+    ctx.scale(-1, 1);
+    /* Lật: anchor local tính lại theo trục đối xứng qua cx */
+    const flippedLocalX = (srcX + srcW) - anchor.x;
+    const dX = Math.round(-(flippedLocalX * scale));
+    ctx.drawImage(s.renderImg, srcX, 0, srcW, srcH, dX, drawY, drawW, drawH);
+  } else {
+    ctx.drawImage(s.renderImg, srcX, 0, srcW, srcH, drawX, drawY, drawW, drawH);
+  }
+  ctx.restore();
+}
+
 function drawPlayer(){
   const sx = player.x - cam.x;
-  const syGround = player.y - cam.y;
+  const syGround = player.y - cam.y + FOOT_OFFSET;
   const sySprite = syGround + player.jumpY;
 
   /* Shadow */
   const shadowScale = 1 - Math.abs(player.jumpY) / 70;
   ctx.fillStyle = `rgba(0,0,0,${0.4 * shadowScale})`;
   ctx.beginPath();
-  ctx.ellipse(sx, syGround + FOOT_OFFSET, 16 * shadowScale, 5 * shadowScale, 0, 0, Math.PI*2);
+  ctx.ellipse(sx, syGround, 16 * shadowScale, 5 * shadowScale, 0, 0, Math.PI*2);
   ctx.fill();
 
   const s = SPRITE_FILES[player.currentAnim];
@@ -1015,7 +1178,6 @@ function drawPlayer(){
     return;
   }
 
-  /* Tính frame index */
   const rawIdx = Math.floor(player.animTime * s.fps);
   let idx;
   if (s.loop){
@@ -1024,34 +1186,43 @@ function drawPlayer(){
     idx = Math.max(0, Math.min(s.frames - 1, rawIdx));
   }
 
-  /* Cắt frame chính xác bằng vLines nếu có */
-  let srcX, srcW, srcH;
-  if (s.vLines && s.vLines[idx + 1] !== undefined){
-    srcX = s.vLines[idx];
-    srcW = s.vLines[idx + 1] - s.vLines[idx];
-    srcH = s.spriteH;
-  } else {
-    /* Fallback chia đều */
-    srcX = Math.round(idx * s.frameW);
-    srcW = Math.round(s.frameW);
-    srcH = s.frameH;
-  }
+  drawSpriteFor(s, idx, sx, sySprite, player.facing);
+}
 
-  const srcY = 0;
-
-  const DEST_H = DEST_HEIGHT;
-  const DEST_W = Math.round(DEST_H * (srcW / srcH));
-  const drawX = Math.round(sx - DEST_W / 2);
-  const drawY = Math.round(sySprite + FOOT_OFFSET - DEST_H);
+function drawAimArrow(){
+  if (!gameStarted || paused) return;
+  const sx = player.x - cam.x;
+  const sy = player.y - cam.y - 6;
+  const a = aim.angle;
+  const cosA = Math.cos(a), sinA = Math.sin(a);
+  const dist = (aim.joyId !== null)
+    ? 28 + Math.hypot(aim.joyX, aim.joyY) * 26
+    : 46;
+  const tipX = sx + cosA * dist;
+  const tipY = sy + sinA * dist;
 
   ctx.save();
-  if (player.facing < 0){
-    ctx.translate(sx, 0);
-    ctx.scale(-1, 1);
-    ctx.drawImage(s.renderImg, srcX, srcY, srcW, srcH, -DEST_W/2, drawY, DEST_W, DEST_H);
-  } else {
-    ctx.drawImage(s.renderImg, srcX, srcY, srcW, srcH, drawX, drawY, DEST_W, DEST_H);
-  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(sx + cosA * 14, sy + sinA * 14);
+  ctx.lineTo(tipX, tipY);
+  ctx.stroke();
+
+  const headLen = 8, headAngle = 0.6;
+  const w1x = tipX + Math.cos(a + Math.PI - headAngle) * headLen;
+  const w1y = tipY + Math.sin(a + Math.PI - headAngle) * headLen;
+  const w2x = tipX + Math.cos(a + Math.PI + headAngle) * headLen;
+  const w2y = tipY + Math.sin(a + Math.PI + headAngle) * headLen;
+  ctx.beginPath();
+  ctx.moveTo(w1x, w1y); ctx.lineTo(tipX, tipY); ctx.lineTo(w2x, w2y);
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath();
+  ctx.arc(tipX, tipY, 3, 0, Math.PI*2);
+  ctx.fill();
   ctx.restore();
 }
 
@@ -1059,39 +1230,10 @@ const LOCAL_COLORS = { legs:'#2a3a5a', shoes:'#1a1a1a', body:'#3a5a9a', bodyShad
 function drawFallbackBody(sx, sy, animT, animName, facing, colors){
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.beginPath(); ctx.ellipse(sx, sy+14, 12, 4, 0, 0, Math.PI*2); ctx.fill();
-  const isRun = animName === 'run';
-  const bounce = isRun ? Math.sin(animT*12)*1.5 : Math.sin(animT*3)*0.6;
-  const legSwing = isRun ? Math.sin(animT*12)*3 : 0;
-  ctx.fillStyle = colors.legs;
-  ctx.fillRect(sx-6+legSwing, sy+2, 4, 10-bounce);
-  ctx.fillRect(sx+2-legSwing, sy+2, 4, 10-bounce);
-  ctx.fillStyle = colors.shoes;
-  ctx.fillRect(sx-6+legSwing, sy+11, 4, 3);
-  ctx.fillRect(sx+2-legSwing, sy+11, 4, 3);
   ctx.fillStyle = colors.body;
-  ctx.fillRect(sx-8, sy-14+bounce, 16, 18);
-  ctx.fillStyle = colors.bodyShade;
-  ctx.fillRect(sx-8, sy-4+bounce, 16, 3);
-  ctx.fillStyle = colors.body;
-  const armSwing = isRun ? Math.sin(animT*12+Math.PI)*3 : 0;
-  ctx.fillRect(sx-11, sy-12+bounce+armSwing, 3, 12);
-  ctx.fillRect(sx+8, sy-12+bounce-armSwing, 3, 12);
+  ctx.fillRect(sx-8, sy-14, 16, 18);
   ctx.fillStyle = colors.skin;
-  ctx.fillRect(sx-11, sy+armSwing+bounce, 3, 3);
-  ctx.fillRect(sx+8, sy-armSwing+bounce, 3, 3);
-  ctx.fillRect(sx-7, sy-26+bounce, 14, 12);
-  ctx.fillStyle = colors.hair;
-  ctx.fillRect(sx-7, sy-26+bounce, 14, 4);
-  ctx.fillRect(sx-7, sy-26+bounce, 3, 8);
-  ctx.fillRect(sx+4, sy-26+bounce, 3, 8);
-  ctx.fillStyle = '#1a1a1a';
-  if (facing > 0){
-    ctx.fillRect(sx+2, sy-22+bounce, 2, 2);
-    ctx.fillRect(sx+5, sy-22+bounce, 2, 2);
-  } else {
-    ctx.fillRect(sx-4, sy-22+bounce, 2, 2);
-    ctx.fillRect(sx-7, sy-22+bounce, 2, 2);
-  }
+  ctx.fillRect(sx-7, sy-26, 14, 12);
 }
 
 const REMOTE_PALETTE = [
@@ -1106,8 +1248,13 @@ function drawRemotePlayer(p){
   const sx = p.x - cam.x, sy = p.y - cam.y;
   if (sx < -80 || sx > VW+80 || sy < -80 || sy > VH+80) return;
   const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name)) % REMOTE_PALETTE.length];
-  p.animT = (p.animT || 0) + 0.016;
-  drawFallbackBody(sx, sy, p.animT, 'idle', p.facing, pal);
+  ctx.fillStyle = pal.body;
+  ctx.fillRect(sx-8, sy-14, 16, 18);
+  ctx.fillStyle = pal.skin;
+  ctx.fillRect(sx-7, sy-26, 14, 12);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(sx-4, sy-22, 2, 2);
+  ctx.fillRect(sx+2, sy-22, 2, 2);
   ctx.font = 'bold 10px Consolas, monospace';
   ctx.textAlign = 'center';
   const w = ctx.measureText(p.name).width + 8;
@@ -1135,12 +1282,13 @@ function render(){
   for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
     drawTile(x, y, wGet(x, y), x*TILE - cam.x, y*TILE - cam.y);
   }
-
   const ents = [];
   for (const [id, p] of net.players) ents.push({ y: p.y, draw: () => drawRemotePlayer(p) });
   ents.push({ y: player.y, draw: () => drawPlayer() });
   ents.sort((a,b) => a.y - b.y);
   for (const e of ents) e.draw();
+
+  drawAimArrow();
 
   for (const p of G.particles){
     const a = p.life / p.maxLife;
@@ -1154,7 +1302,6 @@ function render(){
     ctx.fillStyle = `rgba(5, 8, 25, ${nightFactor * 0.75})`;
     ctx.fillRect(0, 0, VW, VH);
   }
-
   document.getElementById('time').textContent =
     `${nightFactor > 0.6 ? '🌙' : '☀'} ${getClockString()} · Ngày ${dayCount}`;
   document.getElementById('coords').innerHTML =
@@ -1171,7 +1318,7 @@ function updateCam(){
 }
 
 let worldTime = 0.25;
-const DAY_DURATION = 300;
+const DAY_DURATION = 1200;
 let dayCount = 1;
 function updateDayNight(dt){
   worldTime += dt / DAY_DURATION;
@@ -1356,6 +1503,7 @@ function resetPlayerPosition(){
   player.x = WORLD_W*TILE/2; player.y = WORLD_H*TILE/2;
   player.jumpT = 0; player.jumpY = 0;
   player.attackT = 0; player.hurtT = 0;
+  player.sitting = false;
   player.currentAnim = 'idle'; player.animTime = 0;
   cam.x = player.x - VW/2; cam.y = player.y - VH/2;
 }
@@ -1389,4 +1537,4 @@ showMenuPage('main');
 requestAnimationFrame(loop);
 </script>
 </body>
-      </html>
+          </html>
