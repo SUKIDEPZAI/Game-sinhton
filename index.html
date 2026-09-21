@@ -123,23 +123,13 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 #rotate{display:none;position:fixed;inset:0;background:#0a0d08;color:#e8f0d8;z-index:200;
   align-items:center;justify-content:center;text-align:center;padding:30px;font-size:16px;letter-spacing:2px}
 @media (orientation:portrait) and (max-width:900px){ #rotate{display:flex} }
-
-/* Frame Tuner */
-#tuner{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:210;
-  display:none;align-items:center;justify-content:center;padding:10px;overflow:auto}
-#tuner.show{display:flex}
-.tuner-box{background:#2a3328;border:3px solid #0a0d08;padding:14px;border-radius:6px;
-  max-width:98vw;max-height:98vh;overflow:auto;
-  box-shadow:inset 0 0 0 2px #5a6850,0 8px 0 #000;
-  display:flex;flex-direction:column;gap:8px}
-.tuner-box h3{font-family:Consolas,monospace;color:#88ff60;font-size:12px;letter-spacing:2px}
-#tunerInfo{font-family:Consolas,monospace;font-size:11px;color:#a8b498;line-height:1.6}
-#tunerCanvas{border:2px solid #0a0d08;background:#000;image-rendering:pixelated;
-  display:block;max-width:100%}
-.tuner-box .setting-row{margin:2px 0}
-.tuner-box .setting-row label{flex:0 0 100px;font-size:11px}
-.tuner-box .btn-row{display:flex;gap:8px;flex-wrap:wrap}
-.tuner-box .btn-row .mbtn{flex:1;min-width:100px;padding:10px;font-size:12px}
+#loadStatus{position:fixed;bottom:170px;left:50%;transform:translateX(-50%);
+  background:rgba(20,24,16,.94);color:#e8f0d8;padding:10px 16px;border-radius:6px;
+  font-family:Consolas,monospace;font-size:11px;z-index:12;border:1px solid #3a4438;
+  line-height:1.7;pointer-events:none;max-width:92vw;text-align:left}
+#loadStatus.hidden{display:none}
+#loadStatus .ok{color:#88ff60}
+#loadStatus .err{color:#ff6060}
 </style>
 </head>
 <body>
@@ -162,36 +152,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   <button class="tb jump" id="btnJump">⤒</button>
 </div>
 <button id="settingsBtn" onclick="Game.showSettings()">⚙</button>
-
-<!-- Frame Tuner -->
-<div id="tuner">
-  <div class="tuner-box">
-    <h3>🔧 TINH CHỈNH FRAME SPRITE</h3>
-    <div id="tunerInfo">Đang tải...</div>
-    <canvas id="tunerCanvas"></canvas>
-    <div class="setting-row"><label>Frame W</label>
-      <input type="range" id="tFW" min="20" max="400" value="100" step="1">
-      <span class="val" id="vFW">100</span></div>
-    <div class="setting-row"><label>Frame H</label>
-      <input type="range" id="tFH" min="20" max="400" value="200" step="1">
-      <span class="val" id="vFH">200</span></div>
-    <div class="setting-row"><label>Offset X</label>
-      <input type="range" id="tOX" min="-200" max="200" value="0" step="1">
-      <span class="val" id="vOX">0</span></div>
-    <div class="setting-row"><label>Offset Y</label>
-      <input type="range" id="tOY" min="-200" max="200" value="0" step="1">
-      <span class="val" id="vOY">0</span></div>
-    <div class="setting-row"><label>Size vẽ</label>
-      <input type="range" id="tSZ" min="40" max="200" value="100" step="1">
-      <span class="val" id="vSZ">100</span></div>
-    <div class="btn-row">
-      <button class="mbtn primary" onclick="FrameTuner.save()">💾 Lưu</button>
-      <button class="mbtn" onclick="FrameTuner.reset()">↺ Reset</button>
-      <button class="mbtn" onclick="FrameTuner.close()">✕ Đóng</button>
-    </div>
-  </div>
-</div>
-
+<div id="loadStatus" class="hidden"></div>
 <div id="toast"></div>
 <div id="pause" class="modal hidden">
   <div class="pause-panel">
@@ -209,11 +170,9 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
       <button class="mbtn primary" onclick="Game.startSingleplayer()">🎮 Chơi đơn</button>
       <button class="mbtn primary" onclick="Game.showMP()">🌐 Chơi mạng (PvP)</button>
       <button class="mbtn" onclick="Game.showSettings()">⚙ Cài đặt</button>
-      <button class="mbtn" onclick="FrameTuner.open()">🔧 Tinh chỉnh frame sprite</button>
       <div style="font-size:10px;color:#586850;margin-top:14px;font-family:Consolas,monospace;line-height:1.6">
         <b style="color:#88ff60">WASD</b> di chuyển · <b style="color:#88ff60">Space</b> nhảy<br>
-        <b style="color:#88ff60">Chuột trái</b> tấn công · <b style="color:#88ff60">1-4</b> chọn kiếm<br>
-        Phím <b style="color:#88ff60">T</b> mở tinh chỉnh frame
+        <b style="color:#88ff60">Chuột trái</b> tấn công · <b style="color:#88ff60">1-4</b> chọn kiếm
       </div>
     </div>
     <div id="menuMP" class="menu-page hidden">
@@ -271,176 +230,71 @@ let rng = Math.random, SEED = 0;
 function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 
 /* ============================================================
-   SPRITE — cấu hình có thể tinh chỉnh
+   SPRITE — 5 file PNG riêng biệt, mỗi file 1 hàng ngang
+   frameW = ảnh.width / frames  (tự tính, không cần đo)
+   frameH = ảnh.height
    ============================================================ */
-const DEFAULT_SPRITE_CFG = {
-  frameW: 100,    // ảnh.width / 21 — tinh chỉnh nếu sai
-  frameH: 200,    // ảnh.height
-  offsetX: 0,
-  offsetY: 0,
-  destHeight: 130 // kích thước vẽ trên canvas
+const SPRITES = {
+  idle:   { src:'assets/idle.png',   frames:7, fps:5,  loop:true  },
+  run:    { src:'assets/run.png',    frames:8, fps:12, loop:true  },
+  jump:   { src:'assets/jump.png',   frames:8, fps:12, loop:false },
+  attack: { src:'assets/attack.png', frames:8, fps:14, loop:false },
+  hurt:   { src:'assets/hurt.png',   frames:8, fps:8,  loop:false }
 };
 
-let spriteCfg = { ...DEFAULT_SPRITE_CFG };
-try {
-  const saved = localStorage.getItem('spriteCfg_v2');
-  if (saved) spriteCfg = { ...spriteCfg, ...JSON.parse(saved) };
-} catch(e){}
+let spriteLoadedCount = 0;
+let spriteTotalCount = 0;
+const spriteStatus = {};
 
-const SPRITE = {
-  src: 'assets/player.png',
-  totalFrames: 21,
-  animations: {
-    idle:   { start: 0,  frames: 4, fps: 5,  loop: true  },
-    run:    { start: 4,  frames: 5, fps: 10, loop: true  },
-    jump:   { start: 9,  frames: 3, fps: 10, loop: false },
-    attack: { start: 12, frames: 6, fps: 14, loop: false },
-    hurt:   { start: 18, frames: 3, fps: 8,  loop: false }
+/* Kích thước vẽ trên canvas */
+const DEST_HEIGHT = 120;   // chiều cao nhân vật khi vẽ (tăng/giảm để to/nhỏ)
+const FOOT_OFFSET = 14;    // offset chân so với player.y
+
+for (const name in SPRITES){
+  const s = SPRITES[name];
+  spriteTotalCount++;
+  s.img = new Image();
+  s.loaded = false;
+  s.frameW = 0;
+  s.frameH = 0;
+
+  s.img.onload = () => {
+    s.loaded = true;
+    s.frameW = s.img.width / s.frames;
+    s.frameH = s.img.height;
+    spriteLoadedCount++;
+    spriteStatus[name] = 'ok';
+    console.log(`✓ ${name.padEnd(7)} : ${s.img.width}×${s.img.height} → frame ${s.frameW.toFixed(1)}×${s.frameH.toFixed(1)} (${s.frames} fr)`);
+    updateLoadStatus();
+  };
+  s.img.onerror = () => {
+    s.loaded = false;
+    spriteStatus[name] = 'err';
+    console.error(`✗ ${name.padEnd(7)} : KHÔNG TẢI ĐƯỢC ${s.src}`);
+    updateLoadStatus();
+  };
+  s.img.src = s.src;
+}
+
+function updateLoadStatus(){
+  const el = document.getElementById('loadStatus');
+  if (spriteLoadedCount === 0){ el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  let html = `<b>SPRITE LOAD: ${spriteLoadedCount}/${spriteTotalCount}</b><br>`;
+  for (const name in SPRITES){
+    const s = SPRITES[name];
+    const status = spriteStatus[name];
+    const icon = status === 'ok' ? '<span class="ok">✓</span>' :
+                 status === 'err' ? '<span class="err">✗</span>' : '…';
+    html += `${icon} ${name.padEnd(7)}`;
+    if (s.loaded) html += ` <span style="color:#6a7860">(${s.img.width}×${s.img.height}, ${s.frames} fr)</span>`;
+    html += '<br>';
   }
-};
-
-const ATTACK_DURATION = 6 / 14;
-const HURT_DURATION   = 3 / 8;
-const JUMP_DURATION   = 0.55;
-const FOOT_OFFSET = 14;
-
-const playerSprite = new Image();
-let spriteLoaded = false;
-let IMG_W = 0, IMG_H = 0;
-
-playerSprite.onload = () => {
-  spriteLoaded = true;
-  IMG_W = playerSprite.width;
-  IMG_H = playerSprite.height;
-  /* Nếu chưa từng lưu config → tự tính frameW = width/21, frameH = height */
-  if (!localStorage.getItem('spriteCfg_v2')){
-    spriteCfg.frameW = Math.round(IMG_W / SPRITE.totalFrames);
-    spriteCfg.frameH = IMG_H;
-    spriteCfg.destHeight = Math.min(200, Math.round(IMG_H * 0.65));
+  el.innerHTML = html;
+  if (spriteLoadedCount === spriteTotalCount && Object.values(spriteStatus).every(v => v==='ok')){
+    setTimeout(() => el.classList.add('hidden'), 5000);
   }
-  console.log('══════════════════════════════════════');
-  console.log('✓ SPRITE LOADED');
-  console.log('  Image   :', IMG_W + '×' + IMG_H);
-  console.log('  FrameW  :', spriteCfg.frameW, '| FrameH:', spriteCfg.frameH);
-  console.log('  Cols fit:', (IMG_W / spriteCfg.frameW).toFixed(2), '(cần ~21)');
-  console.log('══════════════════════════════════════');
-};
-playerSprite.onerror = () => {
-  spriteLoaded = false;
-  console.error('✗ Không load được sprite:', SPRITE.src);
-};
-playerSprite.src = SPRITE.src;
-
-/* ============================================================
-   FRAME TUNER
-   ============================================================ */
-const FrameTuner = {
-  open(){
-    if (!spriteLoaded){ alert('Sprite chưa load xong'); return; }
-    document.getElementById('tuner').classList.add('show');
-    document.getElementById('tFW').value = spriteCfg.frameW;
-    document.getElementById('tFH').value = spriteCfg.frameH;
-    document.getElementById('tOX').value = spriteCfg.offsetX;
-    document.getElementById('tOY').value = spriteCfg.offsetY;
-    document.getElementById('tSZ').value = spriteCfg.destHeight;
-    this.update();
-  },
-  close(){
-    document.getElementById('tuner').classList.remove('show');
-  },
-  update(){
-    const fw = +document.getElementById('tFW').value;
-    const fh = +document.getElementById('tFH').value;
-    const ox = +document.getElementById('tOX').value;
-    const oy = +document.getElementById('tOY').value;
-    const sz = +document.getElementById('tSZ').value;
-    document.getElementById('vFW').textContent = fw;
-    document.getElementById('vFH').textContent = fh;
-    document.getElementById('vOX').textContent = ox;
-    document.getElementById('vOY').textContent = oy;
-    document.getElementById('vSZ').textContent = sz;
-
-    spriteCfg.frameW = fw;
-    spriteCfg.frameH = fh;
-    spriteCfg.offsetX = ox;
-    spriteCfg.offsetY = oy;
-    spriteCfg.destHeight = sz;
-    this.render();
-  },
-  render(){
-    if (!spriteLoaded) return;
-    const cnv = document.getElementById('tunerCanvas');
-    const tctx = cnv.getContext('2d');
-    const maxW = Math.min(1100, window.innerWidth - 60);
-    const scale = Math.min(1, maxW / IMG_W);
-    cnv.width = Math.round(IMG_W * scale);
-    cnv.height = Math.round(IMG_H * scale);
-    tctx.imageSmoothingEnabled = false;
-    tctx.clearRect(0, 0, cnv.width, cnv.height);
-    tctx.drawImage(playerSprite, 0, 0, cnv.width, cnv.height);
-
-    /* Lưới frame (dựa theo frameW + offset) */
-    tctx.strokeStyle = 'rgba(255,60,60,.9)';
-    tctx.lineWidth = 1;
-    const cols = Math.ceil((IMG_W - spriteCfg.offsetX) / spriteCfg.frameW) + 1;
-    for (let c = 0; c <= cols; c++){
-      const x = Math.round((spriteCfg.offsetX + c * spriteCfg.frameW) * scale) + 0.5;
-      if (x < 0 || x > cnv.width) continue;
-      tctx.beginPath(); tctx.moveTo(x, 0); tctx.lineTo(x, cnv.height); tctx.stroke();
-    }
-    /* Đường ngang trên/dưới của frame */
-    const y1 = Math.round(spriteCfg.offsetY * scale) + 0.5;
-    const y2 = Math.round((spriteCfg.offsetY + spriteCfg.frameH) * scale) + 0.5;
-    tctx.beginPath(); tctx.moveTo(0, y1); tctx.lineTo(cnv.width, y1); tctx.stroke();
-    tctx.beginPath(); tctx.moveTo(0, y2); tctx.lineTo(cnv.width, y2); tctx.stroke();
-
-    /* Số frame */
-    tctx.font = '11px Consolas, monospace';
-    tctx.fillStyle = '#88ff60';
-    for (let c = 0; c < cols; c++){
-      const x = Math.round((spriteCfg.offsetX + c * spriteCfg.frameW) * scale);
-      if (x >= 0 && x < cnv.width) tctx.fillText(c, x + 3, 14);
-    }
-
-    /* Đánh dấu frame đầu của mỗi animation */
-    const colors = { idle:'#88ff60', run:'#40c0ff', jump:'#ffcc40', attack:'#ff4060', hurt:'#c040ff' };
-    for (const name in SPRITE.animations){
-      const a = SPRITE.animations[name];
-      const cx = Math.round((spriteCfg.offsetX + (a.start + a.frames/2) * spriteCfg.frameW) * scale);
-      const cy = Math.round((spriteCfg.offsetY + spriteCfg.frameH/2) * scale);
-      tctx.fillStyle = colors[name];
-      tctx.beginPath(); tctx.arc(cx, cy, 5, 0, Math.PI*2); tctx.fill();
-    }
-
-    /* Info */
-    const colsFit = (IMG_W - spriteCfg.offsetX) / spriteCfg.frameW;
-    const info = document.getElementById('tunerInfo');
-    info.innerHTML =
-      `Ảnh: <b>${IMG_W}×${IMG_H}px</b><br>` +
-      `FrameW=<b>${spriteCfg.frameW}</b> → <b style="color:${Math.abs(colsFit-21)<0.1?'#88ff60':'#ffcc40'}">${colsFit.toFixed(2)}</b> cột (cần ~21.00)<br>` +
-      `Điều chỉnh FrameW cho tới khi số cột hiện <b style="color:#88ff60">21.00</b> chính xác.<br>` +
-      `Chấm màu = frame đầu của idle/run/jump/attack/hurt.`;
-  },
-  save(){
-    localStorage.setItem('spriteCfg_v2', JSON.stringify(spriteCfg));
-    toast('💾 Đã lưu cấu hình frame');
-    this.close();
-  },
-  reset(){
-    localStorage.removeItem('spriteCfg_v2');
-    spriteCfg = { ...DEFAULT_SPRITE_CFG };
-    if (spriteLoaded){
-      spriteCfg.frameW = Math.round(IMG_W / SPRITE.totalFrames);
-      spriteCfg.frameH = IMG_H;
-      spriteCfg.destHeight = Math.min(200, Math.round(IMG_H * 0.65));
-    }
-    this.open();
-  }
-};
-
-['tFW','tFH','tOX','tOY','tSZ'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => FrameTuner.update());
-});
+}
 
 /* ============================================================
    AUDIO
@@ -594,6 +448,11 @@ const player = {
   _stepAcc: 0, attackT: 0, hurtT: 0, jumpT: 0, jumpY: 0
 };
 
+/* Thời gian action đồng bộ với animation */
+const ATTACK_DURATION = 8 / 14;
+const HURT_DURATION   = 8 / 8;
+const JUMP_DURATION   = 0.65;
+
 /* ============================================================
    CAMERA / CANVAS
    ============================================================ */
@@ -622,7 +481,6 @@ mouse.x = VW/2; mouse.y = VH/2;
 addEventListener('keydown', e => {
   keys[e.code] = true;
   if (e.code === 'Escape'){ if (gameStarted){ togglePause(); e.preventDefault(); } return; }
-  if (e.code === 'KeyT'){ e.preventDefault(); FrameTuner.open(); return; }
   if (!gameStarted || paused) return;
   if (e.code === 'KeyM'){ e.preventDefault(); toggleSettings(); }
   if (e.code === 'Space'){ e.preventDefault(); tryJump(); }
@@ -792,7 +650,7 @@ function updatePlayer(dt){
   if (player.jumpT > 0){
     player.jumpT = Math.max(0, player.jumpT - dt);
     const prog = 1 - player.jumpT / JUMP_DURATION;
-    player.jumpY = -Math.sin(prog * Math.PI) * 26;
+    player.jumpY = -Math.sin(prog * Math.PI) * 32;
   } else player.jumpY = 0;
 
   if (attackTouch && player.attackT <= 0) tryAttack();
@@ -1016,52 +874,46 @@ function drawPlayer(){
   const syGround = player.y - cam.y;
   const sySprite = syGround + player.jumpY;
 
-  const shadowScale = 1 - Math.abs(player.jumpY) / 60;
-  ctx.fillStyle = `rgba(0,0,0,${0.35 * shadowScale})`;
+  const shadowScale = 1 - Math.abs(player.jumpY) / 70;
+  ctx.fillStyle = `rgba(0,0,0,${0.4 * shadowScale})`;
   ctx.beginPath();
-  ctx.ellipse(sx, syGround + FOOT_OFFSET, 14 * shadowScale, 4 * shadowScale, 0, 0, Math.PI*2);
+  ctx.ellipse(sx, syGround + FOOT_OFFSET, 16 * shadowScale, 5 * shadowScale, 0, 0, Math.PI*2);
   ctx.fill();
 
-  if (!spriteLoaded || spriteCfg.frameW <= 0){
+  const s = SPRITES[player.currentAnim];
+  if (!s || !s.loaded || s.frameW <= 0){
     drawFallbackBody(sx, sySprite, player.animT, player.currentAnim, player.facing, LOCAL_COLORS);
     return;
   }
 
-  drawSpriteFrame(player.currentAnim, player.animTime, sx, sySprite, player.facing);
-}
-
-function drawSpriteFrame(animName, animTime, sx, sy, facing){
-  const anim = SPRITE.animations[animName];
-  if (!anim) return;
-
-  const rawIdx = Math.floor(animTime * anim.fps);
-  let localIdx;
-  if (anim.loop){
-    localIdx = ((rawIdx % anim.frames) + anim.frames) % anim.frames;
+  /* Tính frame index */
+  const rawIdx = Math.floor(player.animTime * s.fps);
+  let idx;
+  if (s.loop){
+    idx = ((rawIdx % s.frames) + s.frames) % s.frames;
   } else {
-    localIdx = Math.max(0, Math.min(anim.frames - 1, rawIdx));
+    idx = Math.max(0, Math.min(s.frames - 1, rawIdx));
   }
 
-  const globalFrame = anim.start + localIdx;
+  /* Source rect */
+  const srcX = Math.round(idx * s.frameW);
+  const srcY = 0;
+  const srcW = Math.round(s.frameW);
+  const srcH = Math.round(s.frameH);
 
-  /* Source rect dùng spriteCfg */
-  const srcX = Math.round(spriteCfg.offsetX + globalFrame * spriteCfg.frameW);
-  const srcY = Math.round(spriteCfg.offsetY);
-  const srcW = Math.round(spriteCfg.frameW);
-  const srcH = Math.round(spriteCfg.frameH);
-
-  const DEST_H = spriteCfg.destHeight;
-  const DEST_W = Math.round(DEST_H * (spriteCfg.frameW / spriteCfg.frameH));
+  /* Dest rect */
+  const DEST_H = DEST_HEIGHT;
+  const DEST_W = Math.round(DEST_H * (s.frameW / s.frameH));
   const drawX = Math.round(sx - DEST_W / 2);
-  const drawY = Math.round(sy + FOOT_OFFSET - DEST_H);
+  const drawY = Math.round(sySprite + FOOT_OFFSET - DEST_H);
 
   ctx.save();
-  if (facing < 0){
+  if (player.facing < 0){
     ctx.translate(sx, 0);
     ctx.scale(-1, 1);
-    ctx.drawImage(playerSprite, srcX, srcY, srcW, srcH, -DEST_W/2, drawY, DEST_W, DEST_H);
+    ctx.drawImage(s.img, srcX, srcY, srcW, srcH, -DEST_W/2, drawY, DEST_W, DEST_H);
   } else {
-    ctx.drawImage(playerSprite, srcX, srcY, srcW, srcH, drawX, drawY, DEST_W, DEST_H);
+    ctx.drawImage(s.img, srcX, srcY, srcW, srcH, drawX, drawY, DEST_W, DEST_H);
   }
   ctx.restore();
 }
@@ -1400,4 +1252,4 @@ showMenuPage('main');
 requestAnimationFrame(loop);
 </script>
 </body>
-                                                                </html>
+  </html>
