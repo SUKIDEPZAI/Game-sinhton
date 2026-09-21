@@ -242,7 +242,7 @@ function mulberry32(a){
 let rng = Math.random, SEED = 0;
 function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 
-/* 👶 BABY SIZE */
+/* 👶 BABY */
 const DEST_HEIGHT = 55;
 const FOOT_OFFSET = 8;
 
@@ -251,7 +251,7 @@ const HURT_DURATION = 8 / 8;
 const JUMP_DURATION = 0.65;
 
 /* ============================================================
-   METADATA v3 DECODER
+   METADATA DECODER
    ============================================================ */
 function decodeMetadata(img){
   try {
@@ -380,7 +380,7 @@ function loadSprite(src, modelName, animName, cfg){
     const img = new Image();
     img.onload = () => {
       const meta = decodeMetadata(img);
-      let spriteH, vLines, anchors, fps, loop, hasMeta = false;
+      let spriteH, vLines, anchors, stableAnchor, anchorMode, fps, loop, hasMeta = false;
 
       if (meta && meta.vLines && meta.vLines.length >= 2){
         spriteH = meta.spriteH || (img.height - 1);
@@ -388,6 +388,10 @@ function loadSprite(src, modelName, animName, cfg){
         anchors = meta.anchors ? meta.anchors.map(a =>
           Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null)
         ) : [];
+        stableAnchor = meta.stableAnchor
+          ? { x: meta.stableAnchor[0], y: meta.stableAnchor[1] }
+          : null;
+        anchorMode = meta.anchorMode || 'stable-x';
         fps = meta.fps || cfg.fps || 10;
         loop = meta.loop !== undefined ? meta.loop : (cfg.loop !== false);
         hasMeta = true;
@@ -397,6 +401,10 @@ function loadSprite(src, modelName, animName, cfg){
         anchors = (cfg.anchors || []).map(a =>
           Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null)
         );
+        stableAnchor = cfg.stableAnchor
+          ? { x: cfg.stableAnchor[0], y: cfg.stableAnchor[1] }
+          : null;
+        anchorMode = cfg.anchorMode || 'stable-x';
         fps = cfg.fps || 10;
         loop = cfg.loop !== false;
       }
@@ -429,16 +437,18 @@ function loadSprite(src, modelName, animName, cfg){
         renderImg: cnv, canvas: cnv,
         spriteH, vLines,
         hLines: [0, spriteH],
-        anchors, fps, loop,
+        anchors, stableAnchor, anchorMode,
+        fps, loop,
         frames: vLines.length - 1, hasMeta
       };
 
-      if (!anchors.length || anchors.every(a => !a)){
+      /* Nếu thiếu anchors/stable → tự tính */
+      if (!anchors.length || anchors.every(a => !a) || !stableAnchor){
         autoComputeAnchors(sprite);
       }
 
       Models.addSprite(modelName, animName, sprite);
-      console.log(`  ✓ ${modelName}/${animName}: ${sprite.frames}f @ ${fps}fps ${hasMeta ? '[meta]' : '[auto]'}`);
+      console.log(`  ✓ ${modelName}/${animName}: ${sprite.frames}f @ ${fps}fps [${anchorMode}] ${hasMeta ? '[meta]' : '[auto]'}`);
       resolve();
     };
     img.onerror = () => { console.warn(`  ✗ ${src} not found`); resolve(); };
@@ -446,7 +456,7 @@ function loadSprite(src, modelName, animName, cfg){
   });
 }
 
-/* Anchor.x và anchor.y riêng từng frame */
+/* Tính anchors + stableAnchor */
 function autoComputeAnchors(sprite){
   const s = sprite;
   s.anchors = [];
@@ -459,6 +469,20 @@ function autoComputeAnchors(sprite){
       });
     } else s.anchors.push(null);
   }
+  /* Tính stable anchor */
+  let sumLocalX = 0, sumY = 0, count = 0;
+  for (let i = 0; i < s.anchors.length; i++){
+    if (!s.anchors[i]) continue;
+    sumLocalX += s.anchors[i].x - s.vLines[i];
+    sumY += s.anchors[i].y;
+    count++;
+  }
+  if (count > 0){
+    s.stableAnchor = { x: Math.round(sumLocalX/count), y: Math.round(sumY/count) };
+  } else {
+    s.stableAnchor = null;
+  }
+  if (!s.anchorMode) s.anchorMode = 'stable-x';
 }
 
 async function loadFallbackSprites(){
@@ -1109,7 +1133,7 @@ function getNightFactor(){
   return (1 - Math.cos(t)) / 2;
 }
 
-/* ⭐ DRAW SPRITE — dùng CẢ anchor.x và anchor.y per frame */
+/* ⭐ DRAW SPRITE — hỗ trợ stable / stable-x / per-frame */
 function drawSpriteAt(sprite, idx, cx, cy, facing){
   if (!sprite || !sprite.renderImg) return;
   const s = sprite;
@@ -1129,26 +1153,41 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
   const drawW = Math.round(srcW * scale);
   const drawH = Math.round(srcH * scale);
 
-  // Anchor x/y per-frame
-  let anchorX = srcX + srcW / 2;
-  let anchorY = srcH;
-  if (s.anchors && s.anchors[idx]){
-    const a = s.anchors[idx];
-    if (a.x != null) anchorX = a.x;
-    if (a.y != null) anchorY = a.y;
-    anchorY = Math.max(0, Math.min(srcH, anchorY));
-  }
-  const anchorLocalX = anchorX - srcX;
+  /* Tính anchorX (local trong frame) và anchorY (tuyệt đối trong ảnh) */
+  let anchorX, anchorY;
 
-  // Vẽ sao cho anchor rơi vào (cx, cy)
-  const drawX = Math.round(cx - anchorLocalX * scale);
+  if (s.anchorMode === 'stable' && s.stableAnchor){
+    anchorX = s.stableAnchor.x;
+    anchorY = s.stableAnchor.y;
+  } else if (s.anchorMode === 'stable-x' && s.stableAnchor){
+    anchorX = s.stableAnchor.x;
+    /* Y lấy từng frame nếu có, không thì dùng stable */
+    const a = s.anchors && s.anchors[idx];
+    anchorY = (a && a.y != null) ? a.y : s.stableAnchor.y;
+  } else {
+    /* per-frame */
+    const a = s.anchors && s.anchors[idx];
+    if (a && a.x != null && a.y != null){
+      anchorX = a.x - srcX;
+      anchorY = a.y;
+    } else if (s.stableAnchor){
+      anchorX = s.stableAnchor.x;
+      anchorY = s.stableAnchor.y;
+    } else {
+      anchorX = srcW / 2;
+      anchorY = srcH;
+    }
+  }
+  anchorY = Math.max(0, Math.min(srcH, anchorY));
+
+  const drawX = Math.round(cx - anchorX * scale);
   const drawY = Math.round(cy - anchorY * scale);
 
   ctx.save();
   if (facing < 0){
     ctx.translate(cx, 0);
     ctx.scale(-1, 1);
-    const flippedLocalX = srcW - anchorLocalX;
+    const flippedLocalX = srcW - anchorX;
     const dX = Math.round(-flippedLocalX * scale);
     ctx.drawImage(s.renderImg, srcX, 0, srcW, srcH, dX, drawY, drawW, drawH);
   } else {
@@ -1162,7 +1201,6 @@ function drawPlayer(){
   const syGround = Math.round(player.y - cam.y + FOOT_OFFSET);
   const sySprite = syGround + player.jumpY;
 
-  // Shadow
   const shadowScale = 1 - Math.abs(player.jumpY) / 70;
   ctx.fillStyle = `rgba(0,0,0,${0.4 * shadowScale})`;
   ctx.beginPath();
@@ -1524,4 +1562,4 @@ loadProject().then(() => {
 });
 </script>
 </body>
-                                                                                                </html>
+        </html>
