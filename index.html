@@ -106,8 +106,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 #joyKnob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin-left:-27px;margin-top:-27px;
   background:#889878;border:3px solid #1a1f14;border-radius:50%;
   box-shadow:inset 0 0 0 2px #c8d8b8,3px 3px 0 rgba(0,0,0,.6)}
-#joyZoneR{position:absolute;right:16px;bottom:80px;width:130px;height:130px;
-  pointer-events:auto;touch-action:none}
+#joyZoneR{position:absolute;right:16px;bottom:80px;width:130px;height:130px;pointer-events:auto;touch-action:none}
 #joyBaseR{width:100%;height:100%;border-radius:50%;background:rgba(0,0,0,.3);
   border:3px solid rgba(255,255,255,.4);position:relative}
 #joyKnobR{position:absolute;left:50%;top:50%;width:54px;height:54px;margin-left:-27px;margin-top:-27px;
@@ -243,18 +242,16 @@ function mulberry32(a){
 let rng = Math.random, SEED = 0;
 function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 
-/* ============================================================
-   CONSTANTS
-   ============================================================ */
-const DEST_HEIGHT = 80;      // Chiều cao nhân vật (baby size)
-const FOOT_OFFSET = 10;
+/* 👶 BABY SIZE */
+const DEST_HEIGHT = 55;
+const FOOT_OFFSET = 8;
+
 const ATTACK_DURATION = 10 / 16;
 const HURT_DURATION = 8 / 8;
 const JUMP_DURATION = 0.65;
-const DEBUG_FRAME = false;
 
 /* ============================================================
-   METADATA DECODER v3
+   METADATA v3 DECODER
    ============================================================ */
 function decodeMetadata(img){
   try {
@@ -264,7 +261,6 @@ function decodeMetadata(img){
     cx.drawImage(img, 0, img.height - 1, img.width, 1, 0, 0, img.width, 1);
     const d = cx.getImageData(0, 0, img.width, 1).data;
     if (d[0] !== 0x44 || d[1] !== 0x48 || d[2] !== 0x55 || d[3] !== 0x4E) return null;
-    const version = d[4] | (d[5] << 8);
     const len = d[6] | (d[7] << 8) | (d[8] << 16) | (d[9] << 24);
     if (len <= 0 || len > 300000) return null;
     const bytes = [];
@@ -274,9 +270,7 @@ function decodeMetadata(img){
       if (p*4+ch >= d.length) break;
       bytes.push(d[p*4+ch]);
     }
-    const meta = JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
-    meta._version = version;
-    return meta;
+    return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
   } catch(e){ return null; }
 }
 
@@ -308,11 +302,9 @@ function autoDetectFrameLines(canvas, expectedFrames){
   const need = expectedFrames ? expectedFrames - 1 : gaps.length;
   let chosen;
   if (expectedFrames && gaps.length >= need){
-    const sorted = [...gaps].sort((a, b) => b.size - a.size);
-    chosen = sorted.slice(0, need).sort((a, b) => a.start - b.start);
-  } else {
-    chosen = gaps;
-  }
+    const sorted = [...gaps].sort((a,b) => b.size - a.size);
+    chosen = sorted.slice(0, need).sort((a,b) => a.start - b.start);
+  } else chosen = gaps;
   const lines = [0];
   for (const g of chosen) lines.push(Math.round((g.start + g.end) / 2));
   lines.push(W);
@@ -342,53 +334,43 @@ function detectBBox(canvas, x1, y1, x2, y2){
    MODEL MANAGER
    ============================================================ */
 const Models = {
-  data: new Map(),      // modelName → { animations: Map<animName, sprite> }
-
+  data: new Map(),
   addSprite(modelName, animName, sprite){
     if (!this.data.has(modelName)) this.data.set(modelName, { animations: new Map() });
     this.data.get(modelName).animations.set(animName, sprite);
   },
-
   get(modelName, animName){
     const m = this.data.get(modelName);
     if (!m) return null;
     return m.animations.get(animName) || null;
-  },
-
-  hasModel(modelName){ return this.data.has(modelName); }
+  }
 };
 
 /* ============================================================
-   LOAD PROJECT (sprites.json + PNGs)
+   LOAD PROJECT
    ============================================================ */
-let projectLoaded = false;
-
 async function loadProject(){
   try {
-    // Load sprites.json
     const res = await fetch('sprites.json', { cache: 'no-store' });
     if (!res.ok) throw new Error('sprites.json not found');
     const project = await res.json();
     if (project.format !== 'dh-studio-project' || !project.models){
-      throw new Error('Invalid sprites.json format');
+      throw new Error('Invalid format');
     }
-
-    // Load all PNG files
-    const loadPromises = [];
+    const promises = [];
     for (const modelName in project.models){
       const model = project.models[modelName];
       for (const animName in model.animations){
         const cfg = model.animations[animName];
         const src = `assets/${cfg.fileName}.png`;
-        loadPromises.push(loadSprite(src, modelName, animName, cfg));
+        promises.push(loadSprite(src, modelName, animName, cfg));
       }
     }
-    await Promise.all(loadPromises);
-    projectLoaded = true;
+    await Promise.all(promises);
     console.log('✓ Project loaded: ' + Models.data.size + ' models');
     updateLoadStatus('ok');
   } catch(e){
-    console.warn('Không có sprites.json, dùng fallback:', e.message);
+    console.warn('Fallback:', e.message);
     await loadFallbackSprites();
   }
 }
@@ -397,25 +379,28 @@ function loadSprite(src, modelName, animName, cfg){
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
-      // Check embedded metadata (ưu tiên)
       const meta = decodeMetadata(img);
-      let spriteH, vLines, anchors, fps, loop;
+      let spriteH, vLines, anchors, fps, loop, hasMeta = false;
 
-      if (meta && meta.vLines){
+      if (meta && meta.vLines && meta.vLines.length >= 2){
         spriteH = meta.spriteH || (img.height - 1);
         vLines = meta.vLines;
-        anchors = meta.anchors ? meta.anchors.map(a => Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null)) : [];
+        anchors = meta.anchors ? meta.anchors.map(a =>
+          Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null)
+        ) : [];
         fps = meta.fps || cfg.fps || 10;
         loop = meta.loop !== undefined ? meta.loop : (cfg.loop !== false);
+        hasMeta = true;
       } else {
         spriteH = cfg.spriteH || img.height;
-        vLines = cfg.vLines || [0, img.width];
-        anchors = (cfg.anchors || []).map(a => Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null));
+        vLines = cfg.vLines && cfg.vLines.length >= 2 ? cfg.vLines : null;
+        anchors = (cfg.anchors || []).map(a =>
+          Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null)
+        );
         fps = cfg.fps || 10;
         loop = cfg.loop !== false;
       }
 
-      // Tạo canvas sạch (không metadata)
       const cnv = document.createElement('canvas');
       cnv.width = img.width;
       cnv.height = spriteH;
@@ -423,61 +408,71 @@ function loadSprite(src, modelName, animName, cfg){
       cc.imageSmoothingEnabled = false;
       cc.drawImage(img, 0, 0, img.width, spriteH, 0, 0, img.width, spriteH);
 
+      if (!vLines || vLines.length < 3){
+        let detected = autoDetectFrameLines(cnv, null);
+        if (!detected || detected.length < 3){
+          const n = cfg.frames || 10;
+          detected = autoDetectFrameLines(cnv, n);
+        }
+        if (detected && detected.length >= 3){
+          vLines = detected;
+        } else {
+          const n = cfg.frames || 1;
+          vLines = [0];
+          for (let i = 1; i < n; i++) vLines.push(Math.round(i * img.width / n));
+          vLines.push(img.width);
+        }
+      }
+
       const sprite = {
-        model: modelName,
-        anim: animName,
-        renderImg: cnv,
-        canvas: cnv,
-        spriteH: spriteH,
-        vLines: vLines,
+        model: modelName, anim: animName,
+        renderImg: cnv, canvas: cnv,
+        spriteH, vLines,
         hLines: [0, spriteH],
-        anchors: anchors,
-        fps: fps,
-        loop: loop,
-        frames: vLines.length - 1
+        anchors, fps, loop,
+        frames: vLines.length - 1, hasMeta
       };
 
-      // Nếu không có anchors → auto-detect
       if (!anchors.length || anchors.every(a => !a)){
         autoComputeAnchors(sprite);
       }
 
       Models.addSprite(modelName, animName, sprite);
-      console.log(`  ✓ ${modelName}/${animName}: ${sprite.frames}f @ ${fps}fps`);
+      console.log(`  ✓ ${modelName}/${animName}: ${sprite.frames}f @ ${fps}fps ${hasMeta ? '[meta]' : '[auto]'}`);
       resolve();
     };
-    img.onerror = () => {
-      console.warn(`  ✗ ${src} not found`);
-      resolve();
-    };
+    img.onerror = () => { console.warn(`  ✗ ${src} not found`); resolve(); };
     img.src = src;
   });
 }
 
+/* Anchor.x và anchor.y riêng từng frame */
 function autoComputeAnchors(sprite){
   const s = sprite;
   s.anchors = [];
   for (let i = 0; i < s.frames; i++){
     const bbox = detectBBox(s.canvas, s.vLines[i], 0, s.vLines[i+1], s.spriteH);
-    if (bbox) s.anchors.push({ x: null, y: bbox.y + bbox.h });
-    else s.anchors.push(null);
+    if (bbox){
+      s.anchors.push({
+        x: bbox.x + bbox.w / 2,
+        y: bbox.y + bbox.h
+      });
+    } else s.anchors.push(null);
   }
 }
 
-/* Fallback — load mặc định 6 animation */
 async function loadFallbackSprites(){
   const defaults = [
-    { model: 'player', anim: 'idle',   file: 'player_idle' },
-    { model: 'player', anim: 'run',    file: 'player_run' },
-    { model: 'player', anim: 'jump',   file: 'player_jump' },
+    { model: 'player', anim: 'idle', file: 'player_idle' },
+    { model: 'player', anim: 'run', file: 'player_run' },
+    { model: 'player', anim: 'jump', file: 'player_jump' },
     { model: 'player', anim: 'attack', file: 'player_attack' },
-    { model: 'player', anim: 'sit',    file: 'player_sit' },
-    { model: 'player', anim: 'hurt',   file: 'player_death' }
+    { model: 'player', anim: 'sit', file: 'player_sit' },
+    { model: 'player', anim: 'hurt', file: 'player_death' }
   ];
   const promises = defaults.map(d => loadSprite(
-    `assets/${d.file}.png`,
-    d.model, d.anim,
-    { fileName: d.file, fps: 10, loop: true, vLines: null, anchors: [], spriteH: 0 }
+    `assets/${d.file}.png`, d.model, d.anim,
+    { fileName: d.file, fps: 10, loop: true, vLines: null, anchors: [], spriteH: 0, frames: 10 }
   ));
   await Promise.all(promises);
   updateLoadStatus('fallback');
@@ -488,8 +483,7 @@ function updateLoadStatus(mode){
   const total = Models.data.size;
   if (total === 0){
     el.classList.remove('hidden');
-    el.innerHTML = `<b><span class="err">⚠ KHÔNG LOAD ĐƯỢC SPRITE NÀO</span></b><br>
-      Kiểm tra: assets/*.png có tồn tại không?`;
+    el.innerHTML = `<b><span class="err">⚠ KHÔNG LOAD ĐƯỢC SPRITE</span></b>`;
     return;
   }
   el.classList.remove('hidden');
@@ -497,25 +491,19 @@ function updateLoadStatus(mode){
   if (mode === 'fallback') html += ` <span class="meta">[fallback]</span>`;
   html += '<br>';
   for (const [modelName, model] of Models.data){
-    html += `📦 ${modelName}: ${model.animations.size} anims — `;
-    html += [...model.animations.keys()].join(', ');
+    html += `📦 ${modelName}: ` + [...model.animations.keys()].join(', ');
     html += '<br>';
   }
   el.innerHTML = html;
   setTimeout(() => el.classList.add('hidden'), 6000);
 }
 
-/* ============================================================
-   PLAYER SPRITE ACCESS
-   ============================================================ */
 function getPlayerSprite(anim){
-  // Fallback chain: player/anim → player/idle → null
   let s = Models.get('player', anim);
   if (!s && anim !== 'idle') s = Models.get('player', 'idle');
   if (!s){
-    // Thử model đầu tiên có
-    for (const [modelName, model] of Models.data){
-      s = model.animations.get(anim) || model.animations.get('idle');
+    for (const [mn, m] of Models.data){
+      s = m.animations.get(anim) || m.animations.get('idle');
       if (s) break;
     }
   }
@@ -523,7 +511,7 @@ function getPlayerSprite(anim){
 }
 
 /* ============================================================
-   AUDIO (giữ nguyên)
+   AUDIO
    ============================================================ */
 const Audio2D = (() => {
   let ctx = null, enabled = true;
@@ -658,13 +646,10 @@ function initInv(){
   inv.hotbar[3] = { id:'sword_diamond', n:1 };
 }
 
-/* ============================================================
-   PLAYER
-   ============================================================ */
 const player = {
   x: WORLD_W*TILE/2, y: WORLD_H*TILE/2,
   hp: 20, maxHp: 20,
-  radius: 10, speed: 160,
+  radius: 8, speed: 160,
   facing: 1, selected: 0,
   animT: 0, currentAnim: 'idle', animTime: 0,
   _stepAcc: 0, attackT: 0, hurtT: 0, jumpT: 0, jumpY: 0,
@@ -685,13 +670,10 @@ addEventListener('resize', resize);
 addEventListener('orientationchange', () => setTimeout(resize, 100));
 resize();
 
-/* ============================================================
-   AIM
-   ============================================================ */
+/* AIM */
 const aim = { angle: 0, joyId: null, joyX: 0, joyY: 0, autoAttack: false, cx: 0, cy: 0 };
 const joyZoneR = document.getElementById('joyZoneR');
 const joyKnobR = document.getElementById('joyKnobR');
-
 joyZoneR.addEventListener('pointerdown', e => {
   if (aim.joyId !== null) return;
   e.preventDefault();
@@ -705,7 +687,7 @@ function moveAimJoy(cx, cy){
   let dx = cx - aim.cx, dy = cy - aim.cy;
   const d = Math.hypot(dx, dy), max = 52;
   if (d > max){ dx = dx/d*max; dy = dy/d*max; }
-  aim.joyX = dx / max; aim.joyY = dy / max;
+  aim.joyX = dx/max; aim.joyY = dy/max;
   joyKnobR.style.transform = `translate(${dx}px, ${dy}px)`;
   if (d > 8){ aim.angle = Math.atan2(aim.joyY, aim.joyX); aim.autoAttack = d > 15; }
   else aim.autoAttack = false;
@@ -722,9 +704,7 @@ addEventListener('pointermove', e => {
 addEventListener('pointerup', endAimJoy);
 addEventListener('pointercancel', endAimJoy);
 
-/* ============================================================
-   INPUT
-   ============================================================ */
+/* INPUT */
 const keys = {};
 const mouse = { x: 0, y: 0 };
 let gameStarted = false, paused = false;
@@ -828,9 +808,7 @@ bindBtn('btnAttack', () => { attackTouch = true; tryAttack(); }, () => { attackT
 bindBtn('btnJump', () => tryJump(), null);
 bindBtn('btnSit', () => trySit(), null);
 
-/* ============================================================
-   ACTIONS
-   ============================================================ */
+/* ACTIONS */
 function tryJump(){
   if (!gameStarted || paused) return;
   if (player.jumpT > 0) return;
@@ -883,9 +861,7 @@ function burstHitVisual(x, y){
   }
 }
 
-/* ============================================================
-   UPDATE PLAYER
-   ============================================================ */
+/* UPDATE PLAYER */
 function updatePlayer(dt){
   let dx = 0, dy = 0;
   if (joy.id !== null && Math.hypot(joy.x, joy.y) > 0.15){ dx = joy.x; dy = joy.y; }
@@ -900,9 +876,7 @@ function updatePlayer(dt){
   if (player.sitting && mag > 0.15) player.sitting = false;
   if (player.sitting){ dx = 0; dy = 0; }
 
-  if (aim.joyId !== null){
-    /* use aim.angle */
-  } else {
+  if (aim.joyId !== null){} else {
     const wx = mouse.x + cam.x, wy = mouse.y + cam.y;
     aim.angle = Math.atan2(wy - player.y, wx - player.x);
   }
@@ -921,7 +895,7 @@ function updatePlayer(dt){
   if (player.jumpT > 0){
     player.jumpT = Math.max(0, player.jumpT - dt);
     const prog = 1 - player.jumpT / JUMP_DURATION;
-    player.jumpY = -Math.sin(prog * Math.PI) * 28;
+    player.jumpY = -Math.sin(prog * Math.PI) * 24;
   } else player.jumpY = 0;
 
   if (aim.autoAttack && player.attackT <= 0) tryAttack();
@@ -944,7 +918,6 @@ function updatePlayer(dt){
     if (player._stepAcc > 26){ player._stepAcc = 0; Audio2D.sfx.step(); }
   } else player._stepAcc = 0;
 }
-
 function respawnPlayer(){
   player.hp = player.maxHp;
   toast('💀 Bạn đã bị hạ. Hồi sinh!');
@@ -957,9 +930,7 @@ function respawnPlayer(){
   updateHpBar();
 }
 
-/* ============================================================
-   NETWORK
-   ============================================================ */
+/* NETWORK */
 const PEER_OPTS = {
   host: BACKEND.host, port: BACKEND.port, path: BACKEND.peerPath,
   secure: BACKEND.secure, debug: 0,
@@ -978,7 +949,7 @@ const net = {
     return new Promise((resolve, reject) => {
       try { this.peer = new Peer('dragonhunter-' + code, PEER_OPTS); }
       catch(e){ reject(e); return; }
-      const timer = setTimeout(() => reject(new Error('Hết thời gian kết nối')), 20000);
+      const timer = setTimeout(() => reject(new Error('Hết thời gian')), 20000);
       this.peer.on('open', id => {
         clearTimeout(timer);
         this.myId = id; this.active = true;
@@ -994,14 +965,14 @@ const net = {
     return new Promise((resolve, reject) => {
       try { this.peer = new Peer(PEER_OPTS); }
       catch(e){ reject(e); return; }
-      const timer = setTimeout(() => reject(new Error('Hết thời gian kết nối')), 20000);
+      const timer = setTimeout(() => reject(new Error('Hết thời gian')), 20000);
       this.peer.on('open', id => {
         this.myId = id;
         const conn = this.peer.connect('dragonhunter-' + code, { reliable: true });
         this.hostConn = conn;
         conn.on('open', () => { clearTimeout(timer); this.active = true; resolve(); });
         conn.on('data', d => this._onData(d, conn));
-        conn.on('close', () => { toast('❌ Mất kết nối tới host'); this.disconnect(); if (gameStarted) backToMenu(); });
+        conn.on('close', () => { toast('❌ Mất kết nối'); this.disconnect(); if (gameStarted) backToMenu(); });
         conn.on('error', e => { clearTimeout(timer); reject(e); });
       });
       this.peer.on('error', e => {
@@ -1022,13 +993,13 @@ const net = {
         conn.send({ t:'pos', id: this.myId, name: this.name,
                     x: player.x, y: player.y, facing: player.facing, hp: player.hp });
       } catch(e){}
-      toast('⚔️ Đối thủ mới vào phòng!');
+      toast('⚔️ Đối thủ mới!');
       updateNetHud();
     });
     conn.on('data', d => this._onData(d, conn));
     conn.on('close', () => {
       this.clients.delete(conn.peer); this.players.delete(conn.peer);
-      toast('👋 Đối thủ rời đi'); updateNetHud();
+      toast('👋 Đối thủ rời'); updateNetHud();
     });
   },
   _onData(d, conn){
@@ -1053,7 +1024,7 @@ const net = {
         player.hp = Math.max(0, player.hp - d.dmg);
         player.hurtT = HURT_DURATION;
         flashDamage(); Audio2D.sfx.hurt(); updateHpBar();
-        toast(`⚔️ ${d.fromName} gây ${d.dmg} sát thương!`);
+        toast(`⚔️ ${d.fromName} gây ${d.dmg}!`);
         if (player.hp <= 0){ Audio2D.sfx.kill(); respawnPlayer(); }
         else this.broadcastPos();
       }
@@ -1121,9 +1092,7 @@ function updateNetHud(){
   document.getElementById('netCount').textContent = 1 + net.players.size;
 }
 
-/* ============================================================
-   RENDER
-   ============================================================ */
+/* RENDER */
 function drawTile(x, y, id, sx, sy){
   const def = TILES[id];
   if (!def) return;
@@ -1140,15 +1109,11 @@ function getNightFactor(){
   return (1 - Math.cos(t)) / 2;
 }
 
-/* ============================================================
-   DRAW PLAYER — dùng sprite từ Models
-   Chỉ dùng anchor.y, căn giữa cell theo X
-   ============================================================ */
+/* ⭐ DRAW SPRITE — dùng CẢ anchor.x và anchor.y per frame */
 function drawSpriteAt(sprite, idx, cx, cy, facing){
   if (!sprite || !sprite.renderImg) return;
   const s = sprite;
 
-  /* Cắt frame từ vLines */
   let srcX, srcW;
   if (s.vLines && s.vLines[idx+1] !== undefined){
     srcX = s.vLines[idx];
@@ -1164,32 +1129,32 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
   const drawW = Math.round(srcW * scale);
   const drawH = Math.round(srcH * scale);
 
-  /* X: căn giữa ô */
-  const drawX = Math.round(cx - drawW / 2);
-
-  /* Y: dùng anchor.y nếu có, không thì đáy */
+  // Anchor x/y per-frame
+  let anchorX = srcX + srcW / 2;
   let anchorY = srcH;
-  if (s.anchors && s.anchors[idx] && s.anchors[idx].y != null){
-    anchorY = s.anchors[idx].y;
+  if (s.anchors && s.anchors[idx]){
+    const a = s.anchors[idx];
+    if (a.x != null) anchorX = a.x;
+    if (a.y != null) anchorY = a.y;
     anchorY = Math.max(0, Math.min(srcH, anchorY));
   }
+  const anchorLocalX = anchorX - srcX;
+
+  // Vẽ sao cho anchor rơi vào (cx, cy)
+  const drawX = Math.round(cx - anchorLocalX * scale);
   const drawY = Math.round(cy - anchorY * scale);
 
   ctx.save();
   if (facing < 0){
     ctx.translate(cx, 0);
     ctx.scale(-1, 1);
-    ctx.drawImage(s.renderImg, srcX, 0, srcW, srcH, -drawW/2, drawY, drawW, drawH);
+    const flippedLocalX = srcW - anchorLocalX;
+    const dX = Math.round(-flippedLocalX * scale);
+    ctx.drawImage(s.renderImg, srcX, 0, srcW, srcH, dX, drawY, drawW, drawH);
   } else {
     ctx.drawImage(s.renderImg, srcX, 0, srcW, srcH, drawX, drawY, drawW, drawH);
   }
   ctx.restore();
-
-  if (DEBUG_FRAME){
-    ctx.strokeStyle = '#ff3060';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(drawX, drawY, drawW, drawH);
-  }
 }
 
 function drawPlayer(){
@@ -1197,11 +1162,11 @@ function drawPlayer(){
   const syGround = Math.round(player.y - cam.y + FOOT_OFFSET);
   const sySprite = syGround + player.jumpY;
 
-  /* Shadow */
+  // Shadow
   const shadowScale = 1 - Math.abs(player.jumpY) / 70;
   ctx.fillStyle = `rgba(0,0,0,${0.4 * shadowScale})`;
   ctx.beginPath();
-  ctx.ellipse(sx, syGround, 11 * shadowScale, 4 * shadowScale, 0, 0, Math.PI*2);
+  ctx.ellipse(sx, syGround, 8 * shadowScale, 3 * shadowScale, 0, 0, Math.PI*2);
   ctx.fill();
 
   const sprite = getPlayerSprite(player.currentAnim);
@@ -1213,85 +1178,78 @@ function drawPlayer(){
   const rawIdx = Math.floor(player.animTime * sprite.fps);
   const total = sprite.frames || (sprite.vLines ? sprite.vLines.length - 1 : 8);
   let idx;
-  if (sprite.loop){
-    idx = ((rawIdx % total) + total) % total;
-  } else {
-    idx = Math.max(0, Math.min(total - 1, rawIdx));
-  }
+  if (sprite.loop) idx = ((rawIdx % total) + total) % total;
+  else idx = Math.max(0, Math.min(total - 1, rawIdx));
 
   drawSpriteAt(sprite, idx, sx, sySprite, player.facing);
 }
 
-const LOCAL_COLORS = { legs:'#2a3a5a', shoes:'#1a1a1a', body:'#3a5a9a', bodyShade:'#2a4a7a', skin:'#f0c8a0', hair:'#3a2010' };
+const LOCAL_COLORS = { body:'#3a5a9a', skin:'#f0c8a0' };
 function drawFallbackBody(sx, sy, animT, animName, facing, colors){
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.beginPath(); ctx.ellipse(sx, sy+10, 10, 3, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(sx, sy+8, 8, 3, 0, 0, Math.PI*2); ctx.fill();
   ctx.fillStyle = colors.body;
-  ctx.fillRect(sx-7, sy-12, 14, 15);
+  ctx.fillRect(sx-6, sy-10, 12, 13);
   ctx.fillStyle = colors.skin;
-  ctx.fillRect(sx-6, sy-22, 12, 10);
+  ctx.fillRect(sx-5, sy-18, 10, 8);
 }
 
 const REMOTE_PALETTE = [
-  { legs:'#5a2a3a', shoes:'#2a1020', body:'#d04a5a', bodyShade:'#a02a3a', skin:'#f0c8a0', hair:'#2a1010' },
-  { legs:'#2a3a5a', shoes:'#1a1a3a', body:'#4a6ad0', bodyShade:'#2a4aa0', skin:'#f0c8a0', hair:'#202010' },
-  { legs:'#3a5a2a', shoes:'#1a3a10', body:'#6ad04a', bodyShade:'#4aa02a', skin:'#f0c8a0', hair:'#302010' },
-  { legs:'#5a4a2a', shoes:'#3a2a10', body:'#d0b04a', bodyShade:'#a0902a', skin:'#f0c8a0', hair:'#101010' },
-  { legs:'#4a2a5a', shoes:'#2a103a', body:'#b04ad0', bodyShade:'#802aa0', skin:'#f0c8a0', hair:'#202020' }
+  { body:'#d04a5a' }, { body:'#4a6ad0' }, { body:'#6ad04a' },
+  { body:'#d0b04a' }, { body:'#b04ad0' }
 ];
 function hashCode(s){ let h = 0; for (let i=0;i<s.length;i++) h = ((h<<5) - h) + s.charCodeAt(i) | 0; return h; }
 function drawRemotePlayer(p){
   const sx = p.x - cam.x, sy = p.y - cam.y;
   if (sx < -80 || sx > VW+80 || sy < -80 || sy > VH+80) return;
   const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name)) % REMOTE_PALETTE.length];
-  // Thử dùng sprite player/idle cho remote
+
   const sprite = getPlayerSprite('idle');
   if (sprite){
     drawSpriteAt(sprite, 0, sx, sy + FOOT_OFFSET, p.facing);
   } else {
     ctx.fillStyle = pal.body;
-    ctx.fillRect(sx-7, sy-12, 14, 15);
-    ctx.fillStyle = pal.skin;
-    ctx.fillRect(sx-6, sy-22, 12, 10);
+    ctx.fillRect(sx-6, sy-10, 12, 13);
+    ctx.fillStyle = '#f0c8a0';
+    ctx.fillRect(sx-5, sy-18, 10, 8);
   }
+
   ctx.font = 'bold 10px Consolas, monospace';
   ctx.textAlign = 'center';
   const w = ctx.measureText(p.name).width + 8;
   ctx.fillStyle = 'rgba(0,0,0,0.65)';
-  ctx.fillRect(sx - w/2, sy - 40, w, 13);
+  ctx.fillRect(sx - w/2, sy - 36, w, 13);
   ctx.fillStyle = '#88ffd8';
-  ctx.fillText(p.name, sx, sy - 30);
+  ctx.fillText(p.name, sx, sy - 26);
   const hpPct = Math.max(0, Math.min(1, (p.hp ?? 20) / 20));
-  const bw = 26;
+  const bw = 24;
   ctx.fillStyle = 'rgba(0,0,0,0.8)';
-  ctx.fillRect(sx - bw/2 - 1, sy - 26, bw + 2, 5);
+  ctx.fillRect(sx - bw/2 - 1, sy - 22, bw + 2, 5);
   ctx.fillStyle = hpPct > 0.5 ? '#4ade4a' : hpPct > 0.25 ? '#ffcc40' : '#e8503a';
-  ctx.fillRect(sx - bw/2, sy - 25, bw * hpPct, 3);
+  ctx.fillRect(sx - bw/2, sy - 21, bw * hpPct, 3);
   ctx.textAlign = 'left';
 }
 
 function drawAimArrow(){
   if (!gameStarted || paused) return;
   const sx = player.x - cam.x;
-  const sy = player.y - cam.y - 6;
+  const sy = player.y - cam.y - 4;
   const a = aim.angle;
   const cosA = Math.cos(a), sinA = Math.sin(a);
-  const dist = (aim.joyId !== null)
-    ? 26 + Math.hypot(aim.joyX, aim.joyY) * 24
-    : 42;
+  const dist = (aim.joyId !== null) ? 22 + Math.hypot(aim.joyX, aim.joyY) * 22 : 38;
   const tipX = sx + cosA * dist;
   const tipY = sy + sinA * dist;
 
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+  ctx.lineWidth = 2.5;
   ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.moveTo(sx + cosA * 14, sy + sinA * 14);
+  ctx.moveTo(sx + cosA * 12, sy + sinA * 12);
   ctx.lineTo(tipX, tipY);
   ctx.stroke();
 
-  const headLen = 8, headAngle = 0.6;
+  const headLen = 7, headAngle = 0.6;
   const w1x = tipX + Math.cos(a + Math.PI - headAngle) * headLen;
   const w1y = tipY + Math.sin(a + Math.PI - headAngle) * headLen;
   const w2x = tipX + Math.cos(a + Math.PI + headAngle) * headLen;
@@ -1301,9 +1259,7 @@ function drawAimArrow(){
   ctx.stroke();
 
   ctx.fillStyle = 'rgba(255,255,255,0.9)';
-  ctx.beginPath();
-  ctx.arc(tipX, tipY, 3, 0, Math.PI*2);
-  ctx.fill();
+  ctx.beginPath(); ctx.arc(tipX, tipY, 2.5, 0, Math.PI*2); ctx.fill();
   ctx.restore();
 }
 
@@ -1367,9 +1323,7 @@ function getClockString(){
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
-/* ============================================================
-   HUD
-   ============================================================ */
+/* HUD */
 const hotbarEl = document.getElementById('hotbar');
 function renderHotbar(){
   hotbarEl.innerHTML = '';
@@ -1410,9 +1364,7 @@ function toast(msg){
   toastTimer = setTimeout(() => el.classList.remove('show'), 1600);
 }
 
-/* ============================================================
-   MENU
-   ============================================================ */
+/* MENU */
 window.Game = {
   startSingleplayer: () => startSingleplayer(),
   showMP: () => showMenuPage('mp'),
@@ -1456,7 +1408,7 @@ async function hostRoom(){
     const code = await net.startHost(name);
     codeEl.textContent = code;
     codeEl.classList.remove('hidden');
-    status.textContent = '✓ Đang chờ đối thủ...';
+    status.textContent = '✓ Chờ đối thủ...';
     initRNG(Date.now() & 0x7fffffff);
     world.fill(0); generateWorld();
     resetPlayerPosition(); initInv();
@@ -1472,12 +1424,12 @@ async function joinRoom(){
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   const name = document.getElementById('joinName').value.trim() || 'Hunter';
   const status = document.getElementById('joinStatus');
-  if (code.length < 4){ status.textContent = '❌ Mã phòng không hợp lệ'; return; }
+  if (code.length < 4){ status.textContent = '❌ Mã không hợp lệ'; return; }
   status.textContent = 'Đang kết nối...';
   try {
     net.onWorldReady = () => { initInv(); startGame('client'); };
     await net.startClient(name, code);
-    status.textContent = '✓ Đã kết nối, đang tải thế giới...';
+    status.textContent = '✓ Đã kết nối...';
   } catch(e){ status.textContent = '❌ ' + (e.message || e); }
 }
 function bindSlider(id, valId, cb){
@@ -1498,9 +1450,7 @@ function toggleSettings(){
   } else showMenuPage('settings');
 }
 
-/* ============================================================
-   GAME LIFECYCLE
-   ============================================================ */
+/* GAME LIFECYCLE */
 function startSingleplayer(){
   net.disconnect();
   initRNG(Date.now() & 0x7fffffff);
@@ -1544,9 +1494,7 @@ function resetPlayerPosition(){
   cam.x = player.x - VW/2; cam.y = player.y - VH/2;
 }
 
-/* ============================================================
-   MAIN LOOP
-   ============================================================ */
+/* MAIN LOOP */
 const G = { particles: [] };
 let lastT = performance.now();
 function loop(now){
@@ -1570,11 +1518,10 @@ function loop(now){
 }
 mouse.x = VW/2; mouse.y = VH/2;
 
-/* Load project trước khi start */
 loadProject().then(() => {
   showMenuPage('main');
   requestAnimationFrame(loop);
 });
 </script>
 </body>
-          </html>
+                                                                                                </html>
