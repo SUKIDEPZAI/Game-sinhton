@@ -253,11 +253,141 @@ const PLAYER_SPRITE = {
   img: new Image(),
   frameW: 192,
   frameH: 205,
-  loaded: false
+  loaded: false,
+  frames: { idle: [], run: [], jump: [], attack: [], death: [] }
 };
 
+/*
+   player.png không phải spritesheet dạng ô vuông hoàn hảo: mỗi frame có
+   khoảng trống khác nhau. Nếu cứ lấy x = frame * 192 thì chân/đầu sẽ
+   nhảy qua lại ("trôi frame").
+
+   Ta tự quét alpha của PNG để tìm từng frame thật, rồi chuẩn hóa tất cả
+   theo chân + tâm X. Cách này cũng chịu được nền đen nếu PNG bị xuất với
+   nền đen thay vì alpha.
+*/
+function buildPlayerFrameMap(){
+  const img = PLAYER_SPRITE.img;
+  const w = img.naturalWidth || img.width;
+  const h = img.naturalHeight || img.height;
+  if (!w || !h) return false;
+
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const cctx = c.getContext('2d', { willReadFrequently: true });
+  cctx.drawImage(img, 0, 0);
+  const data = cctx.getImageData(0, 0, w, h).data;
+
+  const opaque = (x, y) => {
+    const i = (y * w + x) * 4;
+    const a = data[i + 3];
+    if (a < 12) return false;
+    /* Hỗ trợ cả PNG nền trong suốt lẫn nền đen. */
+    return !(data[i] < 7 && data[i+1] < 7 && data[i+2] < 7);
+  };
+
+  /* Tìm 5 dải hàng thật. */
+  const ys = [];
+  for (let y = 0; y < h; y++) {
+    let hit = false;
+    for (let x = 0; x < w; x += 2) {
+      if (opaque(x, y)) { hit = true; break; }
+    }
+    ys.push(hit);
+  }
+
+  const bands = [];
+  let start = -1;
+  for (let y = 0; y <= h; y++) {
+    if (y < h && ys[y]) {
+      if (start < 0) start = y;
+    } else if (start >= 0) {
+      if (y - start >= 20) bands.push({ y0: start, y1: y });
+      start = -1;
+    }
+  }
+
+  /* Nếu file có các khe rất nhỏ trong một hàng, gộp chúng lại. */
+  for (let i = bands.length - 1; i > 0; i--) {
+    if (bands[i].y0 - bands[i-1].y1 < 18) {
+      bands[i-1].y1 = bands[i].y1;
+      bands.splice(i, 1);
+    }
+  }
+
+  const rowNames = ['idle','run','jump','attack','death'];
+  const result = { idle: [], run: [], jump: [], attack: [], death: [] };
+
+  for (let r = 0; r < Math.min(5, bands.length); r++) {
+    const b = bands[r];
+    const xs = [];
+    for (let x = 0; x < w; x++) {
+      let hit = false;
+      for (let y = b.y0; y < b.y1; y += 2) {
+        if (opaque(x, y)) { hit = true; break; }
+      }
+      xs.push(hit);
+    }
+
+    const runs = [];
+    let x0 = -1;
+    for (let x = 0; x <= w; x++) {
+      if (x < w && xs[x]) {
+        if (x0 < 0) x0 = x;
+      } else if (x0 >= 0) {
+        if (x - x0 >= 12) runs.push({ x0, x1: x });
+        x0 = -1;
+      }
+    }
+
+    /* Gộp các mảnh trong cùng một frame nếu khe ngang nhỏ. */
+    const merged = [];
+    for (const rr of runs) {
+      const last = merged[merged.length - 1];
+      if (last && rr.x0 - last.x1 < 28) last.x1 = rr.x1;
+      else merged.push({ ...rr });
+    }
+
+    /* Chỉ nhận những cụm có kích thước hợp lý của nhân vật/frame. */
+    result[rowNames[r]] = merged
+      .filter(rr => rr.x1 - rr.x0 >= 35)
+      .map(rr => {
+        let minX = rr.x0, maxX = rr.x1, minY = b.y0, maxY = b.y1;
+        for (let y = b.y0; y < b.y1; y++) {
+          for (let x = rr.x0; x < rr.x1; x++) {
+            if (opaque(x, y)) {
+              if (x < minX) minX = x;
+              if (x >= maxX) maxX = x + 1;
+              if (y < minY) minY = y;
+              if (y >= maxY) maxY = y + 1;
+            }
+          }
+        }
+        return {
+          x: minX, y: minY,
+          w: Math.max(1, maxX - minX),
+          h: Math.max(1, maxY - minY)
+        };
+      });
+  }
+
+  /* Fallback an toàn nếu PNG không có alpha/không quét được. */
+  if (!result.idle.length) {
+    for (const n of rowNames) result[n] = [];
+    result.idle = Array.from({length:7}, (_,i) => ({x:i*192,y:0,w:192,h:205}));
+    result.run = Array.from({length:8}, (_,i) => ({x:i*192,y:205,w:192,h:205}));
+    result.jump = Array.from({length:8}, (_,i) => ({x:i*192,y:410,w:192,h:205}));
+    result.attack = Array.from({length:8}, (_,i) => ({x:i*192,y:615,w:192,h:205}));
+    result.death = Array.from({length:8}, (_,i) => ({x:i*192,y:820,w:192,h:204}));
+  }
+
+  PLAYER_SPRITE.frames = result;
+  console.log('✓ player frames:', Object.fromEntries(rowNames.map(n => [n, result[n].length])));
+  return true;
+}
+
 PLAYER_SPRITE.img.onload = () => {
-  PLAYER_SPRITE.loaded = true;
+  PLAYER_SPRITE.loaded = buildPlayerFrameMap();
   console.log(`✓ player.png: ${PLAYER_SPRITE.img.width}x${PLAYER_SPRITE.img.height}`);
 };
 PLAYER_SPRITE.img.onerror = () => {
@@ -267,11 +397,11 @@ PLAYER_SPRITE.img.onerror = () => {
 PLAYER_SPRITE.img.src = PLAYER_SPRITE.src;
 
 const SPRITE_ANIMS = {
-  idle:   { row: 0, frames: 7, fps: 5,  loop: true },
-  run:    { row: 1, frames: 8, fps: 10, loop: true },
-  jump:   { row: 2, frames: 8, fps: 12, loop: false },
-  attack: { row: 3, frames: 8, fps: 12, loop: false },
-  death:  { row: 4, frames: 8, fps: 8,  loop: false }
+  idle:   { row: 0, fps: 5,  loop: true },
+  run:    { row: 1, fps: 10, loop: true },
+  jump:   { row: 2, fps: 12, loop: false },
+  attack: { row: 3, fps: 12, loop: false },
+  death:  { row: 4, fps: 8,  loop: false }
 };
 
 /* ============================================================
@@ -893,28 +1023,23 @@ function drawPlayer(){
     return;
   }
 
+  const list = PLAYER_SPRITE.frames[player.currentAnim] || PLAYER_SPRITE.frames.idle;
+  const count = list.length || 1;
   const rawIdx = Math.floor(player.animTime * anim.fps);
-  const idx = anim.loop
-    ? rawIdx % anim.frames
-    : Math.min(anim.frames - 1, rawIdx);
-
-  const srcX = idx * PLAYER_SPRITE.frameW;
-  const srcY = anim.row * PLAYER_SPRITE.frameH;
+  const idx = anim.loop ? rawIdx % count : Math.min(count - 1, rawIdx);
+  const fr = list[idx] || list[0];
 
   /*
-     Giữ nguyên tỉ lệ của frame 192x205.
-     Không dùng width cố định theo từng animation nữa,
-     nên tất cả hàng của player.png không bị lệch/cắt.
+     FIX FRAME TRÔI:
+     - crop đúng bbox thật của từng frame
+     - lấy đáy bbox làm chân chung
+     - lấy tâm bbox làm trục X chung
+     Vì vậy mỗi frame dù có khoảng trắng khác nhau vẫn đứng cùng một chỗ.
   */
   const DEST_H = DEST_HEIGHT;
-  const DEST_W = Math.round(
-    DEST_H * PLAYER_SPRITE.frameW / PLAYER_SPRITE.frameH
-  );
-
+  const DEST_W = Math.max(1, Math.round(DEST_H * fr.w / fr.h));
   const drawX = Math.round(sx - DEST_W / 2);
-  const drawY = Math.round(
-    sySprite + FOOT_OFFSET - DEST_H
-  );
+  const drawY = Math.round(sySprite + FOOT_OFFSET - DEST_H);
 
   ctx.save();
 
@@ -923,24 +1048,16 @@ function drawPlayer(){
     ctx.scale(-1, 1);
     ctx.drawImage(
       PLAYER_SPRITE.img,
-      srcX, srcY,
-      PLAYER_SPRITE.frameW,
-      PLAYER_SPRITE.frameH,
+      fr.x, fr.y, fr.w, fr.h,
       -DEST_W / 2,
       drawY,
-      DEST_W,
-      DEST_H
+      DEST_W, DEST_H
     );
   } else {
     ctx.drawImage(
       PLAYER_SPRITE.img,
-      srcX, srcY,
-      PLAYER_SPRITE.frameW,
-      PLAYER_SPRITE.frameH,
-      drawX,
-      drawY,
-      DEST_W,
-      DEST_H
+      fr.x, fr.y, fr.w, fr.h,
+      drawX, drawY, DEST_W, DEST_H
     );
   }
 
@@ -999,25 +1116,21 @@ function drawRemotePlayer(p){
   if (sx < -100 || sx > VW+100 || sy < -120 || sy > VH+120) return;
 
   if (PLAYER_SPRITE.loaded){
-    const frames = SPRITE_ANIMS.idle.frames;
+    const list = PLAYER_SPRITE.frames.idle || [];
+    const frames = list.length || 1;
     const frame = Math.floor((p.animT || 0) * SPRITE_ANIMS.idle.fps) % frames;
-    const srcX = frame * PLAYER_SPRITE.frameW;
-    const srcY = 0;
+    const fr = list[frame] || {x:0,y:0,w:192,h:205};
     const DEST_H = DEST_HEIGHT;
-    const DEST_W = Math.round(DEST_H * PLAYER_SPRITE.frameW / PLAYER_SPRITE.frameH);
+    const DEST_W = Math.max(1, Math.round(DEST_H * fr.w / fr.h));
     ctx.save();
     if (p.facing < 0){
       ctx.translate(sx, 0);
       ctx.scale(-1, 1);
-      ctx.drawImage(PLAYER_SPRITE.img, srcX, srcY,
-        PLAYER_SPRITE.frameW, PLAYER_SPRITE.frameH,
-        -DEST_W/2, sy + FOOT_OFFSET - DEST_H,
-        DEST_W, DEST_H);
+      ctx.drawImage(PLAYER_SPRITE.img, fr.x, fr.y, fr.w, fr.h,
+        -DEST_W/2, sy + FOOT_OFFSET - DEST_H, DEST_W, DEST_H);
     } else {
-      ctx.drawImage(PLAYER_SPRITE.img, srcX, srcY,
-        PLAYER_SPRITE.frameW, PLAYER_SPRITE.frameH,
-        sx - DEST_W/2, sy + FOOT_OFFSET - DEST_H,
-        DEST_W, DEST_H);
+      ctx.drawImage(PLAYER_SPRITE.img, fr.x, fr.y, fr.w, fr.h,
+        sx - DEST_W/2, sy + FOOT_OFFSET - DEST_H, DEST_W, DEST_H);
     }
     ctx.restore();
   }
@@ -1305,4 +1418,4 @@ showMenuPage('main');
 requestAnimationFrame(loop);
 </script>
 </body>
-                                                                                  </html>
+        </html>
