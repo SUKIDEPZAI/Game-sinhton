@@ -3,21 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sprite Sheet Editor — Dragon Hunter</title>
+<title>Sprite Sheet Editor v3 — Dragon Hunter</title>
 <style>
-:root{--bg:#0a0d08;--panel:#1a2018;--panel2:#2a3328;--border:#0a0d08;
-  --accent:#6fbf4a;--accent2:#88ff60;--text:#e8f0d8;--dim:#a8b498;--danger:#e8503a}
+:root{--bg:#0a0d08;--panel:#1a2018;--panel2:#2a3328;--accent:#6fbf4a;
+  --accent2:#88ff60;--text:#e8f0d8;--dim:#a8b498;--danger:#e8503a}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
   font-family:'Segoe UI',Arial,sans-serif;font-size:13px;user-select:none}
 button{cursor:pointer;font-family:inherit}
 input,select{font-family:inherit}
-
 #app{display:flex;flex-direction:column;height:100%}
 #header{background:linear-gradient(180deg,#1a2018,#0a0d08);border-bottom:2px solid #000;
   padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-#header h1{font-family:Consolas,monospace;font-size:14px;color:var(--accent2);
-  letter-spacing:2px;text-shadow:0 0 10px rgba(136,255,96,.3)}
+#header h1{font-family:Consolas,monospace;font-size:14px;color:var(--accent2);letter-spacing:2px}
 #header .sub{font-family:Consolas,monospace;font-size:10px;color:#6a7860;margin-left:8px}
 #toolbar{display:flex;gap:6px;flex-wrap:wrap}
 .tbtn{background:linear-gradient(180deg,#5a6850,#3a4430);color:var(--text);
@@ -28,23 +26,19 @@ input,select{font-family:inherit}
 .tbtn.primary{background:linear-gradient(180deg,#88d858,#4a8a30);color:#0a1a06;
   box-shadow:inset 0 1px 0 #b8ff88,0 2px 0 #1a3a10}
 .tbtn.danger{background:linear-gradient(180deg,#d05848,#8a2a20);color:#fff}
-.tbtn.on{background:linear-gradient(180deg,#ffd060,#d09020);color:#1a0a00;
-  box-shadow:inset 0 1px 0 #ffee88,0 2px 0 #3a1a00}
+.tbtn.on{background:linear-gradient(180deg,#ffd060,#d09020);color:#1a0a00}
 .tbtn:disabled{opacity:.4;cursor:not-allowed}
-
 #main{display:flex;flex:1;overflow:hidden}
 #canvasWrap{flex:1;position:relative;overflow:auto;background:#0f1409;
   background-image:linear-gradient(45deg,#1a1f14 25%,transparent 25%),
     linear-gradient(-45deg,#1a1f14 25%,transparent 25%),
     linear-gradient(45deg,transparent 75%,#1a1f14 75%),
     linear-gradient(-45deg,transparent 75%,#1a1f14 75%);
-  background-size:16px 16px;
-  background-position:0 0,0 8px,8px -8px,-8px 0px}
+  background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0px}
 #canvasHolder{position:relative;display:inline-block;margin:20px}
 #editorCanvas{display:block;image-rendering:pixelated;cursor:crosshair;
   box-shadow:0 0 0 1px #000,0 0 30px rgba(0,0,0,.8)}
 #overlay{position:absolute;top:0;left:0;pointer-events:auto}
-
 #side{width:340px;background:var(--panel);border-left:2px solid #000;
   overflow-y:auto;display:flex;flex-direction:column}
 .section{border-bottom:2px solid #000;padding:10px 12px}
@@ -61,8 +55,7 @@ input,select{font-family:inherit}
 .row .btn-sm{background:#3a4430;color:#e8f0d8;border:1px solid #000;border-radius:3px;
   padding:3px 8px;font-size:10px;cursor:pointer}
 .row .btn-sm:hover{background:#4a5440}
-
-.lines-list{max-height:120px;overflow-y:auto;background:#000;border:1px solid #333;
+.lines-list{max-height:100px;overflow-y:auto;background:#000;border:1px solid #333;
   border-radius:3px;padding:4px}
 .line-item{display:flex;align-items:center;gap:4px;padding:2px 4px;font-family:Consolas,monospace;
   font-size:11px;border-radius:2px}
@@ -72,19 +65,15 @@ input,select{font-family:inherit}
   border-radius:2px;padding:2px 4px;font-size:11px;font-family:Consolas,monospace;text-align:center}
 .line-item .del{background:none;border:none;color:var(--danger);cursor:pointer;font-size:13px;
   padding:0 4px;margin-left:auto}
-.line-item .del:hover{color:#ff8080}
-
 .anchor-grid{display:grid;grid-template-columns:repeat(3,36px);grid-template-rows:repeat(3,36px);
   gap:3px;justify-content:center;margin:8px 0}
 .anchor-btn{background:#1a2018;border:2px solid #000;border-radius:3px;cursor:pointer;
   color:#6a7860;font-size:16px;display:flex;align-items:center;justify-content:center}
 .anchor-btn:hover{background:#2a3328}
 .anchor-btn.on{background:var(--accent);color:#0a1a06;border-color:#88ff60}
-
 .swatch{width:36px;height:36px;border:2px solid #000;border-radius:4px;display:inline-block;
   vertical-align:middle;background:#333;position:relative;overflow:hidden}
 .swatch-fill{position:absolute;inset:0}
-
 #status{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
   background:rgba(20,24,16,.95);border:1px solid #333;border-radius:6px;padding:8px 16px;
   font-family:Consolas,monospace;font-size:11px;color:var(--dim);pointer-events:none;
@@ -92,7 +81,6 @@ input,select{font-family:inherit}
 #status.show{opacity:1}
 #status.ok{color:var(--accent2);border-color:#4a8a30}
 #status.err{color:#ff9898;border-color:#8a2a20}
-
 #empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
   justify-content:center;text-align:center;color:#6a7860;gap:14px;pointer-events:none}
 #empty .big{font-size:48px}
@@ -100,33 +88,26 @@ input,select{font-family:inherit}
 #empty .hint{font-size:11px;color:#4a5440;max-width:400px;line-height:1.7}
 #empty .hint kbd{background:#2a3328;border:1px solid #000;border-radius:3px;padding:1px 6px;
   font-family:Consolas,monospace;color:var(--accent2)}
-
 #help{position:fixed;bottom:10px;right:360px;background:rgba(20,24,16,.92);
   border:1px solid #333;border-radius:6px;padding:10px 14px;font-family:Consolas,monospace;
-  font-size:10px;color:var(--dim);line-height:1.8;pointer-events:none;max-width:300px;
-  display:none}
+  font-size:10px;color:var(--dim);line-height:1.8;pointer-events:none;max-width:300px;display:none}
 #help.show{display:block}
 #help b{color:var(--accent2)}
-
-/* Modal chọn nhãn nhanh */
-#quickLabel{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;z-index:200;
-  align-items:center;justify-content:center}
-#quickLabel.show{display:flex}
-.ql-box{background:var(--panel2);border:2px solid #000;border-radius:6px;padding:20px;
-  max-width:360px;width:90%;box-shadow:inset 0 0 0 1px #5a6850,0 8px 0 #000;text-align:center}
-.ql-box h3{font-family:Consolas,monospace;font-size:13px;color:var(--accent2);
-  letter-spacing:2px;margin-bottom:14px}
-.ql-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.ql-buttons .tbtn{padding:14px 8px;font-size:13px}
+.anchor-list{max-height:150px;overflow-y:auto;background:#000;border:1px solid #333;
+  border-radius:3px;padding:4px;margin-top:6px}
+.anchor-item{display:flex;align-items:center;gap:4px;padding:2px 4px;font-family:Consolas,monospace;
+  font-size:11px;border-radius:2px;cursor:pointer}
+.anchor-item:hover{background:#1a2018}
+.anchor-item.on{background:#2a3a1a;border-left:3px solid var(--accent2)}
+.anchor-item .idx{color:#6a7860;width:24px}
+.anchor-item .coords{color:var(--accent2);flex:1}
+.anchor-item .warn{color:#ffcc40;font-size:10px}
 </style>
 </head>
 <body>
 <div id="app">
-
 <header id="header">
-  <div>
-    <h1>🎨 SPRITE SHEET EDITOR<span class="sub">Dragon Hunter · v2</span></h1>
-  </div>
+  <div><h1>🎨 SPRITE EDITOR<span class="sub">v3 · 4-side bbox + anchor</span></h1></div>
   <div id="toolbar">
     <button class="tbtn" id="uploadBtn">📁 Upload</button>
     <button class="tbtn" id="undoBtn" disabled>↶ Undo</button>
@@ -134,16 +115,15 @@ input,select{font-family:inherit}
     <button class="tbtn primary" id="exportBtn" disabled>💾 Xuất PNG</button>
   </div>
 </header>
-
 <div id="main">
   <div id="canvasWrap">
     <div id="empty">
       <div class="big">📁</div>
       <div class="label">CHƯA CÓ ẢNH</div>
       <div class="hint">
-        Bấm <kbd>Upload</kbd> hoặc kéo thả ảnh PNG vào đây.<br><br>
-        Sau đó dùng <b>lưới kẻ</b> để chia frame,<br>
-        <b>xóa nền</b>, <b>di chuyển frame</b>, và <b>xuất</b> file mới.
+        Upload ảnh PNG sprite sheet.<br>
+        Tool sẽ <b>tự tìm bbox 4 cạnh</b> của mỗi nhân vật<br>
+        và đặt <b>anchor</b> (điểm chân) để game căn chuẩn.
       </div>
     </div>
     <div id="canvasHolder" style="display:none">
@@ -151,37 +131,59 @@ input,select{font-family:inherit}
       <canvas id="overlay"></canvas>
     </div>
   </div>
-
   <aside id="side">
     <div class="section">
       <h3>📏 LƯỚI KẺ <span class="count" id="gridCount">0 × 0</span></h3>
       <div class="row">
         <label>Cột</label>
-        <button class="btn-sm" id="addVLine">+ Thêm</button>
         <button class="btn-sm" id="autoV">Auto N</button>
+        <button class="btn-sm" id="addVLine">+ Thêm</button>
         <button class="btn-sm" id="clearV">Clear</button>
       </div>
       <div class="lines-list" id="vLinesList"></div>
       <div class="row" style="margin-top:8px">
         <label>Hàng</label>
-        <button class="btn-sm" id="addHLine">+ Thêm</button>
         <button class="btn-sm" id="autoH">Auto N</button>
+        <button class="btn-sm" id="addHLine">+ Thêm</button>
         <button class="btn-sm" id="clearH">Clear</button>
       </div>
       <div class="lines-list" id="hLinesList"></div>
       <div class="row" style="margin-top:8px">
-        <label>Snap</label>
-        <input type="range" id="snapToggle" min="0" max="1" value="1" style="width:60px">
-        <span class="val" id="snapLabel">ON</span>
-      </div>
-      <div class="row">
         <label></label>
         <button class="btn-sm" id="autoDetectBtn" style="flex:1;padding:6px;background:#4a5a30">
-          🤖 Auto-detect từng frame
+          🤖 Auto-detect 4 cạnh
         </button>
       </div>
     </div>
-
+    <div class="section">
+      <h3>🎯 ANCHOR (ĐIỂM CHÂN) <span class="count" id="anchorCount">0 / 0</span></h3>
+      <div class="row">
+        <label>Mode</label>
+        <select id="anchorMode" style="flex:1;background:#000;color:#e8f0d8;border:1px solid #333;
+          border-radius:3px;padding:4px;font-size:11px">
+          <option value="bottom-center">Đáy-giữa (tự động)</option>
+          <option value="bottom-left">Đáy-trái</option>
+          <option value="bottom-right">Đáy-phải</option>
+          <option value="center">Tâm giữa</option>
+          <option value="manual">Chỉnh tay (click frame)</option>
+        </select>
+      </div>
+      <div class="row">
+        <label></label>
+        <button class="btn-sm" id="computeAnchors" style="flex:1;padding:6px;background:#4a5a30">
+          🎯 Tính anchor lại
+        </button>
+      </div>
+      <div class="row">
+        <label></label>
+        <button class="btn-sm" id="clearAnchors">🗑 Xóa hết anchor</button>
+      </div>
+      <div class="anchor-list" id="anchorList"></div>
+      <div class="row" style="font-size:10px;color:#6a7860;line-height:1.5;margin-top:6px">
+        <label></label>
+        <span>Chấm đỏ trên preview = anchor. Mode "Chỉnh tay": click vào ảnh để đặt anchor cho frame đang chọn.</span>
+      </div>
+    </div>
     <div class="section">
       <h3>🎨 XÓA NỀN</h3>
       <div class="row">
@@ -198,10 +200,10 @@ input,select{font-family:inherit}
         <label>Chế độ</label>
         <select id="bgMode" style="flex:1;background:#000;color:#e8f0d8;border:1px solid #333;
           border-radius:3px;padding:4px;font-size:11px">
-          <option value="alpha">Trong suốt (alpha=0)</option>
-          <option value="color">Đổi thành màu</option>
-          <option value="white">Thành trắng</option>
-          <option value="black">Thành đen</option>
+          <option value="alpha">Trong suốt</option>
+          <option value="color">Đổi màu</option>
+          <option value="white">Trắng</option>
+          <option value="black">Đen</option>
         </select>
       </div>
       <div class="row" id="bgColorRow" style="display:none">
@@ -212,10 +214,9 @@ input,select{font-family:inherit}
       <div class="row">
         <label></label>
         <button class="btn-sm" id="bgApplyAll">🌐 Toàn ảnh</button>
-        <button class="btn-sm" id="bgApplyCell" disabled>▣ Cell chọn</button>
+        <button class="btn-sm" id="bgApplyCell" disabled>▣ Cell</button>
       </div>
     </div>
-
     <div class="section">
       <h3>📐 KÍCH THƯỚC <span class="count" id="sizeLabel">0×0</span></h3>
       <div class="row">
@@ -223,10 +224,6 @@ input,select{font-family:inherit}
         <input type="number" id="canvasW" min="1" max="4096">
         <label style="flex:0 0 auto">Cao</label>
         <input type="number" id="canvasH" min="1" max="4096">
-      </div>
-      <div class="row" style="margin-top:6px">
-        <label>Anchor</label>
-        <span style="font-size:10px;color:#6a7860">vị trí giữ ảnh cũ</span>
       </div>
       <div class="anchor-grid" id="anchorGrid">
         <button class="anchor-btn" data-a="tl">↖</button>
@@ -244,15 +241,14 @@ input,select{font-family:inherit}
         <button class="btn-sm" id="resizeApply" style="flex:1;padding:6px">Áp dụng</button>
       </div>
       <div class="row">
-        <label>Crop auto</label>
-        <button class="btn-sm" id="cropTight" style="flex:1;padding:6px">✂ Cắt sát</button>
+        <label></label>
+        <button class="btn-sm" id="cropTight" style="flex:1;padding:6px">✂ Cắt sát viền</button>
       </div>
     </div>
-
     <div class="section">
-      <h3>🎯 DI CHUYỂN FRAME <span class="count" id="cellLabel">chưa chọn</span></h3>
+      <h3>🎯 DI CHUYỂN FRAME <span class="count" id="cellLabel">-</span></h3>
       <div class="row">
-        <label>Tọa độ</label>
+        <label></label>
         <span id="cellInfo" style="color:#6a7860;font-family:Consolas,monospace;font-size:10px">
           Click ô giữa các đường kẻ
         </span>
@@ -273,7 +269,6 @@ input,select{font-family:inherit}
         <button class="btn-sm" id="cellFillTrans" disabled>🗑 Xóa cell</button>
       </div>
     </div>
-
     <div class="section">
       <h3>💾 XUẤT</h3>
       <div class="row">
@@ -288,6 +283,7 @@ input,select{font-family:inherit}
           <option value="run">run</option>
           <option value="jump">jump</option>
           <option value="attack">attack</option>
+          <option value="sit">sit</option>
           <option value="hurt">hurt</option>
         </select>
       </div>
@@ -304,24 +300,19 @@ input,select{font-family:inherit}
       <div class="row">
         <label></label>
         <button class="tbtn primary" id="exportBtn2" disabled style="flex:1">
-          ⬇️ PNG có metadata
+          ⬇️ PNG + metadata v2
         </button>
       </div>
       <div class="row">
         <label></label>
         <button class="tbtn" id="exportPlainBtn" disabled style="flex:1">
-          ⬇️ PNG không metadata
+          ⬇️ PNG (không meta)
         </button>
-      </div>
-      <div class="row" style="font-size:10px;color:#6a7860;line-height:1.5;margin-top:6px">
-        <label></label>
-        <span>Metadata = 1 hàng pixel ở đáy ảnh. Index.html sẽ tự đọc để cắt frame đúng.</span>
       </div>
     </div>
   </aside>
 </div>
 </div>
-
 <div id="status"></div>
 <div id="help">
   <b>Phím tắt:</b><br>
@@ -331,11 +322,9 @@ input,select{font-family:inherit}
   <b>Click cell</b> — chọn cell<br>
   <b>Kéo trong cell</b> — move content<br>
   <b>Alt + click</b> — pick màu<br>
-  <b>Mũi tên</b> — dịch cell 1px<br>
   <b>Ctrl+Z</b> — undo<br>
   <b>Ctrl+S</b> — export
 </div>
-
 <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" style="display:none">
 
 <script>
@@ -345,24 +334,18 @@ input,select{font-family:inherit}
    STATE
    ============================================================ */
 const state = {
-  canvas: null,
-  ctx: null,
-  overlay: null,
-  octx: null,
-  img: null,
-  zoom: 1,
-  vLines: [],
-  hLines: [],
-  snapOn: true,
-  pickColor: false,
-  cell: null,
-  drag: null,
-  cellMoveOffset: {x:0, y:0},
-  cellOriginal: null,
-  history: [],
-  anchor: 'mc',
-  bgColor: {r:255,g:255,b:255},
-  mouse: {x:0, y:0, down:false}
+  canvas: null, ctx: null, overlay: null, octx: null,
+  img: null, zoom: 1,
+  vLines: [], hLines: [],
+  anchors: [],         // [{x, y}] — mỗi frame 1 anchor
+  anchorMode: 'bottom-center',
+  snapOn: true, pickColor: false,
+  manualAnchor: false,
+  cell: null, drag: null,
+  cellMoveOffset: {x:0, y:0}, cellOriginal: null,
+  history: [], anchor_: 'mc',
+  bgColor: {r:255, g:255, b:255},
+  mouse: {x:0, y:0}
 };
 
 const $ = id => document.getElementById(id);
@@ -370,10 +353,9 @@ const fileInput = $('fileInput');
 const canvasWrap = $('canvasWrap');
 const canvasHolder = $('canvasHolder');
 const emptyEl = $('empty');
+const canvas = $('editorCanvas');
+const overlay = $('overlay');
 
-/* ============================================================
-   HELPERS
-   ============================================================ */
 function toast(msg, type){
   const el = $('status');
   el.textContent = msg;
@@ -381,7 +363,6 @@ function toast(msg, type){
   clearTimeout(el._t);
   el._t = setTimeout(() => el.classList.remove('show'), 2500);
 }
-
 function pushHistory(){
   if (!state.canvas) return;
   const imgData = state.ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
@@ -389,37 +370,25 @@ function pushHistory(){
   if (state.history.length > 30) state.history.shift();
   updateUndoBtn();
 }
-
 function undo(){
   if (state.history.length === 0) return;
-  const imgData = state.history.pop();
-  if (state.canvas.width !== imgData.width || state.canvas.height !== imgData.height){
-    state.canvas.width = imgData.width;
-    state.canvas.height = imgData.height;
-    state.overlay.width = imgData.width;
-    state.overlay.height = imgData.height;
-    $('canvasW').value = imgData.width;
-    $('canvasH').value = imgData.height;
-    $('sizeLabel').textContent = imgData.width + '×' + imgData.height;
+  const d = state.history.pop();
+  if (state.canvas.width !== d.width || state.canvas.height !== d.height){
+    state.canvas.width = d.width; state.canvas.height = d.height;
+    state.overlay.width = d.width; state.overlay.height = d.height;
+    $('canvasW').value = d.width; $('canvasH').value = d.height;
+    $('sizeLabel').textContent = d.width + '×' + d.height;
   }
-  state.ctx.putImageData(imgData, 0, 0);
-  updateUndoBtn();
-  renderOverlay();
-  toast('↶ Undo', 'ok');
+  state.ctx.putImageData(d, 0, 0);
+  updateUndoBtn(); renderAll();
 }
-
-function updateUndoBtn(){
-  $('undoBtn').disabled = state.history.length === 0;
-}
+function updateUndoBtn(){ $('undoBtn').disabled = state.history.length === 0; }
 
 /* ============================================================
-   LOAD FILE
+   LOAD / UPLOAD
    ============================================================ */
 $('uploadBtn').addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => {
-  const f = e.target.files[0];
-  if (f) loadFile(f);
-});
+fileInput.addEventListener('change', e => { const f = e.target.files[0]; if (f) loadFile(f); });
 document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', e => {
   e.preventDefault();
@@ -428,10 +397,7 @@ document.addEventListener('drop', e => {
 });
 document.addEventListener('paste', e => {
   for (const item of e.clipboardData.items){
-    if (item.type.startsWith('image/')){
-      loadFile(item.getAsFile());
-      return;
-    }
+    if (item.type.startsWith('image/')){ loadFile(item.getAsFile()); return; }
   }
 });
 
@@ -441,35 +407,31 @@ function loadFile(file){
     const img = new Image();
     img.onload = () => {
       state.img = img;
-
-      /* Đọc metadata nếu có → khôi phục vLines */
-      const meta = decodeSpriteMetadataFromImage(img);
+      const meta = decodeMetadataFromImage(img);
       const realH = meta ? (meta.spriteH || img.height - 1) : img.height;
 
       if (meta && meta.vLines && meta.vLines.length >= 2){
         state.vLines = [...meta.vLines];
         state.hLines = meta.hLines ? [...meta.hLines] : [0, realH];
-        toast('✓ Đã load + khôi phục metadata: ' + meta.label, 'ok');
+        state.anchors = meta.anchors ? meta.anchors.map(a => Array.isArray(a) ? {x:a[0], y:a[1]} : a) : [];
+        state.anchorMode = meta.anchorMode || 'bottom-center';
+        $('anchorMode').value = state.anchorMode;
+        toast('✓ Đã load + khôi phục metadata v' + (meta.v || 1), 'ok');
       } else {
         state.vLines = [0, img.width];
         state.hLines = [0, realH];
+        state.anchors = [];
         toast('✓ Đã load ' + file.name + ' · ' + img.width + '×' + realH, 'ok');
       }
 
-      /* Nếu có metadata, cắt bỏ hàng cuối khi vào editor */
-      const canvas = $('editorCanvas');
-      const overlay = $('overlay');
-      canvas.width = img.width;
-      canvas.height = realH;
-      overlay.width = img.width;
-      overlay.height = realH;
+      canvas.width = img.width; canvas.height = realH;
+      overlay.width = img.width; overlay.height = realH;
       state.canvas = canvas;
       state.ctx = canvas.getContext('2d', { willReadFrequently: true });
       state.overlay = overlay;
       state.octx = overlay.getContext('2d');
       state.ctx.imageSmoothingEnabled = false;
       state.octx.imageSmoothingEnabled = false;
-      /* Vẽ chỉ phần sprite, bỏ metadata row */
       state.ctx.drawImage(img, 0, 0, img.width, realH, 0, 0, img.width, realH);
 
       state.cell = null;
@@ -484,16 +446,19 @@ function loadFile(file){
       $('exportBtn2').disabled = false;
       $('exportPlainBtn').disabled = false;
 
-      /* Đoán label từ tên file */
       const fn = file.name.toLowerCase();
-      if (fn.includes('idle'))   $('exportLabel').value = 'idle';
+      if (fn.includes('idle')) $('exportLabel').value = 'idle';
       else if (fn.includes('run')) $('exportLabel').value = 'run';
       else if (fn.includes('jump')) $('exportLabel').value = 'jump';
       else if (fn.includes('atk') || fn.includes('attack')) $('exportLabel').value = 'attack';
+      else if (fn.includes('sit')) $('exportLabel').value = 'sit';
       else if (fn.includes('hurt') || fn.includes('death') || fn.includes('dead')) $('exportLabel').value = 'hurt';
-
-      /* Cập nhật FPS/loop theo label */
       updateFpsFromLabel();
+
+      /* Nếu chưa có anchor → tự tính */
+      if (state.anchors.length === 0 && state.vLines.length > 1){
+        setTimeout(() => computeAnchors(false), 100);
+      }
 
       renderAll();
     };
@@ -506,52 +471,151 @@ function loadFile(file){
 function updateFpsFromLabel(){
   const label = $('exportLabel').value;
   const defaults = {
-    idle: { fps: 5, loop: 1 },
-    run: { fps: 12, loop: 1 },
-    jump: { fps: 12, loop: 0 },
-    attack: { fps: 14, loop: 0 },
-    hurt: { fps: 8, loop: 0 }
+    idle: { fps: 6, loop: 1 }, run: { fps: 14, loop: 1 },
+    jump: { fps: 12, loop: 0 }, attack: { fps: 16, loop: 0 },
+    sit: { fps: 6, loop: 1 }, hurt: { fps: 8, loop: 0 }
   };
   const d = defaults[label];
-  if (d){
-    $('exportFps').value = d.fps;
-    $('exportLoop').value = d.loop;
-  }
+  if (d){ $('exportFps').value = d.fps; $('exportLoop').value = d.loop; }
 }
-
 $('exportLabel').addEventListener('change', updateFpsFromLabel);
 
 /* ============================================================
-   METADATA DECODER (đọc từ ảnh khi upload lại)
+   METADATA DECODER
    ============================================================ */
-function decodeSpriteMetadataFromImage(img){
+function decodeMetadataFromImage(img){
   try {
     const cnv = document.createElement('canvas');
-    cnv.width = img.width;
-    cnv.height = 1;
+    cnv.width = img.width; cnv.height = 1;
     const c = cnv.getContext('2d', { willReadFrequently: true });
     c.drawImage(img, 0, img.height - 1, img.width, 1, 0, 0, img.width, 1);
     const d = c.getImageData(0, 0, img.width, 1).data;
-
     if (d[0] !== 0x44 || d[1] !== 0x48 || d[2] !== 0x55 || d[3] !== 0x4E) return null;
     const len = d[6] | (d[7] << 8) | (d[8] << 16) | (d[9] << 24);
-    if (len <= 0 || len > 100000) return null;
-
+    if (len <= 0 || len > 200000) return null;
     const bytes = [];
     for (let i = 0; i < len; i++){
       const pos = 10 + i;
-      const p = Math.floor(pos / 3);
-      const ch = pos % 3;
+      const p = Math.floor(pos / 3), ch = pos % 3;
       if (p * 4 + ch >= d.length) break;
       bytes.push(d[p * 4 + ch]);
     }
-    const jsonStr = new TextDecoder().decode(new Uint8Array(bytes));
-    return JSON.parse(jsonStr);
-  } catch(e){
-    console.warn('Metadata decode error:', e);
-    return null;
-  }
+    return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
+  } catch(e){ return null; }
 }
+
+/* ============================================================
+   AUTO-DETECT 4 CẠNH
+   ============================================================ */
+function detectBBox(x1, y1, x2, y2){
+  /* Quét pixel trong vùng, trả về bbox content */
+  const W = state.canvas.width;
+  const d = state.ctx.getImageData(x1, y1, x2 - x1, y2 - y1).data;
+  const w = x2 - x1, h = y2 - y1;
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++){
+    for (let x = 0; x < w; x++){
+      const i = (y * w + x) * 4;
+      if (d[i+3] > 10){
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) return null;
+  return {
+    x: x1 + minX, y: y1 + minY,
+    w: maxX - minX + 1, h: maxY - minY + 1
+  };
+}
+
+/* Auto-detect lưới dọc: tìm khoảng trống giữa nhân vật */
+function autoDetectFrameLines(minGap){
+  const W = state.canvas.width, H = state.canvas.height;
+  const data = state.ctx.getImageData(0, 0, W, H).data;
+  minGap = minGap || 3;
+  const empty = new Uint8Array(W);
+  for (let x = 0; x < W; x++){
+    let has = 0;
+    for (let y = 0; y < H; y++){
+      if (data[(y * W + x) * 4 + 3] > 5){ has = 1; break; }
+    }
+    empty[x] = has ? 0 : 1;
+  }
+  const lines = [0];
+  let i = 0;
+  while (i < W && empty[i]) i++;
+  if (i >= W) return null;
+  while (i < W){
+    while (i < W && !empty[i]) i++;
+    const gs = i;
+    while (i < W && empty[i]) i++;
+    const ge = i;
+    if (i >= W) break;
+    if (ge - gs >= minGap) lines.push(Math.round((gs + ge) / 2));
+  }
+  lines.push(W);
+  return lines.length >= 3 ? lines : null;
+}
+
+/* Full auto: vLines + hLines + anchors */
+$('autoDetectBtn').addEventListener('click', () => {
+  if (!state.canvas){ toast('Chưa có ảnh', 'err'); return; }
+  const v = autoDetectFrameLines(3);
+  if (!v){ toast('❌ Không tách được frame', 'err'); return; }
+  /* Hàng: tự detect luôn (thường chỉ có 1 hàng) */
+  const h = [0, state.canvas.height];
+  state.vLines = v;
+  state.hLines = h;
+  computeAnchors(true);
+  renderAll();
+  toast(`🤖 Phát hiện ${v.length - 1} frame + ${state.anchors.length} anchor`, 'ok');
+});
+
+/* ============================================================
+   ANCHOR
+   ============================================================ */
+function computeAnchors(verbose){
+  if (!state.canvas){ return; }
+  const anchors = [];
+  for (let r = 0; r < state.hLines.length - 1; r++){
+    for (let c = 0; c < state.vLines.length - 1; c++){
+      const x1 = state.vLines[c], x2 = state.vLines[c+1];
+      const y1 = state.hLines[r], y2 = state.hLines[r+1];
+      const bbox = detectBBox(x1, y1, x2, y2);
+      if (!bbox){
+        anchors.push(null);
+        continue;
+      }
+      let ax, ay;
+      switch (state.anchorMode){
+        case 'bottom-left':  ax = bbox.x; ay = bbox.y + bbox.h; break;
+        case 'bottom-right': ax = bbox.x + bbox.w; ay = bbox.y + bbox.h; break;
+        case 'center':       ax = bbox.x + bbox.w/2; ay = bbox.y + bbox.h/2; break;
+        case 'bottom-center':
+        default:             ax = bbox.x + bbox.w/2; ay = bbox.y + bbox.h; break;
+      }
+      anchors.push({ x: Math.round(ax), y: Math.round(ay) });
+    }
+  }
+  state.anchors = anchors;
+  renderAll();
+  if (verbose) toast('🎯 Đã tính ' + anchors.filter(a=>a).length + ' anchor');
+}
+
+$('computeAnchors').addEventListener('click', () => computeAnchors(true));
+$('clearAnchors').addEventListener('click', () => {
+  state.anchors = [];
+  renderAll();
+  toast('🗑 Đã xóa anchor');
+});
+$('anchorMode').addEventListener('change', e => {
+  state.anchorMode = e.target.value;
+  state.manualAnchor = (state.anchorMode === 'manual');
+  if (!state.manualAnchor) computeAnchors(true);
+});
 
 /* ============================================================
    RENDER
@@ -559,11 +623,13 @@ function decodeSpriteMetadataFromImage(img){
 function renderAll(){
   renderOverlay();
   renderLineLists();
+  renderAnchorList();
   renderGridCount();
 }
-
 function renderGridCount(){
   $('gridCount').textContent = (state.vLines.length - 1) + ' × ' + (state.hLines.length - 1);
+  const total = (state.vLines.length - 1) * (state.hLines.length - 1);
+  $('anchorCount').textContent = state.anchors.filter(a=>a).length + ' / ' + total;
 }
 
 function renderOverlay(){
@@ -571,6 +637,7 @@ function renderOverlay(){
   const o = state.octx;
   o.clearRect(0, 0, state.overlay.width, state.overlay.height);
 
+  /* Vẽ lưới dọc */
   o.strokeStyle = 'rgba(255,80,80,.85)';
   o.lineWidth = 1;
   state.vLines.forEach(x => {
@@ -579,6 +646,7 @@ function renderOverlay(){
     o.lineTo(Math.round(x) + 0.5, state.overlay.height);
     o.stroke();
   });
+  /* Vẽ lưới ngang */
   state.hLines.forEach(y => {
     o.beginPath();
     o.moveTo(0, Math.round(y) + 0.5);
@@ -586,6 +654,7 @@ function renderOverlay(){
     o.stroke();
   });
 
+  /* Số frame */
   o.font = 'bold 11px Consolas, monospace';
   o.fillStyle = '#88ff60';
   o.strokeStyle = 'rgba(0,0,0,.7)';
@@ -601,15 +670,42 @@ function renderOverlay(){
     }
   }
 
+  /* Vẽ anchors — chấm đỏ */
+  o.strokeStyle = 'rgba(0,0,0,.9)';
+  o.lineWidth = 3;
+  state.anchors.forEach((a, i) => {
+    if (!a) return;
+    o.beginPath();
+    o.arc(a.x, a.y, 5, 0, Math.PI*2);
+    o.stroke();
+  });
+  o.fillStyle = '#ff3050';
+  o.strokeStyle = '#fff';
+  o.lineWidth = 2;
+  state.anchors.forEach((a, i) => {
+    if (!a) return;
+    o.beginPath();
+    o.arc(a.x, a.y, 4, 0, Math.PI*2);
+    o.fill();
+    o.stroke();
+    /* Crosshair nhỏ */
+    o.strokeStyle = 'rgba(255,48,80,.7)';
+    o.lineWidth = 1;
+    o.beginPath();
+    o.moveTo(a.x - 8, a.y); o.lineTo(a.x + 8, a.y);
+    o.moveTo(a.x, a.y - 8); o.lineTo(a.x, a.y + 8);
+    o.stroke();
+    o.strokeStyle = '#fff';
+    o.lineWidth = 2;
+  });
+
+  /* Cell đang chọn */
   if (state.cell){
     o.strokeStyle = 'rgba(136,255,96,.95)';
     o.lineWidth = 3;
     o.setLineDash([6, 4]);
-    o.strokeRect(
-      state.cell.x1 + 1, state.cell.y1 + 1,
-      state.cell.x2 - state.cell.x1 - 2,
-      state.cell.y2 - state.cell.y1 - 2
-    );
+    o.strokeRect(state.cell.x1 + 1, state.cell.y1 + 1,
+      state.cell.x2 - state.cell.x1 - 2, state.cell.y2 - state.cell.y1 - 2);
     o.setLineDash([]);
   }
 }
@@ -629,18 +725,15 @@ function renderLineLists(){
       if (!isNaN(v)){
         state.vLines[i] = Math.max(0, Math.min(state.canvas.width, v));
         state.vLines.sort((a, b) => a - b);
+        computeAnchors(false);
         renderAll();
       }
     });
     div.appendChild(inp);
     const del = document.createElement('button');
-    del.className = 'del';
-    del.textContent = '✕';
+    del.className = 'del'; del.textContent = '✕';
     del.addEventListener('click', () => {
-      if (state.vLines.length > 2){
-        state.vLines.splice(i, 1);
-        renderAll();
-      }
+      if (state.vLines.length > 2){ state.vLines.splice(i, 1); computeAnchors(false); renderAll(); }
     });
     div.appendChild(del);
     vl.appendChild(div);
@@ -660,21 +753,34 @@ function renderLineLists(){
       if (!isNaN(v)){
         state.hLines[i] = Math.max(0, Math.min(state.canvas.height, v));
         state.hLines.sort((a, b) => a - b);
+        computeAnchors(false);
         renderAll();
       }
     });
     div.appendChild(inp);
     const del = document.createElement('button');
-    del.className = 'del';
-    del.textContent = '✕';
+    del.className = 'del'; del.textContent = '✕';
     del.addEventListener('click', () => {
-      if (state.hLines.length > 2){
-        state.hLines.splice(i, 1);
-        renderAll();
-      }
+      if (state.hLines.length > 2){ state.hLines.splice(i, 1); computeAnchors(false); renderAll(); }
     });
     div.appendChild(del);
     hl.appendChild(div);
+  });
+}
+
+function renderAnchorList(){
+  const el = $('anchorList');
+  el.innerHTML = '';
+  state.anchors.forEach((a, i) => {
+    const div = document.createElement('div');
+    div.className = 'anchor-item' + (state.cell && state.cell._idx === i ? ' on' : '');
+    div.innerHTML = `<span class="idx">#${i}</span>`;
+    const coords = document.createElement('span');
+    coords.className = 'coords';
+    coords.textContent = a ? `(${a.x}, ${a.y})` : '— không có nội dung —';
+    if (!a) coords.classList.add('warn');
+    div.appendChild(coords);
+    el.appendChild(div);
   });
 }
 
@@ -688,7 +794,7 @@ $('addVLine').addEventListener('click', () => {
     : state.canvas.width / 2;
   state.vLines.push(Math.round(mid));
   state.vLines.sort((a,b) => a-b);
-  renderAll();
+  computeAnchors(false); renderAll();
 });
 $('addHLine').addEventListener('click', () => {
   if (!state.canvas) return;
@@ -697,7 +803,7 @@ $('addHLine').addEventListener('click', () => {
     : state.canvas.height / 2;
   state.hLines.push(Math.round(mid));
   state.hLines.sort((a,b) => a-b);
-  renderAll();
+  computeAnchors(false); renderAll();
 });
 $('autoV').addEventListener('click', () => {
   if (!state.canvas) return;
@@ -706,7 +812,7 @@ $('autoV').addEventListener('click', () => {
   for (let i = 1; i < n; i++) lines.push(Math.round(i * state.canvas.width / n));
   lines.push(state.canvas.width);
   state.vLines = lines;
-  renderAll();
+  computeAnchors(false); renderAll();
 });
 $('autoH').addEventListener('click', () => {
   if (!state.canvas) return;
@@ -715,83 +821,22 @@ $('autoH').addEventListener('click', () => {
   for (let i = 1; i < n; i++) lines.push(Math.round(i * state.canvas.height / n));
   lines.push(state.canvas.height);
   state.hLines = lines;
-  renderAll();
+  computeAnchors(false); renderAll();
 });
 $('clearV').addEventListener('click', () => {
   if (!state.canvas) return;
   state.vLines = [0, state.canvas.width];
-  renderAll();
+  computeAnchors(false); renderAll();
 });
 $('clearH').addEventListener('click', () => {
   if (!state.canvas) return;
   state.hLines = [0, state.canvas.height];
-  renderAll();
-});
-$('snapToggle').addEventListener('change', e => {
-  state.snapOn = e.target.value === '1';
-  $('snapLabel').textContent = state.snapOn ? 'ON' : 'OFF';
+  computeAnchors(false); renderAll();
 });
 
 /* ============================================================
-   AUTO-DETECT FRAMES — quét pixel tìm khoảng trống giữa nhân vật
+   MOUSE
    ============================================================ */
-$('autoDetectBtn').addEventListener('click', () => {
-  if (!state.canvas){ toast('Chưa có ảnh', 'err'); return; }
-  const W = state.canvas.width;
-  const H = state.canvas.height;
-  const data = state.ctx.getImageData(0, 0, W, H).data;
-
-  /* Tìm cột "trống" — không có pixel opacity > 5 */
-  const emptyCols = [];
-  for (let x = 0; x < W; x++){
-    let hasContent = false;
-    for (let y = 0; y < H; y++){
-      const i = (y * W + x) * 4;
-      if (data[i+3] > 5){ hasContent = true; break; }
-    }
-    emptyCols.push(!hasContent);
-  }
-
-  /* Tìm khoảng trống liên tục giữa các nhân vật */
-  const minGap = 3;
-  const lines = [];
-  let i = 0;
-  /* Bắt đầu từ cột đầu tiên có nội dung */
-  while (i < W && emptyCols[i]) i++;
-  lines.push(0);
-  while (i < W){
-    /* Nếu đang trong nhân vật, tiến tới hết */
-    while (i < W && !emptyCols[i]) i++;
-    /* i là đầu khoảng trống */
-    let gapStart = i;
-    while (i < W && emptyCols[i]) i++;
-    let gapEnd = i;
-    if (i >= W) break;
-    /* Nếu khoảng trống đủ rộng → cắt giữa */
-    if (gapEnd - gapStart >= minGap){
-      lines.push(Math.round((gapStart + gapEnd) / 2));
-    }
-  }
-  lines.push(W);
-
-  if (lines.length < 3){
-    toast('⚠ Không tách được frame (nhân vật liền nhau?)', 'err');
-    return;
-  }
-
-  state.vLines = lines;
-  /* Hàng: chỉ có 1 hàng */
-  state.hLines = [0, H];
-  renderAll();
-  toast(`🤖 Phát hiện ${lines.length - 1} frame`, 'ok');
-});
-
-/* ============================================================
-   MOUSE INTERACTION
-   ============================================================ */
-const canvas = $('editorCanvas');
-const overlay = $('overlay');
-
 function getCanvasCoords(e){
   const rect = canvas.getBoundingClientRect();
   return {
@@ -799,22 +844,16 @@ function getCanvasCoords(e){
     y: (e.clientY - rect.top) / state.zoom
   };
 }
-
 function findLineAt(x, y){
   const tol = 6 / state.zoom;
   for (let i = 1; i < state.vLines.length - 1; i++){
-    if (Math.abs(state.vLines[i] - x) < tol){
-      return { type: 'v', idx: i, val: state.vLines[i] };
-    }
+    if (Math.abs(state.vLines[i] - x) < tol) return { type: 'v', idx: i };
   }
   for (let i = 1; i < state.hLines.length - 1; i++){
-    if (Math.abs(state.hLines[i] - y) < tol){
-      return { type: 'h', idx: i, val: state.hLines[i] };
-    }
+    if (Math.abs(state.hLines[i] - y) < tol) return { type: 'h', idx: i };
   }
   return null;
 }
-
 function findCellAt(x, y){
   let ci = -1, ri = -1;
   for (let i = 0; i < state.vLines.length - 1; i++){
@@ -825,10 +864,9 @@ function findCellAt(x, y){
   }
   if (ci < 0 || ri < 0) return null;
   return {
-    x1: state.vLines[ci],
-    y1: state.hLines[ri],
-    x2: state.vLines[ci+1],
-    y2: state.hLines[ri+1]
+    x1: state.vLines[ci], y1: state.hLines[ri],
+    x2: state.vLines[ci+1], y2: state.hLines[ri+1],
+    _col: ci, _row: ri, _idx: ri * (state.vLines.length - 1) + ci
   };
 }
 
@@ -837,16 +875,12 @@ canvasWrap.addEventListener('wheel', e => {
   if (e.ctrlKey){
     e.preventDefault();
     state.zoom = Math.max(0.25, Math.min(4, state.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
-    applyZoom();
+    canvas.style.transform = `scale(${state.zoom})`;
+    canvas.style.transformOrigin = 'top left';
+    overlay.style.transform = `scale(${state.zoom})`;
+    overlay.style.transformOrigin = 'top left';
   }
 }, { passive: false });
-
-function applyZoom(){
-  canvas.style.transform = `scale(${state.zoom})`;
-  canvas.style.transformOrigin = 'top left';
-  overlay.style.transform = `scale(${state.zoom})`;
-  overlay.style.transformOrigin = 'top left';
-}
 
 function onMouseDown(e){
   if (!state.canvas) return;
@@ -859,109 +893,91 @@ function onMouseDown(e){
     $('pickColorBtn').classList.remove('on');
     return;
   }
-
   if (e.button === 2){
     const line = findLineAt(x, y);
     if (line){
-      if (line.type === 'v' && state.vLines.length > 2){
-        state.vLines.splice(line.idx, 1);
-        renderAll();
-      } else if (line.type === 'h' && state.hLines.length > 2){
-        state.hLines.splice(line.idx, 1);
-        renderAll();
-      }
+      if (line.type === 'v' && state.vLines.length > 2) state.vLines.splice(line.idx, 1);
+      else if (line.type === 'h' && state.hLines.length > 2) state.hLines.splice(line.idx, 1);
+      computeAnchors(false); renderAll();
     }
     return;
   }
 
+  /* Manual anchor mode: click để đặt anchor */
+  if (state.manualAnchor && state.cell){
+    const idx = state.cell._idx;
+    if (e.button === 0 && !e.shiftKey && !state.drag){
+      state.anchors[idx] = { x: Math.round(x), y: Math.round(y) };
+      renderOverlay();
+      toast(`🎯 Đặt anchor frame #${idx}`);
+      return;
+    }
+  }
+
   if (e.shiftKey){
     const nearV = state.vLines.some(v => Math.abs(v - x) < 4);
-    const nearH = state.hLines.some(h => Math.abs(h - y) < 4);
+    const nearH = state.hLines.some(v => Math.abs(v - y) < 4);
     if (!nearV && !nearH){
       if (Math.abs(x - state.canvas.width/2) > Math.abs(y - state.canvas.height/2)){
-        state.vLines.push(Math.round(x));
-        state.vLines.sort((a,b) => a-b);
+        state.vLines.push(Math.round(x)); state.vLines.sort((a,b) => a-b);
       } else {
-        state.hLines.push(Math.round(y));
-        state.hLines.sort((a,b) => a-b);
+        state.hLines.push(Math.round(y)); state.hLines.sort((a,b) => a-b);
       }
-      renderAll();
+      computeAnchors(false); renderAll();
     }
     return;
   }
 
   const line = findLineAt(x, y);
-  if (line){
-    state.drag = { type: line.type, idx: line.idx };
-    canvas.style.cursor = line.type === 'v' ? 'ew-resize' : 'ns-resize';
-    return;
-  }
+  if (line){ state.drag = { type: line.type, idx: line.idx }; return; }
 
   const cell = findCellAt(x, y);
   if (cell){
     state.cell = cell;
     state.cellMoveOffset = { x: 0, y: 0 };
-    $('dxInput').value = 0;
-    $('dyInput').value = 0;
+    $('dxInput').value = 0; $('dyInput').value = 0;
     $('cellInfo').textContent = `(${cell.x1},${cell.y1}) - ${cell.x2 - cell.x1}×${cell.y2 - cell.y1}`;
-    $('cellLabel').textContent = `${cell.x2 - cell.x1}×${cell.y2 - cell.y1}`;
+    $('cellLabel').textContent = '#' + cell._idx;
     $('moveApply').disabled = false;
     $('moveReset').disabled = false;
     $('cellFillTrans').disabled = false;
     $('bgApplyCell').disabled = false;
-
-    state.drag = {
-      type: 'cell',
-      startX: Math.floor(x),
-      startY: Math.floor(y),
-      cell: { ...cell }
-    };
-    canvas.style.cursor = 'move';
-    renderOverlay();
+    state.drag = { type: 'cell', startX: Math.floor(x), startY: Math.floor(y), cell: { ...cell } };
+    renderAll();
     return;
   }
 
   state.cell = null;
   $('cellInfo').textContent = 'Click ô giữa các đường kẻ';
-  $('cellLabel').textContent = 'chưa chọn';
-  $('moveApply').disabled = true;
-  $('moveReset').disabled = true;
-  $('cellFillTrans').disabled = true;
-  $('bgApplyCell').disabled = true;
-  renderOverlay();
+  $('cellLabel').textContent = '-';
+  $('moveApply').disabled = true; $('moveReset').disabled = true;
+  $('cellFillTrans').disabled = true; $('bgApplyCell').disabled = true;
+  renderAll();
 }
 
 function onMouseMove(e){
   if (!state.canvas) return;
   const { x, y } = getCanvasCoords(e);
-
-  if (!state.drag){
-    const line = findLineAt(x, y);
-    canvas.style.cursor = line ? (line.type === 'v' ? 'ew-resize' : 'ns-resize') : 'crosshair';
-    return;
-  }
-
+  if (!state.drag) return;
   if (state.drag.type === 'v'){
-    let newX = x;
-    if (state.snapOn) newX = Math.round(newX);
-    newX = Math.max(state.vLines[state.drag.idx - 1] + 5,
-             Math.min(state.vLines[state.drag.idx + 1] - 5, newX));
-    state.vLines[state.drag.idx] = newX;
+    let nx = x;
+    if (state.snapOn) nx = Math.round(nx);
+    nx = Math.max(state.vLines[state.drag.idx - 1] + 5,
+         Math.min(state.vLines[state.drag.idx + 1] - 5, nx));
+    state.vLines[state.drag.idx] = nx;
     renderOverlay();
   } else if (state.drag.type === 'h'){
-    let newY = y;
-    if (state.snapOn) newY = Math.round(newY);
-    newY = Math.max(state.hLines[state.drag.idx - 1] + 5,
-             Math.min(state.hLines[state.drag.idx + 1] - 5, newY));
-    state.hLines[state.drag.idx] = newY;
+    let ny = y;
+    if (state.snapOn) ny = Math.round(ny);
+    ny = Math.max(state.hLines[state.drag.idx - 1] + 5,
+         Math.min(state.hLines[state.drag.idx + 1] - 5, ny));
+    state.hLines[state.drag.idx] = ny;
     renderOverlay();
   } else if (state.drag.type === 'cell'){
     const dx = Math.floor(x) - state.drag.startX;
     const dy = Math.floor(y) - state.drag.startY;
-    state.cellMoveOffset.x = dx;
-    state.cellMoveOffset.y = dy;
-    $('dxInput').value = dx;
-    $('dyInput').value = dy;
+    state.cellMoveOffset.x = dx; state.cellMoveOffset.y = dy;
+    $('dxInput').value = dx; $('dyInput').value = dy;
     previewCellMove();
     renderOverlay();
   }
@@ -970,43 +986,35 @@ function onMouseMove(e){
 function onMouseUp(){
   if (!state.drag) return;
   if (state.drag.type === 'v' || state.drag.type === 'h'){
-    state.vLines.sort((a,b) => a-b);
-    state.hLines.sort((a,b) => a-b);
-    renderLineLists();
+    state.vLines.sort((a,b) => a-b); state.hLines.sort((a,b) => a-b);
+    computeAnchors(false);
+    renderAll();
   } else if (state.drag.type === 'cell'){
     if (state.cellMoveOffset.x !== 0 || state.cellMoveOffset.y !== 0){
-      applyCellMove();
+      pushHistory();
+      state.cellOriginal = null;
+      state.cellMoveOffset = { x: 0, y: 0 };
+      computeAnchors(false);
+      renderAll();
+      toast('✓ Đã di chuyển + tính lại anchor');
     }
   }
   state.drag = null;
-  canvas.style.cursor = 'crosshair';
 }
 
 function previewCellMove(){
   if (!state.cell) return;
   if (!state.cellOriginal){
-    const w = state.cell.x2 - state.cell.x1;
-    const h = state.cell.y2 - state.cell.y1;
+    const w = state.cell.x2 - state.cell.x1, h = state.cell.y2 - state.cell.y1;
     const data = state.ctx.getImageData(state.cell.x1, state.cell.y1, w, h);
     state.cellOriginal = { x1: state.cell.x1, y1: state.cell.y1, w, h, imageData: data };
   }
-
-  const orig = state.cellOriginal;
-  state.ctx.clearRect(orig.x1, orig.y1, orig.w, orig.h);
-
-  const temp = document.createElement('canvas');
-  temp.width = orig.w;
-  temp.height = orig.h;
-  temp.getContext('2d').putImageData(orig.imageData, 0, 0);
-
-  state.ctx.drawImage(temp, orig.x1 + state.cellMoveOffset.x, orig.y1 + state.cellMoveOffset.y);
-}
-
-function applyCellMove(){
-  pushHistory();
-  state.cellOriginal = null;
-  state.cellMoveOffset = { x: 0, y: 0 };
-  toast('✓ Đã di chuyển frame');
+  const o = state.cellOriginal;
+  state.ctx.clearRect(o.x1, o.y1, o.w, o.h);
+  const tmp = document.createElement('canvas');
+  tmp.width = o.w; tmp.height = o.h;
+  tmp.getContext('2d').putImageData(o.imageData, 0, 0);
+  state.ctx.drawImage(tmp, o.x1 + state.cellMoveOffset.x, o.y1 + state.cellMoveOffset.y);
 }
 
 overlay.addEventListener('mousedown', onMouseDown);
@@ -1015,31 +1023,24 @@ document.addEventListener('mousemove', onMouseMove);
 document.addEventListener('mouseup', onMouseUp);
 
 /* ============================================================
-   BG REMOVE
+   BACKGROUND REMOVE
    ============================================================ */
 $('pickColorBtn').addEventListener('click', () => {
   state.pickColor = true;
   $('pickColorBtn').classList.add('on');
   toast('💧 Click vào ảnh để chọn màu nền');
 });
-
 function pickColorAt(x, y){
   if (x < 0 || y < 0 || x >= state.canvas.width || y >= state.canvas.height) return;
   const d = state.ctx.getImageData(x, y, 1, 1).data;
   state.bgColor = { r: d[0], g: d[1], b: d[2] };
-  updateSwatch();
+  $('bgSwatchFill').style.background = `rgb(${d[0]},${d[1]},${d[2]})`;
   toast(`✓ Pick RGB(${d[0]},${d[1]},${d[2]})`, 'ok');
 }
-
-function updateSwatch(){
-  $('bgSwatchFill').style.background = `rgb(${state.bgColor.r},${state.bgColor.g},${state.bgColor.b})`;
-}
-
 $('bgTol').addEventListener('input', e => $('bgTolVal').textContent = e.target.value);
 $('bgMode').addEventListener('change', e => {
   $('bgColorRow').style.display = e.target.value === 'color' ? 'flex' : 'none';
 });
-
 $('bgApplyAll').addEventListener('click', () => {
   if (!state.canvas) return;
   applyBgRemove(0, 0, state.canvas.width, state.canvas.height);
@@ -1049,7 +1050,6 @@ $('bgApplyCell').addEventListener('click', () => {
   applyBgRemove(state.cell.x1, state.cell.y1,
     state.cell.x2 - state.cell.x1, state.cell.y2 - state.cell.y1);
 });
-
 function applyBgRemove(x, y, w, h){
   pushHistory();
   const imgData = state.ctx.getImageData(x, y, w, h);
@@ -1057,39 +1057,25 @@ function applyBgRemove(x, y, w, h){
   const bg = state.bgColor;
   const tol = parseInt($('bgTol').value);
   const mode = $('bgMode').value;
-
-  let newColor = null;
-  if (mode === 'white') newColor = { r: 255, g: 255, b: 255 };
-  else if (mode === 'black') newColor = { r: 0, g: 0, b: 0 };
+  let nc = null;
+  if (mode === 'white') nc = { r:255, g:255, b:255 };
+  else if (mode === 'black') nc = { r:0, g:0, b:0 };
   else if (mode === 'color'){
     const c = $('bgNewColor').value;
-    newColor = {
-      r: parseInt(c.substr(1,2), 16),
-      g: parseInt(c.substr(3,2), 16),
-      b: parseInt(c.substr(5,2), 16)
-    };
+    nc = { r: parseInt(c.substr(1,2),16), g: parseInt(c.substr(3,2),16), b: parseInt(c.substr(5,2),16) };
   }
-
   let count = 0;
   for (let i = 0; i < d.length; i += 4){
-    const dr = Math.abs(d[i] - bg.r);
-    const dg = Math.abs(d[i+1] - bg.g);
-    const db = Math.abs(d[i+2] - bg.b);
-    if (dr <= tol && dg <= tol && db <= tol){
-      if (mode === 'alpha'){
-        d[i+3] = 0;
-      } else {
-        d[i] = newColor.r;
-        d[i+1] = newColor.g;
-        d[i+2] = newColor.b;
-        d[i+3] = 255;
-      }
+    if (Math.abs(d[i]-bg.r) <= tol && Math.abs(d[i+1]-bg.g) <= tol && Math.abs(d[i+2]-bg.b) <= tol){
+      if (mode === 'alpha') d[i+3] = 0;
+      else { d[i]=nc.r; d[i+1]=nc.g; d[i+2]=nc.b; d[i+3]=255; }
       count++;
     }
   }
   state.ctx.putImageData(imgData, x, y);
+  computeAnchors(false);
+  renderAll();
   toast(`✓ Xử lý ${count} pixel`);
-  renderOverlay();
 }
 
 /* ============================================================
@@ -1099,109 +1085,70 @@ document.querySelectorAll('.anchor-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.anchor-btn').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
-    state.anchor = btn.dataset.a;
+    state.anchor_ = btn.dataset.a;
   });
 });
-
 $('resizeApply').addEventListener('click', () => {
   if (!state.canvas) return;
-  const newW = parseInt($('canvasW').value);
-  const newH = parseInt($('canvasH').value);
-  if (!newW || !newH || newW < 1 || newH < 1) return;
-
+  const nW = parseInt($('canvasW').value), nH = parseInt($('canvasH').value);
+  if (!nW || !nH || nW < 1 || nH < 1) return;
   pushHistory();
-  const oldW = state.canvas.width;
-  const oldH = state.canvas.height;
-  const oldData = state.ctx.getImageData(0, 0, oldW, oldH);
-
+  const oW = state.canvas.width, oH = state.canvas.height;
+  const oD = state.ctx.getImageData(0, 0, oW, oH);
   const tmp = document.createElement('canvas');
-  tmp.width = oldW;
-  tmp.height = oldH;
-  tmp.getContext('2d').putImageData(oldData, 0, 0);
-
-  state.canvas.width = newW;
-  state.canvas.height = newH;
-  state.overlay.width = newW;
-  state.overlay.height = newH;
+  tmp.width = oW; tmp.height = oH;
+  tmp.getContext('2d').putImageData(oD, 0, 0);
+  state.canvas.width = nW; state.canvas.height = nH;
+  state.overlay.width = nW; state.overlay.height = nH;
   state.ctx.imageSmoothingEnabled = false;
   state.octx.imageSmoothingEnabled = false;
-
   let dx = 0, dy = 0;
-  const a = state.anchor;
-  if (a[1] === 'c') dx = (newW - oldW) / 2;
-  else if (a[1] === 'r') dx = newW - oldW;
-  if (a[0] === 'm') dy = (newH - oldH) / 2;
-  else if (a[0] === 'b') dy = newH - oldH;
-
+  const a = state.anchor_;
+  if (a[1] === 'c') dx = (nW - oW) / 2; else if (a[1] === 'r') dx = nW - oW;
+  if (a[0] === 'm') dy = (nH - oH) / 2; else if (a[0] === 'b') dy = nH - oH;
   state.ctx.drawImage(tmp, Math.round(dx), Math.round(dy));
-
-  state.vLines[0] = 0;
-  state.vLines[state.vLines.length-1] = newW;
-  state.hLines[0] = 0;
-  state.hLines[state.hLines.length-1] = newH;
+  state.vLines[0] = 0; state.vLines[state.vLines.length-1] = nW;
+  state.hLines[0] = 0; state.hLines[state.hLines.length-1] = nH;
   state.cell = null;
-
-  $('sizeLabel').textContent = newW + '×' + newH;
-  renderAll();
-  toast(`✓ Resize ${oldW}×${oldH} → ${newW}×${newH}`);
+  $('sizeLabel').textContent = nW + '×' + nH;
+  computeAnchors(false); renderAll();
+  toast(`✓ ${oW}×${oH} → ${nW}×${nH}`);
 });
 
 $('cropTight').addEventListener('click', () => {
   if (!state.canvas) return;
   pushHistory();
-  const w = state.canvas.width, h = state.canvas.height;
-  const data = state.ctx.getImageData(0, 0, w, h).data;
-
-  let minX = w, minY = h, maxX = -1, maxY = -1;
-  for (let y = 0; y < h; y++){
-    for (let x = 0; x < w; x++){
-      const i = (y * w + x) * 4;
-      if (data[i+3] > 5){
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
-      }
-    }
-  }
-  if (maxX < 0){ toast('Ảnh trống?', 'err'); state.history.pop(); updateUndoBtn(); return; }
-
-  const newW = maxX - minX + 1;
-  const newH = maxY - minY + 1;
+  const bbox = detectBBox(0, 0, state.canvas.width, state.canvas.height);
+  if (!bbox){ toast('Ảnh trống?', 'err'); state.history.pop(); updateUndoBtn(); return; }
   const tmp = document.createElement('canvas');
-  tmp.width = newW;
-  tmp.height = newH;
-  tmp.getContext('2d').drawImage(state.canvas, -minX, -minY);
-
-  state.canvas.width = newW;
-  state.canvas.height = newH;
-  state.overlay.width = newW;
-  state.overlay.height = newH;
+  tmp.width = bbox.w; tmp.height = bbox.h;
+  tmp.getContext('2d').drawImage(state.canvas, -bbox.x, -bbox.y);
+  state.canvas.width = bbox.w; state.canvas.height = bbox.h;
+  state.overlay.width = bbox.w; state.overlay.height = bbox.h;
   state.ctx.imageSmoothingEnabled = false;
   state.octx.imageSmoothingEnabled = false;
   state.ctx.drawImage(tmp, 0, 0);
-
-  state.vLines = [0, newW];
-  state.hLines = [0, newH];
+  state.vLines = [0, bbox.w];
+  state.hLines = [0, bbox.h];
   state.cell = null;
-  $('canvasW').value = newW;
-  $('canvasH').value = newH;
-  $('sizeLabel').textContent = newW + '×' + newH;
-  renderAll();
-  toast(`✂ Cắt sát: ${newW}×${newH}`);
+  $('canvasW').value = bbox.w; $('canvasH').value = bbox.h;
+  $('sizeLabel').textContent = bbox.w + '×' + bbox.h;
+  computeAnchors(false); renderAll();
+  toast(`✂ Cắt sát: ${bbox.w}×${bbox.h}`);
 });
 
 /* ============================================================
-   CELL MOVE CONTROLS
+   CELL MOVE
    ============================================================ */
 $('moveApply').addEventListener('click', () => {
   if (!state.cell) return;
+  pushHistory();
   state.cellMoveOffset.x = parseInt($('dxInput').value) || 0;
   state.cellMoveOffset.y = parseInt($('dyInput').value) || 0;
   previewCellMove();
-  applyCellMove();
+  state.cellOriginal = null; state.cellMoveOffset = { x:0, y:0 };
+  computeAnchors(false); renderAll();
 });
-
 $('moveReset').addEventListener('click', () => {
   if (!state.cell) return;
   if (state.cellOriginal){
@@ -1209,128 +1156,102 @@ $('moveReset').addEventListener('click', () => {
     state.cellOriginal = null;
   }
   state.cellMoveOffset = { x: 0, y: 0 };
-  $('dxInput').value = 0;
-  $('dyInput').value = 0;
-  renderOverlay();
+  $('dxInput').value = 0; $('dyInput').value = 0;
+  computeAnchors(false); renderOverlay();
 });
-
 $('cellFillTrans').addEventListener('click', () => {
   if (!state.cell) return;
   pushHistory();
-  const w = state.cell.x2 - state.cell.x1;
-  const h = state.cell.y2 - state.cell.y1;
-  state.ctx.clearRect(state.cell.x1, state.cell.y1, w, h);
-  renderOverlay();
-  toast('🗑 Đã xóa cell');
+  state.ctx.clearRect(state.cell.x1, state.cell.y1,
+    state.cell.x2 - state.cell.x1, state.cell.y2 - state.cell.y1);
+  computeAnchors(false); renderAll();
 });
 
 /* ============================================================
-   METADATA ENCODE + EXPORT
+   EXPORT METADATA v2
    ============================================================ */
-function encodeMetadataBytes(jsonStr){
-  const magic = [0x44, 0x48, 0x55, 0x4E];  // 'DHUN'
-  const version = 0x0001;
-  const jsonBytes = new TextEncoder().encode(jsonStr);
-  const len = jsonBytes.length;
-  return [
-    ...magic,
-    version & 0xFF, (version >> 8) & 0xFF,
+function encodeMetaBytes(jsonStr){
+  const magic = [0x44, 0x48, 0x55, 0x4E];
+  const v = 0x0002;
+  const jb = new TextEncoder().encode(jsonStr);
+  const len = jb.length;
+  return [...magic, v & 0xFF, (v >> 8) & 0xFF,
     len & 0xFF, (len >> 8) & 0xFF, (len >> 16) & 0xFF, (len >> 24) & 0xFF,
-    ...jsonBytes
-  ];
+    ...jb];
 }
-
-function writeMetadataRow(canvas, y, bytes){
-  const c = canvas.getContext('2d', { willReadFrequently: true });
-  const imgData = c.createImageData(canvas.width, 1);
+function writeMetaRow(c, y, bytes){
+  const ctx2 = c.getContext('2d', { willReadFrequently: true });
+  const imgData = ctx2.createImageData(c.width, 1);
   const d = imgData.data;
   for (let i = 0; i < bytes.length; i++){
-    const p = Math.floor(i / 3);
-    const ch = i % 3;
-    if (p >= canvas.width) break;
+    const p = Math.floor(i / 3), ch = i % 3;
+    if (p >= c.width) break;
     d[p * 4 + ch] = bytes[i];
     d[p * 4 + 3] = 255;
   }
-  c.putImageData(imgData, 0, y);
+  ctx2.putImageData(imgData, 0, y);
 }
 
-function exportWithMetadata(){
+function exportWithMeta(){
   if (!state.canvas) return;
   const name = $('exportName').value.trim() || 'sprite';
   const label = $('exportLabel').value;
   const fps = parseInt($('exportFps').value) || 10;
   const loop = $('exportLoop').value === '1';
-
-  const W = state.canvas.width;
-  const H = state.canvas.height;
-
+  const W = state.canvas.width, H = state.canvas.height;
   const out = document.createElement('canvas');
-  out.width = W;
-  out.height = H + 1;
-  const octx = out.getContext('2d', { willReadFrequently: true });
-  octx.imageSmoothingEnabled = false;
-  octx.drawImage(state.canvas, 0, 0);
+  out.width = W; out.height = H + 1;
+  const oc = out.getContext('2d', { willReadFrequently: true });
+  oc.imageSmoothingEnabled = false;
+  oc.drawImage(state.canvas, 0, 0);
 
   const meta = {
-    v: 1,
-    label,
-    fps,
-    loop,
+    v: 2,
+    label, fps, loop,
     frames: state.vLines.length - 1,
     spriteH: H,
     vLines: state.vLines.map(v => Math.round(v)),
-    hLines: state.hLines.map(v => Math.round(v))
+    hLines: state.hLines.map(v => Math.round(v)),
+    anchorMode: state.anchorMode,
+    anchors: state.anchors.map(a => a ? [a.x, a.y] : null)
   };
-  const bytes = encodeMetadataBytes(JSON.stringify(meta));
-  writeMetadataRow(out, H, bytes);
-
+  writeMetaRow(out, H, encodeMetaBytes(JSON.stringify(meta)));
   out.toBlob(blob => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = name + '.png';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = url; a.download = name + '.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast(`💾 ${name}.png · ${W}×${H} + meta (${meta.frames} frames)`, 'ok');
+    toast(`💾 ${name}.png · ${W}×${H} · meta v2 · ${meta.anchors.filter(x=>x).length} anchors`, 'ok');
   }, 'image/png');
 }
-
-function exportPlainPNG(){
+function exportPlain(){
   if (!state.canvas) return;
   const name = $('exportName').value.trim() || 'sprite';
   state.canvas.toBlob(blob => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = name + '.png';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = url; a.download = name + '.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast(`💾 ${name}.png (no meta)`, 'ok');
   }, 'image/png');
 }
-
-$('exportBtn').addEventListener('click', exportWithMetadata);
-$('exportBtn2').addEventListener('click', exportWithMetadata);
-$('exportPlainBtn').addEventListener('click', exportPlainPNG);
+$('exportBtn').addEventListener('click', exportWithMeta);
+$('exportBtn2').addEventListener('click', exportWithMeta);
+$('exportPlainBtn').addEventListener('click', exportPlain);
 
 /* ============================================================
-   KEYBOARD
+   KEYBOARD / HELP
    ============================================================ */
 document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'z'){ e.preventDefault(); undo(); return; }
-  if ((e.ctrlKey || e.metaKey) && e.key === 's'){ e.preventDefault(); exportWithMetadata(); return; }
-
+  if ((e.ctrlKey||e.metaKey) && e.key === 'z'){ e.preventDefault(); undo(); return; }
+  if ((e.ctrlKey||e.metaKey) && e.key === 's'){ e.preventDefault(); exportWithMeta(); return; }
   if (e.key === 'Escape'){
     state.pickColor = false;
     $('pickColorBtn').classList.remove('on');
-    state.cell = null;
-    renderOverlay();
+    state.cell = null; renderAll();
   }
-
   if (state.cell && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
     e.preventDefault();
     let dx = parseInt($('dxInput').value) || 0;
@@ -1339,23 +1260,12 @@ document.addEventListener('keydown', e => {
     if (e.key === 'ArrowDown') dy += 1;
     if (e.key === 'ArrowLeft') dx -= 1;
     if (e.key === 'ArrowRight') dx += 1;
-    $('dxInput').value = dx;
-    $('dyInput').value = dy;
+    $('dxInput').value = dx; $('dyInput').value = dy;
     state.cellMoveOffset = { x: dx, y: dy };
-    previewCellMove();
-    renderOverlay();
+    previewCellMove(); renderOverlay();
   }
 });
-
-/* ============================================================
-   HELP
-   ============================================================ */
 $('helpBtn').addEventListener('click', () => $('help').classList.toggle('show'));
-
-/* ============================================================
-   INIT
-   ============================================================ */
-updateSwatch();
 </script>
 </body>
-        </html>
+                                 </html>
