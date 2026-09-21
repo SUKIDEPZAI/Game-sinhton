@@ -1,0 +1,16 @@
+{
+  "format": "dh-studio-project",
+  "version": 3,
+  "models": {
+    "player": {
+      "animations": {
+        "idle":   { "fileName": "player_idle",   "fps": 6,  "loop": true,  "vLines": [0,111,222,333,444,555,666,777,888,999,1112], "anchors": [], "spriteH": 228 },
+        "run":    { "fileName": "player_run",    "fps": 14, "loop": true,  "vLines": [0,140,279,418,557,697,836,975,1114,1254,1394], "anchors": [], "spriteH": 197 },
+        "jump":   { "fileName": "player_jump",   "fps": 12, "loop": false, "vLines": [0,155,311,466,622,777,933,1088,1244,1399], "anchors": [], "spriteH": 242 },
+        "attack": { "fileName": "player_attack", "fps": 16, "loop": false, "vLines": [0,142,284,426,569,711,853,995,1138,1280,1422], "anchors": [], "spriteH": 211 },
+        "sit":    { "fileName": "player_sit",    "fps": 6,  "loop": true,  "vLines": [0,140,280,420,560,700,840,980,1120,1260,1400], "anchors": [], "spriteH": 200 },
+        "hurt":   { "fileName": "player_death",  "fps": 8,  "loop": false, "vLines": [0,176,352,528,704,880,1056,1232,1406], "anchors": [], "spriteH": 170 }
+      }
+    }
+  }
+}
