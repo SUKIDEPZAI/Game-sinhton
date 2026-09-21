@@ -6,13 +6,35 @@
 <title>Dragon Hunter</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
-:root{--text:#e8f0d8}
+:root{
+  --text:#e8f0d8;
+  /* Button customizer */
+  --joy-size: 145px;
+  --joy-knob: 67px;
+  --joy-offset-left: 30px;
+  --joy-offset-bottom: 75px;
+  --aim-size: 145px;
+  --aim-knob: 62px;
+  --aim-offset-right: 125px;
+  --aim-offset-bottom: 75px;
+  --atk-size: 86px;
+  --atk-right: 25px;
+  --atk-bottom: 55px;
+  --jump-size: 58px;
+  --jump-right: 25px;
+  --jump-bottom: 155px;
+  --sit-size: 58px;
+  --sit-right: 110px;
+  --sit-bottom: 145px;
+  --btn-opacity: 1;
+}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#14180f;
   font-family:'Segoe UI',Arial,sans-serif;color:var(--text);
   user-select:none;-webkit-user-select:none;touch-action:manipulation;position:fixed;inset:0}
 canvas{display:block;image-rendering:pixelated;touch-action:none}
 button{cursor:pointer;font-family:inherit;touch-action:manipulation}
+
 #coords{position:fixed;top:8px;left:8px;color:#fff;font-size:11px;font-family:Consolas,monospace;
   background:rgba(0,0,0,.5);padding:4px 8px;border-radius:4px;z-index:5;pointer-events:none}
 #time{position:fixed;top:8px;left:50%;transform:translateX(-50%);color:#ffd54a;font-size:12px;
@@ -100,11 +122,14 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 @media (pointer:coarse){ #touchUI{display:block} }
 
 .joystick{
-  position:absolute;width:145px;height:145px;border-radius:50%;
+  position:absolute;width:var(--joy-size);height:var(--joy-size);border-radius:50%;
   pointer-events:auto;touch-action:none;
 }
-#moveJoystick{left:30px;bottom:75px}
-#aimJoystick{right:125px;bottom:75px}
+#moveJoystick{left:var(--joy-offset-left);bottom:var(--joy-offset-bottom)}
+#aimJoystick{
+  width:var(--aim-size);height:var(--aim-size);
+  right:var(--aim-offset-right);bottom:var(--aim-offset-bottom);
+}
 
 .joystick-glow{
   position:absolute;inset:0;border-radius:50%;
@@ -117,7 +142,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 }
 
 .joystick-knob{
-  position:absolute;width:67px;height:67px;left:50%;top:50%;
+  position:absolute;width:var(--joy-knob);height:var(--joy-knob);left:50%;top:50%;
   transform:translate(-50%,-50%);border-radius:50%;
   background:radial-gradient(circle at 35% 30%, #eef2e8, #aeb8a5 60%, #7b8573);
   border:3px solid rgba(255,255,255,.65);
@@ -125,7 +150,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 }
 
 .aim-knob{
-  position:absolute;width:62px;height:62px;left:50%;top:50%;
+  position:absolute;width:var(--aim-knob);height:var(--aim-knob);left:50%;top:50%;
   transform:translate(-50%,-50%);border-radius:50%;
   background:radial-gradient(circle at 35% 30%, #f2f4ed, #b8c0b0 60%, #7c8677);
   border:3px solid rgba(255,255,255,.65);
@@ -139,36 +164,34 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   display:flex;justify-content:center;align-items:center;
   color:#fff;font-size:28px;font-weight:900;
   text-shadow:2px 2px 0 rgba(0,0,0,.4);
+  opacity:var(--btn-opacity);
   box-shadow:inset 0 3px 5px rgba(255,255,255,.25),
              inset 0 -5px 8px rgba(0,0,0,.25),
              0 5px 12px rgba(0,0,0,.35);
-  transition:transform .08s;
+  transition:transform .08s, opacity .1s;
+  touch-action:none;
 }
 .circle-button:active{transform:scale(.86)}
 
 .attack-button{
-  right:25px;bottom:55px;width:86px;height:86px;font-size:38px;
+  right:var(--atk-right);bottom:var(--atk-bottom);
+  width:var(--atk-size);height:var(--atk-size);
+  font-size:calc(var(--atk-size) * 0.44);
   background:linear-gradient(145deg, #e86c55, #a72d25);
 }
 
 .action-button{
-  right:110px;bottom:145px;width:58px;height:58px;font-size:24px;
+  right:var(--sit-right);bottom:var(--sit-bottom);
+  width:var(--sit-size);height:var(--sit-size);
+  font-size:calc(var(--sit-size) * 0.4);
   background:linear-gradient(145deg, #e3c65b, #96721f);
 }
 
 .jump-button{
-  right:25px;bottom:155px;width:58px;height:58px;font-size:26px;
+  right:var(--jump-right);bottom:var(--jump-bottom);
+  width:var(--jump-size);height:var(--jump-size);
+  font-size:calc(var(--jump-size) * 0.44);
   background:linear-gradient(145deg, #6ab0e8, #22548a);
-}
-
-@media(max-width:600px){
-  .joystick{width:125px;height:125px}
-  #moveJoystick{left:18px;bottom:60px}
-  #aimJoystick{right:105px;bottom:60px}
-  .joystick-knob,.aim-knob{width:57px;height:57px}
-  .attack-button{width:75px;height:75px;right:15px;bottom:35px}
-  .action-button{right:88px;bottom:125px;width:52px;height:52px}
-  .jump-button{right:15px;bottom:128px;width:52px;height:52px}
 }
 
 body.is-touch #hotbar{transform:translateX(-50%) scale(.72);bottom:4px}
@@ -268,13 +291,34 @@ body.is-touch #hpBar{bottom:62px;transform:translateX(-50%) scale(.85)}
       <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
     </div>
     <div id="menuSettings" class="menu-page hidden">
-      <h3>CÀI ĐẶT</h3>
+      <h3>CÀI ĐẶT ÂM THANH</h3>
       <div class="setting-row"><label>🔊 Tổng</label>
         <input type="range" id="setMaster" min="0" max="100" value="70"><span class="val" id="valMaster">70</span></div>
       <div class="setting-row"><label>🎵 Nhạc</label>
         <input type="range" id="setMusic" min="0" max="100" value="35"><span class="val" id="valMusic">35</span></div>
       <div class="setting-row"><label>🔔 SFX</label>
         <input type="range" id="setSfx" min="0" max="100" value="80"><span class="val" id="valSfx">80</span></div>
+
+      <h3 style="margin-top:14px">📱 NÚT MOBILE</h3>
+      <div class="setting-row"><label>Joystick</label>
+        <input type="range" id="setJoySize" min="80" max="200" value="145">
+        <span class="val" id="valJoySize">145</span></div>
+      <div class="setting-row"><label>Nút Attack</label>
+        <input type="range" id="setAtkSize" min="50" max="130" value="86">
+        <span class="val" id="valAtkSize">86</span></div>
+      <div class="setting-row"><label>Nút Jump</label>
+        <input type="range" id="setJumpSize" min="40" max="110" value="58">
+        <span class="val" id="valJumpSize">58</span></div>
+      <div class="setting-row"><label>Nút Sit</label>
+        <input type="range" id="setSitSize" min="40" max="110" value="58">
+        <span class="val" id="valSitSize">58</span></div>
+      <div class="setting-row"><label>Độ mờ nút</label>
+        <input type="range" id="setBtnOpacity" min="30" max="100" value="100">
+        <span class="val" id="valBtnOpacity">100</span></div>
+      <button class="mbtn" onclick="ButtonSettings.reset()" style="font-size:12px;padding:10px;margin:8px 0">
+        ↺ Reset nút
+      </button>
+
       <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
     </div>
   </div>
@@ -300,10 +344,8 @@ function mulberry32(a){
 let rng = Math.random, SEED = 0;
 function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 
-/* 👶 BABY SIZE */
 const DEST_HEIGHT = 55;
 const FOOT_OFFSET = 8;
-
 const ATTACK_DURATION = 10 / 16;
 const HURT_DURATION = 8 / 8;
 const JUMP_DURATION = 0.65;
@@ -888,7 +930,7 @@ addEventListener('wheel', e => {
   renderHotbar();
 }, { passive:true });
 
-/* Touch look — kéo trên canvas để xoay (như FPS) */
+/* Touch look */
 let lookId = null, lookX = 0, lookY = 0;
 cv.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch') return;
@@ -907,28 +949,31 @@ addEventListener('pointerup', endLook);
 addEventListener('pointercancel', endLook);
 
 /* ============================================================
-   BUTTONS
+   BUTTONS — pointerdown only, không double-fire
+   Multi-touch: aim joystick + attack = 2 pointerId khác nhau OK
    ============================================================ */
 function bindBtn(id, downFn, upFn){
   const el = document.getElementById(id);
   if (!el) return;
   el.addEventListener('pointerdown', e => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     buzz(8);
+    el.setPointerCapture(e.pointerId);
     if (downFn) downFn();
   });
-  const up = () => { if (upFn) upFn(); };
+  const up = e => {
+    if (upFn) upFn();
+  };
   el.addEventListener('pointerup', up);
   el.addEventListener('pointercancel', up);
-  el.addEventListener('pointerleave', up);
-  el.addEventListener('click', e => {
-    if (e.detail === 0) return;
-    if (downFn && upFn){ downFn(); setTimeout(up, 60); }
-    else if (downFn) downFn();
-  });
 }
+
 let attackTouch = false;
-bindBtn('btnAttack', () => { attackTouch = true; tryAttack(); }, () => { attackTouch = false; });
+bindBtn('btnAttack',
+  () => { attackTouch = true; tryAttack(); },
+  () => { attackTouch = false; }
+);
 bindBtn('btnJump', () => tryJump(), null);
 bindBtn('btnSit', () => trySit(), null);
 
@@ -958,9 +1003,18 @@ function tryAttack(){
   lastAttackT = now;
   player.attackT = ATTACK_DURATION;
   Audio2D.sfx.swordSwing();
+
+  /* Mũi tên quyết định hướng đánh */
+  const angle = aim.angle;
+  const hitX = player.x + Math.cos(angle) * 50;
+  const hitY = player.y + Math.sin(angle) * 50;
+
+  /* Xác định hướng facing theo mũi tên */
+  const cosA = Math.cos(angle);
+  if (Math.abs(cosA) > 0.15) player.facing = cosA > 0 ? 1 : -1;
+
   if (!net.active) return;
-  const hitX = player.x + Math.cos(aim.angle) * 50;
-  const hitY = player.y + Math.sin(aim.angle) * 50;
+
   const range = 72;
   let target = null, minD = range;
   for (const [id, p] of net.players){
@@ -1004,10 +1058,10 @@ function updatePlayer(dt){
   if (player.sitting && mag > 0.15) player.sitting = false;
   if (player.sitting){ dx = 0; dy = 0; }
 
+  /* Aim: mobile dùng joystick, PC dùng chuột */
   if (aim.joyId !== null){
-    /* Mobile: dùng joystick aim */
+    /* aim.angle đã cập nhật từ joystick */
   } else {
-    /* PC: mũi tên xoay theo chuột */
     const wx = mouse.x + cam.x;
     const wy = mouse.y + cam.y;
     aim.angle = Math.atan2(wy - player.y, wx - player.x);
@@ -1245,9 +1299,6 @@ function getNightFactor(){
   return (1 - Math.cos(t)) / 2;
 }
 
-/* ============================================================
-   DRAW SPRITE — hỗ trợ stable / stable-x / per-frame
-   ============================================================ */
 function drawSpriteAt(sprite, idx, cx, cy, facing){
   if (!sprite || !sprite.renderImg) return;
   const s = sprite;
@@ -1267,9 +1318,7 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
   const drawW = Math.round(srcW * scale);
   const drawH = Math.round(srcH * scale);
 
-  /* Tính anchorX (local trong frame) và anchorY (tuyệt đối) */
   let anchorX, anchorY;
-
   if (s.anchorMode === 'stable' && s.stableAnchor){
     anchorX = s.stableAnchor.x;
     anchorY = s.stableAnchor.y;
@@ -1278,7 +1327,6 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
     const a = s.anchors && s.anchors[idx];
     anchorY = (a && a.y != null) ? a.y : s.stableAnchor.y;
   } else {
-    /* per-frame */
     const a = s.anchors && s.anchors[idx];
     if (a && a.x != null && a.y != null){
       anchorX = a.x - srcX;
@@ -1382,137 +1430,110 @@ function drawRemotePlayer(p){
 }
 
 /* ============================================================
-   AIM ARROW — mũi tên đẹp dưới chân, xoay theo chuột PC
+   AIM ARROW — tam giác nhọn, orbit quanh player
    ============================================================ */
 function drawAimArrow(){
   if (!gameStarted || paused) return;
 
   const sx = Math.round(player.x - cam.x);
-  const sy = Math.round(player.y - cam.y + FOOT_OFFSET + 4);
+  const sy = Math.round(player.y - cam.y);
   const a = aim.angle;
   const cosA = Math.cos(a), sinA = Math.sin(a);
-  const px = -sinA, py = cosA;   /* vector vuông góc */
+  const px = -sinA, py = cosA;
 
-  const dist = (aim.joyId !== null)
-    ? 40 + Math.hypot(aim.joyX, aim.joyY) * 26
-    : 58;
-  const startOffset = 3;
+  const orbitR = 26;
 
-  const x0 = sx + cosA * startOffset;
-  const y0 = sy + sinA * startOffset;
-  const x1 = sx + cosA * dist;
-  const y1 = sy + sinA * dist;
+  const cx = sx + cosA * orbitR;
+  const cy = sy + sinA * orbitR;
 
-  /* Đầu mũi tên */
-  const headLen = 16;
-  const headW = 11;
-  const hbx = x1 - cosA * headLen;
-  const hby = y1 - sinA * headLen;
-  const hw1x = hbx + px * headW;
-  const hw1y = hby + py * headW;
-  const hw2x = hbx - px * headW;
-  const hw2y = hby - py * headW;
+  const headLen = 15;
+  const headW = 10;
 
-  /* Thân mũi tên */
-  const bodyW = 5;
-  const bx1x = x0 + px * bodyW;
-  const bx1y = y0 + py * bodyW;
-  const bx2x = x0 - px * bodyW;
-  const bx2y = y0 - py * bodyW;
-  const bx3x = hbx + px * bodyW * 0.7;
-  const bx3y = hby + py * bodyW * 0.7;
-  const bx4x = hbx - px * bodyW * 0.7;
-  const bx4y = hby - py * bodyW * 0.7;
+  const tipX = cx + cosA * (headLen * 0.6);
+  const tipY = cy + sinA * (headLen * 0.6);
+
+  const b1X = cx - cosA * (headLen * 0.4) + px * headW;
+  const b1Y = cy - sinA * (headLen * 0.4) + py * headW;
+  const b2X = cx - cosA * (headLen * 0.4) - px * headW;
+  const b2Y = cy - sinA * (headLen * 0.4) - py * headW;
+
+  const midX = (tipX + b1X + b2X) / 3;
+  const midY = (tipY + b1Y + b2Y) / 3;
 
   ctx.save();
 
   /* 1. Đổ bóng */
-  ctx.globalAlpha = 0.35;
+  ctx.globalAlpha = 0.4;
   ctx.fillStyle = '#000000';
   ctx.beginPath();
-  ctx.moveTo(bx1x + 2, bx1y + 3);
-  ctx.lineTo(bx3x + 2, bx3y + 3);
-  ctx.lineTo(hw1x + 2, hw1y + 3);
-  ctx.lineTo(x1 + 2, y1 + 3);
-  ctx.lineTo(hw2x + 2, hw2y + 3);
-  ctx.lineTo(bx4x + 2, bx4y + 3);
-  ctx.lineTo(bx2x + 2, bx2y + 3);
+  ctx.moveTo(tipX + 2, tipY + 3);
+  ctx.lineTo(b1X + 2, b1Y + 3);
+  ctx.lineTo(b2X + 2, b2Y + 3);
   ctx.closePath();
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  /* 2. Viền đen */
-  ctx.fillStyle = '#000000';
+  /* 2. Viền đen đậm */
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 3.5;
+  ctx.lineWidth = 4;
   ctx.lineJoin = 'round';
   ctx.beginPath();
-  ctx.moveTo(bx1x, bx1y);
-  ctx.lineTo(bx3x, bx3y);
-  ctx.lineTo(hw1x, hw1y);
-  ctx.lineTo(x1, y1);
-  ctx.lineTo(hw2x, hw2y);
-  ctx.lineTo(bx4x, bx4y);
-  ctx.lineTo(bx2x, bx2y);
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(b1X, b1Y);
+  ctx.lineTo(b2X, b2Y);
   ctx.closePath();
-  ctx.fill();
   ctx.stroke();
 
-  /* 3. Thân gradient trắng */
-  const grad = ctx.createLinearGradient(x0, y0, x1, y1);
-  grad.addColorStop(0,   '#889878');
-  grad.addColorStop(0.35,'#ffffff');
-  grad.addColorStop(0.75,'#f0f4e8');
-  grad.addColorStop(1,   '#d0dcc8');
+  /* 3. Fill gradient trắng */
+  const grad = ctx.createLinearGradient(b2X, b2Y, tipX, tipY);
+  grad.addColorStop(0,   '#c8d8c0');
+  grad.addColorStop(0.5, '#ffffff');
+  grad.addColorStop(1,   '#f0f4e8');
   ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.moveTo(bx1x, bx1y);
-  ctx.lineTo(bx3x, bx3y);
-  ctx.lineTo(hw1x, hw1y);
-  ctx.lineTo(x1, y1);
-  ctx.lineTo(hw2x, hw2y);
-  ctx.lineTo(bx4x, bx4y);
-  ctx.lineTo(bx2x, bx2y);
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(b1X, b1Y);
+  ctx.lineTo(b2X, b2Y);
   ctx.closePath();
   ctx.fill();
 
   /* 4. Highlight cánh trên */
   ctx.fillStyle = 'rgba(255,255,255,.9)';
   ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(hw1x, hw1y);
-  ctx.lineTo(hbx, hby);
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(b1X, b1Y);
+  ctx.lineTo(midX, midY);
   ctx.closePath();
   ctx.fill();
 
   /* 5. Shadow cánh dưới */
-  ctx.fillStyle = 'rgba(0,0,0,.3)';
+  ctx.fillStyle = 'rgba(0,0,0,.25)';
   ctx.beginPath();
-  ctx.moveTo(hbx, hby);
-  ctx.lineTo(hw2x, hw2y);
-  ctx.lineTo(x1, y1);
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(b2X, b2Y);
+  ctx.lineTo(midX, midY);
   ctx.closePath();
   ctx.fill();
 
-  /* 6. Glow khi đang aim mobile */
+  /* 6. Glow xanh khi aim mobile */
   if (aim.joyId !== null){
     const t = performance.now() / 150;
     const pulse = 1 + Math.sin(t) * 0.2;
-    ctx.globalAlpha = 0.35;
+    ctx.globalAlpha = 0.4;
     ctx.fillStyle = '#88ff60';
     ctx.beginPath();
-    ctx.arc(x1, y1, 8 * pulse, 0, Math.PI * 2);
+    ctx.arc(tipX, tipY, 7 * pulse, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
   }
 
-  /* 7. Vòng đỏ auto-attack */
+  /* 7. Cung đỏ auto-attack */
   if (aim.autoAttack){
     ctx.strokeStyle = '#ff5050';
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.7;
+    ctx.lineWidth = 2.5;
+    ctx.globalAlpha = 0.75;
     ctx.beginPath();
-    ctx.arc(x1, y1, 13, 0, Math.PI * 2);
+    ctx.arc(sx, sy, orbitR + 14, a - 0.4, a + 0.4);
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
@@ -1624,6 +1645,123 @@ function toast(msg){
 }
 
 /* ============================================================
+   BUTTON SETTINGS
+   ============================================================ */
+const ButtonSettings = (() => {
+  const DEFAULTS = {
+    joySize: 145,
+    atkSize: 86,
+    jumpSize: 58,
+    sitSize: 58,
+    opacity: 100
+  };
+  const KEY = 'dh_button_settings_v1';
+
+  function load(){
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
+    } catch(e){}
+    return { ...DEFAULTS };
+  }
+
+  function save(cfg){
+    try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch(e){}
+  }
+
+  function apply(cfg){
+    const root = document.documentElement;
+    const joySize = cfg.joySize;
+    const joyKnob = Math.round(joySize * 0.46);
+    const aimSize = joySize;
+    const aimKnob = Math.round(joySize * 0.43);
+
+    root.style.setProperty('--joy-size', joySize + 'px');
+    root.style.setProperty('--joy-knob', joyKnob + 'px');
+    root.style.setProperty('--aim-size', aimSize + 'px');
+    root.style.setProperty('--aim-knob', aimKnob + 'px');
+
+    root.style.setProperty('--atk-size', cfg.atkSize + 'px');
+    root.style.setProperty('--jump-size', cfg.jumpSize + 'px');
+    root.style.setProperty('--sit-size', cfg.sitSize + 'px');
+
+    root.style.setProperty('--btn-opacity', (cfg.opacity / 100).toFixed(2));
+
+    const atkRight = 25;
+    const atkBottom = 55;
+    root.style.setProperty('--atk-right', atkRight + 'px');
+    root.style.setProperty('--atk-bottom', atkBottom + 'px');
+
+    const jumpBottom = atkBottom + cfg.atkSize + 14;
+    root.style.setProperty('--jump-bottom', jumpBottom + 'px');
+    root.style.setProperty('--jump-right', atkRight + 'px');
+
+    const sitRight = atkRight + cfg.atkSize + 14;
+    root.style.setProperty('--sit-right', sitRight + 'px');
+    root.style.setProperty('--sit-bottom', atkBottom + 12 + 'px');
+  }
+
+  function bindUI(){
+    const joyS = $('setJoySize'), joyV = $('valJoySize');
+    const atkS = $('setAtkSize'), atkV = $('valAtkSize');
+    const jumpS = $('setJumpSize'), jumpV = $('valJumpSize');
+    const sitS = $('setSitSize'), sitV = $('valSitSize');
+    const opS = $('setBtnOpacity'), opV = $('valBtnOpacity');
+
+    function sync(){
+      const cfg = {
+        joySize: +joyS.value,
+        atkSize: +atkS.value,
+        jumpSize: +jumpS.value,
+        sitSize: +sitS.value,
+        opacity: +opS.value
+      };
+      joyV.textContent = cfg.joySize;
+      atkV.textContent = cfg.atkSize;
+      jumpV.textContent = cfg.jumpSize;
+      sitV.textContent = cfg.sitSize;
+      opV.textContent = cfg.opacity;
+      apply(cfg);
+      save(cfg);
+    }
+
+    [joyS, atkS, jumpS, sitS, opS].forEach(el => el.addEventListener('input', sync));
+
+    const cfg = load();
+    joyS.value = cfg.joySize;
+    atkS.value = cfg.atkSize;
+    jumpS.value = cfg.jumpSize;
+    sitS.value = cfg.sitSize;
+    opS.value = cfg.opacity;
+    joyV.textContent = cfg.joySize;
+    atkV.textContent = cfg.atkSize;
+    jumpV.textContent = cfg.jumpSize;
+    sitV.textContent = cfg.sitSize;
+    opV.textContent = cfg.opacity;
+    apply(cfg);
+  }
+
+  function reset(){
+    localStorage.removeItem(KEY);
+    const cfg = { ...DEFAULTS };
+    apply(cfg);
+    $('setJoySize').value = cfg.joySize;
+    $('setAtkSize').value = cfg.atkSize;
+    $('setJumpSize').value = cfg.jumpSize;
+    $('setSitSize').value = cfg.sitSize;
+    $('setBtnOpacity').value = cfg.opacity;
+    $('valJoySize').textContent = cfg.joySize;
+    $('valAtkSize').textContent = cfg.atkSize;
+    $('valJumpSize').textContent = cfg.jumpSize;
+    $('valSitSize').textContent = cfg.sitSize;
+    $('valBtnOpacity').textContent = cfg.opacity;
+    toast('↺ Đã reset nút');
+  }
+
+  return { bindUI, reset };
+})();
+
+/* ============================================================
    MENU
    ============================================================ */
 window.Game = {
@@ -1694,7 +1832,7 @@ async function joinRoom(){
   } catch(e){ status.textContent = '❌ ' + (e.message || e); }
 }
 function bindSlider(id, valId, cb){
-  const s = document.getElementById(id), v = document.getElementById(valId);
+  const s = $(id), v = $(valId);
   if (!s) return;
   s.addEventListener('input', e => { v.textContent = e.target.value; cb(+e.target.value/100); });
   v.textContent = s.value; cb(+s.value/100);
@@ -1783,10 +1921,18 @@ function loop(now){
 }
 mouse.x = VW/2; mouse.y = VH/2;
 
+/* ============================================================
+   SHORTCUT helper — thay getElementById
+   ============================================================ */
+function $(id){ return document.getElementById(id); }
+
+/* Bind UI settings + load project */
+ButtonSettings.bindUI();
+
 loadProject().then(() => {
   showMenuPage('main');
   requestAnimationFrame(loop);
 });
 </script>
 </body>
-        </html>
+          </html>
