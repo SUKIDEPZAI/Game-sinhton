@@ -8,7 +8,6 @@
 <style>
 :root{
   --text:#e8f0d8;
-  /* Button customizer */
   --joy-size: 145px;
   --joy-knob: 67px;
   --joy-offset-left: 30px;
@@ -27,6 +26,12 @@
   --sit-right: 110px;
   --sit-bottom: 145px;
   --btn-opacity: 1;
+  /* Offset khi kéo nút */
+  --atk-tx: 0px; --atk-ty: 0px;
+  --jump-tx: 0px; --jump-ty: 0px;
+  --sit-tx: 0px; --sit-ty: 0px;
+  --mjoy-tx: 0px; --mjoy-ty: 0px;
+  --ajoy-tx: 0px; --ajoy-ty: 0px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#14180f;
@@ -120,15 +125,22 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 /* ================= MOBILE UI ================= */
 #touchUI{display:none;position:fixed;inset:0;pointer-events:none;z-index:8;touch-action:none}
 @media (pointer:coarse){ #touchUI{display:block} }
+body.is-touch #touchUI{display:block}
 
 .joystick{
-  position:absolute;width:var(--joy-size);height:var(--joy-size);border-radius:50%;
+  position:absolute;
+  width:var(--joy-size);height:var(--joy-size);
+  border-radius:50%;
   pointer-events:auto;touch-action:none;
 }
-#moveJoystick{left:var(--joy-offset-left);bottom:var(--joy-offset-bottom)}
+#moveJoystick{
+  left:var(--joy-offset-left);bottom:var(--joy-offset-bottom);
+  transform:translate(var(--mjoy-tx), var(--mjoy-ty));
+}
 #aimJoystick{
   width:var(--aim-size);height:var(--aim-size);
   right:var(--aim-offset-right);bottom:var(--aim-offset-bottom);
+  transform:translate(var(--ajoy-tx), var(--ajoy-ty));
 }
 
 .joystick-glow{
@@ -171,31 +183,78 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   transition:transform .08s, opacity .1s;
   touch-action:none;
 }
-.circle-button:active{transform:scale(.86)}
+.circle-button:active{transform:var(--btn-base-tx, translate(0,0)) scale(.86)}
 
 .attack-button{
   right:var(--atk-right);bottom:var(--atk-bottom);
   width:var(--atk-size);height:var(--atk-size);
   font-size:calc(var(--atk-size) * 0.44);
   background:linear-gradient(145deg, #e86c55, #a72d25);
+  transform:translate(var(--atk-tx), var(--atk-ty));
 }
+.attack-button:active{transform:translate(var(--atk-tx), var(--atk-ty)) scale(.86)}
 
 .action-button{
   right:var(--sit-right);bottom:var(--sit-bottom);
   width:var(--sit-size);height:var(--sit-size);
   font-size:calc(var(--sit-size) * 0.4);
   background:linear-gradient(145deg, #e3c65b, #96721f);
+  transform:translate(var(--sit-tx), var(--sit-ty));
 }
+.action-button:active{transform:translate(var(--sit-tx), var(--sit-ty)) scale(.86)}
 
 .jump-button{
   right:var(--jump-right);bottom:var(--jump-bottom);
   width:var(--jump-size);height:var(--jump-size);
   font-size:calc(var(--jump-size) * 0.44);
   background:linear-gradient(145deg, #6ab0e8, #22548a);
+  transform:translate(var(--jump-tx), var(--jump-ty));
 }
+.jump-button:active{transform:translate(var(--jump-tx), var(--jump-ty)) scale(.86)}
 
 body.is-touch #hotbar{transform:translateX(-50%) scale(.72);bottom:4px}
 body.is-touch #hpBar{bottom:62px;transform:translateX(-50%) scale(.85)}
+
+/* EDIT MODE */
+body.edit-btn-mode .circle-button,
+body.edit-btn-mode .joystick{
+  outline:3px dashed #ffd060;
+  outline-offset:3px;
+  cursor:move;
+}
+body.edit-btn-mode #btnAttack::after,
+body.edit-btn-mode #btnJump::after,
+body.edit-btn-mode #btnSit::after{
+  content:'✥';
+  position:absolute;
+  top:-8px;right:-8px;
+  width:20px;height:20px;
+  background:#ffd060;color:#000;
+  border-radius:50%;font-size:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:bold;
+}
+#editOverlay{
+  position:fixed;top:12px;left:50%;transform:translateX(-50%);
+  z-index:9999;display:none;gap:8px;align-items:center;
+  background:rgba(20,24,16,.95);
+  border:2px solid #ffd060;border-radius:8px;
+  padding:8px 12px;box-shadow:0 6px 20px rgba(0,0,0,.6);
+  font-family:Consolas,monospace;font-size:11px;color:#ffd060;
+}
+body.edit-btn-mode #editOverlay{display:flex}
+#editOverlay button{
+  background:linear-gradient(180deg,#6a7860,#4a5440);
+  color:#e8f0d8;border:2px solid #0a0d08;
+  border-radius:4px;padding:6px 12px;
+  font-size:11px;font-weight:bold;
+  font-family:Consolas,monospace;
+  box-shadow:0 2px 0 #1a1f14;
+}
+#editOverlay button.primary{
+  background:linear-gradient(180deg,#88d858,#4a8a30);
+  color:#0a1a06;
+}
 
 #settingsBtn{position:fixed;top:8px;right:8px;z-index:13;width:36px;height:36px;
   background:rgba(20,24,16,.9);border:2px solid #0a0d08;border-radius:6px;color:#e8f0d8;font-size:16px;
@@ -242,6 +301,13 @@ body.is-touch #hpBar{bottom:62px;transform:translateX(-50%) scale(.85)}
   <button id="btnJump" class="circle-button jump-button">⤒</button>
   <button id="btnSit" class="circle-button action-button">🪑</button>
   <button id="btnAttack" class="circle-button attack-button">⚔</button>
+</div>
+
+<div id="editOverlay">
+  <span>📐 Kéo nút để di chuyển</span>
+  <button class="primary" id="editSave">💾 Lưu</button>
+  <button id="editReset">↺ Reset</button>
+  <button id="editCancel">✕ Hủy</button>
 </div>
 
 <button id="settingsBtn" onclick="Game.showSettings()">⚙</button>
@@ -299,25 +365,16 @@ body.is-touch #hpBar{bottom:62px;transform:translateX(-50%) scale(.85)}
       <div class="setting-row"><label>🔔 SFX</label>
         <input type="range" id="setSfx" min="0" max="100" value="80"><span class="val" id="valSfx">80</span></div>
 
-      <h3 style="margin-top:14px">📱 NÚT MOBILE</h3>
-      <div class="setting-row"><label>Joystick</label>
-        <input type="range" id="setJoySize" min="80" max="200" value="145">
-        <span class="val" id="valJoySize">145</span></div>
-      <div class="setting-row"><label>Nút Attack</label>
-        <input type="range" id="setAtkSize" min="50" max="130" value="86">
-        <span class="val" id="valAtkSize">86</span></div>
-      <div class="setting-row"><label>Nút Jump</label>
-        <input type="range" id="setJumpSize" min="40" max="110" value="58">
-        <span class="val" id="valJumpSize">58</span></div>
-      <div class="setting-row"><label>Nút Sit</label>
-        <input type="range" id="setSitSize" min="40" max="110" value="58">
-        <span class="val" id="valSitSize">58</span></div>
-      <div class="setting-row"><label>Độ mờ nút</label>
-        <input type="range" id="setBtnOpacity" min="30" max="100" value="100">
-        <span class="val" id="valBtnOpacity">100</span></div>
-      <button class="mbtn" onclick="ButtonSettings.reset()" style="font-size:12px;padding:10px;margin:8px 0">
-        ↺ Reset nút
+      <h3 style="margin-top:14px">📐 NÚT MOBILE</h3>
+      <button class="mbtn primary" onclick="ButtonSettings.openEditor()" style="padding:12px;font-size:13px">
+        🎯 Chỉnh vị trí nút
       </button>
+      <button class="mbtn" onclick="ButtonSettings.reset()" style="padding:10px;font-size:12px;margin-top:6px">
+        ↺ Reset vị trí nút
+      </button>
+      <div style="font-size:10px;color:#586850;margin-top:8px;font-family:Consolas,monospace;text-align:left;line-height:1.6">
+        Bấm "Chỉnh vị trí" → kéo các nút đến vị trí mong muốn → bấm Lưu.
+      </div>
 
       <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
     </div>
@@ -332,6 +389,9 @@ window.addEventListener('unhandledrejection', e => console.error('[PROMISE]', e.
 
 const BACKEND = { host:'game-sinhton.onrender.com', port:443, peerPath:'/peerjs/myapp', secure:true };
 const buzz = ms => { if (navigator.vibrate) try{ navigator.vibrate(ms||6); }catch(e){} };
+const isTouchDevice = matchMedia('(pointer:coarse)').matches ||
+  ('ontouchstart' in window && !matchMedia('(pointer:fine)').matches);
+if (isTouchDevice) document.body.classList.add('is-touch');
 
 function mulberry32(a){
   return function(){
@@ -350,9 +410,8 @@ const ATTACK_DURATION = 10 / 16;
 const HURT_DURATION = 8 / 8;
 const JUMP_DURATION = 0.65;
 
-/* ============================================================
-   METADATA v3 DECODER
-   ============================================================ */
+function $(id){ return document.getElementById(id); }
+
 function decodeMetadata(img){
   try {
     const c = document.createElement('canvas');
@@ -373,10 +432,6 @@ function decodeMetadata(img){
     return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
   } catch(e){ return null; }
 }
-
-/* ============================================================
-   AUTO-DETECT
-   ============================================================ */
 function autoDetectFrameLines(canvas, expectedFrames){
   const W = canvas.width, H = canvas.height;
   const cx = canvas.getContext('2d', { willReadFrequently: true });
@@ -430,44 +485,35 @@ function detectBBox(canvas, x1, y1, x2, y2){
   return { x: x1+minX, y: y1+minY, w: maxX-minX+1, h: maxY-minY+1 };
 }
 
-/* ============================================================
-   MODEL MANAGER
-   ============================================================ */
 const Models = {
   data: new Map(),
-  addSprite(modelName, animName, sprite){
-    if (!this.data.has(modelName)) this.data.set(modelName, { animations: new Map() });
-    this.data.get(modelName).animations.set(animName, sprite);
+  addSprite(m, a, s){
+    if (!this.data.has(m)) this.data.set(m, { animations: new Map() });
+    this.data.get(m).animations.set(a, s);
   },
-  get(modelName, animName){
-    const m = this.data.get(modelName);
-    if (!m) return null;
-    return m.animations.get(animName) || null;
+  get(m, a){
+    const mm = this.data.get(m);
+    if (!mm) return null;
+    return mm.animations.get(a) || null;
   }
 };
 
-/* ============================================================
-   LOAD PROJECT
-   ============================================================ */
 async function loadProject(){
   try {
     const res = await fetch('sprites.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error('sprites.json not found');
+    if (!res.ok) throw new Error('no file');
     const project = await res.json();
-    if (project.format !== 'dh-studio-project' || !project.models){
-      throw new Error('Invalid format');
-    }
+    if (project.format !== 'dh-studio-project' || !project.models) throw new Error('bad');
     const promises = [];
-    for (const modelName in project.models){
-      const model = project.models[modelName];
-      for (const animName in model.animations){
-        const cfg = model.animations[animName];
-        const src = `assets/${cfg.fileName}.png`;
-        promises.push(loadSprite(src, modelName, animName, cfg));
+    for (const m in project.models){
+      const model = project.models[m];
+      for (const a in model.animations){
+        const cfg = model.animations[a];
+        promises.push(loadSprite(`assets/${cfg.fileName}.png`, m, a, cfg));
       }
     }
     await Promise.all(promises);
-    console.log('✓ Project loaded: ' + Models.data.size + ' models');
+    console.log('✓ Loaded ' + Models.data.size + ' models');
     updateLoadStatus('ok');
   } catch(e){
     console.warn('Fallback:', e.message);
@@ -475,22 +521,18 @@ async function loadProject(){
   }
 }
 
-function loadSprite(src, modelName, animName, cfg){
+function loadSprite(src, m, a, cfg){
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
       const meta = decodeMetadata(img);
       let spriteH, vLines, anchors, stableAnchor, anchorMode, fps, loop, hasMeta = false;
-
       if (meta && meta.vLines && meta.vLines.length >= 2){
         spriteH = meta.spriteH || (img.height - 1);
         vLines = meta.vLines;
-        anchors = meta.anchors ? meta.anchors.map(a =>
-          Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null)
-        ) : [];
-        stableAnchor = meta.stableAnchor
-          ? { x: meta.stableAnchor[0], y: meta.stableAnchor[1] }
-          : null;
+        anchors = meta.anchors ? meta.anchors.map(x =>
+          Array.isArray(x) ? { x: x[0], y: x[1] } : (x ? { x: x.x, y: x.y } : null)) : [];
+        stableAnchor = meta.stableAnchor ? { x: meta.stableAnchor[0], y: meta.stableAnchor[1] } : null;
         anchorMode = meta.anchorMode || 'stable-x';
         fps = meta.fps || cfg.fps || 10;
         loop = meta.loop !== undefined ? meta.loop : (cfg.loop !== false);
@@ -498,20 +540,15 @@ function loadSprite(src, modelName, animName, cfg){
       } else {
         spriteH = cfg.spriteH || img.height;
         vLines = cfg.vLines && cfg.vLines.length >= 2 ? cfg.vLines : null;
-        anchors = (cfg.anchors || []).map(a =>
-          Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null)
-        );
-        stableAnchor = cfg.stableAnchor
-          ? { x: cfg.stableAnchor[0], y: cfg.stableAnchor[1] }
-          : null;
+        anchors = (cfg.anchors || []).map(x =>
+          Array.isArray(x) ? { x: x[0], y: x[1] } : (x ? { x: x.x, y: x.y } : null));
+        stableAnchor = cfg.stableAnchor ? { x: cfg.stableAnchor[0], y: cfg.stableAnchor[1] } : null;
         anchorMode = cfg.anchorMode || 'stable-x';
         fps = cfg.fps || 10;
         loop = cfg.loop !== false;
       }
-
       const cnv = document.createElement('canvas');
-      cnv.width = img.width;
-      cnv.height = spriteH;
+      cnv.width = img.width; cnv.height = spriteH;
       const cc = cnv.getContext('2d', { willReadFrequently: true });
       cc.imageSmoothingEnabled = false;
       cc.drawImage(img, 0, 0, img.width, spriteH, 0, 0, img.width, spriteH);
@@ -522,50 +559,36 @@ function loadSprite(src, modelName, animName, cfg){
           const n = cfg.frames || 10;
           detected = autoDetectFrameLines(cnv, n);
         }
-        if (detected && detected.length >= 3){
-          vLines = detected;
-        } else {
+        if (detected && detected.length >= 3) vLines = detected;
+        else {
           const n = cfg.frames || 1;
           vLines = [0];
           for (let i = 1; i < n; i++) vLines.push(Math.round(i * img.width / n));
           vLines.push(img.width);
         }
       }
-
       const sprite = {
-        model: modelName, anim: animName,
-        renderImg: cnv, canvas: cnv,
-        spriteH, vLines,
-        hLines: [0, spriteH],
-        anchors, stableAnchor, anchorMode,
-        fps, loop,
+        model: m, anim: a, renderImg: cnv, canvas: cnv,
+        spriteH, vLines, hLines: [0, spriteH],
+        anchors, stableAnchor, anchorMode, fps, loop,
         frames: vLines.length - 1, hasMeta
       };
-
-      if (!anchors.length || anchors.every(a => !a) || !stableAnchor){
-        autoComputeAnchors(sprite);
-      }
-
-      Models.addSprite(modelName, animName, sprite);
-      console.log(`  ✓ ${modelName}/${animName}: ${sprite.frames}f @ ${fps}fps [${anchorMode}] ${hasMeta ? '[meta]' : '[auto]'}`);
+      if (!anchors.length || anchors.every(x => !x) || !stableAnchor) autoComputeAnchors(sprite);
+      Models.addSprite(m, a, sprite);
+      console.log(`  ✓ ${m}/${a}: ${sprite.frames}f @ ${fps}fps [${anchorMode}] ${hasMeta ? '[meta]' : '[auto]'}`);
       resolve();
     };
     img.onerror = () => { console.warn(`  ✗ ${src} not found`); resolve(); };
     img.src = src;
   });
 }
-
 function autoComputeAnchors(sprite){
   const s = sprite;
   s.anchors = [];
   for (let i = 0; i < s.frames; i++){
     const bbox = detectBBox(s.canvas, s.vLines[i], 0, s.vLines[i+1], s.spriteH);
-    if (bbox){
-      s.anchors.push({
-        x: bbox.x + bbox.w / 2,
-        y: bbox.y + bbox.h
-      });
-    } else s.anchors.push(null);
+    if (bbox) s.anchors.push({ x: bbox.x + bbox.w / 2, y: bbox.y + bbox.h });
+    else s.anchors.push(null);
   }
   let sumLocalX = 0, sumY = 0, count = 0;
   for (let i = 0; i < s.anchors.length; i++){
@@ -574,14 +597,11 @@ function autoComputeAnchors(sprite){
     sumY += s.anchors[i].y;
     count++;
   }
-  if (count > 0){
-    s.stableAnchor = { x: Math.round(sumLocalX/count), y: Math.round(sumY/count) };
-  } else {
-    s.stableAnchor = null;
-  }
+  s.stableAnchor = count > 0
+    ? { x: Math.round(sumLocalX/count), y: Math.round(sumY/count) }
+    : null;
   if (!s.anchorMode) s.anchorMode = 'stable-x';
 }
-
 async function loadFallbackSprites(){
   const defaults = [
     { model: 'player', anim: 'idle', file: 'player_idle' },
@@ -593,32 +613,22 @@ async function loadFallbackSprites(){
   ];
   const promises = defaults.map(d => loadSprite(
     `assets/${d.file}.png`, d.model, d.anim,
-    { fileName: d.file, fps: 10, loop: true, vLines: null, anchors: [], spriteH: 0, frames: 10 }
-  ));
+    { fileName: d.file, fps: 10, loop: true, vLines: null, anchors: [], spriteH: 0, frames: 10 }));
   await Promise.all(promises);
   updateLoadStatus('fallback');
 }
-
 function updateLoadStatus(mode){
-  const el = document.getElementById('loadStatus');
+  const el = $('loadStatus');
   const total = Models.data.size;
-  if (total === 0){
-    el.classList.remove('hidden');
-    el.innerHTML = `<b><span class="err">⚠ KHÔNG LOAD ĐƯỢC SPRITE</span></b>`;
-    return;
-  }
+  if (total === 0){ el.classList.remove('hidden'); el.innerHTML = `<b><span class="err">⚠ KHÔNG LOAD ĐƯỢC SPRITE</span></b>`; return; }
   el.classList.remove('hidden');
   let html = `<b><span class="ok">✓ Đã load ${total} models</span></b>`;
   if (mode === 'fallback') html += ` <span class="meta">[fallback]</span>`;
   html += '<br>';
-  for (const [modelName, model] of Models.data){
-    html += `📦 ${modelName}: ` + [...model.animations.keys()].join(', ');
-    html += '<br>';
-  }
+  for (const [mn, mm] of Models.data){ html += `📦 ${mn}: ` + [...mm.animations.keys()].join(', ') + '<br>'; }
   el.innerHTML = html;
   setTimeout(() => el.classList.add('hidden'), 6000);
 }
-
 function getPlayerSprite(anim){
   let s = Models.get('player', anim);
   if (!s && anim !== 'idle') s = Models.get('player', 'idle');
@@ -737,7 +747,7 @@ const Audio2D = (() => {
 })();
 
 /* ============================================================
-   TILES / ITEMS / WORLD
+   WORLD / TILES / ITEMS
    ============================================================ */
 const TILE = 32;
 const T = { AIR:0, GRASS:1 };
@@ -753,9 +763,7 @@ const WORLD_W = 128, WORLD_H = 128;
 const world = new Uint8Array(WORLD_W * WORLD_H);
 const wGet = (x,y) => (x<0||y<0||x>=WORLD_W||y>=WORLD_H) ? T.GRASS : world[y*WORLD_W + x];
 const wSet = (x,y,id) => { if (x>=0&&y>=0&&x<WORLD_W&&y<WORLD_H) world[y*WORLD_W + x] = id; };
-function generateWorld(){
-  for (let y=0;y<WORLD_H;y++) for (let x=0;x<WORLD_W;x++) wSet(x,y,T.GRASS);
-}
+function generateWorld(){ for (let y=0;y<WORLD_H;y++) for (let x=0;x<WORLD_W;x++) wSet(x,y,T.GRASS); }
 
 const inv = { hotbar: new Array(9).fill(null) };
 function defOf(id){ return ITEMS[id]; }
@@ -778,7 +786,7 @@ const player = {
 };
 
 const cam = { x: 0, y: 0 };
-const cv = document.getElementById('cv');
+const cv = $('cv');
 const ctx = cv.getContext('2d');
 let VW = 0, VH = 0;
 function resize(){
@@ -795,8 +803,8 @@ resize();
    JOYSTICK DI CHUYỂN
    ============================================================ */
 const joy = { id:null, x:0, y:0, cx:0, cy:0 };
-const moveJoystick = document.getElementById('moveJoystick');
-const moveKnob = document.getElementById('moveKnob');
+const moveJoystick = $('moveJoystick');
+const moveKnob = $('moveKnob');
 
 moveJoystick.addEventListener('pointerdown', e => {
   if (joy.id !== null) return;
@@ -808,7 +816,6 @@ moveJoystick.addEventListener('pointerdown', e => {
   updateMoveJoystick(e.clientX, e.clientY);
   try { moveJoystick.setPointerCapture(e.pointerId); } catch(err){}
 });
-
 function updateMoveJoystick(cx, cy){
   let dx = cx - joy.cx, dy = cy - joy.cy;
   const max = 52;
@@ -818,20 +825,14 @@ function updateMoveJoystick(cx, cy){
   joy.y = dy/max;
   moveKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
 }
-
 function endMoveJoystick(e){
   if (e.pointerId !== joy.id) return;
   joy.id = null;
-  joy.x = 0;
-  joy.y = 0;
+  joy.x = 0; joy.y = 0;
   moveKnob.style.transform = 'translate(-50%,-50%)';
 }
-
 addEventListener('pointermove', e => {
-  if (e.pointerId === joy.id){
-    e.preventDefault();
-    updateMoveJoystick(e.clientX, e.clientY);
-  }
+  if (e.pointerId === joy.id){ e.preventDefault(); updateMoveJoystick(e.clientX, e.clientY); }
 }, { passive:false });
 addEventListener('pointerup', endMoveJoystick);
 addEventListener('pointercancel', endMoveJoystick);
@@ -840,8 +841,8 @@ addEventListener('pointercancel', endMoveJoystick);
    JOYSTICK AIM
    ============================================================ */
 const aim = { angle:0, joyId:null, joyX:0, joyY:0, autoAttack:false, cx:0, cy:0 };
-const aimJoystick = document.getElementById('aimJoystick');
-const aimKnob = document.getElementById('aimKnob');
+const aimJoystick = $('aimJoystick');
+const aimKnob = $('aimKnob');
 
 aimJoystick.addEventListener('pointerdown', e => {
   if (aim.joyId !== null) return;
@@ -853,7 +854,6 @@ aimJoystick.addEventListener('pointerdown', e => {
   updateAimJoystick(e.clientX, e.clientY);
   try { aimJoystick.setPointerCapture(e.pointerId); } catch(err){}
 });
-
 function updateAimJoystick(cx, cy){
   let dx = cx - aim.cx, dy = cy - aim.cy;
   const max = 48;
@@ -869,31 +869,27 @@ function updateAimJoystick(cx, cy){
     aim.autoAttack = false;
   }
 }
-
 function endAimJoystick(e){
   if (e.pointerId !== aim.joyId) return;
   aim.joyId = null;
   aim.autoAttack = false;
-  aim.joyX = 0;
-  aim.joyY = 0;
+  aim.joyX = 0; aim.joyY = 0;
   aimKnob.style.transform = 'translate(-50%,-50%)';
+  /* Không reset aim.angle — giữ hướng cuối cùng */
 }
-
 addEventListener('pointermove', e => {
-  if (e.pointerId === aim.joyId){
-    e.preventDefault();
-    updateAimJoystick(e.clientX, e.clientY);
-  }
+  if (e.pointerId === aim.joyId){ e.preventDefault(); updateAimJoystick(e.clientX, e.clientY); }
 }, { passive:false });
 addEventListener('pointerup', endAimJoystick);
 addEventListener('pointercancel', endAimJoystick);
 
 /* ============================================================
-   INPUT (keyboard + mouse + touch)
+   INPUT
    ============================================================ */
 const keys = {};
 const mouse = { x: 0, y: 0 };
 let gameStarted = false, paused = false;
+let mobileAimUsed = false;   /* Đánh dấu user đã dùng joystick aim */
 mouse.x = VW/2; mouse.y = VH/2;
 
 addEventListener('keydown', e => {
@@ -916,6 +912,7 @@ cv.addEventListener('pointermove', e => {
     const r = cv.getBoundingClientRect();
     mouse.x = e.clientX - r.left;
     mouse.y = e.clientY - r.top;
+    mobileAimUsed = false;   /* PC dùng chuột → không dùng aim mobile */
   }
 }, { passive: true });
 cv.addEventListener('pointerdown', e => {
@@ -949,31 +946,24 @@ addEventListener('pointerup', endLook);
 addEventListener('pointercancel', endLook);
 
 /* ============================================================
-   BUTTONS — pointerdown only, không double-fire
-   Multi-touch: aim joystick + attack = 2 pointerId khác nhau OK
+   BUTTONS
    ============================================================ */
 function bindBtn(id, downFn, upFn){
-  const el = document.getElementById(id);
+  const el = $(id);
   if (!el) return;
   el.addEventListener('pointerdown', e => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (document.body.classList.contains('edit-btn-mode')) return;
+    e.preventDefault(); e.stopPropagation();
     buzz(8);
     el.setPointerCapture(e.pointerId);
     if (downFn) downFn();
   });
-  const up = e => {
-    if (upFn) upFn();
-  };
+  const up = () => { if (upFn) upFn(); };
   el.addEventListener('pointerup', up);
   el.addEventListener('pointercancel', up);
 }
-
 let attackTouch = false;
-bindBtn('btnAttack',
-  () => { attackTouch = true; tryAttack(); },
-  () => { attackTouch = false; }
-);
+bindBtn('btnAttack', () => { attackTouch = true; tryAttack(); }, () => { attackTouch = false; });
 bindBtn('btnJump', () => tryJump(), null);
 bindBtn('btnSit', () => trySit(), null);
 
@@ -1004,17 +994,13 @@ function tryAttack(){
   player.attackT = ATTACK_DURATION;
   Audio2D.sfx.swordSwing();
 
-  /* Mũi tên quyết định hướng đánh */
   const angle = aim.angle;
   const hitX = player.x + Math.cos(angle) * 50;
   const hitY = player.y + Math.sin(angle) * 50;
-
-  /* Xác định hướng facing theo mũi tên */
   const cosA = Math.cos(angle);
   if (Math.abs(cosA) > 0.15) player.facing = cosA > 0 ? 1 : -1;
 
   if (!net.active) return;
-
   const range = 72;
   let target = null, minD = range;
   for (const [id, p] of net.players){
@@ -1058,14 +1044,22 @@ function updatePlayer(dt){
   if (player.sitting && mag > 0.15) player.sitting = false;
   if (player.sitting){ dx = 0; dy = 0; }
 
-  /* Aim: mobile dùng joystick, PC dùng chuột */
+  /* Aim */
   if (aim.joyId !== null){
-    /* aim.angle đã cập nhật từ joystick */
-  } else {
+    /* Joystick đang kéo → đã cập nhật angle */
+    mobileAimUsed = true;
+  } else if (!mobileAimUsed && !isTouchDevice){
+    /* PC: mũi tên theo chuột */
+    const wx = mouse.x + cam.x;
+    const wy = mouse.y + cam.y;
+    aim.angle = Math.atan2(wy - player.y, wx - player.x);
+  } else if (!isTouchDevice && !mobileAimUsed){
     const wx = mouse.x + cam.x;
     const wy = mouse.y + cam.y;
     aim.angle = Math.atan2(wy - player.y, wx - player.x);
   }
+  /* Mobile: giữ aim.angle cuối cùng khi không kéo joystick */
+
   const cosA = Math.cos(aim.angle);
   if (Math.abs(cosA) > 0.15) player.facing = cosA > 0 ? 1 : -1;
 
@@ -1273,11 +1267,11 @@ function startNetSync(){
   }, 100);
 }
 function updateNetHud(){
-  const el = document.getElementById('netInfo');
+  const el = $('netInfo');
   if (!net.active){ el.classList.remove('show'); return; }
   el.classList.add('show');
-  document.getElementById('netCode').textContent = net.roomCode || '-----';
-  document.getElementById('netCount').textContent = 1 + net.players.size;
+  $('netCode').textContent = net.roomCode || '-----';
+  $('netCount').textContent = 1 + net.players.size;
 }
 
 /* ============================================================
@@ -1302,7 +1296,6 @@ function getNightFactor(){
 function drawSpriteAt(sprite, idx, cx, cy, facing){
   if (!sprite || !sprite.renderImg) return;
   const s = sprite;
-
   let srcX, srcW;
   if (s.vLines && s.vLines[idx+1] !== undefined){
     srcX = s.vLines[idx];
@@ -1313,7 +1306,6 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
     srcW = Math.round(fw);
   }
   const srcH = s.spriteH;
-
   const scale = DEST_HEIGHT / srcH;
   const drawW = Math.round(srcW * scale);
   const drawH = Math.round(srcH * scale);
@@ -1340,7 +1332,6 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
     }
   }
   anchorY = Math.max(0, Math.min(srcH, anchorY));
-
   const drawX = Math.round(cx - anchorX * scale);
   const drawY = Math.round(cy - anchorY * scale);
 
@@ -1373,13 +1364,11 @@ function drawPlayer(){
     drawFallbackBody(sx, sySprite, player.animT, player.currentAnim, player.facing, LOCAL_COLORS);
     return;
   }
-
   const rawIdx = Math.floor(player.animTime * sprite.fps);
   const total = sprite.frames || (sprite.vLines ? sprite.vLines.length - 1 : 8);
   let idx;
   if (sprite.loop) idx = ((rawIdx % total) + total) % total;
   else idx = Math.max(0, Math.min(total - 1, rawIdx));
-
   drawSpriteAt(sprite, idx, sx, sySprite, player.facing);
 }
 
@@ -1387,10 +1376,8 @@ const LOCAL_COLORS = { body:'#3a5a9a', skin:'#f0c8a0' };
 function drawFallbackBody(sx, sy, animT, animName, facing, colors){
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.beginPath(); ctx.ellipse(sx, sy+8, 8, 3, 0, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = colors.body;
-  ctx.fillRect(sx-6, sy-10, 12, 13);
-  ctx.fillStyle = colors.skin;
-  ctx.fillRect(sx-5, sy-18, 10, 8);
+  ctx.fillStyle = colors.body; ctx.fillRect(sx-6, sy-10, 12, 13);
+  ctx.fillStyle = colors.skin; ctx.fillRect(sx-5, sy-18, 10, 8);
 }
 
 const REMOTE_PALETTE = [
@@ -1402,17 +1389,12 @@ function drawRemotePlayer(p){
   const sx = p.x - cam.x, sy = p.y - cam.y;
   if (sx < -80 || sx > VW+80 || sy < -80 || sy > VH+80) return;
   const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name)) % REMOTE_PALETTE.length];
-
   const sprite = getPlayerSprite('idle');
-  if (sprite){
-    drawSpriteAt(sprite, 0, sx, sy + FOOT_OFFSET, p.facing);
-  } else {
-    ctx.fillStyle = pal.body;
-    ctx.fillRect(sx-6, sy-10, 12, 13);
-    ctx.fillStyle = '#f0c8a0';
-    ctx.fillRect(sx-5, sy-18, 10, 8);
+  if (sprite) drawSpriteAt(sprite, 0, sx, sy + FOOT_OFFSET, p.facing);
+  else {
+    ctx.fillStyle = pal.body; ctx.fillRect(sx-6, sy-10, 12, 13);
+    ctx.fillStyle = '#f0c8a0'; ctx.fillRect(sx-5, sy-18, 10, 8);
   }
-
   ctx.font = 'bold 10px Consolas, monospace';
   ctx.textAlign = 'center';
   const w = ctx.measureText(p.name).width + 8;
@@ -1430,52 +1412,53 @@ function drawRemotePlayer(p){
 }
 
 /* ============================================================
-   AIM ARROW — tam giác nhọn, orbit quanh player
+   AIM ARROW — NHỎ + ORBIT BỤNG
    ============================================================ */
 function drawAimArrow(){
   if (!gameStarted || paused) return;
 
   const sx = Math.round(player.x - cam.x);
-  const sy = Math.round(player.y - cam.y);
+  /* Orbit quanh bụng: player.y là chân, bụng ở -14 */
+  const syBelly = Math.round(player.y - cam.y - 14);
   const a = aim.angle;
   const cosA = Math.cos(a), sinA = Math.sin(a);
   const px = -sinA, py = cosA;
 
-  const orbitR = 26;
+  /* Bán kính orbit — xa hơn */
+  const orbitR = 42;
 
   const cx = sx + cosA * orbitR;
-  const cy = sy + sinA * orbitR;
+  const cy = syBelly + sinA * orbitR;
 
-  const headLen = 15;
-  const headW = 10;
+  /* Mũi tên nhỏ hơn */
+  const headLen = 10;
+  const headW = 6;
 
   const tipX = cx + cosA * (headLen * 0.6);
   const tipY = cy + sinA * (headLen * 0.6);
-
   const b1X = cx - cosA * (headLen * 0.4) + px * headW;
   const b1Y = cy - sinA * (headLen * 0.4) + py * headW;
   const b2X = cx - cosA * (headLen * 0.4) - px * headW;
   const b2Y = cy - sinA * (headLen * 0.4) - py * headW;
-
   const midX = (tipX + b1X + b2X) / 3;
   const midY = (tipY + b1Y + b2Y) / 3;
 
   ctx.save();
 
-  /* 1. Đổ bóng */
+  /* Đổ bóng */
   ctx.globalAlpha = 0.4;
   ctx.fillStyle = '#000000';
   ctx.beginPath();
-  ctx.moveTo(tipX + 2, tipY + 3);
-  ctx.lineTo(b1X + 2, b1Y + 3);
-  ctx.lineTo(b2X + 2, b2Y + 3);
+  ctx.moveTo(tipX + 1.5, tipY + 2);
+  ctx.lineTo(b1X + 1.5, b1Y + 2);
+  ctx.lineTo(b2X + 1.5, b2Y + 2);
   ctx.closePath();
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  /* 2. Viền đen đậm */
+  /* Viền đen */
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 2.5;
   ctx.lineJoin = 'round';
   ctx.beginPath();
   ctx.moveTo(tipX, tipY);
@@ -1484,7 +1467,7 @@ function drawAimArrow(){
   ctx.closePath();
   ctx.stroke();
 
-  /* 3. Fill gradient trắng */
+  /* Fill gradient trắng */
   const grad = ctx.createLinearGradient(b2X, b2Y, tipX, tipY);
   grad.addColorStop(0,   '#c8d8c0');
   grad.addColorStop(0.5, '#ffffff');
@@ -1497,7 +1480,7 @@ function drawAimArrow(){
   ctx.closePath();
   ctx.fill();
 
-  /* 4. Highlight cánh trên */
+  /* Highlight cánh trên */
   ctx.fillStyle = 'rgba(255,255,255,.9)';
   ctx.beginPath();
   ctx.moveTo(tipX, tipY);
@@ -1506,7 +1489,7 @@ function drawAimArrow(){
   ctx.closePath();
   ctx.fill();
 
-  /* 5. Shadow cánh dưới */
+  /* Shadow cánh dưới */
   ctx.fillStyle = 'rgba(0,0,0,.25)';
   ctx.beginPath();
   ctx.moveTo(tipX, tipY);
@@ -1515,25 +1498,25 @@ function drawAimArrow(){
   ctx.closePath();
   ctx.fill();
 
-  /* 6. Glow xanh khi aim mobile */
+  /* Glow xanh khi kéo joystick */
   if (aim.joyId !== null){
     const t = performance.now() / 150;
     const pulse = 1 + Math.sin(t) * 0.2;
-    ctx.globalAlpha = 0.4;
+    ctx.globalAlpha = 0.35;
     ctx.fillStyle = '#88ff60';
     ctx.beginPath();
-    ctx.arc(tipX, tipY, 7 * pulse, 0, Math.PI * 2);
+    ctx.arc(tipX, tipY, 5 * pulse, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
   }
 
-  /* 7. Cung đỏ auto-attack */
+  /* Cung đỏ auto-attack */
   if (aim.autoAttack){
     ctx.strokeStyle = '#ff5050';
-    ctx.lineWidth = 2.5;
-    ctx.globalAlpha = 0.75;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.7;
     ctx.beginPath();
-    ctx.arc(sx, sy, orbitR + 14, a - 0.4, a + 0.4);
+    ctx.arc(sx, syBelly, orbitR + 8, a - 0.4, a + 0.4);
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
@@ -1572,10 +1555,8 @@ function render(){
     ctx.fillStyle = `rgba(5, 8, 25, ${nightFactor * 0.75})`;
     ctx.fillRect(0, 0, VW, VH);
   }
-  document.getElementById('time').textContent =
-    `${nightFactor > 0.6 ? '🌙' : '☀'} ${getClockString()} · Ngày ${dayCount}`;
-  document.getElementById('coords').innerHTML =
-    `XYZ: <b>${(player.x/TILE).toFixed(1)} ${(player.y/TILE).toFixed(1)}</b>`;
+  $('time').textContent = `${nightFactor > 0.6 ? '🌙' : '☀'} ${getClockString()} · Ngày ${dayCount}`;
+  $('coords').innerHTML = `XYZ: <b>${(player.x/TILE).toFixed(1)} ${(player.y/TILE).toFixed(1)}</b>`;
 }
 
 function updateCam(){
@@ -1604,7 +1585,7 @@ function getClockString(){
 /* ============================================================
    HUD
    ============================================================ */
-const hotbarEl = document.getElementById('hotbar');
+const hotbarEl = $('hotbar');
 function renderHotbar(){
   hotbarEl.innerHTML = '';
   for (let i=0;i<9;i++){
@@ -1627,17 +1608,17 @@ function renderHotbar(){
 }
 function updateHpBar(){
   const pct = Math.max(0, player.hp / player.maxHp * 100);
-  document.getElementById('hpFillInner').style.width = pct + '%';
-  document.getElementById('hpText').textContent = Math.max(0, player.hp) + '/' + player.maxHp;
+  $('hpFillInner').style.width = pct + '%';
+  $('hpText').textContent = Math.max(0, player.hp) + '/' + player.maxHp;
 }
 function flashDamage(){
-  const bar = document.getElementById('hpBar');
+  const bar = $('hpBar');
   bar.style.boxShadow = '0 0 20px 4px #ff3030';
   setTimeout(() => { bar.style.boxShadow = '0 2px 0 rgba(0,0,0,.5)'; }, 200);
 }
 let toastTimer = null;
 function toast(msg){
-  const el = document.getElementById('toast');
+  const el = $('toast');
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
@@ -1645,120 +1626,141 @@ function toast(msg){
 }
 
 /* ============================================================
-   BUTTON SETTINGS
+   BUTTON SETTINGS — KÉO THẢ DI CHUYỂN NÚT
    ============================================================ */
 const ButtonSettings = (() => {
-  const DEFAULTS = {
-    joySize: 145,
-    atkSize: 86,
-    jumpSize: 58,
-    sitSize: 58,
-    opacity: 100
+  const KEY = 'dh_btn_position_v2';
+  const KEYS = ['moveJoy', 'aimJoy', 'atk', 'jump', 'sit'];
+  let offsets = { moveJoy:{dx:0,dy:0}, aimJoy:{dx:0,dy:0}, atk:{dx:0,dy:0}, jump:{dx:0,dy:0}, sit:{dx:0,dy:0} };
+  let backup = null;
+  let editMode = false;
+
+  const VARS = {
+    moveJoy: ['--mjoy-tx', '--mjoy-ty'],
+    aimJoy:  ['--ajoy-tx', '--ajoy-ty'],
+    atk:     ['--atk-tx', '--atk-ty'],
+    jump:    ['--jump-tx', '--jump-ty'],
+    sit:     ['--sit-tx', '--sit-ty']
   };
-  const KEY = 'dh_button_settings_v1';
+  const ELEMS = {
+    moveJoy: 'moveJoystick',
+    aimJoy: 'aimJoystick',
+    atk: 'btnAttack',
+    jump: 'btnJump',
+    sit: 'btnSit'
+  };
 
   function load(){
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
+      if (raw){
+        const data = JSON.parse(raw);
+        for (const k of KEYS){
+          if (data[k]) offsets[k] = { dx: +data[k].dx || 0, dy: +data[k].dy || 0 };
+        }
+      }
     } catch(e){}
-    return { ...DEFAULTS };
   }
 
-  function save(cfg){
-    try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch(e){}
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify(offsets)); } catch(e){}
   }
 
-  function apply(cfg){
+  function applyOne(key){
     const root = document.documentElement;
-    const joySize = cfg.joySize;
-    const joyKnob = Math.round(joySize * 0.46);
-    const aimSize = joySize;
-    const aimKnob = Math.round(joySize * 0.43);
-
-    root.style.setProperty('--joy-size', joySize + 'px');
-    root.style.setProperty('--joy-knob', joyKnob + 'px');
-    root.style.setProperty('--aim-size', aimSize + 'px');
-    root.style.setProperty('--aim-knob', aimKnob + 'px');
-
-    root.style.setProperty('--atk-size', cfg.atkSize + 'px');
-    root.style.setProperty('--jump-size', cfg.jumpSize + 'px');
-    root.style.setProperty('--sit-size', cfg.sitSize + 'px');
-
-    root.style.setProperty('--btn-opacity', (cfg.opacity / 100).toFixed(2));
-
-    const atkRight = 25;
-    const atkBottom = 55;
-    root.style.setProperty('--atk-right', atkRight + 'px');
-    root.style.setProperty('--atk-bottom', atkBottom + 'px');
-
-    const jumpBottom = atkBottom + cfg.atkSize + 14;
-    root.style.setProperty('--jump-bottom', jumpBottom + 'px');
-    root.style.setProperty('--jump-right', atkRight + 'px');
-
-    const sitRight = atkRight + cfg.atkSize + 14;
-    root.style.setProperty('--sit-right', sitRight + 'px');
-    root.style.setProperty('--sit-bottom', atkBottom + 12 + 'px');
+    const [vx, vy] = VARS[key];
+    const o = offsets[key];
+    root.style.setProperty(vx, o.dx + 'px');
+    root.style.setProperty(vy, o.dy + 'px');
   }
 
-  function bindUI(){
-    const joyS = $('setJoySize'), joyV = $('valJoySize');
-    const atkS = $('setAtkSize'), atkV = $('valAtkSize');
-    const jumpS = $('setJumpSize'), jumpV = $('valJumpSize');
-    const sitS = $('setSitSize'), sitV = $('valSitSize');
-    const opS = $('setBtnOpacity'), opV = $('valBtnOpacity');
+  function applyAll(){
+    for (const k of KEYS) applyOne(k);
+  }
 
-    function sync(){
-      const cfg = {
-        joySize: +joyS.value,
-        atkSize: +atkS.value,
-        jumpSize: +jumpS.value,
-        sitSize: +sitS.value,
-        opacity: +opS.value
-      };
-      joyV.textContent = cfg.joySize;
-      atkV.textContent = cfg.atkSize;
-      jumpV.textContent = cfg.jumpSize;
-      sitV.textContent = cfg.sitSize;
-      opV.textContent = cfg.opacity;
-      apply(cfg);
-      save(cfg);
-    }
+  function makeDraggable(key){
+    const el = $(ELEMS[key]);
+    if (!el) return;
+    let dragging = false;
+    let startX = 0, startY = 0;
+    let startDx = 0, startDy = 0;
 
-    [joyS, atkS, jumpS, sitS, opS].forEach(el => el.addEventListener('input', sync));
+    el.addEventListener('pointerdown', e => {
+      if (!editMode) return;
+      e.preventDefault();
+      e.stopPropagation();
+      dragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startDx = offsets[key].dx;
+      startDy = offsets[key].dy;
+      el.style.zIndex = '99999';
+      try { el.setPointerCapture(e.pointerId); } catch(err){}
+    }, true);
 
-    const cfg = load();
-    joyS.value = cfg.joySize;
-    atkS.value = cfg.atkSize;
-    jumpS.value = cfg.jumpSize;
-    sitS.value = cfg.sitSize;
-    opS.value = cfg.opacity;
-    joyV.textContent = cfg.joySize;
-    atkV.textContent = cfg.atkSize;
-    jumpV.textContent = cfg.jumpSize;
-    sitV.textContent = cfg.sitSize;
-    opV.textContent = cfg.opacity;
-    apply(cfg);
+    el.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      e.preventDefault();
+      offsets[key].dx = startDx + (e.clientX - startX);
+      offsets[key].dy = startDy + (e.clientY - startY);
+      applyOne(key);
+    }, true);
+
+    const stop = e => {
+      if (!dragging) return;
+      dragging = false;
+      el.style.zIndex = '';
+    };
+    el.addEventListener('pointerup', stop, true);
+    el.addEventListener('pointercancel', stop, true);
+  }
+
+  function openEditor(){
+    load();
+    backup = JSON.parse(JSON.stringify(offsets));
+    editMode = true;
+    document.body.classList.add('edit-btn-mode');
+    $('menu').classList.add('hidden');
+    // Không pause game nếu đang chơi
+  }
+
+  function commitSave(){
+    editMode = false;
+    document.body.classList.remove('edit-btn-mode');
+    save();
+    toast('💾 Đã lưu vị trí nút');
+    if (gameStarted){ paused = false; }
+    if (!gameStarted) $('menu').classList.remove('hidden');
+  }
+
+  function cancelEdit(){
+    if (backup) offsets = JSON.parse(JSON.stringify(backup));
+    applyAll();
+    editMode = false;
+    document.body.classList.remove('edit-btn-mode');
+    if (!gameStarted) $('menu').classList.remove('hidden');
   }
 
   function reset(){
     localStorage.removeItem(KEY);
-    const cfg = { ...DEFAULTS };
-    apply(cfg);
-    $('setJoySize').value = cfg.joySize;
-    $('setAtkSize').value = cfg.atkSize;
-    $('setJumpSize').value = cfg.jumpSize;
-    $('setSitSize').value = cfg.sitSize;
-    $('setBtnOpacity').value = cfg.opacity;
-    $('valJoySize').textContent = cfg.joySize;
-    $('valAtkSize').textContent = cfg.atkSize;
-    $('valJumpSize').textContent = cfg.jumpSize;
-    $('valSitSize').textContent = cfg.sitSize;
-    $('valBtnOpacity').textContent = cfg.opacity;
-    toast('↺ Đã reset nút');
+    for (const k of KEYS) offsets[k] = { dx: 0, dy: 0 };
+    applyAll();
+    toast('↺ Đã reset vị trí');
   }
 
-  return { bindUI, reset };
+  function init(){
+    load();
+    applyAll();
+    for (const k of KEYS) makeDraggable(k);
+    $('editSave').addEventListener('click', commitSave);
+    $('editCancel').addEventListener('click', cancelEdit);
+    $('editReset').addEventListener('click', () => {
+      for (const k of KEYS) offsets[k] = { dx: 0, dy: 0 };
+      applyAll();
+    });
+  }
+
+  return { init, openEditor, reset };
 })();
 
 /* ============================================================
@@ -1768,13 +1770,13 @@ window.Game = {
   startSingleplayer: () => startSingleplayer(),
   showMP: () => showMenuPage('mp'),
   showSettings: () => {
-    if (gameStarted){ paused = true; document.getElementById('pause').classList.add('hidden'); }
-    document.getElementById('menu').classList.remove('hidden');
+    if (gameStarted){ paused = true; $('pause').classList.add('hidden'); }
+    $('menu').classList.remove('hidden');
     showMenuPage('settings');
   },
   backMain: () => {
     showMenuPage('main');
-    if (gameStarted){ document.getElementById('menu').classList.add('hidden'); paused = false; }
+    if (gameStarted){ $('menu').classList.add('hidden'); paused = false; }
   },
   hostRoom: () => hostRoom(),
   showJoin: () => showJoin(),
@@ -1782,26 +1784,26 @@ window.Game = {
   resumeGame: () => togglePause(),
   pauseSettings: () => {
     paused = false;
-    document.getElementById('pause').classList.add('hidden');
+    $('pause').classList.add('hidden');
     backToMenu(); showMenuPage('settings');
   },
   quitToMenu: () => backToMenu(),
 };
 const menuPages = {
-  main: document.getElementById('menuMain'),
-  mp: document.getElementById('menuMP'),
-  settings: document.getElementById('menuSettings')
+  main: $('menuMain'),
+  mp: $('menuMP'),
+  settings: $('menuSettings')
 };
 function showMenuPage(name){
   if (!menuPages[name]) return;
   for (const k in menuPages) menuPages[k].classList.toggle('hidden', k !== name);
 }
 async function hostRoom(){
-  document.getElementById('hostPanel').classList.remove('hidden');
-  document.getElementById('joinPanel').classList.add('hidden');
-  const name = document.getElementById('hostName').value.trim() || 'Host';
-  const status = document.getElementById('hostStatus');
-  const codeEl = document.getElementById('roomCodeDisplay');
+  $('hostPanel').classList.remove('hidden');
+  $('joinPanel').classList.add('hidden');
+  const name = $('hostName').value.trim() || 'Host';
+  const status = $('hostStatus');
+  const codeEl = $('roomCodeDisplay');
   status.textContent = 'Đang kết nối...';
   try {
     const code = await net.startHost(name);
@@ -1815,14 +1817,14 @@ async function hostRoom(){
   } catch(e){ status.textContent = '❌ Lỗi: ' + (e.message || e); }
 }
 function showJoin(){
-  document.getElementById('hostPanel').classList.add('hidden');
-  document.getElementById('joinPanel').classList.remove('hidden');
-  setTimeout(() => document.getElementById('joinCode').focus(), 100);
+  $('hostPanel').classList.add('hidden');
+  $('joinPanel').classList.remove('hidden');
+  setTimeout(() => $('joinCode').focus(), 100);
 }
 async function joinRoom(){
-  const code = document.getElementById('joinCode').value.trim().toUpperCase();
-  const name = document.getElementById('joinName').value.trim() || 'Hunter';
-  const status = document.getElementById('joinStatus');
+  const code = $('joinCode').value.trim().toUpperCase();
+  const name = $('joinName').value.trim() || 'Hunter';
+  const status = $('joinStatus');
   if (code.length < 4){ status.textContent = '❌ Mã không hợp lệ'; return; }
   status.textContent = 'Đang kết nối...';
   try {
@@ -1843,8 +1845,8 @@ bindSlider('setSfx', 'valSfx', v => Audio2D.setSfxVolume(v));
 function toggleSettings(){
   if (gameStarted){
     paused = true;
-    document.getElementById('pause').classList.add('hidden');
-    document.getElementById('menu').classList.remove('hidden');
+    $('pause').classList.add('hidden');
+    $('menu').classList.remove('hidden');
     showMenuPage('settings');
   } else showMenuPage('settings');
 }
@@ -1860,9 +1862,9 @@ function startSingleplayer(){
   startGame('sp');
 }
 function startGame(mode){
-  document.getElementById('menu').classList.add('hidden');
-  document.getElementById('pause').classList.add('hidden');
-  document.getElementById('settingsBtn').classList.add('show');
+  $('menu').classList.add('hidden');
+  $('pause').classList.add('hidden');
+  $('settingsBtn').classList.add('show');
   gameStarted = true; paused = false;
   Audio2D.init(); Audio2D.startMusic();
   renderHotbar(); updateHpBar();
@@ -1873,15 +1875,15 @@ function startGame(mode){
 function togglePause(){
   if (!gameStarted) return;
   paused = !paused;
-  document.getElementById('pause').classList.toggle('hidden', !paused);
-  document.getElementById('settingsBtn').classList.toggle('show', !paused);
+  $('pause').classList.toggle('hidden', !paused);
+  $('settingsBtn').classList.toggle('show', !paused);
 }
 function backToMenu(){
   gameStarted = false; paused = false;
-  document.getElementById('pause').classList.add('hidden');
-  document.getElementById('settingsBtn').classList.remove('show');
+  $('pause').classList.add('hidden');
+  $('settingsBtn').classList.remove('show');
   net.disconnect();
-  document.getElementById('menu').classList.remove('hidden');
+  $('menu').classList.remove('hidden');
   showMenuPage('main');
   if (netSyncTimer){ clearInterval(netSyncTimer); netSyncTimer = null; }
 }
@@ -1921,13 +1923,7 @@ function loop(now){
 }
 mouse.x = VW/2; mouse.y = VH/2;
 
-/* ============================================================
-   SHORTCUT helper — thay getElementById
-   ============================================================ */
-function $(id){ return document.getElementById(id); }
-
-/* Bind UI settings + load project */
-ButtonSettings.bindUI();
+ButtonSettings.init();
 
 loadProject().then(() => {
   showMenuPage('main');
@@ -1935,4 +1931,4 @@ loadProject().then(() => {
 });
 </script>
 </body>
-          </html>
+        </html>
