@@ -197,7 +197,7 @@ input[type=file]{display:none}
 <body>
 <div class="app">
 <header class="header">
-  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.1</span></div>
+  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.2</span></div>
   <div class="header-tools">
     <button class="btn" id="uploadBtn">📁 Upload PNG</button>
     <button class="btn" id="importBtn">📥 Import JSON</button>
@@ -313,11 +313,11 @@ input[type=file]{display:none}
           <div class="field">
             <label>Mode</label>
             <select id="anchorMode">
-              <option value="bottom-center">Đáy-giữa</option>
-              <option value="bottom-left">Đáy-trái</option>
-              <option value="bottom-right">Đáy-phải</option>
-              <option value="center">Tâm</option>
-              <option value="top-center">Đỉnh-giữa</option>
+              <option value="stable-x">Ổn định X + chân Y ✓</option>
+              <option value="stable">Ổn định cả X và Y</option>
+              <option value="per-frame">Riêng từng frame (dễ trôi)</option>
+              <option value="bottom-center">Đáy-giữa (tính lại)</option>
+              <option value="center">Tâm (tính lại)</option>
               <option value="manual">Chỉnh tay</option>
             </select>
           </div>
@@ -325,8 +325,9 @@ input[type=file]{display:none}
             <button class="mini" id="anchorRecompute" style="flex:1;padding:6px">🔄 Tính lại</button>
             <button class="mini" id="anchorClear">🗑</button></div>
           <div class="help-box">
-            <b>Chấm đỏ</b> = anchor.<br>
-            Mode <b>Chỉnh tay</b>: click vào canvas để đặt anchor cho frame đang chọn.
+            <b>Ổn định X + chân Y:</b> không trôi ngang, chân bám đất<br>
+            <b>Ổn định cả:</b> cố định hoàn toàn<br>
+            <b>Chấm đỏ</b> = anchor · <b>Chấm xanh</b> = stable
           </div>
         </div>
         <div class="sec">
@@ -591,9 +592,25 @@ function detectBBox(canvas, x1, y1, x2, y2){
 }
 
 /* ============================================================
-   SPRITE MGMT
+   SPRITE MANAGEMENT
    ============================================================ */
 function genId(){ return 's' + Date.now() + '_' + Math.floor(Math.random()*10000); }
+
+/* Preset animation — auto-detect từ tên file */
+const ANIM_PRESETS = {
+  idle:   { anim:'idle',   fps:6,  loop:true  },
+  run:    { anim:'run',    fps:14, loop:true  },
+  walk:   { anim:'run',    fps:12, loop:true  },
+  jump:   { anim:'jump',   fps:12, loop:false },
+  fall:   { anim:'jump',   fps:12, loop:false },
+  attack: { anim:'attack', fps:16, loop:false },
+  atk:    { anim:'attack', fps:16, loop:false },
+  hit:    { anim:'attack', fps:16, loop:false },
+  sit:    { anim:'sit',    fps:6,  loop:true  },
+  hurt:   { anim:'hurt',   fps:8,  loop:false },
+  death:  { anim:'hurt',   fps:8,  loop:false },
+  dead:   { anim:'hurt',   fps:8,  loop:false }
+};
 
 function addSpriteFromFile(file){
   return new Promise((resolve, reject) => {
@@ -602,32 +619,43 @@ function addSpriteFromFile(file){
       const img = new Image();
       img.onload = () => {
         const meta = decodeMetadata(img);
+
+        /* Detect từ tên file */
+        const fn = file.name.toLowerCase();
+        let detectedModel = 'player';
+        if (fn.includes('player')) detectedModel = 'player';
+        else if (fn.includes('enemy')) detectedModel = 'enemy';
+        else if (fn.includes('npc')) detectedModel = 'npc';
+        else if (fn.includes('boss')) detectedModel = 'boss';
+
+        let detectedAnim = null;
+        for (const key in ANIM_PRESETS){
+          if (fn.includes(key)){ detectedAnim = ANIM_PRESETS[key]; break; }
+        }
+
         const sprite = {
           id: genId(),
           fileName: file.name.replace(/\.[^.]+$/, ''),
-          model: 'player',
-          anim: 'idle',
+          model: detectedModel,
+          anim: detectedAnim ? detectedAnim.anim : 'idle',
           img, loaded: true,
           canvas: null, ctx: null,
           spriteH: meta ? (meta.spriteH || img.height - 1) : img.height,
           vLines: meta ? (meta.vLines || [0, img.width]) : [0, img.width],
           hLines: meta ? (meta.hLines || [0, img.height - 1]) : [0, img.height],
           anchors: [],
-          anchorMode: meta ? (meta.anchorMode || 'bottom-center') : 'bottom-center',
-          fps: meta ? (meta.fps || 10) : 10,
-          loop: meta ? (meta.loop !== false) : true,
+          stableAnchor: null,
+          anchorMode: meta ? (meta.anchorMode || 'stable-x') : 'stable-x',
+          fps: meta ? (meta.fps || (detectedAnim ? detectedAnim.fps : 10)) :
+                    (detectedAnim ? detectedAnim.fps : 10),
+          loop: meta ? (meta.loop !== false) :
+                    (detectedAnim ? detectedAnim.loop : true),
           version: meta ? (meta.v || 1) : 0
         };
-        const fn = file.name.toLowerCase();
-        if (fn.includes('player')) sprite.model = 'player';
-        else if (fn.includes('enemy')) sprite.model = 'enemy';
-        else if (fn.includes('npc')) sprite.model = 'npc';
-        if (fn.includes('idle')) sprite.anim = 'idle';
-        else if (fn.includes('run')) sprite.anim = 'run';
-        else if (fn.includes('jump')) sprite.anim = 'jump';
-        else if (fn.includes('attack') || fn.includes('atk')) sprite.anim = 'attack';
-        else if (fn.includes('sit')) sprite.anim = 'sit';
-        else if (fn.includes('hurt') || fn.includes('death') || fn.includes('dead')) sprite.anim = 'hurt';
+
+        if (detectedAnim){
+          console.log(`🎬 Auto-detected: ${sprite.model}/${sprite.anim} · ${sprite.fps}fps · ${sprite.loop?'loop':'once'}`);
+        }
 
         const cnv = document.createElement('canvas');
         cnv.width = img.width;
@@ -645,12 +673,15 @@ function addSpriteFromFile(file){
             return null;
           });
         }
-        if (!sprite.anchors.length || sprite.anchors.every(a => !a)){
+        if (meta && meta.stableAnchor){
+          sprite.stableAnchor = { x: meta.stableAnchor[0], y: meta.stableAnchor[1] };
+        }
+        if (!sprite.anchors.length || sprite.anchors.every(a => !a) || !sprite.stableAnchor){
           computeAnchorsForSprite(sprite, false);
         }
         resolve(sprite);
       };
-      img.onerror = () => reject(new Error('Load fail'));
+      img.onerror = () => reject(new Error('Load fail: ' + file.name));
       img.src = e.target.result;
     };
     reader.onerror = () => reject(new Error('Read fail'));
@@ -658,11 +689,12 @@ function addSpriteFromFile(file){
   });
 }
 
-/* ⭐ CHÍNH — anchor.x và anchor.y riêng từng frame */
+/* Tính anchors + stable anchor */
 function computeAnchorsForSprite(sprite, verbose){
   const s = sprite;
   const lines = s.vLines;
   if (!lines || lines.length < 2) return;
+
   const anchors = [];
   for (let r = 0; r < s.hLines.length - 1; r++){
     for (let c = 0; c < lines.length - 1; c++){
@@ -677,14 +709,39 @@ function computeAnchorsForSprite(sprite, verbose){
         case 'bottom-right': ax = bbox.x + bbox.w; ay = bbox.y + bbox.h; break;
         case 'center':       ax = bbox.x + bbox.w/2; ay = bbox.y + bbox.h/2; break;
         case 'top-center':   ax = bbox.x + bbox.w/2; ay = bbox.y; break;
+        case 'stable':
+        case 'stable-x':
+        case 'per-frame':
         case 'bottom-center':
-        default:             ax = bbox.x + bbox.w/2; ay = bbox.y + bbox.h; break;
+        default:
+          ax = bbox.x + bbox.w/2;
+          ay = bbox.y + bbox.h;
       }
       anchors.push({ x: Math.round(ax), y: Math.round(ay) });
     }
   }
   s.anchors = anchors;
-  if (verbose) toast('🎯 ' + anchors.filter(a=>a).length + ' anchors');
+
+  /* Tính stable anchor — trung bình local offset X, trung bình Y */
+  let sumLocalX = 0, sumY = 0, count = 0;
+  for (let i = 0; i < anchors.length; i++){
+    if (!anchors[i]) continue;
+    const srcX = lines[i];
+    sumLocalX += anchors[i].x - srcX;
+    sumY += anchors[i].y;
+    count++;
+  }
+  if (count > 0){
+    s.stableAnchor = {
+      x: Math.round(sumLocalX / count),
+      y: Math.round(sumY / count)
+    };
+  } else {
+    s.stableAnchor = null;
+  }
+
+  if (verbose) toast('🎯 ' + anchors.filter(a=>a).length + ' anchors · stable=(' +
+    (s.stableAnchor ? s.stableAnchor.x + ',' + s.stableAnchor.y : 'null') + ')');
 }
 
 /* ============================================================
@@ -783,6 +840,7 @@ function renderOverlay(){
   const oc = overlayCanvas.getContext('2d');
   oc.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
+  /* Lưới */
   oc.strokeStyle = 'rgba(255,80,80,.9)';
   oc.lineWidth = 1;
   for (const x of s.vLines){
@@ -798,6 +856,7 @@ function renderOverlay(){
     oc.stroke();
   }
 
+  /* Số frame */
   oc.font = 'bold 11px Consolas, monospace';
   oc.fillStyle = '#88ff60';
   oc.strokeStyle = 'rgba(0,0,0,.8)';
@@ -812,7 +871,7 @@ function renderOverlay(){
     }
   }
 
-  /* Anchors */
+  /* Anchors đỏ */
   s.anchors.forEach(a => {
     if (!a) return;
     const ax = a.x != null ? a.x : 0;
@@ -832,6 +891,28 @@ function renderOverlay(){
     oc.stroke();
   });
 
+  /* Stable anchor — đường xanh cyan */
+  if (s.stableAnchor && s.anchorMode !== 'per-frame'){
+    const sa = s.stableAnchor;
+    oc.strokeStyle = '#00d0ff';
+    oc.lineWidth = 2;
+    oc.setLineDash([4, 3]);
+    /* Đường dọc ở vị trí stableX của từng frame */
+    for (let i = 0; i < s.vLines.length - 1; i++){
+      const x = s.vLines[i] + sa.x;
+      if (x < 0 || x > overlayCanvas.width) continue;
+      oc.beginPath();
+      oc.moveTo(x, 0); oc.lineTo(x, overlayCanvas.height);
+      oc.stroke();
+    }
+    /* Đường ngang stableY */
+    oc.beginPath();
+    oc.moveTo(0, sa.y); oc.lineTo(overlayCanvas.width, sa.y);
+    oc.stroke();
+    oc.setLineDash([]);
+  }
+
+  /* Cell đang chọn */
   if (state.cell){
     oc.strokeStyle = 'rgba(136,255,96,.95)';
     oc.lineWidth = 3;
@@ -1011,9 +1092,10 @@ jsonInput.addEventListener('change', async e => {
             s.vLines = [...cfg.vLines];
             s.hLines = [...cfg.hLines];
             s.anchors = (cfg.anchors || []).map(a => a ? { x: a[0], y: a[1] } : null);
+            s.stableAnchor = cfg.stableAnchor ? { x: cfg.stableAnchor[0], y: cfg.stableAnchor[1] } : null;
+            s.anchorMode = cfg.anchorMode || 'stable-x';
             s.fps = cfg.fps;
             s.loop = cfg.loop;
-            s.anchorMode = cfg.anchorMode || 'bottom-center';
           }
         }
       }
@@ -1043,7 +1125,8 @@ function buildProjectJson(){
       vLines: s.vLines.map(v => Math.round(v)),
       hLines: s.hLines.map(v => Math.round(v)),
       anchors: s.anchors.map(a => a ? [a.x, a.y] : null),
-      anchorMode: s.anchorMode,
+      stableAnchor: s.stableAnchor ? [s.stableAnchor.x, s.stableAnchor.y] : null,
+      anchorMode: s.anchorMode || 'stable-x',
       fps: s.fps,
       loop: s.loop
     };
@@ -1068,8 +1151,9 @@ function exportSpritePNG(s, withMeta){
         spriteH: s.canvas.height,
         vLines: s.vLines.map(v => Math.round(v)),
         hLines: s.hLines.map(v => Math.round(v)),
-        anchorMode: s.anchorMode,
-        anchors: s.anchors.map(a => a ? [a.x, a.y] : null)
+        anchors: s.anchors.map(a => a ? [a.x, a.y] : null),
+        stableAnchor: s.stableAnchor ? [s.stableAnchor.x, s.stableAnchor.y] : null,
+        anchorMode: s.anchorMode || 'stable-x'
       };
       writeMetaRow(out, s.canvas.height, encodeMetadata(meta));
     }
@@ -1101,7 +1185,7 @@ $('exportAllBtn').addEventListener('click', async () => {
     await exportSpritePNG(sprites[i], true);
     await new Promise(r => setTimeout(r, 250));
   }
-  // JSON
+  /* JSON */
   const project = buildProjectJson();
   const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -1478,7 +1562,9 @@ $('anchorMode').addEventListener('change', e => {
   const s = currentSprite(); if (!s) return;
   s.anchorMode = e.target.value;
   state.manualAnchor = s.anchorMode === 'manual';
-  if (!state.manualAnchor) computeAnchorsForSprite(s, false);
+  if (!state.manualAnchor){
+    computeAnchorsForSprite(s, false);
+  }
   renderAll();
 });
 $('anchorRecompute').addEventListener('click', () => {
@@ -1489,6 +1575,7 @@ $('anchorRecompute').addEventListener('click', () => {
 $('anchorClear').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
   s.anchors = [];
+  s.stableAnchor = null;
   renderAll();
 });
 
@@ -1581,13 +1668,17 @@ function renderPreviewInfo(){
   if (!s){ $('previewInfo').textContent = 'Chọn sprite để xem.'; return; }
   const frames = s.vLines.length - 1;
   const anchors = s.anchors.filter(a=>a).length;
+  let saText = '—';
+  if (s.stableAnchor) saText = `(${s.stableAnchor.x}, ${s.stableAnchor.y})`;
   $('previewInfo').innerHTML =
     `<b>${s.model}/${s.anim}</b><br>` +
     `File: ${s.fileName}.png<br>` +
     `Size: ${s.canvas.width}×${s.canvas.height}<br>` +
     `Frames: <span style="color:var(--accent2)">${frames}</span><br>` +
     `FPS: ${s.fps} · ${s.loop ? 'loop' : 'once'}<br>` +
-    `Anchors: ${anchors}/${frames}`;
+    `Anchors: ${anchors}/${frames}<br>` +
+    `Mode: <span style="color:var(--info)">${s.anchorMode}</span><br>` +
+    `Stable: ${saText}`;
   const slider = $('previewFrameSlider');
   slider.max = Math.max(0, frames - 1);
   slider.value = state.previewFrame;
@@ -1614,6 +1705,23 @@ function drawPreview(){
   const dx = (previewCanvas.width - dw) / 2;
   const dy = (previewCanvas.height - dh) / 2;
   pctx.drawImage(s.canvas, sx, 0, sw, sh, dx, dy, dw, dh);
+
+  /* Stable anchor — chấm cyan */
+  if (s.stableAnchor && s.anchorMode !== 'per-frame'){
+    const sa = s.stableAnchor;
+    const ax = dx + sa.x * scale;
+    const ay = dy + sa.y * scale;
+    pctx.strokeStyle = '#00d0ff';
+    pctx.lineWidth = 2;
+    pctx.beginPath();
+    pctx.arc(ax, ay, 5, 0, Math.PI*2);
+    pctx.stroke();
+    pctx.fillStyle = '#00d0ff';
+    pctx.beginPath();
+    pctx.arc(ax, ay, 2, 0, Math.PI*2);
+    pctx.fill();
+  }
+  /* Anchor đỏ */
   const a = s.anchors[idx];
   if (a){
     const ax = dx + ((a.x - sx) / sw) * dw;
@@ -1658,12 +1766,17 @@ $('previewStopBtn').addEventListener('click', () => {
    ============================================================ */
 $('helpBtn').addEventListener('click', () => {
   alert('HƯỚNG DẪN:\n\n' +
-    '1. Upload PNG → tự động đọc metadata\n' +
+    '1. Upload PNG → tự động detect model + anim + fps\n' +
     '2. Bấm 🤖 Auto để auto-detect frame\n' +
-    '3. Kéo line đỏ cho khớp nhân vật\n' +
-    '4. Chọn anchor mode → bấm 🎯 Anchors\n' +
-    '5. Set Model + Anim + FPS trong tab META\n' +
-    '6. Bấm 📦 Export All → tải tất cả PNG + JSON\n\n' +
+    '3. Kéo line đỏ cho khớp\n' +
+    '4. Chọn anchor mode (mặc định stable-x)\n' +
+    '5. Bấm 🎯 Anchors để tính lại\n' +
+    '6. Đặt Model/Anim/FPS trong tab META\n' +
+    '7. Bấm 📦 Export All → tải 6 PNG + sprites.json\n\n' +
+    'ANCHOR MODE:\n' +
+    '• Ổn định X + chân Y = không trôi ngang, chân bám đất\n' +
+    '• Ổn định cả = cố định hoàn toàn\n' +
+    '• Riêng frame = mỗi frame 1 anchor (dễ trôi)\n\n' +
     'PHÍM TẮT:\n' +
     'Ctrl+scroll = zoom\n' +
     'Right-click line = xóa\n' +
@@ -1700,4 +1813,4 @@ setTool('select');
 applyZoom();
 </script>
 </body>
-  </html>
+              </html>
