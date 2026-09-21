@@ -94,36 +94,86 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   display:flex;flex-direction:column;gap:10px}
 .pause-panel h2{font-family:Consolas,monospace;font-size:22px;letter-spacing:4px;color:#e8f0d8;
   margin-bottom:10px;text-shadow:0 2px 0 rgba(0,0,0,.5)}
-#touchUI{display:none;position:fixed;inset:0;pointer-events:none;z-index:8}
-@media (pointer:coarse){
-  #touchUI{display:block}
-  #hotbar{transform:translateX(-50%) scale(.72);bottom:4px}
-  #hpBar{bottom:62px;transform:translateX(-50%) scale(.85)}
+
+/* ================= MOBILE UI ================= */
+#touchUI{display:none;position:fixed;inset:0;pointer-events:none;z-index:8;touch-action:none}
+@media (pointer:coarse){ #touchUI{display:block} }
+
+.joystick{
+  position:absolute;width:145px;height:145px;border-radius:50%;
+  pointer-events:auto;touch-action:none;
 }
-#joyZone{position:absolute;left:16px;bottom:80px;width:130px;height:130px;pointer-events:auto;touch-action:none}
-#joyBase{width:100%;height:100%;border-radius:50%;background:rgba(0,0,0,.3);
-  border:3px solid rgba(255,255,255,.4);position:relative}
-#joyKnob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin-left:-27px;margin-top:-27px;
-  background:#889878;border:3px solid #1a1f14;border-radius:50%;
-  box-shadow:inset 0 0 0 2px #c8d8b8,3px 3px 0 rgba(0,0,0,.6)}
-#joyZoneR{position:absolute;right:16px;bottom:80px;width:130px;height:130px;pointer-events:auto;touch-action:none}
-#joyBaseR{width:100%;height:100%;border-radius:50%;background:rgba(0,0,0,.3);
-  border:3px solid rgba(255,255,255,.4);position:relative}
-#joyKnobR{position:absolute;left:50%;top:50%;width:54px;height:54px;margin-left:-27px;margin-top:-27px;
-  background:rgba(220,220,220,.85);border:3px solid #1a1f14;border-radius:50%;
-  box-shadow:inset 0 0 0 2px #fff,3px 3px 0 rgba(0,0,0,.6)}
-.tb{position:absolute;border-radius:50%;background:rgba(180,80,60,.9);border:3px solid #1a1f14;
-  box-shadow:inset 0 0 0 2px #e89888,3px 3px 0 rgba(0,0,0,.6);color:#fff;font-size:24px;font-weight:900;
-  text-shadow:2px 2px 0 #1a1f14;pointer-events:auto;touch-action:none;padding:0;line-height:1;
-  display:flex;align-items:center;justify-content:center;cursor:pointer}
-.tb.jump{background:rgba(80,140,200,.9);box-shadow:inset 0 0 0 2px #88c8e8,3px 3px 0 rgba(0,0,0,.6)}
-.tb.sit{background:rgba(140,120,60,.9);box-shadow:inset 0 0 0 2px #ffe088,3px 3px 0 rgba(0,0,0,.6)}
-.tb.pressed{background:#d8a898;border-color:#fff;box-shadow:none;transform:translate(2px,2px)}
-.tb.jump.pressed{background:#88c8e8}
-.tb.sit.pressed{background:#e8c898}
-#btnAttack{right:16px;bottom:16px;width:72px;height:72px;font-size:30px}
-#btnJump{right:96px;bottom:16px;width:64px;height:64px;font-size:28px}
-#btnSit{right:96px;bottom:88px;width:56px;height:56px;font-size:20px}
+#moveJoystick{left:30px;bottom:75px}
+#aimJoystick{right:125px;bottom:75px}
+
+.joystick-glow{
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle,
+    rgba(255,255,255,.10),
+    rgba(255,255,255,.035) 65%,
+    rgba(0,0,0,.18));
+  border:3px solid rgba(255,255,255,.32);
+  box-shadow:inset 0 0 18px rgba(0,0,0,.30), 0 5px 15px rgba(0,0,0,.35);
+}
+
+.joystick-knob{
+  position:absolute;width:67px;height:67px;left:50%;top:50%;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #eef2e8, #aeb8a5 60%, #7b8573);
+  border:3px solid rgba(255,255,255,.65);
+  box-shadow:0 4px 0 rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.3);
+}
+
+.aim-knob{
+  position:absolute;width:62px;height:62px;left:50%;top:50%;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #f2f4ed, #b8c0b0 60%, #7c8677);
+  border:3px solid rgba(255,255,255,.65);
+  box-shadow:0 4px 0 rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.3);
+}
+
+.circle-button{
+  position:absolute;pointer-events:auto;
+  width:72px;height:72px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.45);
+  display:flex;justify-content:center;align-items:center;
+  color:#fff;font-size:28px;font-weight:900;
+  text-shadow:2px 2px 0 rgba(0,0,0,.4);
+  box-shadow:inset 0 3px 5px rgba(255,255,255,.25),
+             inset 0 -5px 8px rgba(0,0,0,.25),
+             0 5px 12px rgba(0,0,0,.35);
+  transition:transform .08s;
+}
+.circle-button:active{transform:scale(.86)}
+
+.attack-button{
+  right:25px;bottom:55px;width:86px;height:86px;font-size:38px;
+  background:linear-gradient(145deg, #e86c55, #a72d25);
+}
+
+.action-button{
+  right:110px;bottom:145px;width:58px;height:58px;font-size:24px;
+  background:linear-gradient(145deg, #e3c65b, #96721f);
+}
+
+.jump-button{
+  right:25px;bottom:155px;width:58px;height:58px;font-size:26px;
+  background:linear-gradient(145deg, #6ab0e8, #22548a);
+}
+
+@media(max-width:600px){
+  .joystick{width:125px;height:125px}
+  #moveJoystick{left:18px;bottom:60px}
+  #aimJoystick{right:105px;bottom:60px}
+  .joystick-knob,.aim-knob{width:57px;height:57px}
+  .attack-button{width:75px;height:75px;right:15px;bottom:35px}
+  .action-button{right:88px;bottom:125px;width:52px;height:52px}
+  .jump-button{right:15px;bottom:128px;width:52px;height:52px}
+}
+
+body.is-touch #hotbar{transform:translateX(-50%) scale(.72);bottom:4px}
+body.is-touch #hpBar{bottom:62px;transform:translateX(-50%) scale(.85)}
+
 #settingsBtn{position:fixed;top:8px;right:8px;z-index:13;width:36px;height:36px;
   background:rgba(20,24,16,.9);border:2px solid #0a0d08;border-radius:6px;color:#e8f0d8;font-size:16px;
   display:none;align-items:center;justify-content:center;cursor:pointer;
@@ -156,13 +206,21 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   <span id="hpText">20/20</span>
 </div>
 <div id="hotbar"></div>
+
 <div id="touchUI">
-  <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
-  <div id="joyZoneR"><div id="joyBaseR"><div id="joyKnobR"></div></div></div>
-  <button class="tb" id="btnAttack">⚔</button>
-  <button class="tb jump" id="btnJump">⤒</button>
-  <button class="tb sit" id="btnSit">🪑</button>
+  <div id="moveJoystick" class="joystick">
+    <div class="joystick-glow"></div>
+    <div id="moveKnob" class="joystick-knob"></div>
+  </div>
+  <div id="aimJoystick" class="joystick">
+    <div class="joystick-glow"></div>
+    <div id="aimKnob" class="aim-knob"></div>
+  </div>
+  <button id="btnJump" class="circle-button jump-button">⤒</button>
+  <button id="btnSit" class="circle-button action-button">🪑</button>
+  <button id="btnAttack" class="circle-button attack-button">⚔</button>
 </div>
+
 <button id="settingsBtn" onclick="Game.showSettings()">⚙</button>
 <div id="loadStatus" class="hidden"></div>
 <div id="toast"></div>
@@ -242,7 +300,7 @@ function mulberry32(a){
 let rng = Math.random, SEED = 0;
 function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 
-/* 👶 BABY */
+/* 👶 BABY SIZE */
 const DEST_HEIGHT = 55;
 const FOOT_OFFSET = 8;
 
@@ -251,7 +309,7 @@ const HURT_DURATION = 8 / 8;
 const JUMP_DURATION = 0.65;
 
 /* ============================================================
-   METADATA DECODER
+   METADATA v3 DECODER
    ============================================================ */
 function decodeMetadata(img){
   try {
@@ -442,7 +500,6 @@ function loadSprite(src, modelName, animName, cfg){
         frames: vLines.length - 1, hasMeta
       };
 
-      /* Nếu thiếu anchors/stable → tự tính */
       if (!anchors.length || anchors.every(a => !a) || !stableAnchor){
         autoComputeAnchors(sprite);
       }
@@ -456,7 +513,6 @@ function loadSprite(src, modelName, animName, cfg){
   });
 }
 
-/* Tính anchors + stableAnchor */
 function autoComputeAnchors(sprite){
   const s = sprite;
   s.anchors = [];
@@ -469,7 +525,6 @@ function autoComputeAnchors(sprite){
       });
     } else s.anchors.push(null);
   }
-  /* Tính stable anchor */
   let sumLocalX = 0, sumY = 0, count = 0;
   for (let i = 0; i < s.anchors.length; i++){
     if (!s.anchors[i]) continue;
@@ -694,41 +749,106 @@ addEventListener('resize', resize);
 addEventListener('orientationchange', () => setTimeout(resize, 100));
 resize();
 
-/* AIM */
-const aim = { angle: 0, joyId: null, joyX: 0, joyY: 0, autoAttack: false, cx: 0, cy: 0 };
-const joyZoneR = document.getElementById('joyZoneR');
-const joyKnobR = document.getElementById('joyKnobR');
-joyZoneR.addEventListener('pointerdown', e => {
+/* ============================================================
+   JOYSTICK DI CHUYỂN
+   ============================================================ */
+const joy = { id:null, x:0, y:0, cx:0, cy:0 };
+const moveJoystick = document.getElementById('moveJoystick');
+const moveKnob = document.getElementById('moveKnob');
+
+moveJoystick.addEventListener('pointerdown', e => {
+  if (joy.id !== null) return;
+  e.preventDefault();
+  joy.id = e.pointerId;
+  const r = moveJoystick.getBoundingClientRect();
+  joy.cx = r.left + r.width/2;
+  joy.cy = r.top + r.height/2;
+  updateMoveJoystick(e.clientX, e.clientY);
+  try { moveJoystick.setPointerCapture(e.pointerId); } catch(err){}
+});
+
+function updateMoveJoystick(cx, cy){
+  let dx = cx - joy.cx, dy = cy - joy.cy;
+  const max = 52;
+  const d = Math.hypot(dx, dy);
+  if (d > max){ dx = dx/d*max; dy = dy/d*max; }
+  joy.x = dx/max;
+  joy.y = dy/max;
+  moveKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+}
+
+function endMoveJoystick(e){
+  if (e.pointerId !== joy.id) return;
+  joy.id = null;
+  joy.x = 0;
+  joy.y = 0;
+  moveKnob.style.transform = 'translate(-50%,-50%)';
+}
+
+addEventListener('pointermove', e => {
+  if (e.pointerId === joy.id){
+    e.preventDefault();
+    updateMoveJoystick(e.clientX, e.clientY);
+  }
+}, { passive:false });
+addEventListener('pointerup', endMoveJoystick);
+addEventListener('pointercancel', endMoveJoystick);
+
+/* ============================================================
+   JOYSTICK AIM
+   ============================================================ */
+const aim = { angle:0, joyId:null, joyX:0, joyY:0, autoAttack:false, cx:0, cy:0 };
+const aimJoystick = document.getElementById('aimJoystick');
+const aimKnob = document.getElementById('aimKnob');
+
+aimJoystick.addEventListener('pointerdown', e => {
   if (aim.joyId !== null) return;
   e.preventDefault();
   aim.joyId = e.pointerId;
-  const r = joyZoneR.getBoundingClientRect();
-  aim.cx = r.left + r.width/2; aim.cy = r.top + r.height/2;
-  moveAimJoy(e.clientX, e.clientY);
-  try { joyZoneR.setPointerCapture(e.pointerId); } catch(err){}
+  const r = aimJoystick.getBoundingClientRect();
+  aim.cx = r.left + r.width/2;
+  aim.cy = r.top + r.height/2;
+  updateAimJoystick(e.clientX, e.clientY);
+  try { aimJoystick.setPointerCapture(e.pointerId); } catch(err){}
 });
-function moveAimJoy(cx, cy){
-  let dx = cx - aim.cx, dy = cy - aim.cy;
-  const d = Math.hypot(dx, dy), max = 52;
-  if (d > max){ dx = dx/d*max; dy = dy/d*max; }
-  aim.joyX = dx/max; aim.joyY = dy/max;
-  joyKnobR.style.transform = `translate(${dx}px, ${dy}px)`;
-  if (d > 8){ aim.angle = Math.atan2(aim.joyY, aim.joyX); aim.autoAttack = d > 15; }
-  else aim.autoAttack = false;
-}
-function endAimJoy(e){
-  if (e.pointerId !== aim.joyId) return;
-  aim.joyId = null; aim.autoAttack = false;
-  aim.joyX = 0; aim.joyY = 0;
-  joyKnobR.style.transform = 'translate(0,0)';
-}
-addEventListener('pointermove', e => {
-  if (e.pointerId === aim.joyId){ e.preventDefault(); moveAimJoy(e.clientX, e.clientY); }
-}, { passive: false });
-addEventListener('pointerup', endAimJoy);
-addEventListener('pointercancel', endAimJoy);
 
-/* INPUT */
+function updateAimJoystick(cx, cy){
+  let dx = cx - aim.cx, dy = cy - aim.cy;
+  const max = 48;
+  const d = Math.hypot(dx, dy);
+  if (d > max){ dx = dx/d*max; dy = dy/d*max; }
+  aim.joyX = dx/max;
+  aim.joyY = dy/max;
+  aimKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  if (d > 8){
+    aim.angle = Math.atan2(aim.joyY, aim.joyX);
+    aim.autoAttack = d > 15;
+  } else {
+    aim.autoAttack = false;
+  }
+}
+
+function endAimJoystick(e){
+  if (e.pointerId !== aim.joyId) return;
+  aim.joyId = null;
+  aim.autoAttack = false;
+  aim.joyX = 0;
+  aim.joyY = 0;
+  aimKnob.style.transform = 'translate(-50%,-50%)';
+}
+
+addEventListener('pointermove', e => {
+  if (e.pointerId === aim.joyId){
+    e.preventDefault();
+    updateAimJoystick(e.clientX, e.clientY);
+  }
+}, { passive:false });
+addEventListener('pointerup', endAimJoystick);
+addEventListener('pointercancel', endAimJoystick);
+
+/* ============================================================
+   INPUT (keyboard + mouse + touch)
+   ============================================================ */
 const keys = {};
 const mouse = { x: 0, y: 0 };
 let gameStarted = false, paused = false;
@@ -752,7 +872,8 @@ addEventListener('keyup', e => keys[e.code] = false);
 cv.addEventListener('pointermove', e => {
   if (e.pointerType === 'mouse'){
     const r = cv.getBoundingClientRect();
-    mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
+    mouse.x = e.clientX - r.left;
+    mouse.y = e.clientY - r.top;
   }
 }, { passive: true });
 cv.addEventListener('pointerdown', e => {
@@ -767,36 +888,7 @@ addEventListener('wheel', e => {
   renderHotbar();
 }, { passive:true });
 
-const joy = { id:null, x:0, y:0, cx:0, cy:0 };
-const joyZone = document.getElementById('joyZone');
-const joyKnob = document.getElementById('joyKnob');
-joyZone.addEventListener('pointerdown', e => {
-  if (joy.id !== null) return;
-  e.preventDefault();
-  joy.id = e.pointerId;
-  const r = joyZone.getBoundingClientRect();
-  joy.cx = r.left + r.width/2; joy.cy = r.top + r.height/2;
-  moveJoy(e.clientX, e.clientY);
-  try { joyZone.setPointerCapture(e.pointerId); } catch(err){}
-});
-function moveJoy(cx, cy){
-  let dx = cx - joy.cx, dy = cy - joy.cy;
-  const d = Math.hypot(dx,dy), max = 52;
-  if (d > max){ dx = dx/d*max; dy = dy/d*max; }
-  joy.x = dx/max; joy.y = dy/max;
-  joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
-}
-function endJoy(e){
-  if (e.pointerId !== joy.id) return;
-  joy.id = null; joy.x = 0; joy.y = 0;
-  joyKnob.style.transform = 'translate(0,0)';
-}
-addEventListener('pointermove', e => {
-  if (e.pointerId === joy.id){ e.preventDefault(); moveJoy(e.clientX, e.clientY); }
-}, { passive:false });
-addEventListener('pointerup', endJoy);
-addEventListener('pointercancel', endJoy);
-
+/* Touch look — kéo trên canvas để xoay (như FPS) */
 let lookId = null, lookX = 0, lookY = 0;
 cv.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch') return;
@@ -814,25 +906,35 @@ function endLook(e){ if (e.pointerId === lookId) lookId = null; }
 addEventListener('pointerup', endLook);
 addEventListener('pointercancel', endLook);
 
+/* ============================================================
+   BUTTONS
+   ============================================================ */
 function bindBtn(id, downFn, upFn){
   const el = document.getElementById(id);
   if (!el) return;
   el.addEventListener('pointerdown', e => {
     e.preventDefault(); e.stopPropagation();
-    el.classList.add('pressed'); buzz(8);
+    buzz(8);
     if (downFn) downFn();
   });
-  const up = () => { el.classList.remove('pressed'); if (upFn) upFn(); };
+  const up = () => { if (upFn) upFn(); };
   el.addEventListener('pointerup', up);
   el.addEventListener('pointercancel', up);
   el.addEventListener('pointerleave', up);
+  el.addEventListener('click', e => {
+    if (e.detail === 0) return;
+    if (downFn && upFn){ downFn(); setTimeout(up, 60); }
+    else if (downFn) downFn();
+  });
 }
 let attackTouch = false;
 bindBtn('btnAttack', () => { attackTouch = true; tryAttack(); }, () => { attackTouch = false; });
 bindBtn('btnJump', () => tryJump(), null);
 bindBtn('btnSit', () => trySit(), null);
 
-/* ACTIONS */
+/* ============================================================
+   ACTIONS
+   ============================================================ */
 function tryJump(){
   if (!gameStarted || paused) return;
   if (player.jumpT > 0) return;
@@ -885,7 +987,9 @@ function burstHitVisual(x, y){
   }
 }
 
-/* UPDATE PLAYER */
+/* ============================================================
+   UPDATE PLAYER
+   ============================================================ */
 function updatePlayer(dt){
   let dx = 0, dy = 0;
   if (joy.id !== null && Math.hypot(joy.x, joy.y) > 0.15){ dx = joy.x; dy = joy.y; }
@@ -900,8 +1004,12 @@ function updatePlayer(dt){
   if (player.sitting && mag > 0.15) player.sitting = false;
   if (player.sitting){ dx = 0; dy = 0; }
 
-  if (aim.joyId !== null){} else {
-    const wx = mouse.x + cam.x, wy = mouse.y + cam.y;
+  if (aim.joyId !== null){
+    /* Mobile: dùng joystick aim */
+  } else {
+    /* PC: mũi tên xoay theo chuột */
+    const wx = mouse.x + cam.x;
+    const wy = mouse.y + cam.y;
     aim.angle = Math.atan2(wy - player.y, wx - player.x);
   }
   const cosA = Math.cos(aim.angle);
@@ -954,7 +1062,9 @@ function respawnPlayer(){
   updateHpBar();
 }
 
-/* NETWORK */
+/* ============================================================
+   NETWORK
+   ============================================================ */
 const PEER_OPTS = {
   host: BACKEND.host, port: BACKEND.port, path: BACKEND.peerPath,
   secure: BACKEND.secure, debug: 0,
@@ -1116,7 +1226,9 @@ function updateNetHud(){
   document.getElementById('netCount').textContent = 1 + net.players.size;
 }
 
-/* RENDER */
+/* ============================================================
+   RENDER
+   ============================================================ */
 function drawTile(x, y, id, sx, sy){
   const def = TILES[id];
   if (!def) return;
@@ -1133,7 +1245,9 @@ function getNightFactor(){
   return (1 - Math.cos(t)) / 2;
 }
 
-/* ⭐ DRAW SPRITE — hỗ trợ stable / stable-x / per-frame */
+/* ============================================================
+   DRAW SPRITE — hỗ trợ stable / stable-x / per-frame
+   ============================================================ */
 function drawSpriteAt(sprite, idx, cx, cy, facing){
   if (!sprite || !sprite.renderImg) return;
   const s = sprite;
@@ -1153,7 +1267,7 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
   const drawW = Math.round(srcW * scale);
   const drawH = Math.round(srcH * scale);
 
-  /* Tính anchorX (local trong frame) và anchorY (tuyệt đối trong ảnh) */
+  /* Tính anchorX (local trong frame) và anchorY (tuyệt đối) */
   let anchorX, anchorY;
 
   if (s.anchorMode === 'stable' && s.stableAnchor){
@@ -1161,7 +1275,6 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
     anchorY = s.stableAnchor.y;
   } else if (s.anchorMode === 'stable-x' && s.stableAnchor){
     anchorX = s.stableAnchor.x;
-    /* Y lấy từng frame nếu có, không thì dùng stable */
     const a = s.anchors && s.anchors[idx];
     anchorY = (a && a.y != null) ? a.y : s.stableAnchor.y;
   } else {
@@ -1268,36 +1381,142 @@ function drawRemotePlayer(p){
   ctx.textAlign = 'left';
 }
 
+/* ============================================================
+   AIM ARROW — mũi tên đẹp dưới chân, xoay theo chuột PC
+   ============================================================ */
 function drawAimArrow(){
   if (!gameStarted || paused) return;
-  const sx = player.x - cam.x;
-  const sy = player.y - cam.y - 4;
+
+  const sx = Math.round(player.x - cam.x);
+  const sy = Math.round(player.y - cam.y + FOOT_OFFSET + 4);
   const a = aim.angle;
   const cosA = Math.cos(a), sinA = Math.sin(a);
-  const dist = (aim.joyId !== null) ? 22 + Math.hypot(aim.joyX, aim.joyY) * 22 : 38;
-  const tipX = sx + cosA * dist;
-  const tipY = sy + sinA * dist;
+  const px = -sinA, py = cosA;   /* vector vuông góc */
+
+  const dist = (aim.joyId !== null)
+    ? 40 + Math.hypot(aim.joyX, aim.joyY) * 26
+    : 58;
+  const startOffset = 3;
+
+  const x0 = sx + cosA * startOffset;
+  const y0 = sy + sinA * startOffset;
+  const x1 = sx + cosA * dist;
+  const y1 = sy + sinA * dist;
+
+  /* Đầu mũi tên */
+  const headLen = 16;
+  const headW = 11;
+  const hbx = x1 - cosA * headLen;
+  const hby = y1 - sinA * headLen;
+  const hw1x = hbx + px * headW;
+  const hw1y = hby + py * headW;
+  const hw2x = hbx - px * headW;
+  const hw2y = hby - py * headW;
+
+  /* Thân mũi tên */
+  const bodyW = 5;
+  const bx1x = x0 + px * bodyW;
+  const bx1y = y0 + py * bodyW;
+  const bx2x = x0 - px * bodyW;
+  const bx2y = y0 - py * bodyW;
+  const bx3x = hbx + px * bodyW * 0.7;
+  const bx3y = hby + py * bodyW * 0.7;
+  const bx4x = hbx - px * bodyW * 0.7;
+  const bx4y = hby - py * bodyW * 0.7;
 
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-  ctx.lineWidth = 2.5;
-  ctx.lineCap = 'round';
+
+  /* 1. Đổ bóng */
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = '#000000';
   ctx.beginPath();
-  ctx.moveTo(sx + cosA * 12, sy + sinA * 12);
-  ctx.lineTo(tipX, tipY);
+  ctx.moveTo(bx1x + 2, bx1y + 3);
+  ctx.lineTo(bx3x + 2, bx3y + 3);
+  ctx.lineTo(hw1x + 2, hw1y + 3);
+  ctx.lineTo(x1 + 2, y1 + 3);
+  ctx.lineTo(hw2x + 2, hw2y + 3);
+  ctx.lineTo(bx4x + 2, bx4y + 3);
+  ctx.lineTo(bx2x + 2, bx2y + 3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  /* 2. Viền đen */
+  ctx.fillStyle = '#000000';
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 3.5;
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(bx1x, bx1y);
+  ctx.lineTo(bx3x, bx3y);
+  ctx.lineTo(hw1x, hw1y);
+  ctx.lineTo(x1, y1);
+  ctx.lineTo(hw2x, hw2y);
+  ctx.lineTo(bx4x, bx4y);
+  ctx.lineTo(bx2x, bx2y);
+  ctx.closePath();
+  ctx.fill();
   ctx.stroke();
 
-  const headLen = 7, headAngle = 0.6;
-  const w1x = tipX + Math.cos(a + Math.PI - headAngle) * headLen;
-  const w1y = tipY + Math.sin(a + Math.PI - headAngle) * headLen;
-  const w2x = tipX + Math.cos(a + Math.PI + headAngle) * headLen;
-  const w2y = tipY + Math.sin(a + Math.PI + headAngle) * headLen;
+  /* 3. Thân gradient trắng */
+  const grad = ctx.createLinearGradient(x0, y0, x1, y1);
+  grad.addColorStop(0,   '#889878');
+  grad.addColorStop(0.35,'#ffffff');
+  grad.addColorStop(0.75,'#f0f4e8');
+  grad.addColorStop(1,   '#d0dcc8');
+  ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.moveTo(w1x, w1y); ctx.lineTo(tipX, tipY); ctx.lineTo(w2x, w2y);
-  ctx.stroke();
+  ctx.moveTo(bx1x, bx1y);
+  ctx.lineTo(bx3x, bx3y);
+  ctx.lineTo(hw1x, hw1y);
+  ctx.lineTo(x1, y1);
+  ctx.lineTo(hw2x, hw2y);
+  ctx.lineTo(bx4x, bx4y);
+  ctx.lineTo(bx2x, bx2y);
+  ctx.closePath();
+  ctx.fill();
 
-  ctx.fillStyle = 'rgba(255,255,255,0.9)';
-  ctx.beginPath(); ctx.arc(tipX, tipY, 2.5, 0, Math.PI*2); ctx.fill();
+  /* 4. Highlight cánh trên */
+  ctx.fillStyle = 'rgba(255,255,255,.9)';
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(hw1x, hw1y);
+  ctx.lineTo(hbx, hby);
+  ctx.closePath();
+  ctx.fill();
+
+  /* 5. Shadow cánh dưới */
+  ctx.fillStyle = 'rgba(0,0,0,.3)';
+  ctx.beginPath();
+  ctx.moveTo(hbx, hby);
+  ctx.lineTo(hw2x, hw2y);
+  ctx.lineTo(x1, y1);
+  ctx.closePath();
+  ctx.fill();
+
+  /* 6. Glow khi đang aim mobile */
+  if (aim.joyId !== null){
+    const t = performance.now() / 150;
+    const pulse = 1 + Math.sin(t) * 0.2;
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = '#88ff60';
+    ctx.beginPath();
+    ctx.arc(x1, y1, 8 * pulse, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  /* 7. Vòng đỏ auto-attack */
+  if (aim.autoAttack){
+    ctx.strokeStyle = '#ff5050';
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath();
+    ctx.arc(x1, y1, 13, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
   ctx.restore();
 }
 
@@ -1361,7 +1580,9 @@ function getClockString(){
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
-/* HUD */
+/* ============================================================
+   HUD
+   ============================================================ */
 const hotbarEl = document.getElementById('hotbar');
 function renderHotbar(){
   hotbarEl.innerHTML = '';
@@ -1402,7 +1623,9 @@ function toast(msg){
   toastTimer = setTimeout(() => el.classList.remove('show'), 1600);
 }
 
-/* MENU */
+/* ============================================================
+   MENU
+   ============================================================ */
 window.Game = {
   startSingleplayer: () => startSingleplayer(),
   showMP: () => showMenuPage('mp'),
@@ -1488,7 +1711,9 @@ function toggleSettings(){
   } else showMenuPage('settings');
 }
 
-/* GAME LIFECYCLE */
+/* ============================================================
+   GAME LIFECYCLE
+   ============================================================ */
 function startSingleplayer(){
   net.disconnect();
   initRNG(Date.now() & 0x7fffffff);
@@ -1532,7 +1757,9 @@ function resetPlayerPosition(){
   cam.x = player.x - VW/2; cam.y = player.y - VH/2;
 }
 
-/* MAIN LOOP */
+/* ============================================================
+   MAIN LOOP
+   ============================================================ */
 const G = { particles: [] };
 let lastT = performance.now();
 function loop(now){
