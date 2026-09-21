@@ -14,15 +14,11 @@ button{cursor:pointer;font-family:inherit}
 input,select{font-family:inherit}
 
 #app{display:flex;flex-direction:column;height:100%}
-
-/* Header */
 #header{background:linear-gradient(180deg,#1a2018,#0a0d08);border-bottom:2px solid #000;
   padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 #header h1{font-family:Consolas,monospace;font-size:14px;color:var(--accent2);
   letter-spacing:2px;text-shadow:0 0 10px rgba(136,255,96,.3)}
 #header .sub{font-family:Consolas,monospace;font-size:10px;color:#6a7860;margin-left:8px}
-
-/* Toolbar */
 #toolbar{display:flex;gap:6px;flex-wrap:wrap}
 .tbtn{background:linear-gradient(180deg,#5a6850,#3a4430);color:var(--text);
   border:2px solid #000;border-radius:4px;padding:7px 12px;font-size:11px;font-weight:bold;
@@ -36,10 +32,7 @@ input,select{font-family:inherit}
   box-shadow:inset 0 1px 0 #ffee88,0 2px 0 #3a1a00}
 .tbtn:disabled{opacity:.4;cursor:not-allowed}
 
-/* Main */
 #main{display:flex;flex:1;overflow:hidden}
-
-/* Canvas area */
 #canvasWrap{flex:1;position:relative;overflow:auto;background:#0f1409;
   background-image:linear-gradient(45deg,#1a1f14 25%,transparent 25%),
     linear-gradient(-45deg,#1a1f14 25%,transparent 25%),
@@ -50,9 +43,8 @@ input,select{font-family:inherit}
 #canvasHolder{position:relative;display:inline-block;margin:20px}
 #editorCanvas{display:block;image-rendering:pixelated;cursor:crosshair;
   box-shadow:0 0 0 1px #000,0 0 30px rgba(0,0,0,.8)}
-#overlay{position:absolute;top:0;left:0;pointer-events:none}
+#overlay{position:absolute;top:0;left:0;pointer-events:auto}
 
-/* Side panel */
 #side{width:340px;background:var(--panel);border-left:2px solid #000;
   overflow-y:auto;display:flex;flex-direction:column}
 .section{border-bottom:2px solid #000;padding:10px 12px}
@@ -70,8 +62,7 @@ input,select{font-family:inherit}
   padding:3px 8px;font-size:10px;cursor:pointer}
 .row .btn-sm:hover{background:#4a5440}
 
-/* Line list */
-.lines-list{max-height:150px;overflow-y:auto;background:#000;border:1px solid #333;
+.lines-list{max-height:120px;overflow-y:auto;background:#000;border:1px solid #333;
   border-radius:3px;padding:4px}
 .line-item{display:flex;align-items:center;gap:4px;padding:2px 4px;font-family:Consolas,monospace;
   font-size:11px;border-radius:2px}
@@ -83,7 +74,6 @@ input,select{font-family:inherit}
   padding:0 4px;margin-left:auto}
 .line-item .del:hover{color:#ff8080}
 
-/* Anchor grid */
 .anchor-grid{display:grid;grid-template-columns:repeat(3,36px);grid-template-rows:repeat(3,36px);
   gap:3px;justify-content:center;margin:8px 0}
 .anchor-btn{background:#1a2018;border:2px solid #000;border-radius:3px;cursor:pointer;
@@ -91,20 +81,10 @@ input,select{font-family:inherit}
 .anchor-btn:hover{background:#2a3328}
 .anchor-btn.on{background:var(--accent);color:#0a1a06;border-color:#88ff60}
 
-/* Color swatch */
 .swatch{width:36px;height:36px;border:2px solid #000;border-radius:4px;display:inline-block;
   vertical-align:middle;background:#333;position:relative;overflow:hidden}
-.swatch::after{content:'';position:absolute;inset:0;
-  background-image:linear-gradient(45deg,#666 25%,transparent 25%),
-    linear-gradient(-45deg,#666 25%,transparent 25%),
-    linear-gradient(45deg,transparent 75%,#666 75%),
-    linear-gradient(-45deg,transparent 75%,#666 75%);
-  background-size:8px 8px;
-  background-position:0 0,0 4px,4px -4px,-4px 0px;
-  z-index:-1}
 .swatch-fill{position:absolute;inset:0}
 
-/* Status */
 #status{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
   background:rgba(20,24,16,.95);border:1px solid #333;border-radius:6px;padding:8px 16px;
   font-family:Consolas,monospace;font-size:11px;color:var(--dim);pointer-events:none;
@@ -113,7 +93,6 @@ input,select{font-family:inherit}
 #status.ok{color:var(--accent2);border-color:#4a8a30}
 #status.err{color:#ff9898;border-color:#8a2a20}
 
-/* Empty state */
 #empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
   justify-content:center;text-align:center;color:#6a7860;gap:14px;pointer-events:none}
 #empty .big{font-size:48px}
@@ -122,25 +101,23 @@ input,select{font-family:inherit}
 #empty .hint kbd{background:#2a3328;border:1px solid #000;border-radius:3px;padding:1px 6px;
   font-family:Consolas,monospace;color:var(--accent2)}
 
-/* Modal */
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;
-  justify-content:center;z-index:200}
-#modal.show{display:flex}
-.modal-box{background:var(--panel2);border:2px solid #000;border-radius:6px;padding:20px;
-  max-width:400px;width:90%;
-  box-shadow:inset 0 0 0 1px #5a6850,0 8px 0 #000}
-.modal-box h2{font-family:Consolas,monospace;font-size:13px;color:var(--accent2);
-  letter-spacing:2px;margin-bottom:14px}
-.modal-box .row{margin:8px 0}
-.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
-
-/* Help panel */
 #help{position:fixed;bottom:10px;right:360px;background:rgba(20,24,16,.92);
   border:1px solid #333;border-radius:6px;padding:10px 14px;font-family:Consolas,monospace;
   font-size:10px;color:var(--dim);line-height:1.8;pointer-events:none;max-width:300px;
   display:none}
 #help.show{display:block}
 #help b{color:var(--accent2)}
+
+/* Modal chọn nhãn nhanh */
+#quickLabel{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;z-index:200;
+  align-items:center;justify-content:center}
+#quickLabel.show{display:flex}
+.ql-box{background:var(--panel2);border:2px solid #000;border-radius:6px;padding:20px;
+  max-width:360px;width:90%;box-shadow:inset 0 0 0 1px #5a6850,0 8px 0 #000;text-align:center}
+.ql-box h3{font-family:Consolas,monospace;font-size:13px;color:var(--accent2);
+  letter-spacing:2px;margin-bottom:14px}
+.ql-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ql-buttons .tbtn{padding:14px 8px;font-size:13px}
 </style>
 </head>
 <body>
@@ -148,7 +125,7 @@ input,select{font-family:inherit}
 
 <header id="header">
   <div>
-    <h1>🎨 SPRITE SHEET EDITOR<span class="sub">Dragon Hunter</span></h1>
+    <h1>🎨 SPRITE SHEET EDITOR<span class="sub">Dragon Hunter · v2</span></h1>
   </div>
   <div id="toolbar">
     <button class="tbtn" id="uploadBtn">📁 Upload</button>
@@ -164,8 +141,7 @@ input,select{font-family:inherit}
       <div class="big">📁</div>
       <div class="label">CHƯA CÓ ẢNH</div>
       <div class="hint">
-        Bấm <kbd>Upload</kbd> hoặc kéo thả ảnh PNG vào đây.<br>
-        <br>
+        Bấm <kbd>Upload</kbd> hoặc kéo thả ảnh PNG vào đây.<br><br>
         Sau đó dùng <b>lưới kẻ</b> để chia frame,<br>
         <b>xóa nền</b>, <b>di chuyển frame</b>, và <b>xuất</b> file mới.
       </div>
@@ -177,32 +153,35 @@ input,select{font-family:inherit}
   </div>
 
   <aside id="side">
-    <!-- GRID -->
     <div class="section">
       <h3>📏 LƯỚI KẺ <span class="count" id="gridCount">0 × 0</span></h3>
       <div class="row">
         <label>Cột</label>
-        <button class="btn-sm" id="addVLine">+ Thêm dọc</button>
-        <button class="btn-sm" id="autoV">Auto 8</button>
-        <button class="btn-sm" id="clearV">Xóa hết</button>
+        <button class="btn-sm" id="addVLine">+ Thêm</button>
+        <button class="btn-sm" id="autoV">Auto N</button>
+        <button class="btn-sm" id="clearV">Clear</button>
       </div>
       <div class="lines-list" id="vLinesList"></div>
       <div class="row" style="margin-top:8px">
         <label>Hàng</label>
-        <button class="btn-sm" id="addHLine">+ Thêm ngang</button>
-        <button class="btn-sm" id="autoH">Auto 1</button>
-        <button class="btn-sm" id="clearH">Xóa hết</button>
+        <button class="btn-sm" id="addHLine">+ Thêm</button>
+        <button class="btn-sm" id="autoH">Auto N</button>
+        <button class="btn-sm" id="clearH">Clear</button>
       </div>
       <div class="lines-list" id="hLinesList"></div>
       <div class="row" style="margin-top:8px">
         <label>Snap</label>
         <input type="range" id="snapToggle" min="0" max="1" value="1" style="width:60px">
         <span class="val" id="snapLabel">ON</span>
-        <span style="font-size:10px;color:#6a7860;margin-left:auto">kéo line = snap 1px</span>
+      </div>
+      <div class="row">
+        <label></label>
+        <button class="btn-sm" id="autoDetectBtn" style="flex:1;padding:6px;background:#4a5a30">
+          🤖 Auto-detect từng frame
+        </button>
       </div>
     </div>
 
-    <!-- BACKGROUND REMOVE -->
     <div class="section">
       <h3>🎨 XÓA NỀN</h3>
       <div class="row">
@@ -232,14 +211,13 @@ input,select{font-family:inherit}
       </div>
       <div class="row">
         <label></label>
-        <button class="btn-sm" id="bgApplyAll">🌐 Áp toàn ảnh</button>
-        <button class="btn-sm" id="bgApplyCell" disabled>▣ Chỉ cell chọn</button>
+        <button class="btn-sm" id="bgApplyAll">🌐 Toàn ảnh</button>
+        <button class="btn-sm" id="bgApplyCell" disabled>▣ Cell chọn</button>
       </div>
     </div>
 
-    <!-- CANVAS RESIZE -->
     <div class="section">
-      <h3>📐 KÍCH THƯỚC ẢNH <span class="count" id="sizeLabel">0×0</span></h3>
+      <h3>📐 KÍCH THƯỚC <span class="count" id="sizeLabel">0×0</span></h3>
       <div class="row">
         <label>Rộng</label>
         <input type="number" id="canvasW" min="1" max="4096">
@@ -263,21 +241,20 @@ input,select{font-family:inherit}
       </div>
       <div class="row">
         <label></label>
-        <button class="btn-sm" id="resizeApply" style="flex:1;padding:6px">Áp dụng kích thước</button>
+        <button class="btn-sm" id="resizeApply" style="flex:1;padding:6px">Áp dụng</button>
       </div>
       <div class="row">
         <label>Crop auto</label>
-        <button class="btn-sm" id="cropTight" style="flex:1;padding:6px">✂ Cắt sát viền</button>
+        <button class="btn-sm" id="cropTight" style="flex:1;padding:6px">✂ Cắt sát</button>
       </div>
     </div>
 
-    <!-- CELL MOVER -->
     <div class="section">
       <h3>🎯 DI CHUYỂN FRAME <span class="count" id="cellLabel">chưa chọn</span></h3>
       <div class="row">
         <label>Tọa độ</label>
         <span id="cellInfo" style="color:#6a7860;font-family:Consolas,monospace;font-size:10px">
-          Click vào 1 ô giữa các đường kẻ
+          Click ô giữa các đường kẻ
         </span>
       </div>
       <div class="row">
@@ -289,45 +266,72 @@ input,select{font-family:inherit}
       <div class="row">
         <label></label>
         <button class="btn-sm" id="moveApply" disabled>↔ Áp dụng</button>
-        <button class="btn-sm" id="moveReset" disabled>↺ Reset offset</button>
+        <button class="btn-sm" id="moveReset" disabled>↺ Reset</button>
       </div>
       <div class="row">
         <label></label>
-        <button class="btn-sm" id="cellFillTrans" disabled>🗑 Xóa nội dung cell</button>
-      </div>
-      <div class="row" style="margin-top:6px">
-        <label>Hoặc kéo</label>
-        <span style="font-size:10px;color:#6a7860">kéo trong cell để move realtime</span>
+        <button class="btn-sm" id="cellFillTrans" disabled>🗑 Xóa cell</button>
       </div>
     </div>
 
-    <!-- EXPORT -->
     <div class="section">
       <h3>💾 XUẤT</h3>
       <div class="row">
         <label>Tên file</label>
-        <input type="text" id="exportName" value="sprite" style="width:140px">
+        <input type="text" id="exportName" value="player" style="width:140px">
+      </div>
+      <div class="row">
+        <label>Label</label>
+        <select id="exportLabel" style="flex:1;background:#000;color:#e8f0d8;border:1px solid #333;
+          border-radius:3px;padding:4px;font-size:11px">
+          <option value="idle">idle</option>
+          <option value="run">run</option>
+          <option value="jump">jump</option>
+          <option value="attack">attack</option>
+          <option value="hurt">hurt</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>FPS</label>
+        <input type="number" id="exportFps" value="10" min="1" max="30" style="width:60px">
+        <label style="flex:0 0 auto">Loop</label>
+        <select id="exportLoop" style="flex:1;background:#000;color:#e8f0d8;border:1px solid #333;
+          border-radius:3px;padding:4px;font-size:11px">
+          <option value="1">Có</option>
+          <option value="0">Không</option>
+        </select>
       </div>
       <div class="row">
         <label></label>
-        <button class="tbtn primary" id="exportBtn2" disabled style="flex:1">⬇️ Tải PNG</button>
+        <button class="tbtn primary" id="exportBtn2" disabled style="flex:1">
+          ⬇️ PNG có metadata
+        </button>
+      </div>
+      <div class="row">
+        <label></label>
+        <button class="tbtn" id="exportPlainBtn" disabled style="flex:1">
+          ⬇️ PNG không metadata
+        </button>
+      </div>
+      <div class="row" style="font-size:10px;color:#6a7860;line-height:1.5;margin-top:6px">
+        <label></label>
+        <span>Metadata = 1 hàng pixel ở đáy ảnh. Index.html sẽ tự đọc để cắt frame đúng.</span>
       </div>
     </div>
   </aside>
 </div>
-
 </div>
 
 <div id="status"></div>
-
 <div id="help">
   <b>Phím tắt:</b><br>
-  <b>Shift + click</b> — thêm line tại vị trí<br>
+  <b>Shift + click</b> — thêm line<br>
   <b>Right-click line</b> — xóa line<br>
-  <b>Kéo line</b> — di chuyển line<br>
+  <b>Kéo line</b> — di chuyển<br>
   <b>Click cell</b> — chọn cell<br>
   <b>Kéo trong cell</b> — move content<br>
   <b>Alt + click</b> — pick màu<br>
+  <b>Mũi tên</b> — dịch cell 1px<br>
   <b>Ctrl+Z</b> — undo<br>
   <b>Ctrl+S</b> — export
 </div>
@@ -347,23 +351,20 @@ const state = {
   octx: null,
   img: null,
   zoom: 1,
-  vLines: [],           // cột dọc (px)
-  hLines: [],           // hàng ngang (px)
+  vLines: [],
+  hLines: [],
   snapOn: true,
   pickColor: false,
-  cell: null,           // {x1,y1,x2,y2}
-  drag: null,           // {type:'v'|'h', idx} hoặc {type:'cell', startX, startY, cellX, cellY}
+  cell: null,
+  drag: null,
   cellMoveOffset: {x:0, y:0},
-  cellOriginal: null,   // {x1,y1,w,h, imageData} — lưu trước khi move
+  cellOriginal: null,
   history: [],
   anchor: 'mc',
   bgColor: {r:255,g:255,b:255},
   mouse: {x:0, y:0, down:false}
 };
 
-/* ============================================================
-   DOM
-   ============================================================ */
 const $ = id => document.getElementById(id);
 const fileInput = $('fileInput');
 const canvasWrap = $('canvasWrap');
@@ -388,10 +389,10 @@ function pushHistory(){
   if (state.history.length > 30) state.history.shift();
   updateUndoBtn();
 }
+
 function undo(){
   if (state.history.length === 0) return;
   const imgData = state.history.pop();
-  /* Nếu kích thước khác → resize canvas trước */
   if (state.canvas.width !== imgData.width || state.canvas.height !== imgData.height){
     state.canvas.width = imgData.width;
     state.canvas.height = imgData.height;
@@ -406,28 +407,25 @@ function undo(){
   renderOverlay();
   toast('↶ Undo', 'ok');
 }
+
 function updateUndoBtn(){
   $('undoBtn').disabled = state.history.length === 0;
 }
 
 /* ============================================================
-   UPLOAD
+   LOAD FILE
    ============================================================ */
 $('uploadBtn').addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', e => {
   const f = e.target.files[0];
   if (f) loadFile(f);
 });
-
-/* Drag & drop */
-document.addEventListener('dragover', e => { e.preventDefault(); });
+document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', e => {
   e.preventDefault();
   const f = e.dataTransfer.files[0];
   if (f && f.type.startsWith('image/')) loadFile(f);
 });
-
-/* Paste */
 document.addEventListener('paste', e => {
   for (const item of e.clipboardData.items){
     if (item.type.startsWith('image/')){
@@ -443,42 +441,116 @@ function loadFile(file){
     const img = new Image();
     img.onload = () => {
       state.img = img;
-      state.vLines = [0, img.width];
-      state.hLines = [0, img.height];
-      state.cell = null;
-      state.history = [];
 
-      /* Tạo canvas */
+      /* Đọc metadata nếu có → khôi phục vLines */
+      const meta = decodeSpriteMetadataFromImage(img);
+      const realH = meta ? (meta.spriteH || img.height - 1) : img.height;
+
+      if (meta && meta.vLines && meta.vLines.length >= 2){
+        state.vLines = [...meta.vLines];
+        state.hLines = meta.hLines ? [...meta.hLines] : [0, realH];
+        toast('✓ Đã load + khôi phục metadata: ' + meta.label, 'ok');
+      } else {
+        state.vLines = [0, img.width];
+        state.hLines = [0, realH];
+        toast('✓ Đã load ' + file.name + ' · ' + img.width + '×' + realH, 'ok');
+      }
+
+      /* Nếu có metadata, cắt bỏ hàng cuối khi vào editor */
       const canvas = $('editorCanvas');
       const overlay = $('overlay');
       canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.height = realH;
       overlay.width = img.width;
-      overlay.height = img.height;
+      overlay.height = realH;
       state.canvas = canvas;
       state.ctx = canvas.getContext('2d', { willReadFrequently: true });
       state.overlay = overlay;
       state.octx = overlay.getContext('2d');
       state.ctx.imageSmoothingEnabled = false;
       state.octx.imageSmoothingEnabled = false;
-      state.ctx.drawImage(img, 0, 0);
+      /* Vẽ chỉ phần sprite, bỏ metadata row */
+      state.ctx.drawImage(img, 0, 0, img.width, realH, 0, 0, img.width, realH);
 
-      /* Hiện UI */
+      state.cell = null;
+      state.history = [];
+
       emptyEl.style.display = 'none';
       canvasHolder.style.display = 'inline-block';
       $('canvasW').value = img.width;
-      $('canvasH').value = img.height;
-      $('sizeLabel').textContent = img.width + '×' + img.height;
+      $('canvasH').value = realH;
+      $('sizeLabel').textContent = img.width + '×' + realH;
       $('exportBtn').disabled = false;
       $('exportBtn2').disabled = false;
+      $('exportPlainBtn').disabled = false;
+
+      /* Đoán label từ tên file */
+      const fn = file.name.toLowerCase();
+      if (fn.includes('idle'))   $('exportLabel').value = 'idle';
+      else if (fn.includes('run')) $('exportLabel').value = 'run';
+      else if (fn.includes('jump')) $('exportLabel').value = 'jump';
+      else if (fn.includes('atk') || fn.includes('attack')) $('exportLabel').value = 'attack';
+      else if (fn.includes('hurt') || fn.includes('death') || fn.includes('dead')) $('exportLabel').value = 'hurt';
+
+      /* Cập nhật FPS/loop theo label */
+      updateFpsFromLabel();
 
       renderAll();
-      toast('✓ Đã load ' + file.name + ' · ' + img.width + '×' + img.height, 'ok');
     };
     img.onerror = () => toast('❌ Không load được ảnh', 'err');
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+function updateFpsFromLabel(){
+  const label = $('exportLabel').value;
+  const defaults = {
+    idle: { fps: 5, loop: 1 },
+    run: { fps: 12, loop: 1 },
+    jump: { fps: 12, loop: 0 },
+    attack: { fps: 14, loop: 0 },
+    hurt: { fps: 8, loop: 0 }
+  };
+  const d = defaults[label];
+  if (d){
+    $('exportFps').value = d.fps;
+    $('exportLoop').value = d.loop;
+  }
+}
+
+$('exportLabel').addEventListener('change', updateFpsFromLabel);
+
+/* ============================================================
+   METADATA DECODER (đọc từ ảnh khi upload lại)
+   ============================================================ */
+function decodeSpriteMetadataFromImage(img){
+  try {
+    const cnv = document.createElement('canvas');
+    cnv.width = img.width;
+    cnv.height = 1;
+    const c = cnv.getContext('2d', { willReadFrequently: true });
+    c.drawImage(img, 0, img.height - 1, img.width, 1, 0, 0, img.width, 1);
+    const d = c.getImageData(0, 0, img.width, 1).data;
+
+    if (d[0] !== 0x44 || d[1] !== 0x48 || d[2] !== 0x55 || d[3] !== 0x4E) return null;
+    const len = d[6] | (d[7] << 8) | (d[8] << 16) | (d[9] << 24);
+    if (len <= 0 || len > 100000) return null;
+
+    const bytes = [];
+    for (let i = 0; i < len; i++){
+      const pos = 10 + i;
+      const p = Math.floor(pos / 3);
+      const ch = pos % 3;
+      if (p * 4 + ch >= d.length) break;
+      bytes.push(d[p * 4 + ch]);
+    }
+    const jsonStr = new TextDecoder().decode(new Uint8Array(bytes));
+    return JSON.parse(jsonStr);
+  } catch(e){
+    console.warn('Metadata decode error:', e);
+    return null;
+  }
 }
 
 /* ============================================================
@@ -491,9 +563,7 @@ function renderAll(){
 }
 
 function renderGridCount(){
-  const v = state.vLines.length - 1;
-  const h = state.hLines.length - 1;
-  $('gridCount').textContent = v + ' × ' + h;
+  $('gridCount').textContent = (state.vLines.length - 1) + ' × ' + (state.hLines.length - 1);
 }
 
 function renderOverlay(){
@@ -501,25 +571,21 @@ function renderOverlay(){
   const o = state.octx;
   o.clearRect(0, 0, state.overlay.width, state.overlay.height);
 
-  /* Vẽ lưới dọc */
   o.strokeStyle = 'rgba(255,80,80,.85)';
   o.lineWidth = 1;
-  state.vLines.forEach((x, i) => {
+  state.vLines.forEach(x => {
     o.beginPath();
     o.moveTo(Math.round(x) + 0.5, 0);
     o.lineTo(Math.round(x) + 0.5, state.overlay.height);
     o.stroke();
   });
-
-  /* Vẽ lưới ngang */
-  state.hLines.forEach((y, i) => {
+  state.hLines.forEach(y => {
     o.beginPath();
     o.moveTo(0, Math.round(y) + 0.5);
     o.lineTo(state.overlay.width, Math.round(y) + 0.5);
     o.stroke();
   });
 
-  /* Đánh số frame */
   o.font = 'bold 11px Consolas, monospace';
   o.fillStyle = '#88ff60';
   o.strokeStyle = 'rgba(0,0,0,.7)';
@@ -535,7 +601,6 @@ function renderOverlay(){
     }
   }
 
-  /* Vẽ cell đang chọn */
   if (state.cell){
     o.strokeStyle = 'rgba(136,255,96,.95)';
     o.lineWidth = 3;
@@ -550,7 +615,6 @@ function renderOverlay(){
 }
 
 function renderLineLists(){
-  /* Vertical lines */
   const vl = $('vLinesList');
   vl.innerHTML = '';
   state.vLines.forEach((x, i) => {
@@ -560,7 +624,6 @@ function renderLineLists(){
     const inp = document.createElement('input');
     inp.type = 'number';
     inp.value = Math.round(x);
-    inp.dataset.idx = i;
     inp.addEventListener('change', () => {
       const v = parseInt(inp.value);
       if (!isNaN(v)){
@@ -573,7 +636,6 @@ function renderLineLists(){
     const del = document.createElement('button');
     del.className = 'del';
     del.textContent = '✕';
-    del.title = 'Xóa line';
     del.addEventListener('click', () => {
       if (state.vLines.length > 2){
         state.vLines.splice(i, 1);
@@ -584,7 +646,6 @@ function renderLineLists(){
     vl.appendChild(div);
   });
 
-  /* Horizontal lines */
   const hl = $('hLinesList');
   hl.innerHTML = '';
   state.hLines.forEach((y, i) => {
@@ -672,6 +733,60 @@ $('snapToggle').addEventListener('change', e => {
 });
 
 /* ============================================================
+   AUTO-DETECT FRAMES — quét pixel tìm khoảng trống giữa nhân vật
+   ============================================================ */
+$('autoDetectBtn').addEventListener('click', () => {
+  if (!state.canvas){ toast('Chưa có ảnh', 'err'); return; }
+  const W = state.canvas.width;
+  const H = state.canvas.height;
+  const data = state.ctx.getImageData(0, 0, W, H).data;
+
+  /* Tìm cột "trống" — không có pixel opacity > 5 */
+  const emptyCols = [];
+  for (let x = 0; x < W; x++){
+    let hasContent = false;
+    for (let y = 0; y < H; y++){
+      const i = (y * W + x) * 4;
+      if (data[i+3] > 5){ hasContent = true; break; }
+    }
+    emptyCols.push(!hasContent);
+  }
+
+  /* Tìm khoảng trống liên tục giữa các nhân vật */
+  const minGap = 3;
+  const lines = [];
+  let i = 0;
+  /* Bắt đầu từ cột đầu tiên có nội dung */
+  while (i < W && emptyCols[i]) i++;
+  lines.push(0);
+  while (i < W){
+    /* Nếu đang trong nhân vật, tiến tới hết */
+    while (i < W && !emptyCols[i]) i++;
+    /* i là đầu khoảng trống */
+    let gapStart = i;
+    while (i < W && emptyCols[i]) i++;
+    let gapEnd = i;
+    if (i >= W) break;
+    /* Nếu khoảng trống đủ rộng → cắt giữa */
+    if (gapEnd - gapStart >= minGap){
+      lines.push(Math.round((gapStart + gapEnd) / 2));
+    }
+  }
+  lines.push(W);
+
+  if (lines.length < 3){
+    toast('⚠ Không tách được frame (nhân vật liền nhau?)', 'err');
+    return;
+  }
+
+  state.vLines = lines;
+  /* Hàng: chỉ có 1 hàng */
+  state.hLines = [0, H];
+  renderAll();
+  toast(`🤖 Phát hiện ${lines.length - 1} frame`, 'ok');
+});
+
+/* ============================================================
    MOUSE INTERACTION
    ============================================================ */
 const canvas = $('editorCanvas');
@@ -687,14 +802,13 @@ function getCanvasCoords(e){
 
 function findLineAt(x, y){
   const tol = 6 / state.zoom;
-  /* Ưu tiên vertical trước */
-  for (let i = 0; i < state.vLines.length; i++){
-    if (Math.abs(state.vLines[i] - x) < tol && i !== 0 && i !== state.vLines.length - 1){
+  for (let i = 1; i < state.vLines.length - 1; i++){
+    if (Math.abs(state.vLines[i] - x) < tol){
       return { type: 'v', idx: i, val: state.vLines[i] };
     }
   }
-  for (let i = 0; i < state.hLines.length; i++){
-    if (Math.abs(state.hLines[i] - y) < tol && i !== 0 && i !== state.hLines.length - 1){
+  for (let i = 1; i < state.hLines.length - 1; i++){
+    if (Math.abs(state.hLines[i] - y) < tol){
       return { type: 'h', idx: i, val: state.hLines[i] };
     }
   }
@@ -718,7 +832,6 @@ function findCellAt(x, y){
   };
 }
 
-/* Prevent scroll when scrolling on canvas */
 canvasWrap.addEventListener('wheel', e => {
   if (!state.canvas) return;
   if (e.ctrlKey){
@@ -729,29 +842,17 @@ canvasWrap.addEventListener('wheel', e => {
 }, { passive: false });
 
 function applyZoom(){
-  const c = state.canvas;
-  const o = state.overlay;
-  c.style.transform = `scale(${state.zoom})`;
-  c.style.transformOrigin = 'top left';
-  o.style.transform = `scale(${state.zoom})`;
-  o.style.transformOrigin = 'top left';
+  canvas.style.transform = `scale(${state.zoom})`;
+  canvas.style.transformOrigin = 'top left';
+  overlay.style.transform = `scale(${state.zoom})`;
+  overlay.style.transformOrigin = 'top left';
 }
-
-/* Mouse events */
-overlay.style.pointerEvents = 'auto';
 
 function onMouseDown(e){
   if (!state.canvas) return;
-
   const { x, y } = getCanvasCoords(e);
 
-  /* Alt + click → pick màu */
-  if (e.altKey){
-    pickColorAt(Math.floor(x), Math.floor(y));
-    return;
-  }
-
-  /* Pick mode active */
+  if (e.altKey){ pickColorAt(Math.floor(x), Math.floor(y)); return; }
   if (state.pickColor){
     pickColorAt(Math.floor(x), Math.floor(y));
     state.pickColor = false;
@@ -759,7 +860,6 @@ function onMouseDown(e){
     return;
   }
 
-  /* Right click → xóa line */
   if (e.button === 2){
     const line = findLineAt(x, y);
     if (line){
@@ -774,29 +874,22 @@ function onMouseDown(e){
     return;
   }
 
-  /* Shift + click → thêm line */
   if (e.shiftKey){
     const nearV = state.vLines.some(v => Math.abs(v - x) < 4);
     const nearH = state.hLines.some(h => Math.abs(h - y) < 4);
     if (!nearV && !nearH){
-      /* Chọn hướng: nếu click gần biên trái/phải → thêm line dọc, ngược lại ngang */
       if (Math.abs(x - state.canvas.width/2) > Math.abs(y - state.canvas.height/2)){
-        /* gần biên ngang hơn → thêm V */
-        if (e.shiftKey && !e.ctrlKey){
-          state.vLines.push(Math.round(x));
-          state.vLines.sort((a,b) => a-b);
-          renderAll();
-        }
+        state.vLines.push(Math.round(x));
+        state.vLines.sort((a,b) => a-b);
       } else {
         state.hLines.push(Math.round(y));
         state.hLines.sort((a,b) => a-b);
-        renderAll();
       }
+      renderAll();
     }
     return;
   }
 
-  /* Drag line */
   const line = findLineAt(x, y);
   if (line){
     state.drag = { type: line.type, idx: line.idx };
@@ -804,7 +897,6 @@ function onMouseDown(e){
     return;
   }
 
-  /* Select cell và bắt đầu drag move */
   const cell = findCellAt(x, y);
   if (cell){
     state.cell = cell;
@@ -818,7 +910,6 @@ function onMouseDown(e){
     $('cellFillTrans').disabled = false;
     $('bgApplyCell').disabled = false;
 
-    /* Bắt đầu drag move */
     state.drag = {
       type: 'cell',
       startX: Math.floor(x),
@@ -830,9 +921,8 @@ function onMouseDown(e){
     return;
   }
 
-  /* Click ngoài cell → bỏ chọn */
   state.cell = null;
-  $('cellInfo').textContent = 'Click vào 1 ô giữa các đường kẻ';
+  $('cellInfo').textContent = 'Click ô giữa các đường kẻ';
   $('cellLabel').textContent = 'chưa chọn';
   $('moveApply').disabled = true;
   $('moveReset').disabled = true;
@@ -844,16 +934,10 @@ function onMouseDown(e){
 function onMouseMove(e){
   if (!state.canvas) return;
   const { x, y } = getCanvasCoords(e);
-  state.mouse.x = x;
-  state.mouse.y = y;
 
   if (!state.drag){
     const line = findLineAt(x, y);
-    if (line){
-      canvas.style.cursor = line.type === 'v' ? 'ew-resize' : 'ns-resize';
-    } else {
-      canvas.style.cursor = 'crosshair';
-    }
+    canvas.style.cursor = line ? (line.type === 'v' ? 'ew-resize' : 'ns-resize') : 'crosshair';
     return;
   }
 
@@ -879,19 +963,17 @@ function onMouseMove(e){
     $('dxInput').value = dx;
     $('dyInput').value = dy;
     previewCellMove();
-    /* Vẽ preview */
     renderOverlay();
   }
 }
 
-function onMouseUp(e){
+function onMouseUp(){
   if (!state.drag) return;
   if (state.drag.type === 'v' || state.drag.type === 'h'){
     state.vLines.sort((a,b) => a-b);
     state.hLines.sort((a,b) => a-b);
     renderLineLists();
   } else if (state.drag.type === 'cell'){
-    /* Commit move nếu có offset */
     if (state.cellMoveOffset.x !== 0 || state.cellMoveOffset.y !== 0){
       applyCellMove();
     }
@@ -901,28 +983,23 @@ function onMouseUp(e){
 }
 
 function previewCellMove(){
-  if (!state.cell || !state.cellOriginal){
-    /* Lưu cell data gốc lần đầu */
+  if (!state.cell) return;
+  if (!state.cellOriginal){
     const w = state.cell.x2 - state.cell.x1;
     const h = state.cell.y2 - state.cell.y1;
     const data = state.ctx.getImageData(state.cell.x1, state.cell.y1, w, h);
     state.cellOriginal = { x1: state.cell.x1, y1: state.cell.y1, w, h, imageData: data };
   }
 
-  /* Restore background của cell gốc */
   const orig = state.cellOriginal;
   state.ctx.clearRect(orig.x1, orig.y1, orig.w, orig.h);
 
-  /* Vẽ cell data ở vị trí mới */
   const temp = document.createElement('canvas');
   temp.width = orig.w;
   temp.height = orig.h;
   temp.getContext('2d').putImageData(orig.imageData, 0, 0);
 
-  state.ctx.drawImage(temp,
-    orig.x1 + state.cellMoveOffset.x,
-    orig.y1 + state.cellMoveOffset.y
-  );
+  state.ctx.drawImage(temp, orig.x1 + state.cellMoveOffset.x, orig.y1 + state.cellMoveOffset.y);
 }
 
 function applyCellMove(){
@@ -951,18 +1028,14 @@ function pickColorAt(x, y){
   const d = state.ctx.getImageData(x, y, 1, 1).data;
   state.bgColor = { r: d[0], g: d[1], b: d[2] };
   updateSwatch();
-  toast(`✓ Đã pick màu RGB(${d[0]},${d[1]},${d[2]})`, 'ok');
+  toast(`✓ Pick RGB(${d[0]},${d[1]},${d[2]})`, 'ok');
 }
 
 function updateSwatch(){
-  const fill = $('bgSwatchFill');
-  const c = state.bgColor;
-  fill.style.background = `rgb(${c.r},${c.g},${c.b})`;
+  $('bgSwatchFill').style.background = `rgb(${state.bgColor.r},${state.bgColor.g},${state.bgColor.b})`;
 }
 
-$('bgTol').addEventListener('input', e => {
-  $('bgTolVal').textContent = e.target.value;
-});
+$('bgTol').addEventListener('input', e => $('bgTolVal').textContent = e.target.value);
 $('bgMode').addEventListener('change', e => {
   $('bgColorRow').style.display = e.target.value === 'color' ? 'flex' : 'none';
 });
@@ -973,9 +1046,8 @@ $('bgApplyAll').addEventListener('click', () => {
 });
 $('bgApplyCell').addEventListener('click', () => {
   if (!state.cell) return;
-  const w = state.cell.x2 - state.cell.x1;
-  const h = state.cell.y2 - state.cell.y1;
-  applyBgRemove(state.cell.x1, state.cell.y1, w, h);
+  applyBgRemove(state.cell.x1, state.cell.y1,
+    state.cell.x2 - state.cell.x1, state.cell.y2 - state.cell.y1);
 });
 
 function applyBgRemove(x, y, w, h){
@@ -1016,12 +1088,12 @@ function applyBgRemove(x, y, w, h){
     }
   }
   state.ctx.putImageData(imgData, x, y);
-  toast(`✓ Đã xử lý ${count} pixel`);
+  toast(`✓ Xử lý ${count} pixel`);
   renderOverlay();
 }
 
 /* ============================================================
-   CANVAS RESIZE
+   RESIZE
    ============================================================ */
 document.querySelectorAll('.anchor-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1042,13 +1114,11 @@ $('resizeApply').addEventListener('click', () => {
   const oldH = state.canvas.height;
   const oldData = state.ctx.getImageData(0, 0, oldW, oldH);
 
-  /* Tạo temp canvas cũ */
   const tmp = document.createElement('canvas');
   tmp.width = oldW;
   tmp.height = oldH;
   tmp.getContext('2d').putImageData(oldData, 0, 0);
 
-  /* Resize canvas */
   state.canvas.width = newW;
   state.canvas.height = newH;
   state.overlay.width = newW;
@@ -1056,7 +1126,6 @@ $('resizeApply').addEventListener('click', () => {
   state.ctx.imageSmoothingEnabled = false;
   state.octx.imageSmoothingEnabled = false;
 
-  /* Tính vị trí đặt ảnh cũ */
   let dx = 0, dy = 0;
   const a = state.anchor;
   if (a[1] === 'c') dx = (newW - oldW) / 2;
@@ -1066,17 +1135,15 @@ $('resizeApply').addEventListener('click', () => {
 
   state.ctx.drawImage(tmp, Math.round(dx), Math.round(dy));
 
-  /* Cập nhật line về đúng biên */
   state.vLines[0] = 0;
   state.vLines[state.vLines.length-1] = newW;
   state.hLines[0] = 0;
   state.hLines[state.hLines.length-1] = newH;
   state.cell = null;
-  $('cellLabel').textContent = 'chưa chọn';
 
   $('sizeLabel').textContent = newW + '×' + newH;
   renderAll();
-  toast(`✓ Đã resize ${oldW}×${oldH} → ${newW}×${newH}`);
+  toast(`✓ Resize ${oldW}×${oldH} → ${newW}×${newH}`);
 });
 
 $('cropTight').addEventListener('click', () => {
@@ -1102,7 +1169,8 @@ $('cropTight').addEventListener('click', () => {
   const newW = maxX - minX + 1;
   const newH = maxY - minY + 1;
   const tmp = document.createElement('canvas');
-  tmp.width = newW; tmp.height = newH;
+  tmp.width = newW;
+  tmp.height = newH;
   tmp.getContext('2d').drawImage(state.canvas, -minX, -minY);
 
   state.canvas.width = newW;
@@ -1120,7 +1188,7 @@ $('cropTight').addEventListener('click', () => {
   $('canvasH').value = newH;
   $('sizeLabel').textContent = newW + '×' + newH;
   renderAll();
-  toast(`✂ Cắt sát viền: ${newW}×${newH}`);
+  toast(`✂ Cắt sát: ${newW}×${newH}`);
 });
 
 /* ============================================================
@@ -1153,13 +1221,83 @@ $('cellFillTrans').addEventListener('click', () => {
   const h = state.cell.y2 - state.cell.y1;
   state.ctx.clearRect(state.cell.x1, state.cell.y1, w, h);
   renderOverlay();
-  toast('🗑 Đã xóa nội dung cell');
+  toast('🗑 Đã xóa cell');
 });
 
 /* ============================================================
-   EXPORT
+   METADATA ENCODE + EXPORT
    ============================================================ */
-function exportPNG(){
+function encodeMetadataBytes(jsonStr){
+  const magic = [0x44, 0x48, 0x55, 0x4E];  // 'DHUN'
+  const version = 0x0001;
+  const jsonBytes = new TextEncoder().encode(jsonStr);
+  const len = jsonBytes.length;
+  return [
+    ...magic,
+    version & 0xFF, (version >> 8) & 0xFF,
+    len & 0xFF, (len >> 8) & 0xFF, (len >> 16) & 0xFF, (len >> 24) & 0xFF,
+    ...jsonBytes
+  ];
+}
+
+function writeMetadataRow(canvas, y, bytes){
+  const c = canvas.getContext('2d', { willReadFrequently: true });
+  const imgData = c.createImageData(canvas.width, 1);
+  const d = imgData.data;
+  for (let i = 0; i < bytes.length; i++){
+    const p = Math.floor(i / 3);
+    const ch = i % 3;
+    if (p >= canvas.width) break;
+    d[p * 4 + ch] = bytes[i];
+    d[p * 4 + 3] = 255;
+  }
+  c.putImageData(imgData, 0, y);
+}
+
+function exportWithMetadata(){
+  if (!state.canvas) return;
+  const name = $('exportName').value.trim() || 'sprite';
+  const label = $('exportLabel').value;
+  const fps = parseInt($('exportFps').value) || 10;
+  const loop = $('exportLoop').value === '1';
+
+  const W = state.canvas.width;
+  const H = state.canvas.height;
+
+  const out = document.createElement('canvas');
+  out.width = W;
+  out.height = H + 1;
+  const octx = out.getContext('2d', { willReadFrequently: true });
+  octx.imageSmoothingEnabled = false;
+  octx.drawImage(state.canvas, 0, 0);
+
+  const meta = {
+    v: 1,
+    label,
+    fps,
+    loop,
+    frames: state.vLines.length - 1,
+    spriteH: H,
+    vLines: state.vLines.map(v => Math.round(v)),
+    hLines: state.hLines.map(v => Math.round(v))
+  };
+  const bytes = encodeMetadataBytes(JSON.stringify(meta));
+  writeMetadataRow(out, H, bytes);
+
+  out.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name + '.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast(`💾 ${name}.png · ${W}×${H} + meta (${meta.frames} frames)`, 'ok');
+  }, 'image/png');
+}
+
+function exportPlainPNG(){
   if (!state.canvas) return;
   const name = $('exportName').value.trim() || 'sprite';
   state.canvas.toBlob(blob => {
@@ -1171,27 +1309,28 @@ function exportPNG(){
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast(`💾 Đã tải ${name}.png (${state.canvas.width}×${state.canvas.height})`, 'ok');
+    toast(`💾 ${name}.png (no meta)`, 'ok');
   }, 'image/png');
 }
-$('exportBtn').addEventListener('click', exportPNG);
-$('exportBtn2').addEventListener('click', exportPNG);
+
+$('exportBtn').addEventListener('click', exportWithMetadata);
+$('exportBtn2').addEventListener('click', exportWithMetadata);
+$('exportPlainBtn').addEventListener('click', exportPlainPNG);
 
 /* ============================================================
    KEYBOARD
    ============================================================ */
 document.addEventListener('keydown', e => {
-  if (e.ctrlKey || e.metaKey){
-    if (e.key === 'z'){ e.preventDefault(); undo(); return; }
-    if (e.key === 's'){ e.preventDefault(); exportPNG(); return; }
-  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z'){ e.preventDefault(); undo(); return; }
+  if ((e.ctrlKey || e.metaKey) && e.key === 's'){ e.preventDefault(); exportWithMetadata(); return; }
+
   if (e.key === 'Escape'){
     state.pickColor = false;
     $('pickColorBtn').classList.remove('on');
     state.cell = null;
     renderOverlay();
   }
-  /* Arrow keys di chuyển cell */
+
   if (state.cell && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
     e.preventDefault();
     let dx = parseInt($('dxInput').value) || 0;
@@ -1211,9 +1350,7 @@ document.addEventListener('keydown', e => {
 /* ============================================================
    HELP
    ============================================================ */
-$('helpBtn').addEventListener('click', () => {
-  $('help').classList.toggle('show');
-});
+$('helpBtn').addEventListener('click', () => $('help').classList.toggle('show'));
 
 /* ============================================================
    INIT
@@ -1221,4 +1358,4 @@ $('helpBtn').addEventListener('click', () => {
 updateSwatch();
 </script>
 </body>
-  </html>
+        </html>
