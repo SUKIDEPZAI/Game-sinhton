@@ -24,7 +24,8 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 #netInfo b{color:#e8ff80}
 #hpBar{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);display:flex;align-items:center;
   gap:8px;padding:6px 14px;background:rgba(0,0,0,.7);border:2px solid #000;border-radius:8px;
-  z-index:5;pointer-events:none;font-family:Consolas,monospace;box-shadow:0 2px 0 rgba(0,0,0,.5);transition:box-shadow .2s}
+  z-index:5;pointer-events:none;font-family:Consolas,monospace;box-shadow:0 2px 0 rgba(0,0,0,.5);
+  transition:box-shadow .2s}
 #hpBar .heartIcon{font-size:16px}
 #hpFill{width:180px;height:12px;background:#3a1010;border:1px solid #000;position:relative;overflow:hidden;border-radius:2px}
 #hpFillInner{height:100%;width:100%;background:linear-gradient(180deg,#ff6b6b,#c02020);transition:width .2s}
@@ -67,6 +68,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 .mbtn:active{transform:translateY(2px);box-shadow:inset 0 1px 0 #98a888,0 2px 0 #1a1f14}
 .mbtn.primary{background:linear-gradient(180deg,#88d858 0%,#4a8a30 100%);
   box-shadow:inset 0 1px 0 #b8ff88,0 4px 0 #1a3a10;color:#0a1a06;text-shadow:0 1px 0 rgba(255,255,255,.25)}
+.mbtn.primary:hover{background:linear-gradient(180deg,#98e868 0%,#5a9a40 100%)}
 .mbtn.danger{background:linear-gradient(180deg,#d05848 0%,#8a2a20 100%);
   box-shadow:inset 0 1px 0 #ff9888,0 4px 0 #3a0a06;color:#fff}
 .mbtn.back{background:linear-gradient(180deg,#5a5850 0%,#3a3830 100%);font-size:12px;padding:10px;
@@ -94,127 +96,43 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   display:flex;flex-direction:column;gap:10px}
 .pause-panel h2{font-family:Consolas,monospace;font-size:22px;letter-spacing:4px;color:#e8f0d8;
   margin-bottom:10px;text-shadow:0 2px 0 rgba(0,0,0,.5)}
-#touchUI{
-  display:none;
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:8;
-  padding:
-    0
-    max(12px,env(safe-area-inset-right))
-    max(12px,env(safe-area-inset-bottom))
-    max(12px,env(safe-area-inset-left));
-}
+#touchUI{display:none;position:fixed;inset:0;pointer-events:none;z-index:8}
 @media (pointer:coarse){
   #touchUI{display:block}
-  #hotbar{
-    transform:translateX(-50%) scale(.72);
-    bottom:4px;
-  }
-  #hpBar{
-    bottom:62px;
-    transform:translateX(-50%) scale(.85);
-  }
+  #hotbar{transform:translateX(-50%) scale(.72);bottom:4px}
+  #hpBar{bottom:62px;transform:translateX(-50%) scale(.85)}
 }
-.gameBtn{
-  position:absolute;
-  width:76px;
-  height:76px;
-  border-radius:50%;
-  border:2px solid rgba(255,255,255,.30);
-  background:
-    radial-gradient(circle at 34% 25%,
-      rgba(255,255,255,.18),
-      rgba(31,40,60,.82) 52%,
-      rgba(9,13,22,.90));
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:30px;
-  font-weight:900;
-  pointer-events:auto;
-  touch-action:none;
-  -webkit-user-select:none;
-  user-select:none;
-  -webkit-touch-callout:none;
-  box-shadow:
-    0 7px 18px rgba(0,0,0,.42),
-    inset 0 2px 5px rgba(255,255,255,.11),
-    inset 0 -5px 10px rgba(0,0,0,.25);
-  transition:transform .06s ease,filter .06s ease;
-}
-.gameBtn::after{
-  content:"";
-  position:absolute;
-  inset:7px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.10);
-  pointer-events:none;
-}
-.gameBtn:active,.gameBtn.pressed{
-  transform:scale(.87);
-  filter:brightness(1.28);
-  background:
-    radial-gradient(circle at 35% 25%,
-      rgba(255,255,255,.22),
-      rgba(55,70,105,.96) 55%,
-      rgba(12,17,29,.96));
-}
-.gameBtn.left{
-  left:max(20px,env(safe-area-inset-left));
-  bottom:max(28px,env(safe-area-inset-bottom));
-}
-.gameBtn.right{
-  left:calc(max(20px,env(safe-area-inset-left)) + 88px);
-  bottom:max(28px,env(safe-area-inset-bottom));
-}
-.gameBtn.jump{
-  right:calc(max(20px,env(safe-area-inset-right)) + 94px);
-  bottom:max(28px,env(safe-area-inset-bottom));
-}
-.gameBtn.attack{
-  right:max(16px,env(safe-area-inset-right));
-  bottom:max(22px,env(safe-area-inset-bottom));
-  width:92px;
-  height:92px;
-  font-size:36px;
-  border-color:rgba(120,165,255,.48);
-  background:
-    radial-gradient(circle at 34% 24%,
-      rgba(130,175,255,.28),
-      rgba(39,58,110,.92) 56%,
-      rgba(10,16,34,.96));
-  box-shadow:
-    0 8px 22px rgba(0,0,0,.48),
-    0 0 18px rgba(75,125,255,.14),
-    inset 0 2px 6px rgba(255,255,255,.13);
-}
-@media (max-width:520px){
-  .gameBtn{width:68px;height:68px;font-size:27px}
-  .gameBtn.right{
-    left:calc(max(18px,env(safe-area-inset-left)) + 78px);
-  }
-  .gameBtn.jump{
-    right:calc(max(18px,env(safe-area-inset-right)) + 82px);
-  }
-  .gameBtn.attack{
-    width:84px;height:84px;font-size:32px;
-  }
-}
-@media (min-width:900px){
-  .gameBtn{opacity:.42}
-  .gameBtn:hover{opacity:.78}
-}
+#joyZone{position:absolute;left:16px;bottom:80px;width:130px;height:130px;pointer-events:auto;touch-action:none}
+#joyBase{width:100%;height:100%;border-radius:50%;background:rgba(0,0,0,.3);
+  border:3px solid rgba(255,255,255,.4);position:relative}
+#joyKnob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin-left:-27px;margin-top:-27px;
+  background:#889878;border:3px solid #1a1f14;border-radius:50%;
+  box-shadow:inset 0 0 0 2px #c8d8b8,3px 3px 0 rgba(0,0,0,.6)}
+.tb{position:absolute;border-radius:50%;background:rgba(180,80,60,.9);border:3px solid #1a1f14;
+  box-shadow:inset 0 0 0 2px #e89888,3px 3px 0 rgba(0,0,0,.6);color:#fff;font-size:24px;font-weight:900;
+  text-shadow:2px 2px 0 #1a1f14;pointer-events:auto;touch-action:none;padding:0;line-height:1;
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tb.jump{background:rgba(80,140,200,.9);box-shadow:inset 0 0 0 2px #88c8e8,3px 3px 0 rgba(0,0,0,.6)}
+.tb.pressed{background:#d8a898;border-color:#fff;box-shadow:none;transform:translate(2px,2px)}
+.tb.jump.pressed{background:#88c8e8}
+#btnAttack{right:16px;bottom:16px;width:72px;height:72px;font-size:30px}
+#btnJump{right:96px;bottom:16px;width:64px;height:64px;font-size:28px}
 #settingsBtn{position:fixed;top:8px;right:8px;z-index:13;width:36px;height:36px;
   background:rgba(20,24,16,.9);border:2px solid #0a0d08;border-radius:6px;color:#e8f0d8;font-size:16px;
   display:none;align-items:center;justify-content:center;cursor:pointer;
   box-shadow:0 3px 0 rgba(0,0,0,.5);touch-action:manipulation}
 #settingsBtn.show{display:flex}
+#settingsBtn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.5)}
 #rotate{display:none;position:fixed;inset:0;background:#0a0d08;color:#e8f0d8;z-index:200;
   align-items:center;justify-content:center;text-align:center;padding:30px;font-size:16px;letter-spacing:2px}
 @media (orientation:portrait) and (max-width:900px){ #rotate{display:flex} }
+#loadStatus{position:fixed;bottom:170px;left:50%;transform:translateX(-50%);
+  background:rgba(20,24,16,.92);color:#e8f0d8;padding:10px 16px;border-radius:6px;
+  font-family:Consolas,monospace;font-size:11px;z-index:12;border:1px solid #3a4438;
+  line-height:1.7;pointer-events:none;max-width:92vw;text-align:left}
+#loadStatus.hidden{display:none}
+#loadStatus .ok{color:#88ff60}
+#loadStatus .err{color:#ff6060}
 </style>
 </head>
 <body>
@@ -232,12 +150,12 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 </div>
 <div id="hotbar"></div>
 <div id="touchUI">
-  <button class="gameBtn left" id="btnLeft" aria-label="Trái">◀</button>
-  <button class="gameBtn right" id="btnRight" aria-label="Phải">▶</button>
-  <button class="gameBtn jump" id="btnJump" aria-label="Nhảy">▲</button>
-  <button class="gameBtn attack" id="btnAttack" aria-label="Đánh">⚔</button>
+  <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
+  <button class="tb" id="btnAttack">⚔</button>
+  <button class="tb jump" id="btnJump">⤒</button>
 </div>
 <button id="settingsBtn" onclick="Game.showSettings()" title="Cài đặt (M)">⚙</button>
+<div id="loadStatus" class="hidden"></div>
 <div id="toast"></div>
 <div id="pause" class="modal hidden">
   <div class="pause-panel">
@@ -315,218 +233,94 @@ let rng = Math.random, SEED = 0;
 function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 
 /* ============================================================
-   PLAYER SPRITESHEET
-   Chỉ dùng DUY NHẤT assets/player.png
-   Ảnh: 1536x1024 = 8 cột x 5 hàng
-   Frame: 192x205 (hàng cuối còn dư 1px do ảnh cao 1024px)
-
-   Hàng:
-   0 = idle
-   1 = run
-   2 = jump
-   3 = attack
-   4 = death
+   SPRITE — 1 file PNG, 21 frame trên 1 HÀNG NGANG
+   Layout:
+     idle   : frame 0-3   (4 frame)
+     run    : frame 4-8   (5 frame)
+     jump   : frame 9-11  (3 frame)
+     attack : frame 12-17 (6 frame)
+     hurt   : frame 18-20 (3 frame)
+   frameW = ảnh.width / 21  (tự tính)
+   frameH = ảnh.height
    ============================================================ */
-const PLAYER_SPRITE = {
+const SPRITE = {
   src: 'assets/player.png',
-  img: new Image(),
-  frameW: 192,
-  frameH: 205,
-  loaded: false,
-  frames: { idle: [], run: [], jump: [], attack: [], death: [] }
+  totalFrames: 21,
+  animations: {
+    idle:   { start: 0,  frames: 4, fps: 5,  loop: true  },
+    run:    { start: 4,  frames: 5, fps: 10, loop: true  },
+    jump:   { start: 9,  frames: 3, fps: 10, loop: false },
+    attack: { start: 12, frames: 6, fps: 14, loop: false },
+    hurt:   { start: 18, frames: 3, fps: 8,  loop: false }
+  }
 };
 
-/*
-   player.png không phải spritesheet dạng ô vuông hoàn hảo: mỗi frame có
-   khoảng trống khác nhau. Nếu cứ lấy x = frame * 192 thì chân/đầu sẽ
-   nhảy qua lại ("trôi frame").
+/* Thời gian action đồng bộ với animation duration */
+const ATTACK_DURATION = 6 / 14;   // 6 frame @ 14fps ≈ 0.43s
+const HURT_DURATION   = 3 / 8;    // 3 frame @ 8fps  ≈ 0.38s
+const JUMP_DURATION   = 0.55;     // 0.55s bay (animation 3 frame sẽ chạy xong trước khi chạm đất)
 
-   Ta tự quét alpha của PNG để tìm từng frame thật, rồi chuẩn hóa tất cả
-   theo chân + tâm X. Cách này cũng chịu được nền đen nếu PNG bị xuất với
-   nền đen thay vì alpha.
-*/
-function buildPlayerFrameMap(){
-  const img = PLAYER_SPRITE.img;
-  const w = img.naturalWidth || img.width;
-  const h = img.naturalHeight || img.height;
-  if (!w || !h) return false;
+/* Kích thước hiển thị trên canvas */
+const DEST_HEIGHT = 100;
+const FOOT_OFFSET = 14;
 
-  const c = document.createElement('canvas');
-  c.width = w;
-  c.height = h;
-  const cctx = c.getContext('2d', { willReadFrequently: true });
-  cctx.drawImage(img, 0, 0);
-  const data = cctx.getImageData(0, 0, w, h).data;
+const playerSprite = new Image();
+let spriteLoaded = false;
+let FRAME_W = 0, FRAME_H = 0;
 
-  /*
-    FIX QUAN TRỌNG:
-    player.png là spritesheet 8 cột x 5 hàng.
-    Mỗi frame được xử lý RIÊNG trong ô 192x205.
-    Không quét cả hàng rồi gom khoảng cách, vì cách đó có thể
-    gom cả 8 nhân vật thành một frame -> vẽ ra 8 nhân vật cùng lúc.
-  */
-  const opaque = (x, y) => {
-    const i = (y * w + x) * 4;
-    const a = data[i + 3];
-    if (a < 12) return false;
-
-    // Hỗ trợ cả PNG nền trong suốt và PNG có nền đen.
-    return !(data[i] < 7 && data[i + 1] < 7 && data[i + 2] < 7);
-  };
-
-  const rowNames = ['idle', 'run', 'jump', 'attack', 'death'];
-  const result = {
-    idle: [],
-    run: [],
-    jump: [],
-    attack: [],
-    death: []
-  };
-
-  const COLS = 8;
-  const FW = 192;
-  const FH = 205;
-
-  for (let row = 0; row < 5; row++) {
-    const name = rowNames[row];
-
-    for (let col = 0; col < COLS; col++) {
-      const cellX = col * FW;
-      const cellY = row * FH;
-
-      let minX = FW;
-      let minY = FH;
-      let maxX = -1;
-      let maxY = -1;
-      let pixelCount = 0;
-
-      for (let y = 0; y < FH && cellY + y < h; y++) {
-        for (let x = 0; x < FW && cellX + x < w; x++) {
-          if (!opaque(cellX + x, cellY + y)) continue;
-
-          pixelCount++;
-
-          if (x < minX) minX = x;
-          if (y < minY) minY = y;
-          if (x > maxX) maxX = x;
-          if (y > maxY) maxY = y;
-        }
-      }
-
-      // Ô trống: bỏ qua.
-      if (pixelCount < 20) continue;
-
-      const bw = maxX - minX + 1;
-      const bh = maxY - minY + 1;
-
-      /*
-        Anchor chân:
-        lấy trung vị X của pixel ở 20% cuối chiều cao.
-        Như vậy hiệu ứng kiếm/chém nằm bên cạnh không kéo nhân vật
-        sang trái/phải giữa các frame.
-      */
-      const footXs = [];
-      const footStart = Math.max(
-        minY,
-        maxY - Math.max(8, Math.floor(bh * 0.20))
-      );
-
-      for (let y = footStart; y <= maxY; y++) {
-        for (let x = minX; x <= maxX; x++) {
-          if (opaque(cellX + x, cellY + y)) {
-            footXs.push(x);
-          }
-        }
-      }
-
-      footXs.sort((a, b) => a - b);
-
-      const anchorX = footXs.length
-        ? footXs[Math.floor(footXs.length / 2)]
-        : Math.round((minX + maxX) / 2);
-
-      result[name].push({
-        x: cellX + minX,
-        y: cellY + minY,
-        w: bw,
-        h: bh,
-
-        // Anchor tương đối trong bbox.
-        ax: anchorX - minX,
-        ay: bh
-      });
-    }
+playerSprite.onload = () => {
+  spriteLoaded = true;
+  FRAME_W = playerSprite.width / SPRITE.totalFrames;
+  FRAME_H = playerSprite.height;
+  console.log('══════════════════════════════════════');
+  console.log('✓ SPRITE LOADED OK');
+  console.log('  URL     :', playerSprite.src);
+  console.log('  Image   :', playerSprite.width + '×' + playerSprite.height);
+  console.log('  Frames  :', SPRITE.totalFrames);
+  console.log('  Frame   :', FRAME_W.toFixed(2) + '×' + FRAME_H.toFixed(2) + 'px');
+  console.log('──────────────────────────────────────');
+  for (const name in SPRITE.animations){
+    const a = SPRITE.animations[name];
+    console.log(`  ${name.padEnd(7)} : frame ${a.start}..${a.start + a.frames - 1} (${a.frames} fr @ ${a.fps}fps ${a.loop?'loop':'once'})`);
   }
+  console.log('══════════════════════════════════════');
+  showLoadStatus();
+  setTimeout(() => hideLoadStatus(), 5000);
+};
 
-  /*
-    Fallback: nếu trình duyệt không đọc được alpha thì vẫn dùng
-    đúng 8 frame/cột thay vì lấy nguyên một hàng.
-  */
-  if (!result.idle.length) {
-    for (const n of rowNames) result[n] = [];
+playerSprite.onerror = () => {
+  spriteLoaded = false;
+  const absURL = new URL(SPRITE.src, window.location.href).href;
+  console.error('✗ SPRITE FAILED:', absURL);
+  showLoadStatusError(absURL);
+};
 
-    result.idle = Array.from(
-      { length: 8 },
-      (_, i) => ({ x: i * FW, y: 0, w: FW, h: FH, ax: FW / 2, ay: FH })
-    );
+playerSprite.src = SPRITE.src;
 
-    result.run = Array.from(
-      { length: 8 },
-      (_, i) => ({ x: i * FW, y: FH, w: FW, h: FH, ax: FW / 2, ay: FH })
-    );
-
-    result.jump = Array.from(
-      { length: 8 },
-      (_, i) => ({ x: i * FW, y: FH * 2, w: FW, h: FH, ax: FW / 2, ay: FH })
-    );
-
-    result.attack = Array.from(
-      { length: 8 },
-      (_, i) => ({ x: i * FW, y: FH * 3, w: FW, h: FH, ax: FW / 2, ay: FH })
-    );
-
-    result.death = Array.from(
-      { length: 8 },
-      (_, i) => ({
-        x: i * FW,
-        y: FH * 4,
-        w: FW,
-        h: Math.min(FH, h - FH * 4),
-        ax: FW / 2,
-        ay: Math.min(FH, h - FH * 4)
-      })
-    );
-  }
-
-  PLAYER_SPRITE.frames = result;
-
-  console.log(
-    'player frames:',
-    Object.fromEntries(
-      rowNames.map(n => [n, result[n].length])
-    )
-  );
-
-  return true;
+function showLoadStatus(){
+  const el = document.getElementById('loadStatus');
+  el.classList.remove('hidden');
+  el.innerHTML =
+    `<span class="ok">✓ SPRITE LOADED</span><br>` +
+    `Ảnh: ${playerSprite.width}×${playerSprite.height}px<br>` +
+    `Frame: ${FRAME_W.toFixed(1)}×${FRAME_H.toFixed(1)}px × 21<br>` +
+    `Idle 4 · Run 5 · Jump 3 · Attack 6 · Hurt 3`;
 }
-
-PLAYER_SPRITE.img.onload = () => {
-  PLAYER_SPRITE.loaded = buildPlayerFrameMap();
-  console.log(`✓ player.png: ${PLAYER_SPRITE.img.width}x${PLAYER_SPRITE.img.height}`);
-};
-PLAYER_SPRITE.img.onerror = () => {
-  PLAYER_SPRITE.loaded = false;
-  console.error('✗ Không tải được assets/player.png');
-};
-PLAYER_SPRITE.img.src = PLAYER_SPRITE.src;
-
-const SPRITE_ANIMS = {
-  idle:   { row: 0, fps: 5,  loop: true },
-  run:    { row: 1, fps: 10, loop: true },
-  jump:   { row: 2, fps: 12, loop: false },
-  attack: { row: 3, fps: 12, loop: false },
-  death:  { row: 4, fps: 8,  loop: false }
-};
+function hideLoadStatus(){
+  document.getElementById('loadStatus').classList.add('hidden');
+}
+function showLoadStatusError(url){
+  const el = document.getElementById('loadStatus');
+  el.classList.remove('hidden');
+  el.innerHTML =
+    `<span class="err">✗ KHÔNG TẢI ĐƯỢC SPRITE</span><br>` +
+    `URL: ${url}<br><br>` +
+    `Kiểm tra:<br>` +
+    `1. File nằm tại assets/player.png<br>` +
+    `2. Chữ thường, đuôi .png<br>` +
+    `3. Đã push lên GitHub + đợi Pages rebuild<br>` +
+    `4. Hard refresh (Ctrl+Shift+R)`;
+}
 
 /* ============================================================
    AUDIO
@@ -677,15 +471,8 @@ const player = {
   radius: 12, speed: 160,
   facing: 1, selected: 0,
   animT: 0, currentAnim: 'idle', animTime: 0,
-  _stepAcc: 0, attackT: 0, jumpT: 0, jumpY: 0,
-  dead: false, deathT: 0
+  _stepAcc: 0, attackT: 0, hurtT: 0, jumpT: 0, jumpY: 0
 };
-
-const ATTACK_DURATION = 8 / 12;
-const JUMP_DURATION   = 8 / 12;
-const DEATH_DURATION  = 8 / 8;
-const DEST_HEIGHT = 150;
-const FOOT_OFFSET = 14;
 
 /* ============================================================
    CAMERA / CANVAS
@@ -717,7 +504,7 @@ addEventListener('keydown', e => {
   if (e.code === 'Escape'){ if (gameStarted){ togglePause(); e.preventDefault(); } return; }
   if (!gameStarted || paused) return;
   if (e.code === 'KeyM'){ e.preventDefault(); toggleSettings(); }
-  if (e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowUp'){ e.preventDefault(); tryJump(); }
+  if (e.code === 'Space'){ e.preventDefault(); tryJump(); }
   if (e.code.startsWith('Digit')){
     const n = parseInt(e.code.slice(5));
     if (n>=1 && n<=9){ player.selected = n-1; renderHotbar(); }
@@ -744,57 +531,38 @@ addEventListener('wheel', e => {
   renderHotbar();
 }, { passive:true });
 
-/* Touch buttons: giữ đơn giản, không dùng joystick cũ */
-let touchLeft = false;
-let touchRight = false;
-
-function bindGameButton(id, downFn, upFn){
-  const el = document.getElementById(id);
-  if (!el) return;
-
-  let held = false;
-
-  const release = e => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    if (!held) return;
-    held = false;
-    el.classList.remove('pressed');
-    upFn();
-  };
-
-  el.addEventListener('pointerdown', e => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (held) return;
-    held = true;
-
-    el.classList.add('pressed');
-    buzz(8);
-
-    try { el.setPointerCapture(e.pointerId); } catch (_) {}
-
-    downFn();
-  }, {passive:false});
-
-  el.addEventListener('pointerup', release, {passive:false});
-  el.addEventListener('pointercancel', release, {passive:false});
-  el.addEventListener('lostpointercapture', release, {passive:false});
-
-  window.addEventListener('blur', release);
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) release();
-  });
+/* Joystick */
+const joy = { id:null, x:0, y:0, cx:0, cy:0 };
+const joyZone = document.getElementById('joyZone');
+const joyKnob = document.getElementById('joyKnob');
+joyZone.addEventListener('pointerdown', e => {
+  if (joy.id !== null) return;
+  e.preventDefault();
+  joy.id = e.pointerId;
+  const r = joyZone.getBoundingClientRect();
+  joy.cx = r.left + r.width/2; joy.cy = r.top + r.height/2;
+  moveJoy(e.clientX, e.clientY);
+  try { joyZone.setPointerCapture(e.pointerId); } catch(err){}
+});
+function moveJoy(cx, cy){
+  let dx = cx - joy.cx, dy = cy - joy.cy;
+  const d = Math.hypot(dx,dy), max = 52;
+  if (d > max){ dx = dx/d*max; dy = dy/d*max; }
+  joy.x = dx/max; joy.y = dy/max;
+  joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
 }
+function endJoy(e){
+  if (e.pointerId !== joy.id) return;
+  joy.id = null; joy.x = 0; joy.y = 0;
+  joyKnob.style.transform = 'translate(0,0)';
+}
+addEventListener('pointermove', e => {
+  if (e.pointerId === joy.id){ e.preventDefault(); moveJoy(e.clientX, e.clientY); }
+}, { passive:false });
+addEventListener('pointerup', endJoy);
+addEventListener('pointercancel', endJoy);
 
-bindGameButton('btnLeft', () => touchLeft = true, () => touchLeft = false);
-bindGameButton('btnRight', () => touchRight = true, () => touchRight = false);
-bindGameButton('btnAttack', () => tryAttack(), () => {});
-bindGameButton('btnJump', () => tryJump(), () => {});
-
+/* Touch look */
 let lookId = null, lookX = 0, lookY = 0;
 cv.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch') return;
@@ -811,6 +579,23 @@ addEventListener('pointermove', e => {
 function endLook(e){ if (e.pointerId === lookId) lookId = null; }
 addEventListener('pointerup', endLook);
 addEventListener('pointercancel', endLook);
+
+function bindBtn(id, downFn, upFn){
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('pointerdown', e => {
+    e.preventDefault(); e.stopPropagation();
+    el.classList.add('pressed'); buzz(8);
+    if (downFn) downFn();
+  });
+  const up = () => { el.classList.remove('pressed'); if (upFn) upFn(); };
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
+  el.addEventListener('pointerleave', up);
+}
+let attackTouch = false;
+bindBtn('btnAttack', () => { attackTouch = true; tryAttack(); }, () => { attackTouch = false; });
+bindBtn('btnJump', () => tryJump(), null);
 
 /* ============================================================
    ACTIONS
@@ -863,94 +648,69 @@ function burstHitVisual(x, y){
    UPDATE
    ============================================================ */
 function updatePlayer(dt){
-  /* Đang chết: chỉ chạy animation chết, không nhận điều khiển */
-  if (player.dead){
-    player.deathT += dt;
-    player.animTime += dt;
-    player.currentAnim = 'death';
-    if (player.deathT >= DEATH_DURATION) respawnPlayer();
-    return;
-  }
-
   let dx = 0, dy = 0;
-
-  if (touchLeft) dx -= 1;
-  if (touchRight) dx += 1;
-
-  if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
-  if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
-
-  /* Giữ kiểu di chuyển 2D cũ */
-  if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
-  if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
-
+  if (joy.id !== null && Math.hypot(joy.x, joy.y) > 0.15){ dx = joy.x; dy = joy.y; }
+  else {
+    if (keys['KeyA']||keys['ArrowLeft']) dx -= 1;
+    if (keys['KeyD']||keys['ArrowRight']) dx += 1;
+    if (keys['KeyW']||keys['ArrowUp']) dy -= 1;
+    if (keys['KeyS']||keys['ArrowDown']) dy += 1;
+  }
   const mag = Math.hypot(dx, dy);
   if (mag > 1){ dx /= mag; dy /= mag; }
-
   if (Math.abs(dx) > 0.3) player.facing = dx > 0 ? 1 : -1;
 
   player.x += dx * player.speed * dt;
   player.y += dy * player.speed * dt;
-
   const nr = player.radius;
   player.x = Math.max(nr, Math.min(WORLD_W*TILE - nr, player.x));
   player.y = Math.max(nr, Math.min(WORLD_H*TILE - nr, player.y));
 
   player.animT += dt;
+  if (player.attackT > 0) player.attackT -= dt;
+  if (player.hurtT > 0) player.hurtT -= dt;
 
-  if (player.attackT > 0) player.attackT = Math.max(0, player.attackT - dt);
-
+  /* Jump: parabola */
   if (player.jumpT > 0){
     player.jumpT = Math.max(0, player.jumpT - dt);
     const prog = 1 - player.jumpT / JUMP_DURATION;
     player.jumpY = -Math.sin(prog * Math.PI) * 26;
-  } else {
-    player.jumpY = 0;
-  }
+  } else player.jumpY = 0;
 
+  if (attackTouch && player.attackT <= 0) tryAttack();
+
+  /* Chọn animation — ưu tiên attack > hurt > jump > run > idle */
   let target = 'idle';
-  if (player.attackT > 0) target = 'attack';
-  else if (player.jumpT > 0) target = 'jump';
-  else if (mag > 0.1) target = 'run';
+  if (player.attackT > 0)     target = 'attack';
+  else if (player.hurtT > 0)  target = 'hurt';
+  else if (player.jumpT > 0)  target = 'jump';
+  else if (mag > 0.1)         target = 'run';
 
   if (target !== player.currentAnim){
     player.currentAnim = target;
     player.animTime = 0;
   }
-
   player.animTime += dt;
 
   if (mag > 0.1){
-    player._stepAcc += player.speed * dt;
-    if (player._stepAcc > 26){
-      player._stepAcc = 0;
-      Audio2D.sfx.step();
-    }
-  } else {
-    player._stepAcc = 0;
-  }
+    player._stepAcc += player.speed*dt;
+    if (player._stepAcc > 26){ player._stepAcc = 0; Audio2D.sfx.step(); }
+  } else player._stepAcc = 0;
 }
 
 function respawnPlayer(){
-  player.dead = false;
-  player.deathT = 0;
   player.hp = player.maxHp;
   toast('💀 Bạn đã bị hạ. Hồi sinh!');
-  player.x = WORLD_W*TILE/2;
-  player.y = WORLD_H*TILE/2;
-  player.jumpT = 0;
-  player.jumpY = 0;
-  player.attackT = 0;
-  player.currentAnim = 'idle';
-  player.animTime = 0;
-  cam.x = player.x - VW/2;
-  cam.y = player.y - VH/2;
+  player.x = WORLD_W*TILE/2; player.y = WORLD_H*TILE/2;
+  player.jumpT = 0; player.jumpY = 0;
+  player.attackT = 0; player.hurtT = 0;
+  cam.x = player.x - VW/2; cam.y = player.y - VH/2;
   if (net.active) net.broadcastPos();
   updateHpBar();
 }
 
 /* ============================================================
-   NETWORK (rút gọn — dùng PeerJS trên Render)
+   NETWORK
    ============================================================ */
 const PEER_OPTS = {
   host: BACKEND.host, port: BACKEND.port, path: BACKEND.peerPath,
@@ -964,15 +724,20 @@ const net = {
   active: false, mode: null, peer: null, hostConn: null,
   clients: new Map(), myId: null, name: 'Hunter', roomCode: null,
   players: new Map(), onWorldReady: null,
+
   startHost(name){
-    this.name = name || 'Host'; this.mode = 'host'; this.players.clear();
-    const code = genRoomCode(); this.roomCode = code;
+    this.name = name || 'Host';
+    this.mode = 'host';
+    this.players.clear();
+    const code = genRoomCode();
+    this.roomCode = code;
     return new Promise((resolve, reject) => {
       try { this.peer = new Peer('dragonhunter-' + code, PEER_OPTS); }
       catch(e){ reject(e); return; }
       const timer = setTimeout(() => reject(new Error('Hết thời gian kết nối')), 20000);
       this.peer.on('open', id => {
-        clearTimeout(timer); this.myId = id; this.active = true;
+        clearTimeout(timer);
+        this.myId = id; this.active = true;
         this.peer.on('connection', conn => this._acceptClient(conn));
         resolve(code);
       });
@@ -980,8 +745,10 @@ const net = {
     });
   },
   startClient(name, code){
-    this.name = name || 'Hunter'; this.mode = 'client';
-    this.players.clear(); this.roomCode = code;
+    this.name = name || 'Hunter';
+    this.mode = 'client';
+    this.players.clear();
+    this.roomCode = code;
     return new Promise((resolve, reject) => {
       try { this.peer = new Peer(PEER_OPTS); }
       catch(e){ reject(e); return; }
@@ -1041,20 +808,12 @@ const net = {
       updateNetHud();
     } else if (d.t === 'hit'){
       if (d.target === this.myId){
-        if (!player.dead){
-          player.hp = Math.max(0, player.hp - d.dmg);
-          flashDamage(); Audio2D.sfx.hurt(); updateHpBar();
-          toast(`⚔️ ${d.fromName} gây ${d.dmg} sát thương!`);
-          if (player.hp <= 0){
-            Audio2D.sfx.kill();
-            player.dead = true;
-            player.deathT = 0;
-            player.currentAnim = 'death';
-            player.animTime = 0;
-          } else {
-            this.broadcastPos();
-          }
-        }
+        player.hp = Math.max(0, player.hp - d.dmg);
+        player.hurtT = HURT_DURATION;
+        flashDamage(); Audio2D.sfx.hurt(); updateHpBar();
+        toast(`⚔️ ${d.fromName} gây ${d.dmg} sát thương!`);
+        if (player.hp <= 0){ Audio2D.sfx.kill(); respawnPlayer(); }
+        else this.broadcastPos();
       }
       if (this.mode === 'host' && conn){
         for (const [id, c] of this.clients){
@@ -1140,86 +899,64 @@ function getNightFactor(){
 }
 
 /* ============================================================
-   DRAW PLAYER — sprite riêng cho từng anim
+   DRAW PLAYER — sprite 1 hàng 21 frame
    ============================================================ */
 function drawPlayer(){
   const sx = player.x - cam.x;
   const syGround = player.y - cam.y;
   const sySprite = syGround + player.jumpY;
 
-  const anim = SPRITE_ANIMS[player.currentAnim] || SPRITE_ANIMS.idle;
-
-  /* Bóng */
-  const shadowScale = Math.max(0.35, 1 - Math.abs(player.jumpY) / 60);
+  /* Shadow ở mặt đất (cố định) */
+  const shadowScale = 1 - Math.abs(player.jumpY) / 60;
   ctx.fillStyle = `rgba(0,0,0,${0.35 * shadowScale})`;
   ctx.beginPath();
-  ctx.ellipse(
-    sx,
-    syGround + FOOT_OFFSET,
-    18 * shadowScale,
-    5 * shadowScale,
-    0, 0, Math.PI * 2
-  );
+  ctx.ellipse(sx, syGround + FOOT_OFFSET, 14 * shadowScale, 4 * shadowScale, 0, 0, Math.PI*2);
   ctx.fill();
 
-  if (!PLAYER_SPRITE.loaded){
-    /* Không còn fallback nhân vật giả: báo lỗi rõ ràng */
-    ctx.fillStyle = '#ff4040';
-    ctx.fillRect(sx - 12, sySprite - 35, 24, 35);
+  if (!spriteLoaded || FRAME_W <= 0){
+    drawFallbackBody(sx, sySprite, player.animT, player.currentAnim, player.facing, LOCAL_COLORS);
     return;
   }
 
-  const list = PLAYER_SPRITE.frames[player.currentAnim] || PLAYER_SPRITE.frames.idle;
-  const count = list.length || 1;
-  const rawIdx = Math.floor(player.animTime * anim.fps);
-  const idx = anim.loop ? rawIdx % count : Math.min(count - 1, rawIdx);
-  const fr = list[idx] || list[0];
+  drawSpriteFrame(player.currentAnim, player.animTime, sx, sySprite, player.facing);
+}
 
-  /*
-     FIX FRAME TRÔI:
-     - crop đúng bbox thật của từng frame
-     - lấy đáy bbox làm chân chung
-     - lấy tâm bbox làm trục X chung
-     Vì vậy mỗi frame dù có khoảng trắng khác nhau vẫn đứng cùng một chỗ.
-  */
-  /*
-    FIX ANCHOR:
-    Không căn theo tâm bbox nữa vì frame chạy/đánh có kích thước
-    khác nhau. Căn theo anchor chân của từng frame.
-  */
-  const scale = DEST_HEIGHT / fr.h;
-  const DEST_W = Math.max(1, Math.round(fr.w * scale));
-  const anchorX = fr.ax * scale;
-  const anchorY = fr.ay * scale;
+function drawSpriteFrame(animName, animTime, sx, sy, facing){
+  const anim = SPRITE.animations[animName];
+  if (!anim) return;
 
-  const drawX = Math.round(sx - anchorX);
-  const drawY = Math.round(sySprite + FOOT_OFFSET - anchorY);
-
-  ctx.save();
-
-  if (player.facing < 0){
-    ctx.translate(sx, 0);
-    ctx.scale(-1, 1);
-
-    ctx.drawImage(
-      PLAYER_SPRITE.img,
-      fr.x, fr.y, fr.w, fr.h,
-      -anchorX,
-      drawY,
-      DEST_W,
-      DEST_HEIGHT
-    );
+  /* Tính frame index an toàn */
+  const rawIdx = Math.floor(animTime * anim.fps);
+  let localIdx;
+  if (anim.loop){
+    localIdx = ((rawIdx % anim.frames) + anim.frames) % anim.frames;
   } else {
-    ctx.drawImage(
-      PLAYER_SPRITE.img,
-      fr.x, fr.y, fr.w, fr.h,
-      drawX,
-      drawY,
-      DEST_W,
-      DEST_HEIGHT
-    );
+    localIdx = Math.max(0, Math.min(anim.frames - 1, rawIdx));
   }
 
+  /* Global frame index trong file 21 frame */
+  const globalFrame = anim.start + localIdx;
+
+  /* Source rect */
+  const srcX = Math.round(globalFrame * FRAME_W);
+  const srcY = 0;
+  const srcW = Math.round(FRAME_W);
+  const srcH = Math.round(FRAME_H);
+
+  /* Dest rect */
+  const DEST_H = DEST_HEIGHT;
+  const DEST_W = Math.round(DEST_H * (FRAME_W / FRAME_H));
+  const drawX = Math.round(sx - DEST_W / 2);
+  const drawY = Math.round(sy + FOOT_OFFSET - DEST_H);
+
+  ctx.save();
+  if (facing < 0){
+    ctx.translate(sx, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(playerSprite, srcX, srcY, srcW, srcH, -DEST_W/2, drawY, DEST_W, DEST_H);
+  } else {
+    ctx.drawImage(playerSprite, srcX, srcY, srcW, srcH, drawX, drawY, DEST_W, DEST_H);
+  }
   ctx.restore();
 }
 
@@ -1272,45 +1009,10 @@ const REMOTE_PALETTE = [
 function hashCode(s){ let h = 0; for (let i=0;i<s.length;i++) h = ((h<<5) - h) + s.charCodeAt(i) | 0; return h; }
 function drawRemotePlayer(p){
   const sx = p.x - cam.x, sy = p.y - cam.y;
-  if (sx < -100 || sx > VW+100 || sy < -120 || sy > VH+120) return;
-
-  if (PLAYER_SPRITE.loaded){
-    const list = PLAYER_SPRITE.frames.idle || [];
-    const frames = list.length || 1;
-    const frame = Math.floor((p.animT || 0) * SPRITE_ANIMS.idle.fps) % frames;
-    const fr = list[frame] || {x:0,y:0,w:192,h:205};
-    const scale = DEST_HEIGHT / fr.h;
-    const DEST_W = Math.max(1, Math.round(fr.w * scale));
-    const anchorX = fr.ax * scale;
-    const anchorY = fr.ay * scale;
-
-    ctx.save();
-
-    if (p.facing < 0){
-      ctx.translate(sx, 0);
-      ctx.scale(-1, 1);
-
-      ctx.drawImage(
-        PLAYER_SPRITE.img,
-        fr.x, fr.y, fr.w, fr.h,
-        -anchorX,
-        sy + FOOT_OFFSET - anchorY,
-        DEST_W,
-        DEST_HEIGHT
-      );
-    } else {
-      ctx.drawImage(
-        PLAYER_SPRITE.img,
-        fr.x, fr.y, fr.w, fr.h,
-        sx - anchorX,
-        sy + FOOT_OFFSET - anchorY,
-        DEST_W,
-        DEST_HEIGHT
-      );
-    }
-    ctx.restore();
-  }
-
+  if (sx < -80 || sx > VW+80 || sy < -80 || sy > VH+80) return;
+  const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name)) % REMOTE_PALETTE.length];
+  p.animT = (p.animT || 0) + 0.016;
+  drawFallbackBody(sx, sy, p.animT, 'idle', p.facing, pal);
   ctx.font = 'bold 10px Consolas, monospace';
   ctx.textAlign = 'center';
   const w = ctx.measureText(p.name).width + 8;
@@ -1318,7 +1020,6 @@ function drawRemotePlayer(p){
   ctx.fillRect(sx - w/2, sy - 44, w, 13);
   ctx.fillStyle = '#88ffd8';
   ctx.fillText(p.name, sx, sy - 34);
-
   const hpPct = Math.max(0, Math.min(1, (p.hp ?? 20) / 20));
   const bw = 26;
   ctx.fillStyle = 'rgba(0,0,0,0.8)';
@@ -1453,10 +1154,12 @@ window.Game = {
   pauseSettings: () => {
     paused = false;
     document.getElementById('pause').classList.add('hidden');
-    backToMenu(); showMenuPage('settings');
+    backToMenu();
+    showMenuPage('settings');
   },
   quitToMenu: () => backToMenu(),
 };
+
 const menuPages = {
   main: document.getElementById('menuMain'),
   mp: document.getElementById('menuMP'),
@@ -1466,6 +1169,7 @@ function showMenuPage(name){
   if (!menuPages[name]) return;
   for (const k in menuPages) menuPages[k].classList.toggle('hidden', k !== name);
 }
+
 async function hostRoom(){
   document.getElementById('hostPanel').classList.remove('hidden');
   document.getElementById('joinPanel').classList.add('hidden');
@@ -1482,7 +1186,9 @@ async function hostRoom(){
     world.fill(0); generateWorld();
     resetPlayerPosition(); initInv();
     setTimeout(() => startGame('host'), 800);
-  } catch(e){ status.textContent = '❌ Lỗi: ' + (e.message || e); }
+  } catch(e){
+    status.textContent = '❌ Lỗi: ' + (e.message || e);
+  }
 }
 function showJoin(){
   document.getElementById('hostPanel').classList.add('hidden');
@@ -1499,17 +1205,22 @@ async function joinRoom(){
     net.onWorldReady = () => { initInv(); startGame('client'); };
     await net.startClient(name, code);
     status.textContent = '✓ Đã kết nối, đang tải thế giới...';
-  } catch(e){ status.textContent = '❌ ' + (e.message || e); }
+  } catch(e){
+    status.textContent = '❌ ' + (e.message || e);
+  }
 }
+
 function bindSlider(id, valId, cb){
   const s = document.getElementById(id), v = document.getElementById(valId);
   if (!s) return;
   s.addEventListener('input', e => { v.textContent = e.target.value; cb(+e.target.value/100); });
-  v.textContent = s.value; cb(+s.value/100);
+  v.textContent = s.value;
+  cb(+s.value/100);
 }
 bindSlider('setMaster', 'valMaster', v => Audio2D.setMasterVolume(v));
 bindSlider('setMusic', 'valMusic', v => Audio2D.setMusicVolume(v));
 bindSlider('setSfx', 'valSfx', v => Audio2D.setSfxVolume(v));
+
 function toggleSettings(){
   if (gameStarted){
     paused = true;
@@ -1533,12 +1244,17 @@ function startGame(mode){
   document.getElementById('menu').classList.add('hidden');
   document.getElementById('pause').classList.add('hidden');
   document.getElementById('settingsBtn').classList.add('show');
-  gameStarted = true; paused = false;
-  Audio2D.init(); Audio2D.startMusic();
-  renderHotbar(); updateHpBar();
-  startNetSync(); updateNetHud();
+  gameStarted = true;
+  paused = false;
+  Audio2D.init();
+  Audio2D.startMusic();
+  renderHotbar();
+  updateHpBar();
+  startNetSync();
+  updateNetHud();
   toast(mode === 'sp' ? '🎮 Chơi đơn' :
-        mode === 'host' ? '🏠 Phòng: ' + net.roomCode : '⚔️ Đã vào phòng');
+        mode === 'host' ? '🏠 Phòng: ' + net.roomCode :
+        '⚔️ Đã vào phòng');
 }
 function togglePause(){
   if (!gameStarted) return;
@@ -1557,10 +1273,10 @@ function backToMenu(){
 }
 function resetPlayerPosition(){
   player.hp = player.maxHp;
-  player.x = WORLD_W*TILE/2; player.y = WORLD_H*TILE/2;
+  player.x = WORLD_W*TILE/2;
+  player.y = WORLD_H*TILE/2;
   player.jumpT = 0; player.jumpY = 0;
-  player.attackT = 0;
-  player.dead = false; player.deathT = 0;
+  player.attackT = 0; player.hurtT = 0;
   player.currentAnim = 'idle'; player.animTime = 0;
   cam.x = player.x - VW/2; cam.y = player.y - VH/2;
 }
@@ -1575,7 +1291,8 @@ function loop(now){
     const dt = Math.min((now - lastT) / 1000, 0.05);
     lastT = now;
     if (gameStarted && !paused){
-      updatePlayer(dt); updateDayNight(dt);
+      updatePlayer(dt);
+      updateDayNight(dt);
     }
     for (const p of G.particles){
       p.life -= dt;
@@ -1584,7 +1301,9 @@ function loop(now){
     }
     G.particles = G.particles.filter(p => p.life > 0);
     if (gameStarted){
-      updateCam(); render(); updateHpBar();
+      updateCam();
+      render();
+      updateHpBar();
     }
   } catch(e){ console.error(e); }
   requestAnimationFrame(loop);
@@ -1594,4 +1313,4 @@ showMenuPage('main');
 requestAnimationFrame(loop);
 </script>
 </body>
-      </html>
+        </html>
