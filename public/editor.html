@@ -3,329 +3,529 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sprite Sheet Editor v3 — Dragon Hunter</title>
+<title>DH Studio — Sprite Editor</title>
 <style>
-:root{--bg:#0a0d08;--panel:#1a2018;--panel2:#2a3328;--accent:#6fbf4a;
-  --accent2:#88ff60;--text:#e8f0d8;--dim:#a8b498;--danger:#e8503a}
+:root{
+  --bg:#0a0e08;--bg2:#131a12;--panel:#1a2218;--panel2:#232e20;
+  --border:#0a0d08;--border2:#2f3a2a;
+  --accent:#6fbf4a;--accent2:#88ff60;--accent3:#4a8a30;
+  --text:#e8f0d8;--dim:#889878;--dim2:#586850;
+  --danger:#e8503a;--warning:#ffcc40;--info:#88d8ff;
+  --line-red:rgba(255,80,80,.9);
+  --anchor-red:#ff3050;
+}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
-  font-family:'Segoe UI',Arial,sans-serif;font-size:13px;user-select:none}
-button{cursor:pointer;font-family:inherit}
-input,select{font-family:inherit}
-#app{display:flex;flex-direction:column;height:100%}
-#header{background:linear-gradient(180deg,#1a2018,#0a0d08);border-bottom:2px solid #000;
-  padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-#header h1{font-family:Consolas,monospace;font-size:14px;color:var(--accent2);letter-spacing:2px}
-#header .sub{font-family:Consolas,monospace;font-size:10px;color:#6a7860;margin-left:8px}
-#toolbar{display:flex;gap:6px;flex-wrap:wrap}
-.tbtn{background:linear-gradient(180deg,#5a6850,#3a4430);color:var(--text);
-  border:2px solid #000;border-radius:4px;padding:7px 12px;font-size:11px;font-weight:bold;
-  letter-spacing:1px;box-shadow:inset 0 1px 0 #8a9880,0 2px 0 #000;transition:all .08s}
-.tbtn:hover{background:linear-gradient(180deg,#6a7860,#4a5440)}
-.tbtn:active{transform:translateY(2px);box-shadow:inset 0 1px 0 #8a9880,0 0 0 #000}
-.tbtn.primary{background:linear-gradient(180deg,#88d858,#4a8a30);color:#0a1a06;
-  box-shadow:inset 0 1px 0 #b8ff88,0 2px 0 #1a3a10}
-.tbtn.danger{background:linear-gradient(180deg,#d05848,#8a2a20);color:#fff}
-.tbtn.on{background:linear-gradient(180deg,#ffd060,#d09020);color:#1a0a00}
-.tbtn:disabled{opacity:.4;cursor:not-allowed}
-#main{display:flex;flex:1;overflow:hidden}
-#canvasWrap{flex:1;position:relative;overflow:auto;background:#0f1409;
-  background-image:linear-gradient(45deg,#1a1f14 25%,transparent 25%),
-    linear-gradient(-45deg,#1a1f14 25%,transparent 25%),
-    linear-gradient(45deg,transparent 75%,#1a1f14 75%),
-    linear-gradient(-45deg,transparent 75%,#1a1f14 75%);
-  background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0px}
-#canvasHolder{position:relative;display:inline-block;margin:20px}
-#editorCanvas{display:block;image-rendering:pixelated;cursor:crosshair;
-  box-shadow:0 0 0 1px #000,0 0 30px rgba(0,0,0,.8)}
-#overlay{position:absolute;top:0;left:0;pointer-events:auto}
-#side{width:340px;background:var(--panel);border-left:2px solid #000;
-  overflow-y:auto;display:flex;flex-direction:column}
-.section{border-bottom:2px solid #000;padding:10px 12px}
-.section h3{font-family:Consolas,monospace;font-size:11px;color:var(--accent2);
-  letter-spacing:1.5px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.section h3 .count{color:var(--dim);font-size:10px;font-weight:normal}
-.row{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11px}
-.row label{flex:0 0 76px;color:var(--dim);font-family:Consolas,monospace}
-.row input[type=number],.row input[type=text]{width:70px;background:#000;color:var(--accent2);
-  border:1px solid #333;border-radius:3px;padding:4px 6px;font-family:Consolas,monospace;
-  font-size:12px;text-align:center}
-.row input[type=range]{flex:1;accent-color:var(--accent)}
-.row .val{color:var(--accent2);font-family:Consolas,monospace;font-size:11px;min-width:40px;text-align:right}
-.row .btn-sm{background:#3a4430;color:#e8f0d8;border:1px solid #000;border-radius:3px;
-  padding:3px 8px;font-size:10px;cursor:pointer}
-.row .btn-sm:hover{background:#4a5440}
-.lines-list{max-height:100px;overflow-y:auto;background:#000;border:1px solid #333;
-  border-radius:3px;padding:4px}
-.line-item{display:flex;align-items:center;gap:4px;padding:2px 4px;font-family:Consolas,monospace;
-  font-size:11px;border-radius:2px}
-.line-item:hover{background:#1a2018}
-.line-item .idx{color:#6a7860;width:20px}
-.line-item input{width:60px;background:#0a0d08;color:var(--accent2);border:1px solid #222;
-  border-radius:2px;padding:2px 4px;font-size:11px;font-family:Consolas,monospace;text-align:center}
-.line-item .del{background:none;border:none;color:var(--danger);cursor:pointer;font-size:13px;
-  padding:0 4px;margin-left:auto}
-.anchor-grid{display:grid;grid-template-columns:repeat(3,36px);grid-template-rows:repeat(3,36px);
-  gap:3px;justify-content:center;margin:8px 0}
-.anchor-btn{background:#1a2018;border:2px solid #000;border-radius:3px;cursor:pointer;
-  color:#6a7860;font-size:16px;display:flex;align-items:center;justify-content:center}
-.anchor-btn:hover{background:#2a3328}
-.anchor-btn.on{background:var(--accent);color:#0a1a06;border-color:#88ff60}
-.swatch{width:36px;height:36px;border:2px solid #000;border-radius:4px;display:inline-block;
-  vertical-align:middle;background:#333;position:relative;overflow:hidden}
-.swatch-fill{position:absolute;inset:0}
-#status{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
-  background:rgba(20,24,16,.95);border:1px solid #333;border-radius:6px;padding:8px 16px;
-  font-family:Consolas,monospace;font-size:11px;color:var(--dim);pointer-events:none;
-  opacity:0;transition:opacity .2s;z-index:100;max-width:90vw;text-align:center}
-#status.show{opacity:1}
-#status.ok{color:var(--accent2);border-color:#4a8a30}
-#status.err{color:#ff9898;border-color:#8a2a20}
-#empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;text-align:center;color:#6a7860;gap:14px;pointer-events:none}
-#empty .big{font-size:48px}
-#empty .label{font-family:Consolas,monospace;font-size:14px;letter-spacing:2px}
-#empty .hint{font-size:11px;color:#4a5440;max-width:400px;line-height:1.7}
-#empty .hint kbd{background:#2a3328;border:1px solid #000;border-radius:3px;padding:1px 6px;
-  font-family:Consolas,monospace;color:var(--accent2)}
-#help{position:fixed;bottom:10px;right:360px;background:rgba(20,24,16,.92);
-  border:1px solid #333;border-radius:6px;padding:10px 14px;font-family:Consolas,monospace;
-  font-size:10px;color:var(--dim);line-height:1.8;pointer-events:none;max-width:300px;display:none}
-#help.show{display:block}
-#help b{color:var(--accent2)}
-.anchor-list{max-height:150px;overflow-y:auto;background:#000;border:1px solid #333;
+  font-family:'Segoe UI',Arial,sans-serif;font-size:12px;user-select:none}
+button{cursor:pointer;font-family:inherit;color:inherit}
+input,select,textarea{font-family:inherit;color:inherit}
+
+.app{display:flex;flex-direction:column;height:100%}
+
+/* HEADER */
+.header{height:44px;background:linear-gradient(180deg,var(--panel),var(--bg));
+  border-bottom:2px solid var(--border);display:flex;align-items:center;
+  padding:0 14px;gap:16px;flex-shrink:0}
+.brand{font-family:Consolas,monospace;font-size:14px;font-weight:900;
+  color:var(--accent2);letter-spacing:2px;text-shadow:0 0 12px rgba(136,255,96,.4)}
+.brand .ver{font-size:9px;color:var(--dim2);margin-left:6px;letter-spacing:1px}
+.header-tools{display:flex;gap:5px;margin-left:auto}
+.btn{background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--border);border-radius:3px;padding:6px 11px;
+  font-size:11px;font-weight:bold;letter-spacing:.5px;transition:all .1s;
+  box-shadow:0 1px 0 rgba(0,0,0,.5);display:inline-flex;align-items:center;gap:5px}
+.btn:hover{background:linear-gradient(180deg,#2f3a2a,#232e20)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:linear-gradient(180deg,#88d858,var(--accent3));color:#0a1a06;
+  box-shadow:0 1px 0 #1a3a10,inset 0 1px 0 #b8ff88}
+.btn.danger{background:linear-gradient(180deg,#d05848,#8a2a20);color:#fff}
+.btn.on{background:linear-gradient(180deg,#ffd060,#d09020);color:#1a0a00}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn svg{width:12px;height:12px}
+
+/* MAIN 3-COLUMN */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* LEFT LIBRARY */
+.library{width:220px;background:var(--panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0}
+.panel-h{height:32px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 10px;
+  font-family:Consolas,monospace;font-size:10px;font-weight:bold;
+  letter-spacing:1.5px;color:var(--accent2);flex-shrink:0}
+.panel-h .cnt{margin-left:auto;color:var(--dim2);font-weight:normal}
+.library-body{flex:1;overflow-y:auto;padding:6px}
+
+.model-group{margin-bottom:8px}
+.model-header{display:flex;align-items:center;gap:6px;padding:5px 6px;
+  background:var(--panel2);border-radius:3px;cursor:pointer;
+  font-family:Consolas,monospace;font-size:11px;font-weight:bold;color:var(--accent2)}
+.model-header:hover{background:#2f3a2a}
+.model-header .arrow{font-size:9px;transition:transform .15s}
+.model-header.collapsed .arrow{transform:rotate(-90deg)}
+.model-header .count{margin-left:auto;color:var(--dim);font-weight:normal;font-size:10px}
+.model-body{padding-left:6px;overflow:hidden}
+.model-body.hidden{display:none}
+
+.anim-item{display:flex;align-items:center;gap:5px;padding:4px 6px;margin-top:3px;
+  border-radius:3px;cursor:pointer;font-size:11px;
+  border-left:2px solid transparent}
+.anim-item:hover{background:var(--panel2)}
+.anim-item.active{background:var(--accent3);border-left-color:var(--accent2);color:#fff}
+.anim-item .dot{width:6px;height:6px;border-radius:50%;background:var(--dim2);flex-shrink:0}
+.anim-item.active .dot{background:var(--accent2)}
+.anim-item .name{flex:1;font-family:Consolas,monospace;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.anim-item .meta{font-size:9px;color:var(--dim);font-family:Consolas,monospace}
+.anim-item.active .meta{color:#c8ffb8}
+
+.lib-empty{text-align:center;padding:30px 10px;color:var(--dim2);
+  font-family:Consolas,monospace;font-size:10px;line-height:1.7}
+.lib-empty kbd{background:var(--panel2);border:1px solid var(--border);border-radius:2px;
+  padding:1px 5px;color:var(--accent2)}
+
+/* CENTER CANVAS */
+.stage{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0d1109}
+.stage-bar{height:32px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 8px;gap:4px;flex-shrink:0}
+.stage-bar .sep{width:1px;height:18px;background:var(--border2);margin:0 4px}
+.stage-bar .btn{padding:4px 9px;font-size:10px}
+.stage-bar .zoom{font-family:Consolas,monospace;color:var(--accent2);
+  margin-left:auto;padding:0 10px;font-size:11px;font-weight:bold}
+.stage-canvas{flex:1;position:relative;overflow:auto;
+  background-image:linear-gradient(45deg,#151c11 25%,transparent 25%),
+    linear-gradient(-45deg,#151c11 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#151c11 75%),
+    linear-gradient(-45deg,transparent 75%,#151c11 75%);
+  background-size:20px 20px;
+  background-position:0 0,0 10px,10px -10px,-10px 0px}
+.canvas-holder{position:relative;display:inline-block;margin:24px}
+#mainCanvas,#overlayCanvas{display:block;image-rendering:pixelated;
+  box-shadow:0 0 0 1px #000,0 0 40px rgba(0,0,0,.9)}
+#overlayCanvas{position:absolute;top:0;left:0;pointer-events:auto;cursor:crosshair}
+.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;pointer-events:none;text-align:center}
+.empty-state .ic{font-size:56px;opacity:.4}
+.empty-state .title{font-family:Consolas,monospace;font-size:15px;color:var(--accent2);
+  letter-spacing:3px;font-weight:bold}
+.empty-state .hint{font-size:11px;color:var(--dim);max-width:340px;line-height:1.8}
+.empty-state kbd{background:var(--panel2);border:1px solid var(--border);border-radius:3px;
+  padding:2px 7px;font-family:Consolas,monospace;color:var(--accent2);font-size:10px}
+
+/* RIGHT INSPECTOR */
+.inspector{width:300px;background:var(--panel);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0}
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{flex:1;padding:8px 4px;text-align:center;font-family:Consolas,monospace;
+  font-size:10px;font-weight:bold;letter-spacing:.5px;color:var(--dim);
+  cursor:pointer;border-bottom:2px solid transparent;transition:all .1s}
+.tab:hover{color:var(--text);background:var(--panel)}
+.tab.active{color:var(--accent2);border-bottom-color:var(--accent2);background:var(--panel)}
+.tab-panels{flex:1;overflow-y:auto}
+.panel{padding:12px;display:none}
+.panel.active{display:block}
+
+.sec{margin-bottom:14px}
+.sec-title{font-family:Consolas,monospace;font-size:10px;font-weight:bold;
+  color:var(--accent2);letter-spacing:1.5px;margin-bottom:8px;
+  display:flex;align-items:center;justify-content:space-between}
+.sec-title .badge{background:var(--accent3);color:var(--accent2);
+  padding:1px 6px;border-radius:8px;font-size:9px;font-weight:normal}
+
+.field{display:flex;align-items:center;gap:8px;margin:6px 0}
+.field label{flex:0 0 82px;font-size:10px;color:var(--dim);
+  font-family:Consolas,monospace;letter-spacing:.5px}
+.field input[type=number],.field input[type=text],
+.field select{flex:1;background:#000;color:var(--accent2);
+  border:1px solid var(--border2);border-radius:3px;padding:5px 8px;
+  font-size:11px;font-family:Consolas,monospace;text-align:center}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
+.field input[type=range]{flex:1;accent-color:var(--accent);height:16px}
+.field .val{flex:0 0 40px;text-align:right;color:var(--accent2);
+  font-family:Consolas,monospace;font-size:11px}
+.field .mini{flex:0 0 auto;background:var(--panel2);border:1px solid var(--border);
+  border-radius:3px;padding:4px 9px;font-size:10px;font-weight:bold}
+.field .mini:hover{background:#2f3a2a}
+
+.lines-list{max-height:100px;overflow-y:auto;background:#000;border:1px solid var(--border2);
   border-radius:3px;padding:4px;margin-top:6px}
-.anchor-item{display:flex;align-items:center;gap:4px;padding:2px 4px;font-family:Consolas,monospace;
-  font-size:11px;border-radius:2px;cursor:pointer}
-.anchor-item:hover{background:#1a2018}
-.anchor-item.on{background:#2a3a1a;border-left:3px solid var(--accent2)}
-.anchor-item .idx{color:#6a7860;width:24px}
-.anchor-item .coords{color:var(--accent2);flex:1}
-.anchor-item .warn{color:#ffcc40;font-size:10px}
+.line-row{display:flex;align-items:center;gap:5px;padding:2px 3px;border-radius:2px;
+  font-family:Consolas,monospace;font-size:10px}
+.line-row:hover{background:var(--panel2)}
+.line-row .idx{color:var(--dim2);width:22px}
+.line-row input{width:55px;background:#0a0d08;color:var(--accent2);
+  border:1px solid var(--border2);border-radius:2px;padding:2px 4px;
+  font-size:10px;font-family:Consolas,monospace;text-align:center}
+.line-row .del{margin-left:auto;background:none;border:none;
+  color:var(--danger);font-size:12px;padding:0 3px;opacity:.6}
+.line-row .del:hover{opacity:1}
+
+.anchor-grid{display:grid;grid-template-columns:repeat(3,32px);
+  grid-template-rows:repeat(3,32px);gap:3px;justify-content:center;margin:8px 0}
+.anchor-btn{background:var(--panel2);border:1px solid var(--border);
+  border-radius:3px;color:var(--dim);font-size:14px;display:flex;
+  align-items:center;justify-content:center;transition:all .1s}
+.anchor-btn:hover{background:#2f3a2a}
+.anchor-btn.on{background:var(--accent);color:#0a1a06;border-color:var(--accent2)}
+
+.swatch{width:32px;height:32px;border:2px solid var(--border);border-radius:4px;
+  position:relative;overflow:hidden;flex-shrink:0}
+.swatch-fill{position:absolute;inset:0}
+
+.anim-preview{width:100%;height:140px;background:#0a0d08;
+  border:1px solid var(--border2);border-radius:4px;image-rendering:pixelated;
+  display:block}
+
+.help-box{background:#0a0d08;border-left:3px solid var(--accent3);
+  padding:8px 10px;border-radius:3px;font-size:10px;color:var(--dim);
+  font-family:Consolas,monospace;line-height:1.7;margin-top:8px}
+.help-box b{color:var(--accent2)}
+
+/* STATUS BAR */
+.status-bar{height:24px;background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;gap:16px;
+  font-family:Consolas,monospace;font-size:10px;color:var(--dim);flex-shrink:0}
+.status-bar .ok{color:var(--accent2)}
+.status-bar .err{color:#ff9898}
+.status-bar .item{display:flex;gap:5px;align-items:center}
+.status-bar .item .lbl{color:var(--dim2)}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;
+  display:none;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modal-box{background:var(--panel2);border:2px solid var(--border);border-radius:6px;
+  padding:20px;max-width:480px;width:100%;
+  box-shadow:inset 0 0 0 1px #3f4a3a,0 12px 40px rgba(0,0,0,.8)}
+.modal-box h3{font-family:Consolas,monospace;font-size:12px;
+  color:var(--accent2);letter-spacing:2px;margin-bottom:14px}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+
+#toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
+  background:rgba(20,28,18,.96);border:1px solid var(--accent3);
+  border-radius:6px;padding:10px 20px;font-family:Consolas,monospace;
+  font-size:11px;color:var(--accent2);z-index:300;opacity:0;
+  transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+#toast.show{opacity:1}
+#toast.err{border-color:var(--danger);color:#ff9898}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent3)}
+
+input[type=file]{display:none}
 </style>
 </head>
 <body>
-<div id="app">
-<header id="header">
-  <div><h1>🎨 SPRITE EDITOR<span class="sub">v3 · 4-side bbox + anchor</span></h1></div>
-  <div id="toolbar">
-    <button class="tbtn" id="uploadBtn">📁 Upload</button>
-    <button class="tbtn" id="undoBtn" disabled>↶ Undo</button>
-    <button class="tbtn" id="helpBtn">❓ Help</button>
-    <button class="tbtn primary" id="exportBtn" disabled>💾 Xuất PNG</button>
+<div class="app">
+
+<header class="header">
+  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.0</span></div>
+  <div class="header-tools">
+    <button class="btn" id="uploadBtn">📁 Upload PNG</button>
+    <button class="btn" id="importBtn">📥 Import JSON</button>
+    <button class="btn" id="exportAllBtn">📦 Export Project</button>
+    <button class="btn primary" id="exportBtn" disabled>💾 Export Current</button>
+    <button class="btn" id="helpBtn">❓ Help</button>
   </div>
 </header>
-<div id="main">
-  <div id="canvasWrap">
-    <div id="empty">
-      <div class="big">📁</div>
-      <div class="label">CHƯA CÓ ẢNH</div>
-      <div class="hint">
-        Upload ảnh PNG sprite sheet.<br>
-        Tool sẽ <b>tự tìm bbox 4 cạnh</b> của mỗi nhân vật<br>
-        và đặt <b>anchor</b> (điểm chân) để game căn chuẩn.
-      </div>
-    </div>
-    <div id="canvasHolder" style="display:none">
-      <canvas id="editorCanvas"></canvas>
-      <canvas id="overlay"></canvas>
-    </div>
-  </div>
-  <aside id="side">
-    <div class="section">
-      <h3>📏 LƯỚI KẺ <span class="count" id="gridCount">0 × 0</span></h3>
-      <div class="row">
-        <label>Cột</label>
-        <button class="btn-sm" id="autoV">Auto N</button>
-        <button class="btn-sm" id="addVLine">+ Thêm</button>
-        <button class="btn-sm" id="clearV">Clear</button>
-      </div>
-      <div class="lines-list" id="vLinesList"></div>
-      <div class="row" style="margin-top:8px">
-        <label>Hàng</label>
-        <button class="btn-sm" id="autoH">Auto N</button>
-        <button class="btn-sm" id="addHLine">+ Thêm</button>
-        <button class="btn-sm" id="clearH">Clear</button>
-      </div>
-      <div class="lines-list" id="hLinesList"></div>
-      <div class="row" style="margin-top:8px">
-        <label></label>
-        <button class="btn-sm" id="autoDetectBtn" style="flex:1;padding:6px;background:#4a5a30">
-          🤖 Auto-detect 4 cạnh
-        </button>
-      </div>
-    </div>
-    <div class="section">
-      <h3>🎯 ANCHOR (ĐIỂM CHÂN) <span class="count" id="anchorCount">0 / 0</span></h3>
-      <div class="row">
-        <label>Mode</label>
-        <select id="anchorMode" style="flex:1;background:#000;color:#e8f0d8;border:1px solid #333;
-          border-radius:3px;padding:4px;font-size:11px">
-          <option value="bottom-center">Đáy-giữa (tự động)</option>
-          <option value="bottom-left">Đáy-trái</option>
-          <option value="bottom-right">Đáy-phải</option>
-          <option value="center">Tâm giữa</option>
-          <option value="manual">Chỉnh tay (click frame)</option>
-        </select>
-      </div>
-      <div class="row">
-        <label></label>
-        <button class="btn-sm" id="computeAnchors" style="flex:1;padding:6px;background:#4a5a30">
-          🎯 Tính anchor lại
-        </button>
-      </div>
-      <div class="row">
-        <label></label>
-        <button class="btn-sm" id="clearAnchors">🗑 Xóa hết anchor</button>
-      </div>
-      <div class="anchor-list" id="anchorList"></div>
-      <div class="row" style="font-size:10px;color:#6a7860;line-height:1.5;margin-top:6px">
-        <label></label>
-        <span>Chấm đỏ trên preview = anchor. Mode "Chỉnh tay": click vào ảnh để đặt anchor cho frame đang chọn.</span>
-      </div>
-    </div>
-    <div class="section">
-      <h3>🎨 XÓA NỀN</h3>
-      <div class="row">
-        <label>Màu nền</label>
-        <div class="swatch" id="bgSwatch"><div class="swatch-fill" id="bgSwatchFill"></div></div>
-        <button class="btn-sm" id="pickColorBtn">💧 Pick</button>
-      </div>
-      <div class="row">
-        <label>Tolerance</label>
-        <input type="range" id="bgTol" min="0" max="120" value="30">
-        <span class="val" id="bgTolVal">30</span>
-      </div>
-      <div class="row">
-        <label>Chế độ</label>
-        <select id="bgMode" style="flex:1;background:#000;color:#e8f0d8;border:1px solid #333;
-          border-radius:3px;padding:4px;font-size:11px">
-          <option value="alpha">Trong suốt</option>
-          <option value="color">Đổi màu</option>
-          <option value="white">Trắng</option>
-          <option value="black">Đen</option>
-        </select>
-      </div>
-      <div class="row" id="bgColorRow" style="display:none">
-        <label>Màu mới</label>
-        <input type="color" id="bgNewColor" value="#ffffff" style="width:50px;height:26px;
-          background:#000;border:1px solid #333;border-radius:3px">
-      </div>
-      <div class="row">
-        <label></label>
-        <button class="btn-sm" id="bgApplyAll">🌐 Toàn ảnh</button>
-        <button class="btn-sm" id="bgApplyCell" disabled>▣ Cell</button>
-      </div>
-    </div>
-    <div class="section">
-      <h3>📐 KÍCH THƯỚC <span class="count" id="sizeLabel">0×0</span></h3>
-      <div class="row">
-        <label>Rộng</label>
-        <input type="number" id="canvasW" min="1" max="4096">
-        <label style="flex:0 0 auto">Cao</label>
-        <input type="number" id="canvasH" min="1" max="4096">
-      </div>
-      <div class="anchor-grid" id="anchorGrid">
-        <button class="anchor-btn" data-a="tl">↖</button>
-        <button class="anchor-btn" data-a="tc">↑</button>
-        <button class="anchor-btn" data-a="tr">↗</button>
-        <button class="anchor-btn" data-a="ml">←</button>
-        <button class="anchor-btn on" data-a="mc">●</button>
-        <button class="anchor-btn" data-a="mr">→</button>
-        <button class="anchor-btn" data-a="bl">↙</button>
-        <button class="anchor-btn" data-a="bc">↓</button>
-        <button class="anchor-btn" data-a="br">↘</button>
-      </div>
-      <div class="row">
-        <label></label>
-        <button class="btn-sm" id="resizeApply" style="flex:1;padding:6px">Áp dụng</button>
-      </div>
-      <div class="row">
-        <label></label>
-        <button class="btn-sm" id="cropTight" style="flex:1;padding:6px">✂ Cắt sát viền</button>
-      </div>
-    </div>
-    <div class="section">
-      <h3>🎯 DI CHUYỂN FRAME <span class="count" id="cellLabel">-</span></h3>
-      <div class="row">
-        <label></label>
-        <span id="cellInfo" style="color:#6a7860;font-family:Consolas,monospace;font-size:10px">
-          Click ô giữa các đường kẻ
-        </span>
-      </div>
-      <div class="row">
-        <label>Dịch X</label>
-        <input type="number" id="dxInput" value="0" min="-500" max="500">
-        <label style="flex:0 0 auto">Y</label>
-        <input type="number" id="dyInput" value="0" min="-500" max="500">
-      </div>
-      <div class="row">
-        <label></label>
-        <button class="btn-sm" id="moveApply" disabled>↔ Áp dụng</button>
-        <button class="btn-sm" id="moveReset" disabled>↺ Reset</button>
-      </div>
-      <div class="row">
-        <label></label>
-        <button class="btn-sm" id="cellFillTrans" disabled>🗑 Xóa cell</button>
-      </div>
-    </div>
-    <div class="section">
-      <h3>💾 XUẤT</h3>
-      <div class="row">
-        <label>Tên file</label>
-        <input type="text" id="exportName" value="player" style="width:140px">
-      </div>
-      <div class="row">
-        <label>Label</label>
-        <select id="exportLabel" style="flex:1;background:#000;color:#e8f0d8;border:1px solid #333;
-          border-radius:3px;padding:4px;font-size:11px">
-          <option value="idle">idle</option>
-          <option value="run">run</option>
-          <option value="jump">jump</option>
-          <option value="attack">attack</option>
-          <option value="sit">sit</option>
-          <option value="hurt">hurt</option>
-        </select>
-      </div>
-      <div class="row">
-        <label>FPS</label>
-        <input type="number" id="exportFps" value="10" min="1" max="30" style="width:60px">
-        <label style="flex:0 0 auto">Loop</label>
-        <select id="exportLoop" style="flex:1;background:#000;color:#e8f0d8;border:1px solid #333;
-          border-radius:3px;padding:4px;font-size:11px">
-          <option value="1">Có</option>
-          <option value="0">Không</option>
-        </select>
-      </div>
-      <div class="row">
-        <label></label>
-        <button class="tbtn primary" id="exportBtn2" disabled style="flex:1">
-          ⬇️ PNG + metadata v2
-        </button>
-      </div>
-      <div class="row">
-        <label></label>
-        <button class="tbtn" id="exportPlainBtn" disabled style="flex:1">
-          ⬇️ PNG (không meta)
-        </button>
+
+<main class="main">
+
+  <!-- LEFT: LIBRARY -->
+  <aside class="library">
+    <div class="panel-h">📚 LIBRARY<span class="cnt" id="libCount">0</span></div>
+    <div class="library-body" id="libraryBody">
+      <div class="lib-empty">
+        Chưa có sprite nào.<br><br>
+        Bấm <kbd>Upload PNG</kbd> hoặc<br>
+        kéo thả file vào đây.<br><br>
+        Hoặc <kbd>Import JSON</kbd><br>
+        từ project đã export.
       </div>
     </div>
   </aside>
+
+  <!-- CENTER: STAGE -->
+  <section class="stage">
+    <div class="stage-bar">
+      <button class="btn" id="toolSelect" title="Chọn/Kéo line">🖱 Select</button>
+      <button class="btn" id="toolAddV" title="Thêm line dọc">┃ +V</button>
+      <button class="btn" id="toolAddH" title="Thêm line ngang">━ +H</button>
+      <button class="btn" id="toolPick" title="Pick màu nền">💧 Pick</button>
+      <div class="sep"></div>
+      <button class="btn" id="autoDetect">🤖 Auto</button>
+      <button class="btn" id="computeAnchors">🎯 Anchors</button>
+      <div class="sep"></div>
+      <button class="btn" id="undoBtn" disabled>↶</button>
+      <button class="btn" id="redoBtn" disabled>↷</button>
+      <div class="sep"></div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--dim)">
+        <input type="checkbox" id="snapChk" checked style="accent-color:var(--accent)">
+        Snap
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--dim)">
+        <input type="checkbox" id="debugChk" style="accent-color:var(--accent)">
+        Debug
+      </label>
+      <span class="zoom" id="zoomLabel">100%</span>
+    </div>
+    <div class="stage-canvas" id="stageCanvas">
+      <div class="empty-state" id="emptyState">
+        <div class="ic">📁</div>
+        <div class="title">SPRITE STUDIO</div>
+        <div class="hint">
+          Upload PNG để bắt đầu. Tool tự động detect frame, tính anchor,
+          xoá nền, và export kèm metadata cho game.
+        </div>
+      </div>
+      <div class="canvas-holder" id="canvasHolder" style="display:none">
+        <canvas id="mainCanvas"></canvas>
+        <canvas id="overlayCanvas"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: INSPECTOR -->
+  <aside class="inspector">
+    <div class="tabs">
+      <div class="tab active" data-tab="frame">FRAME</div>
+      <div class="tab" data-tab="anchor">ANCHOR</div>
+      <div class="tab" data-tab="bg">NỀN</div>
+      <div class="tab" data-tab="meta">META</div>
+      <div class="tab" data-tab="preview">PREVIEW</div>
+    </div>
+    <div class="tab-panels">
+
+      <!-- FRAME TAB -->
+      <div class="panel active" data-panel="frame">
+        <div class="sec">
+          <div class="sec-title">
+            <span>📏 LƯỚI FRAME</span>
+            <span class="badge" id="gridBadge">0×0</span>
+          </div>
+          <div class="field">
+            <label>Cột ngang</label>
+            <button class="mini" id="autoVBtn">Auto N</button>
+            <button class="mini" id="addVBtn">+1</button>
+            <button class="mini" id="clearVBtn">Xóa</button>
+          </div>
+          <div class="lines-list" id="vList"></div>
+        </div>
+        <div class="sec">
+          <div class="field">
+            <label>Hàng dọc</label>
+            <button class="mini" id="autoHBtn">Auto N</button>
+            <button class="mini" id="addHBtn">+1</button>
+            <button class="mini" id="clearHBtn">Xóa</button>
+          </div>
+          <div class="lines-list" id="hList"></div>
+        </div>
+        <div class="sec">
+          <div class="sec-title">📐 KÍCH THƯỚC</div>
+          <div class="field">
+            <label>Rộng</label>
+            <input type="number" id="canvasW" min="1" max="4096">
+            <label style="flex:0 0 auto">Cao</label>
+            <input type="number" id="canvasH" min="1" max="4096">
+          </div>
+          <div class="anchor-grid" id="resizeAnchorGrid">
+            <button class="anchor-btn" data-a="tl">↖</button>
+            <button class="anchor-btn" data-a="tc">↑</button>
+            <button class="anchor-btn" data-a="tr">↗</button>
+            <button class="anchor-btn" data-a="ml">←</button>
+            <button class="anchor-btn on" data-a="mc">●</button>
+            <button class="anchor-btn" data-a="mr">→</button>
+            <button class="anchor-btn" data-a="bl">↙</button>
+            <button class="anchor-btn" data-a="bc">↓</button>
+            <button class="anchor-btn" data-a="br">↘</button>
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini" id="resizeBtn" style="flex:1;padding:6px">Áp dụng</button>
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini" id="cropBtn" style="flex:1;padding:6px">✂ Cắt sát</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANCHOR TAB -->
+      <div class="panel" data-panel="anchor">
+        <div class="sec">
+          <div class="sec-title">
+            <span>🎯 ANCHOR</span>
+            <span class="badge" id="anchorBadge">0/0</span>
+          </div>
+          <div class="field">
+            <label>Mode</label>
+            <select id="anchorMode">
+              <option value="bottom-center">Đáy-giữa</option>
+              <option value="bottom-left">Đáy-trái</option>
+              <option value="bottom-right">Đáy-phải</option>
+              <option value="center">Tâm giữa</option>
+              <option value="manual">Chỉnh tay</option>
+            </select>
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini" id="anchorRecompute" style="flex:1;padding:6px">🔄 Tính lại</button>
+            <button class="mini" id="anchorClear">🗑</button>
+          </div>
+          <div class="help-box">
+            <b>Mode:</b><br>
+            • <b>Đáy-giữa:</b> chân nhân vật, dùng cho mọi frame<br>
+            • <b>Chỉnh tay:</b> click vào canvas để đặt anchor<br>
+            • <b>Chấm đỏ</b> = anchor hiện tại
+          </div>
+        </div>
+        <div class="sec">
+          <div class="sec-title">📋 DANH SÁCH</div>
+          <div class="lines-list" id="anchorList" style="max-height:200px"></div>
+        </div>
+      </div>
+
+      <!-- BG TAB -->
+      <div class="panel" data-panel="bg">
+        <div class="sec">
+          <div class="sec-title">🎨 XÓA NỀN</div>
+          <div class="field">
+            <label>Màu nền</label>
+            <div class="swatch" id="bgSwatch"><div class="swatch-fill" id="bgFill"></div></div>
+            <button class="mini" id="pickBtn">💧 Pick</button>
+          </div>
+          <div class="field">
+            <label>Tolerance</label>
+            <input type="range" id="bgTol" min="0" max="150" value="30">
+            <span class="val" id="bgTolVal">30</span>
+          </div>
+          <div class="field">
+            <label>Chế độ</label>
+            <select id="bgMode">
+              <option value="alpha">Trong suốt</option>
+              <option value="color">Đổi màu</option>
+              <option value="white">Thành trắng</option>
+              <option value="black">Thành đen</option>
+            </select>
+          </div>
+          <div class="field" id="bgColorRow" style="display:none">
+            <label>Màu mới</label>
+            <input type="color" id="bgNewColor" value="#ffffff"
+              style="width:50px;height:28px;background:#000;border:1px solid var(--border2)">
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini" id="bgApplyAll" style="flex:1;padding:6px">🌐 Toàn ảnh</button>
+            <button class="mini" id="bgApplyCell" style="flex:1;padding:6px" disabled>▣ Cell</button>
+          </div>
+          <div class="help-box">
+            <b>Tip:</b> Pick màu nền → chọn "Trong suốt" → Áp dụng.
+            Tolerance cao hơn = xóa nhiều hơn.
+          </div>
+        </div>
+      </div>
+
+      <!-- META TAB -->
+      <div class="panel" data-panel="meta">
+        <div class="sec">
+          <div class="sec-title">📝 METADATA</div>
+          <div class="field">
+            <label>Model</label>
+            <input type="text" id="metaModel" value="player" placeholder="player">
+          </div>
+          <div class="field">
+            <label>Animation</label>
+            <select id="metaAnim">
+              <option value="idle">idle</option>
+              <option value="run">run</option>
+              <option value="jump">jump</option>
+              <option value="attack">attack</option>
+              <option value="sit">sit</option>
+              <option value="hurt">hurt</option>
+              <option value="custom">custom...</option>
+            </select>
+          </div>
+          <div class="field" id="customAnimRow" style="display:none">
+            <label>Tên riêng</label>
+            <input type="text" id="metaAnimCustom" placeholder="skill_1">
+          </div>
+          <div class="field">
+            <label>FPS</label>
+            <input type="number" id="metaFps" value="10" min="1" max="60">
+          </div>
+          <div class="field">
+            <label>Loop</label>
+            <select id="metaLoop">
+              <option value="1">Có (lặp)</option>
+              <option value="0">Không (1 lần)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>File name</label>
+            <input type="text" id="metaFile" placeholder="player_idle">
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIEW TAB -->
+      <div class="panel" data-panel="preview">
+        <div class="sec">
+          <div class="sec-title">▶ PREVIEW ANIMATION</div>
+          <canvas id="previewCanvas" class="anim-preview" width="280" height="140"></canvas>
+          <div class="field" style="margin-top:8px">
+            <label></label>
+            <button class="mini" id="previewPlayBtn" style="flex:1;padding:6px">▶ Play</button>
+            <button class="mini" id="previewStopBtn">⏸</button>
+          </div>
+          <div class="field">
+            <label>Frame</label>
+            <input type="range" id="previewFrameSlider" min="0" max="0" value="0">
+            <span class="val" id="previewFrameVal">0</span>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="sec-title">📊 INFO</div>
+          <div class="help-box" id="previewInfo">
+            Chọn 1 sprite để xem thông tin.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+</main>
+
+<footer class="status-bar">
+  <div class="item"><span class="lbl">Sprites:</span><span id="statSprites" class="ok">0</span></div>
+  <div class="item"><span class="lbl">Current:</span><span id="statCurrent">—</span></div>
+  <div class="item"><span class="lbl">Size:</span><span id="statSize">—</span></div>
+  <div class="item"><span class="lbl">Zoom:</span><span id="statZoom">100%</span></div>
+  <div class="item" style="margin-left:auto">
+    <span id="statMsg">Sẵn sàng. Upload PNG để bắt đầu.</span>
+  </div>
+</footer>
+
 </div>
+
+<input type="file" id="fileInput" multiple accept="image/png,image/jpeg,image/webp">
+<input type="file" id="jsonInput" accept=".json,application/json">
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3 id="modalTitle">Title</h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn" id="modalCancel">Hủy</button>
+      <button class="btn primary" id="modalOk">OK</button>
+    </div>
+  </div>
 </div>
-<div id="status"></div>
-<div id="help">
-  <b>Phím tắt:</b><br>
-  <b>Shift + click</b> — thêm line<br>
-  <b>Right-click line</b> — xóa line<br>
-  <b>Kéo line</b> — di chuyển<br>
-  <b>Click cell</b> — chọn cell<br>
-  <b>Kéo trong cell</b> — move content<br>
-  <b>Alt + click</b> — pick màu<br>
-  <b>Ctrl+Z</b> — undo<br>
-  <b>Ctrl+S</b> — export
-</div>
-<input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" style="display:none">
+
+<div id="toast"></div>
 
 <script>
 "use strict";
@@ -334,189 +534,152 @@ input,select{font-family:inherit}
    STATE
    ============================================================ */
 const state = {
-  canvas: null, ctx: null, overlay: null, octx: null,
-  img: null, zoom: 1,
-  vLines: [], hLines: [],
-  anchors: [],         // [{x, y}] — mỗi frame 1 anchor
-  anchorMode: 'bottom-center',
-  snapOn: true, pickColor: false,
+  sprites: new Map(),   // id → sprite {id, model, anim, src, img, loaded, ...}
+  currentId: null,
+  zoom: 1,
+  // tools
+  tool: 'select',
+  snap: true,
+  debug: false,
+  // cell
+  cell: null,
+  // drag
+  drag: null,
+  cellMoveOffset: { x: 0, y: 0 },
+  cellOriginal: null,
+  // anchors
+  resizeAnchor: 'mc',
+  // bg
+  bgColor: { r: 255, g: 255, b: 255 },
+  pickMode: false,
+  // manual anchor
   manualAnchor: false,
-  cell: null, drag: null,
-  cellMoveOffset: {x:0, y:0}, cellOriginal: null,
-  history: [], anchor_: 'mc',
-  bgColor: {r:255, g:255, b:255},
-  mouse: {x:0, y:0}
+  // history
+  history: [],
+  historyIdx: -1,
+  // preview
+  previewPlaying: false,
+  previewTime: 0,
+  previewFrame: 0,
+  previewRAF: null
 };
 
 const $ = id => document.getElementById(id);
 const fileInput = $('fileInput');
-const canvasWrap = $('canvasWrap');
+const jsonInput = $('jsonInput');
+const mainCanvas = $('mainCanvas');
+const overlayCanvas = $('overlayCanvas');
 const canvasHolder = $('canvasHolder');
-const emptyEl = $('empty');
-const canvas = $('editorCanvas');
-const overlay = $('overlay');
+const stageCanvas = $('stageCanvas');
+const emptyState = $('emptyState');
 
-function toast(msg, type){
-  const el = $('status');
+const currentSprite = () => state.currentId ? state.sprites.get(state.currentId) : null;
+
+function toast(msg, isErr){
+  const el = $('toast');
   el.textContent = msg;
-  el.className = 'show ' + (type || '');
+  el.className = 'show' + (isErr ? ' err' : '');
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2500);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
 }
-function pushHistory(){
-  if (!state.canvas) return;
-  const imgData = state.ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
-  state.history.push(imgData);
-  if (state.history.length > 30) state.history.shift();
-  updateUndoBtn();
+function setStatus(msg, isErr){
+  const el = $('statMsg');
+  el.textContent = msg;
+  el.className = isErr ? 'err' : '';
 }
-function undo(){
-  if (state.history.length === 0) return;
-  const d = state.history.pop();
-  if (state.canvas.width !== d.width || state.canvas.height !== d.height){
-    state.canvas.width = d.width; state.canvas.height = d.height;
-    state.overlay.width = d.width; state.overlay.height = d.height;
-    $('canvasW').value = d.width; $('canvasH').value = d.height;
-    $('sizeLabel').textContent = d.width + '×' + d.height;
-  }
-  state.ctx.putImageData(d, 0, 0);
-  updateUndoBtn(); renderAll();
-}
-function updateUndoBtn(){ $('undoBtn').disabled = state.history.length === 0; }
 
 /* ============================================================
-   LOAD / UPLOAD
+   METADATA ENCODE/DECODE (v3)
    ============================================================ */
-$('uploadBtn').addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => { const f = e.target.files[0]; if (f) loadFile(f); });
-document.addEventListener('dragover', e => e.preventDefault());
-document.addEventListener('drop', e => {
-  e.preventDefault();
-  const f = e.dataTransfer.files[0];
-  if (f && f.type.startsWith('image/')) loadFile(f);
-});
-document.addEventListener('paste', e => {
-  for (const item of e.clipboardData.items){
-    if (item.type.startsWith('image/')){ loadFile(item.getAsFile()); return; }
-  }
-});
-
-function loadFile(file){
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => {
-      state.img = img;
-      const meta = decodeMetadataFromImage(img);
-      const realH = meta ? (meta.spriteH || img.height - 1) : img.height;
-
-      if (meta && meta.vLines && meta.vLines.length >= 2){
-        state.vLines = [...meta.vLines];
-        state.hLines = meta.hLines ? [...meta.hLines] : [0, realH];
-        state.anchors = meta.anchors ? meta.anchors.map(a => Array.isArray(a) ? {x:a[0], y:a[1]} : a) : [];
-        state.anchorMode = meta.anchorMode || 'bottom-center';
-        $('anchorMode').value = state.anchorMode;
-        toast('✓ Đã load + khôi phục metadata v' + (meta.v || 1), 'ok');
-      } else {
-        state.vLines = [0, img.width];
-        state.hLines = [0, realH];
-        state.anchors = [];
-        toast('✓ Đã load ' + file.name + ' · ' + img.width + '×' + realH, 'ok');
-      }
-
-      canvas.width = img.width; canvas.height = realH;
-      overlay.width = img.width; overlay.height = realH;
-      state.canvas = canvas;
-      state.ctx = canvas.getContext('2d', { willReadFrequently: true });
-      state.overlay = overlay;
-      state.octx = overlay.getContext('2d');
-      state.ctx.imageSmoothingEnabled = false;
-      state.octx.imageSmoothingEnabled = false;
-      state.ctx.drawImage(img, 0, 0, img.width, realH, 0, 0, img.width, realH);
-
-      state.cell = null;
-      state.history = [];
-
-      emptyEl.style.display = 'none';
-      canvasHolder.style.display = 'inline-block';
-      $('canvasW').value = img.width;
-      $('canvasH').value = realH;
-      $('sizeLabel').textContent = img.width + '×' + realH;
-      $('exportBtn').disabled = false;
-      $('exportBtn2').disabled = false;
-      $('exportPlainBtn').disabled = false;
-
-      const fn = file.name.toLowerCase();
-      if (fn.includes('idle')) $('exportLabel').value = 'idle';
-      else if (fn.includes('run')) $('exportLabel').value = 'run';
-      else if (fn.includes('jump')) $('exportLabel').value = 'jump';
-      else if (fn.includes('atk') || fn.includes('attack')) $('exportLabel').value = 'attack';
-      else if (fn.includes('sit')) $('exportLabel').value = 'sit';
-      else if (fn.includes('hurt') || fn.includes('death') || fn.includes('dead')) $('exportLabel').value = 'hurt';
-      updateFpsFromLabel();
-
-      /* Nếu chưa có anchor → tự tính */
-      if (state.anchors.length === 0 && state.vLines.length > 1){
-        setTimeout(() => computeAnchors(false), 100);
-      }
-
-      renderAll();
-    };
-    img.onerror = () => toast('❌ Không load được ảnh', 'err');
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function updateFpsFromLabel(){
-  const label = $('exportLabel').value;
-  const defaults = {
-    idle: { fps: 6, loop: 1 }, run: { fps: 14, loop: 1 },
-    jump: { fps: 12, loop: 0 }, attack: { fps: 16, loop: 0 },
-    sit: { fps: 6, loop: 1 }, hurt: { fps: 8, loop: 0 }
-  };
-  const d = defaults[label];
-  if (d){ $('exportFps').value = d.fps; $('exportLoop').value = d.loop; }
-}
-$('exportLabel').addEventListener('change', updateFpsFromLabel);
-
-/* ============================================================
-   METADATA DECODER
-   ============================================================ */
-function decodeMetadataFromImage(img){
+function decodeMetadata(img){
   try {
-    const cnv = document.createElement('canvas');
-    cnv.width = img.width; cnv.height = 1;
-    const c = cnv.getContext('2d', { willReadFrequently: true });
-    c.drawImage(img, 0, img.height - 1, img.width, 1, 0, 0, img.width, 1);
-    const d = c.getImageData(0, 0, img.width, 1).data;
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = 1;
+    const cx = c.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(img, 0, img.height - 1, img.width, 1, 0, 0, img.width, 1);
+    const d = cx.getImageData(0, 0, img.width, 1).data;
     if (d[0] !== 0x44 || d[1] !== 0x48 || d[2] !== 0x55 || d[3] !== 0x4E) return null;
     const len = d[6] | (d[7] << 8) | (d[8] << 16) | (d[9] << 24);
-    if (len <= 0 || len > 200000) return null;
+    if (len <= 0 || len > 300000) return null;
     const bytes = [];
     for (let i = 0; i < len; i++){
       const pos = 10 + i;
-      const p = Math.floor(pos / 3), ch = pos % 3;
-      if (p * 4 + ch >= d.length) break;
-      bytes.push(d[p * 4 + ch]);
+      const p = Math.floor(pos/3), ch = pos%3;
+      if (p*4+ch >= d.length) break;
+      bytes.push(d[p*4+ch]);
     }
     return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
   } catch(e){ return null; }
 }
+function encodeMetadata(obj){
+  const magic = [0x44, 0x48, 0x55, 0x4E];
+  const ver = 0x0003;
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
+  const len = bytes.length;
+  return [...magic, ver & 0xFF, (ver>>8)&0xFF,
+    len & 0xFF, (len>>8)&0xFF, (len>>16)&0xFF, (len>>24)&0xFF, ...bytes];
+}
+function writeMetaRow(canvas, y, bytes){
+  const cx = canvas.getContext('2d', { willReadFrequently: true });
+  const imgData = cx.createImageData(canvas.width, 1);
+  const d = imgData.data;
+  for (let i = 0; i < bytes.length; i++){
+    const p = Math.floor(i/3), ch = i%3;
+    if (p >= canvas.width) break;
+    d[p*4+ch] = bytes[i];
+    d[p*4+3] = 255;
+  }
+  cx.putImageData(imgData, 0, y);
+}
 
 /* ============================================================
-   AUTO-DETECT 4 CẠNH
+   AUTO-DETECT
    ============================================================ */
-function detectBBox(x1, y1, x2, y2){
-  /* Quét pixel trong vùng, trả về bbox content */
-  const W = state.canvas.width;
-  const d = state.ctx.getImageData(x1, y1, x2 - x1, y2 - y1).data;
-  const w = x2 - x1, h = y2 - y1;
+function autoDetectFrameLines(canvas, expectedFrames){
+  const W = canvas.width, H = canvas.height;
+  const cx = canvas.getContext('2d', { willReadFrequently: true });
+  const data = cx.getImageData(0, 0, W, H).data;
+  const empty = new Uint8Array(W);
+  for (let x = 0; x < W; x++){
+    let has = 0;
+    for (let y = 0; y < H; y++){
+      if (data[(y*W+x)*4+3] > 5){ has = 1; break; }
+    }
+    empty[x] = has ? 0 : 1;
+  }
+  const gaps = [];
+  let i = 0;
+  while (i < W && empty[i]) i++;
+  while (i < W){
+    while (i < W && !empty[i]) i++;
+    const start = i;
+    while (i < W && empty[i]) i++;
+    const end = i;
+    if (end - start >= 2) gaps.push({ start, end, size: end - start });
+  }
+  const need = expectedFrames ? expectedFrames - 1 : gaps.length;
+  let chosen;
+  if (expectedFrames && gaps.length >= need){
+    const sorted = [...gaps].sort((a, b) => b.size - a.size);
+    chosen = sorted.slice(0, need).sort((a, b) => a.start - b.start);
+  } else {
+    chosen = gaps;
+  }
+  const lines = [0];
+  for (const g of chosen) lines.push(Math.round((g.start + g.end) / 2));
+  lines.push(W);
+  return lines.length >= 3 ? lines : null;
+}
+
+function detectBBox(canvas, x1, y1, x2, y2){
+  const W = canvas.width;
+  const cx = canvas.getContext('2d', { willReadFrequently: true });
+  const d = cx.getImageData(x1, y1, x2-x1, y2-y1).data;
+  const w = x2-x1, h = y2-y1;
   let minX = w, minY = h, maxX = -1, maxY = -1;
   for (let y = 0; y < h; y++){
     for (let x = 0; x < w; x++){
-      const i = (y * w + x) * 4;
-      if (d[i+3] > 10){
+      if (d[(y*w+x)*4+3] > 10){
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
         if (y < minY) minY = y;
@@ -525,534 +688,1008 @@ function detectBBox(x1, y1, x2, y2){
     }
   }
   if (maxX < 0) return null;
-  return {
-    x: x1 + minX, y: y1 + minY,
-    w: maxX - minX + 1, h: maxY - minY + 1
-  };
+  return { x: x1+minX, y: y1+minY, w: maxX-minX+1, h: maxY-minY+1 };
 }
-
-/* Auto-detect lưới dọc: tìm khoảng trống giữa nhân vật */
-function autoDetectFrameLines(minGap){
-  const W = state.canvas.width, H = state.canvas.height;
-  const data = state.ctx.getImageData(0, 0, W, H).data;
-  minGap = minGap || 3;
-  const empty = new Uint8Array(W);
-  for (let x = 0; x < W; x++){
-    let has = 0;
-    for (let y = 0; y < H; y++){
-      if (data[(y * W + x) * 4 + 3] > 5){ has = 1; break; }
-    }
-    empty[x] = has ? 0 : 1;
-  }
-  const lines = [0];
-  let i = 0;
-  while (i < W && empty[i]) i++;
-  if (i >= W) return null;
-  while (i < W){
-    while (i < W && !empty[i]) i++;
-    const gs = i;
-    while (i < W && empty[i]) i++;
-    const ge = i;
-    if (i >= W) break;
-    if (ge - gs >= minGap) lines.push(Math.round((gs + ge) / 2));
-  }
-  lines.push(W);
-  return lines.length >= 3 ? lines : null;
-}
-
-/* Full auto: vLines + hLines + anchors */
-$('autoDetectBtn').addEventListener('click', () => {
-  if (!state.canvas){ toast('Chưa có ảnh', 'err'); return; }
-  const v = autoDetectFrameLines(3);
-  if (!v){ toast('❌ Không tách được frame', 'err'); return; }
-  /* Hàng: tự detect luôn (thường chỉ có 1 hàng) */
-  const h = [0, state.canvas.height];
-  state.vLines = v;
-  state.hLines = h;
-  computeAnchors(true);
-  renderAll();
-  toast(`🤖 Phát hiện ${v.length - 1} frame + ${state.anchors.length} anchor`, 'ok');
-});
 
 /* ============================================================
-   ANCHOR
+   SPRITE MANAGEMENT
    ============================================================ */
-function computeAnchors(verbose){
-  if (!state.canvas){ return; }
+function genId(){
+  return 's' + Date.now() + '_' + Math.floor(Math.random()*10000);
+}
+
+function addSpriteFromFile(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const meta = decodeMetadata(img);
+        const sprite = {
+          id: genId(),
+          fileName: file.name.replace(/\.[^.]+$/, ''),
+          model: 'player',
+          anim: 'idle',
+          img: img,
+          loaded: true,
+          // State
+          canvas: null,
+          ctx: null,
+          spriteH: meta ? (meta.spriteH || img.height - 1) : img.height,
+          vLines: meta ? (meta.vLines || [0, img.width]) : [0, img.width],
+          hLines: meta ? (meta.hLines || [0, img.height - 1]) : [0, img.height],
+          anchors: [],
+          anchorMode: meta ? (meta.anchorMode || 'bottom-center') : 'bottom-center',
+          fps: meta ? (meta.fps || 10) : 10,
+          loop: meta ? (meta.loop !== false) : true,
+          version: meta ? (meta.v || 1) : 0
+        };
+        // Auto-detect model/anim from filename
+        const fn = file.name.toLowerCase();
+        if (fn.includes('player')) sprite.model = 'player';
+        else if (fn.includes('enemy')) sprite.model = 'enemy';
+        else if (fn.includes('npc')) sprite.model = 'npc';
+        if (fn.includes('idle')) sprite.anim = 'idle';
+        else if (fn.includes('run')) sprite.anim = 'run';
+        else if (fn.includes('jump')) sprite.anim = 'jump';
+        else if (fn.includes('attack') || fn.includes('atk')) sprite.anim = 'attack';
+        else if (fn.includes('sit')) sprite.anim = 'sit';
+        else if (fn.includes('hurt') || fn.includes('death') || fn.includes('dead')) sprite.anim = 'hurt';
+
+        // Create canvas copy (without metadata row)
+        const cnv = document.createElement('canvas');
+        cnv.width = img.width;
+        cnv.height = sprite.spriteH;
+        const cc = cnv.getContext('2d', { willReadFrequently: true });
+        cc.imageSmoothingEnabled = false;
+        cc.drawImage(img, 0, 0, img.width, sprite.spriteH, 0, 0, img.width, sprite.spriteH);
+        sprite.canvas = cnv;
+        sprite.ctx = cc;
+
+        // Restore anchors or compute
+        if (meta && meta.anchors){
+          sprite.anchors = meta.anchors.map(a => {
+            if (Array.isArray(a)) return { x: a[0], y: a[1] };
+            if (a && typeof a === 'object') return { x: a.x, y: a.y };
+            return null;
+          });
+        }
+        if (!sprite.anchors.length || sprite.anchors.every(a => !a)){
+          computeAnchorsForSprite(sprite, false);
+        }
+        resolve(sprite);
+      };
+      img.onerror = () => reject(new Error('Load fail: ' + file.name));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Read fail'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function computeAnchorsForSprite(sprite, verbose){
+  const s = sprite;
+  const lines = s.vLines;
+  if (!lines || lines.length < 2) return;
   const anchors = [];
-  for (let r = 0; r < state.hLines.length - 1; r++){
-    for (let c = 0; c < state.vLines.length - 1; c++){
-      const x1 = state.vLines[c], x2 = state.vLines[c+1];
-      const y1 = state.hLines[r], y2 = state.hLines[r+1];
-      const bbox = detectBBox(x1, y1, x2, y2);
-      if (!bbox){
-        anchors.push(null);
-        continue;
-      }
-      let ax, ay;
-      switch (state.anchorMode){
-        case 'bottom-left':  ax = bbox.x; ay = bbox.y + bbox.h; break;
-        case 'bottom-right': ax = bbox.x + bbox.w; ay = bbox.y + bbox.h; break;
-        case 'center':       ax = bbox.x + bbox.w/2; ay = bbox.y + bbox.h/2; break;
+  for (let r = 0; r < s.hLines.length - 1; r++){
+    for (let c = 0; c < lines.length - 1; c++){
+      const x1 = lines[c], x2 = lines[c+1];
+      const y1 = s.hLines[r], y2 = s.hLines[r+1];
+      const bbox = detectBBox(s.canvas, x1, y1, x2, y2);
+      if (!bbox){ anchors.push(null); continue; }
+      let ay;
+      switch (s.anchorMode){
+        case 'bottom-left':
+        case 'bottom-right':
         case 'bottom-center':
-        default:             ax = bbox.x + bbox.w/2; ay = bbox.y + bbox.h; break;
+          ay = bbox.y + bbox.h; break;
+        case 'center':
+          ay = bbox.y + bbox.h/2; break;
+        default:
+          ay = bbox.y + bbox.h;
       }
-      anchors.push({ x: Math.round(ax), y: Math.round(ay) });
+      anchors.push({ x: null, y: Math.round(ay) });
     }
   }
-  state.anchors = anchors;
-  renderAll();
-  if (verbose) toast('🎯 Đã tính ' + anchors.filter(a=>a).length + ' anchor');
+  s.anchors = anchors;
+  if (verbose) toast('🎯 ' + anchors.filter(a=>a).length + ' anchors');
 }
 
-$('computeAnchors').addEventListener('click', () => computeAnchors(true));
-$('clearAnchors').addEventListener('click', () => {
-  state.anchors = [];
-  renderAll();
-  toast('🗑 Đã xóa anchor');
-});
-$('anchorMode').addEventListener('change', e => {
-  state.anchorMode = e.target.value;
-  state.manualAnchor = (state.anchorMode === 'manual');
-  if (!state.manualAnchor) computeAnchors(true);
-});
+/* ============================================================
+   LIBRARY RENDER
+   ============================================================ */
+function renderLibrary(){
+  const body = $('libraryBody');
+  const sprites = [...state.sprites.values()];
+
+  $('libCount').textContent = sprites.length;
+  $('statSprites').textContent = sprites.length;
+
+  if (sprites.length === 0){
+    body.innerHTML = `<div class="lib-empty">
+      Chưa có sprite nào.<br><br>
+      Bấm <kbd>Upload PNG</kbd> hoặc<br>
+      kéo thả file vào đây.<br><br>
+      Hoặc <kbd>Import JSON</kbd><br>
+      từ project đã export.
+    </div>`;
+    return;
+  }
+
+  // Group by model
+  const byModel = {};
+  for (const s of sprites){
+    if (!byModel[s.model]) byModel[s.model] = [];
+    byModel[s.model].push(s);
+  }
+
+  body.innerHTML = '';
+  for (const model in byModel){
+    const group = document.createElement('div');
+    group.className = 'model-group';
+    const items = byModel[model];
+
+    const header = document.createElement('div');
+    header.className = 'model-header';
+    header.innerHTML = `
+      <span class="arrow">▼</span>
+      <span>📦 ${model}</span>
+      <span class="count">${items.length}</span>
+    `;
+    header.addEventListener('click', () => {
+      header.classList.toggle('collapsed');
+      group.querySelector('.model-body').classList.toggle('hidden');
+    });
+    group.appendChild(header);
+
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'model-body';
+    for (const s of items){
+      const item = document.createElement('div');
+      item.className = 'anim-item' + (s.id === state.currentId ? ' active' : '');
+      item.innerHTML = `
+        <span class="dot"></span>
+        <span class="name">${s.anim}</span>
+        <span class="meta">${s.vLines.length - 1}f</span>
+      `;
+      item.addEventListener('click', () => selectSprite(s.id));
+      bodyEl.appendChild(item);
+    }
+    group.appendChild(bodyEl);
+    body.appendChild(group);
+  }
+}
 
 /* ============================================================
-   RENDER
+   SELECT / RENDER
    ============================================================ */
-function renderAll(){
+function selectSprite(id){
+  state.currentId = id;
+  const s = currentSprite();
+  if (!s) return;
+
+  // Update canvas
+  mainCanvas.width = s.canvas.width;
+  mainCanvas.height = s.canvas.height;
+  overlayCanvas.width = s.canvas.width;
+  overlayCanvas.height = s.canvas.height;
+  const mc = mainCanvas.getContext('2d');
+  const oc = overlayCanvas.getContext('2d');
+  mc.imageSmoothingEnabled = false;
+  oc.imageSmoothingEnabled = false;
+  mc.drawImage(s.canvas, 0, 0);
+
+  canvasHolder.style.display = 'inline-block';
+  emptyState.style.display = 'none';
+
+  // Update inspector fields
+  $('canvasW').value = s.canvas.width;
+  $('canvasH').value = s.canvas.height;
+  $('metaModel').value = s.model;
+  $('metaAnim').value = ['idle','run','jump','attack','sit','hurt'].includes(s.anim) ? s.anim : 'custom';
+  if ($('metaAnim').value === 'custom'){
+    $('customAnimRow').style.display = 'flex';
+    $('metaAnimCustom').value = s.anim;
+  } else {
+    $('customAnimRow').style.display = 'none';
+  }
+  $('metaFps').value = s.fps;
+  $('metaLoop').value = s.loop ? '1' : '0';
+  $('metaFile').value = s.fileName;
+  $('anchorMode').value = s.anchorMode;
+  state.manualAnchor = s.anchorMode === 'manual';
+
   renderOverlay();
   renderLineLists();
   renderAnchorList();
-  renderGridCount();
-}
-function renderGridCount(){
-  $('gridCount').textContent = (state.vLines.length - 1) + ' × ' + (state.hLines.length - 1);
-  const total = (state.vLines.length - 1) * (state.hLines.length - 1);
-  $('anchorCount').textContent = state.anchors.filter(a=>a).length + ' / ' + total;
+  updateBadges();
+  renderPreviewInfo();
+  renderLibrary();
+
+  $('exportBtn').disabled = false;
+  setStatus('Đang edit: ' + s.model + '/' + s.anim);
 }
 
 function renderOverlay(){
-  if (!state.overlay) return;
-  const o = state.octx;
-  o.clearRect(0, 0, state.overlay.width, state.overlay.height);
+  const s = currentSprite();
+  if (!s) return;
+  const oc = overlayCanvas.getContext('2d');
+  oc.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-  /* Vẽ lưới dọc */
-  o.strokeStyle = 'rgba(255,80,80,.85)';
-  o.lineWidth = 1;
-  state.vLines.forEach(x => {
-    o.beginPath();
-    o.moveTo(Math.round(x) + 0.5, 0);
-    o.lineTo(Math.round(x) + 0.5, state.overlay.height);
-    o.stroke();
-  });
-  /* Vẽ lưới ngang */
-  state.hLines.forEach(y => {
-    o.beginPath();
-    o.moveTo(0, Math.round(y) + 0.5);
-    o.lineTo(state.overlay.width, Math.round(y) + 0.5);
-    o.stroke();
-  });
+  // Lines
+  oc.strokeStyle = 'rgba(255,80,80,.9)';
+  oc.lineWidth = 1;
+  for (const x of s.vLines){
+    oc.beginPath();
+    oc.moveTo(Math.round(x) + 0.5, 0);
+    oc.lineTo(Math.round(x) + 0.5, overlayCanvas.height);
+    oc.stroke();
+  }
+  for (const y of s.hLines){
+    oc.beginPath();
+    oc.moveTo(0, Math.round(y) + 0.5);
+    oc.lineTo(overlayCanvas.width, Math.round(y) + 0.5);
+    oc.stroke();
+  }
 
-  /* Số frame */
-  o.font = 'bold 11px Consolas, monospace';
-  o.fillStyle = '#88ff60';
-  o.strokeStyle = 'rgba(0,0,0,.7)';
-  o.lineWidth = 3;
+  // Frame numbers
+  oc.font = 'bold 11px Consolas, monospace';
+  oc.fillStyle = '#88ff60';
+  oc.strokeStyle = 'rgba(0,0,0,.8)';
+  oc.lineWidth = 3;
   let idx = 0;
-  for (let r = 0; r < state.hLines.length - 1; r++){
-    for (let c = 0; c < state.vLines.length - 1; c++){
-      const x = state.vLines[c] + 4;
-      const y = state.hLines[r] + 14;
-      o.strokeText(idx, x, y);
-      o.fillText(idx, x, y);
+  for (let r = 0; r < s.hLines.length - 1; r++){
+    for (let c = 0; c < s.vLines.length - 1; c++){
+      const x = s.vLines[c] + 4;
+      const y = s.hLines[r] + 14;
+      oc.strokeText(idx, x, y);
+      oc.fillText(idx, x, y);
       idx++;
     }
   }
 
-  /* Vẽ anchors — chấm đỏ */
-  o.strokeStyle = 'rgba(0,0,0,.9)';
-  o.lineWidth = 3;
-  state.anchors.forEach((a, i) => {
+  // Anchors
+  s.anchors.forEach(a => {
     if (!a) return;
-    o.beginPath();
-    o.arc(a.x, a.y, 5, 0, Math.PI*2);
-    o.stroke();
-  });
-  o.fillStyle = '#ff3050';
-  o.strokeStyle = '#fff';
-  o.lineWidth = 2;
-  state.anchors.forEach((a, i) => {
-    if (!a) return;
-    o.beginPath();
-    o.arc(a.x, a.y, 4, 0, Math.PI*2);
-    o.fill();
-    o.stroke();
-    /* Crosshair nhỏ */
-    o.strokeStyle = 'rgba(255,48,80,.7)';
-    o.lineWidth = 1;
-    o.beginPath();
-    o.moveTo(a.x - 8, a.y); o.lineTo(a.x + 8, a.y);
-    o.moveTo(a.x, a.y - 8); o.lineTo(a.x, a.y + 8);
-    o.stroke();
-    o.strokeStyle = '#fff';
-    o.lineWidth = 2;
+    const cx = a.x !== null ? a.x : ((s.vLines[0] || 0) + s.canvas.width) / 2;
+    // Find frame center if x null
+    let centerX = cx;
+    if (a.x === null || a.x === undefined){
+      // Tìm frame chứa anchor.y này
+      const frameIdx = s.anchors.indexOf(a);
+      const totalCols = s.vLines.length - 1;
+      const totalRows = s.hLines.length - 1;
+      const col = frameIdx % totalCols;
+      const row = Math.floor(frameIdx / totalCols);
+      centerX = (s.vLines[col] + s.vLines[col+1]) / 2;
+    }
+    oc.strokeStyle = 'rgba(0,0,0,.9)';
+    oc.lineWidth = 3;
+    oc.beginPath();
+    oc.arc(centerX, a.y, 5, 0, Math.PI*2);
+    oc.stroke();
+    oc.fillStyle = '#ff3050';
+    oc.strokeStyle = '#fff';
+    oc.lineWidth = 2;
+    oc.beginPath();
+    oc.arc(centerX, a.y, 4, 0, Math.PI*2);
+    oc.fill();
+    oc.stroke();
+    // Cross
+    oc.strokeStyle = 'rgba(255,48,80,.7)';
+    oc.lineWidth = 1;
+    oc.beginPath();
+    oc.moveTo(centerX - 8, a.y); oc.lineTo(centerX + 8, a.y);
+    oc.moveTo(centerX, a.y - 8); oc.lineTo(centerX, a.y + 8);
+    oc.stroke();
   });
 
-  /* Cell đang chọn */
+  // Cell
   if (state.cell){
-    o.strokeStyle = 'rgba(136,255,96,.95)';
-    o.lineWidth = 3;
-    o.setLineDash([6, 4]);
-    o.strokeRect(state.cell.x1 + 1, state.cell.y1 + 1,
+    oc.strokeStyle = 'rgba(136,255,96,.95)';
+    oc.lineWidth = 3;
+    oc.setLineDash([6, 4]);
+    oc.strokeRect(state.cell.x1 + 1, state.cell.y1 + 1,
       state.cell.x2 - state.cell.x1 - 2, state.cell.y2 - state.cell.y1 - 2);
-    o.setLineDash([]);
+    oc.setLineDash([]);
   }
 }
 
 function renderLineLists(){
-  const vl = $('vLinesList');
+  const s = currentSprite();
+  if (!s) return;
+  const vl = $('vList');
   vl.innerHTML = '';
-  state.vLines.forEach((x, i) => {
-    const div = document.createElement('div');
-    div.className = 'line-item';
-    div.innerHTML = `<span class="idx">#${i}</span>`;
+  s.vLines.forEach((x, i) => {
+    const row = document.createElement('div');
+    row.className = 'line-row';
+    row.innerHTML = `<span class="idx">#${i}</span>`;
     const inp = document.createElement('input');
     inp.type = 'number';
     inp.value = Math.round(x);
     inp.addEventListener('change', () => {
       const v = parseInt(inp.value);
       if (!isNaN(v)){
-        state.vLines[i] = Math.max(0, Math.min(state.canvas.width, v));
-        state.vLines.sort((a, b) => a - b);
-        computeAnchors(false);
+        s.vLines[i] = Math.max(0, Math.min(s.canvas.width, v));
+        s.vLines.sort((a,b) => a-b);
+        computeAnchorsForSprite(s, false);
         renderAll();
       }
     });
-    div.appendChild(inp);
+    row.appendChild(inp);
     const del = document.createElement('button');
     del.className = 'del'; del.textContent = '✕';
     del.addEventListener('click', () => {
-      if (state.vLines.length > 2){ state.vLines.splice(i, 1); computeAnchors(false); renderAll(); }
+      if (s.vLines.length > 2){
+        s.vLines.splice(i, 1);
+        computeAnchorsForSprite(s, false);
+        renderAll();
+      }
     });
-    div.appendChild(del);
-    vl.appendChild(div);
+    row.appendChild(del);
+    vl.appendChild(row);
   });
 
-  const hl = $('hLinesList');
+  const hl = $('hList');
   hl.innerHTML = '';
-  state.hLines.forEach((y, i) => {
-    const div = document.createElement('div');
-    div.className = 'line-item';
-    div.innerHTML = `<span class="idx">#${i}</span>`;
+  s.hLines.forEach((y, i) => {
+    const row = document.createElement('div');
+    row.className = 'line-row';
+    row.innerHTML = `<span class="idx">#${i}</span>`;
     const inp = document.createElement('input');
     inp.type = 'number';
     inp.value = Math.round(y);
     inp.addEventListener('change', () => {
       const v = parseInt(inp.value);
       if (!isNaN(v)){
-        state.hLines[i] = Math.max(0, Math.min(state.canvas.height, v));
-        state.hLines.sort((a, b) => a - b);
-        computeAnchors(false);
+        s.hLines[i] = Math.max(0, Math.min(s.canvas.height, v));
+        s.hLines.sort((a,b) => a-b);
+        computeAnchorsForSprite(s, false);
         renderAll();
       }
     });
-    div.appendChild(inp);
+    row.appendChild(inp);
     const del = document.createElement('button');
     del.className = 'del'; del.textContent = '✕';
     del.addEventListener('click', () => {
-      if (state.hLines.length > 2){ state.hLines.splice(i, 1); computeAnchors(false); renderAll(); }
+      if (s.hLines.length > 2){
+        s.hLines.splice(i, 1);
+        computeAnchorsForSprite(s, false);
+        renderAll();
+      }
     });
-    div.appendChild(del);
-    hl.appendChild(div);
+    row.appendChild(del);
+    hl.appendChild(row);
   });
 }
 
 function renderAnchorList(){
+  const s = currentSprite();
+  if (!s) return;
   const el = $('anchorList');
   el.innerHTML = '';
-  state.anchors.forEach((a, i) => {
-    const div = document.createElement('div');
-    div.className = 'anchor-item' + (state.cell && state.cell._idx === i ? ' on' : '');
-    div.innerHTML = `<span class="idx">#${i}</span>`;
-    const coords = document.createElement('span');
-    coords.className = 'coords';
-    coords.textContent = a ? `(${a.x}, ${a.y})` : '— không có nội dung —';
-    if (!a) coords.classList.add('warn');
-    div.appendChild(coords);
-    el.appendChild(div);
+  s.anchors.forEach((a, i) => {
+    const row = document.createElement('div');
+    row.className = 'line-row';
+    row.innerHTML = `<span class="idx">#${i}</span>`;
+    const txt = document.createElement('span');
+    txt.style.cssText = 'flex:1;color:var(--accent2);font-family:Consolas,monospace;font-size:10px';
+    if (a){
+      txt.textContent = `y=${a.y}${a.x !== null ? ' x='+a.x : ''}`;
+    } else {
+      txt.textContent = 'trống';
+      txt.style.color = '#ffcc40';
+    }
+    row.appendChild(txt);
+    el.appendChild(row);
   });
 }
 
+function renderAll(){
+  renderOverlay();
+  renderLineLists();
+  renderAnchorList();
+  updateBadges();
+  renderPreviewInfo();
+}
+
+function updateBadges(){
+  const s = currentSprite();
+  if (!s) return;
+  $('gridBadge').textContent = (s.vLines.length-1) + '×' + (s.hLines.length-1);
+  $('anchorBadge').textContent = s.anchors.filter(a => a).length + '/' + s.anchors.length;
+  $('statCurrent').textContent = s.model + '/' + s.anim;
+  $('statSize').textContent = s.canvas.width + '×' + s.canvas.height;
+}
+
 /* ============================================================
-   GRID BUTTONS
+   INPUT: UPLOAD
    ============================================================ */
-$('addVLine').addEventListener('click', () => {
-  if (!state.canvas) return;
-  const mid = state.vLines.length > 1
-    ? (state.vLines[state.vLines.length - 2] + state.vLines[state.vLines.length - 1]) / 2
-    : state.canvas.width / 2;
-  state.vLines.push(Math.round(mid));
-  state.vLines.sort((a,b) => a-b);
-  computeAnchors(false); renderAll();
+$('uploadBtn').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => {
+  const files = [...e.target.files];
+  handleFiles(files);
+  fileInput.value = '';
 });
-$('addHLine').addEventListener('click', () => {
-  if (!state.canvas) return;
-  const mid = state.hLines.length > 1
-    ? (state.hLines[state.hLines.length - 2] + state.hLines[state.hLines.length - 1]) / 2
-    : state.canvas.height / 2;
-  state.hLines.push(Math.round(mid));
-  state.hLines.sort((a,b) => a-b);
-  computeAnchors(false); renderAll();
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', async e => {
+  e.preventDefault();
+  const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+  if (files.length) handleFiles(files);
 });
-$('autoV').addEventListener('click', () => {
-  if (!state.canvas) return;
-  const n = parseInt(prompt('Số cột:', state.vLines.length - 1 || 8)) || 8;
-  const lines = [0];
-  for (let i = 1; i < n; i++) lines.push(Math.round(i * state.canvas.width / n));
-  lines.push(state.canvas.width);
-  state.vLines = lines;
-  computeAnchors(false); renderAll();
+document.addEventListener('paste', async e => {
+  const files = [];
+  for (const item of e.clipboardData.items){
+    if (item.type.startsWith('image/')) files.push(item.getAsFile());
+  }
+  if (files.length) handleFiles(files);
 });
-$('autoH').addEventListener('click', () => {
-  if (!state.canvas) return;
-  const n = parseInt(prompt('Số hàng:', state.hLines.length - 1 || 1)) || 1;
-  const lines = [0];
-  for (let i = 1; i < n; i++) lines.push(Math.round(i * state.canvas.height / n));
-  lines.push(state.canvas.height);
-  state.hLines = lines;
-  computeAnchors(false); renderAll();
-});
-$('clearV').addEventListener('click', () => {
-  if (!state.canvas) return;
-  state.vLines = [0, state.canvas.width];
-  computeAnchors(false); renderAll();
-});
-$('clearH').addEventListener('click', () => {
-  if (!state.canvas) return;
-  state.hLines = [0, state.canvas.height];
-  computeAnchors(false); renderAll();
+
+async function handleFiles(files){
+  setStatus('Đang load ' + files.length + ' file...');
+  let loaded = 0;
+  for (const f of files){
+    try {
+      const sprite = await addSpriteFromFile(f);
+      state.sprites.set(sprite.id, sprite);
+      loaded++;
+    } catch(e){
+      console.error(e);
+    }
+  }
+  renderLibrary();
+  if (loaded > 0){
+    // Auto select first
+    if (!state.currentId){
+      const first = [...state.sprites.values()][0];
+      selectSprite(first.id);
+    }
+    toast('✓ Đã load ' + loaded + ' file');
+    setStatus('Đã load ' + loaded + ' file', false);
+  } else {
+    setStatus('Không load được file nào', true);
+  }
+}
+
+/* ============================================================
+   INPUT: JSON PROJECT
+   ============================================================ */
+$('importBtn').addEventListener('click', () => jsonInput.click());
+jsonInput.addEventListener('change', async e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    const text = await f.text();
+    const json = JSON.parse(text);
+    if (json.format !== 'dh-studio-project' || !json.models){
+      toast('File JSON không đúng định dạng', true);
+      return;
+    }
+    // Re-download sprites from JSON? Actually sprites must already be in map or we ask user to upload PNGs
+    toast('Đã đọc JSON: ' + Object.keys(json.models).length + ' models. Upload PNG để hoàn tất.');
+    // Apply config to existing sprites by fileName
+    for (const modelName in json.models){
+      const model = json.models[modelName];
+      for (const animName in model.animations){
+        const cfg = model.animations[animName];
+        for (const s of state.sprites.values()){
+          if (s.fileName === cfg.fileName){
+            s.model = modelName;
+            s.anim = animName;
+            s.vLines = [...cfg.vLines];
+            s.hLines = [...cfg.hLines];
+            s.anchors = cfg.anchors.map(a => a ? { x: a[0], y: a[1] } : null);
+            s.fps = cfg.fps;
+            s.loop = cfg.loop;
+            s.anchorMode = cfg.anchorMode || 'bottom-center';
+          }
+        }
+      }
+    }
+    renderAll();
+  } catch(e){
+    toast('Lỗi đọc JSON: ' + e.message, true);
+  }
+  jsonInput.value = '';
 });
 
 /* ============================================================
-   MOUSE
+   EXPORT
+   ============================================================ */
+function buildProjectJson(){
+  const project = {
+    format: 'dh-studio-project',
+    version: 3,
+    exportedAt: new Date().toISOString(),
+    models: {}
+  };
+  for (const s of state.sprites.values()){
+    if (!project.models[s.model]) project.models[s.model] = { animations: {} };
+    project.models[s.model].animations[s.anim] = {
+      fileName: s.fileName,
+      frames: s.vLines.length - 1,
+      spriteH: s.canvas.height,
+      vLines: s.vLines.map(v => Math.round(v)),
+      hLines: s.hLines.map(v => Math.round(v)),
+      anchors: s.anchors.map(a => a ? [a.x, a.y] : null),
+      anchorMode: s.anchorMode,
+      fps: s.fps,
+      loop: s.loop
+    };
+  }
+  return project;
+}
+
+$('exportBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  // Export current sprite PNG
+  const out = document.createElement('canvas');
+  out.width = s.canvas.width;
+  out.height = s.canvas.height;
+  const oc = out.getContext('2d');
+  oc.imageSmoothingEnabled = false;
+  oc.drawImage(s.canvas, 0, 0);
+
+  out.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = s.fileName + '.png';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('💾 Đã tải ' + s.fileName + '.png (không metadata)');
+  }, 'image/png');
+});
+
+$('exportAllBtn').addEventListener('click', () => {
+  const project = buildProjectJson();
+  // Download JSON
+  const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sprites.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('📦 Đã tải sprites.json — ' + Object.keys(project.models).length + ' models');
+});
+
+/* ============================================================
+   TABS
+   ============================================================ */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector(`.panel[data-panel="${tab.dataset.tab}"]`).classList.add('active');
+    if (tab.dataset.tab === 'preview') renderPreviewInfo();
+  });
+});
+
+/* ============================================================
+   TOOLBAR
+   ============================================================ */
+function setTool(tool){
+  state.tool = tool;
+  ['toolSelect','toolAddV','toolAddH','toolPick'].forEach(id => $(id).classList.remove('on'));
+  if (tool === 'select') $('toolSelect').classList.add('on');
+  if (tool === 'addv') $('toolAddV').classList.add('on');
+  if (tool === 'addh') $('toolAddH').classList.add('on');
+  if (tool === 'pick') $('toolPick').classList.add('on');
+}
+$('toolSelect').addEventListener('click', () => setTool('select'));
+$('toolAddV').addEventListener('click', () => setTool('addv'));
+$('toolAddH').addEventListener('click', () => setTool('addh'));
+$('toolPick').addEventListener('click', () => setTool('pick'));
+setTool('select');
+
+$('snapChk').addEventListener('change', e => state.snap = e.target.checked);
+$('debugChk').addEventListener('change', e => {
+  state.debug = e.target.checked;
+  renderOverlay();
+});
+
+$('autoDetect').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  const lines = autoDetectFrameLines(s.canvas, null);
+  if (!lines){ toast('Không tách được frame', true); return; }
+  s.vLines = lines;
+  s.hLines = [0, s.canvas.height];
+  computeAnchorsForSprite(s, false);
+  renderAll();
+  toast('🤖 ' + (lines.length - 1) + ' frame + ' + s.anchors.filter(a=>a).length + ' anchor');
+});
+
+$('computeAnchors').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  computeAnchorsForSprite(s, true);
+  renderAll();
+});
+
+/* ============================================================
+   CANVAS INTERACTION
    ============================================================ */
 function getCanvasCoords(e){
-  const rect = canvas.getBoundingClientRect();
+  const rect = mainCanvas.getBoundingClientRect();
   return {
     x: (e.clientX - rect.left) / state.zoom,
     y: (e.clientY - rect.top) / state.zoom
   };
 }
 function findLineAt(x, y){
+  const s = currentSprite();
+  if (!s) return null;
   const tol = 6 / state.zoom;
-  for (let i = 1; i < state.vLines.length - 1; i++){
-    if (Math.abs(state.vLines[i] - x) < tol) return { type: 'v', idx: i };
+  for (let i = 1; i < s.vLines.length - 1; i++){
+    if (Math.abs(s.vLines[i] - x) < tol) return { type: 'v', idx: i };
   }
-  for (let i = 1; i < state.hLines.length - 1; i++){
-    if (Math.abs(state.hLines[i] - y) < tol) return { type: 'h', idx: i };
+  for (let i = 1; i < s.hLines.length - 1; i++){
+    if (Math.abs(s.hLines[i] - y) < tol) return { type: 'h', idx: i };
   }
   return null;
 }
 function findCellAt(x, y){
+  const s = currentSprite();
+  if (!s) return null;
   let ci = -1, ri = -1;
-  for (let i = 0; i < state.vLines.length - 1; i++){
-    if (x >= state.vLines[i] && x < state.vLines[i+1]){ ci = i; break; }
+  for (let i = 0; i < s.vLines.length - 1; i++){
+    if (x >= s.vLines[i] && x < s.vLines[i+1]){ ci = i; break; }
   }
-  for (let i = 0; i < state.hLines.length - 1; i++){
-    if (y >= state.hLines[i] && y < state.hLines[i+1]){ ri = i; break; }
+  for (let i = 0; i < s.hLines.length - 1; i++){
+    if (y >= s.hLines[i] && y < s.hLines[i+1]){ ri = i; break; }
   }
   if (ci < 0 || ri < 0) return null;
   return {
-    x1: state.vLines[ci], y1: state.hLines[ri],
-    x2: state.vLines[ci+1], y2: state.hLines[ri+1],
-    _col: ci, _row: ri, _idx: ri * (state.vLines.length - 1) + ci
+    x1: s.vLines[ci], y1: s.hLines[ri],
+    x2: s.vLines[ci+1], y2: s.hLines[ri+1],
+    _col: ci, _row: ri,
+    _idx: ri * (s.vLines.length - 1) + ci
   };
 }
 
-canvasWrap.addEventListener('wheel', e => {
-  if (!state.canvas) return;
-  if (e.ctrlKey){
-    e.preventDefault();
-    state.zoom = Math.max(0.25, Math.min(4, state.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
-    canvas.style.transform = `scale(${state.zoom})`;
-    canvas.style.transformOrigin = 'top left';
-    overlay.style.transform = `scale(${state.zoom})`;
-    overlay.style.transformOrigin = 'top left';
-  }
-}, { passive: false });
+function pickColorAt(x, y){
+  const s = currentSprite();
+  if (!s) return;
+  if (x < 0 || y < 0 || x >= s.canvas.width || y >= s.canvas.height) return;
+  const d = s.ctx.getImageData(x, y, 1, 1).data;
+  state.bgColor = { r: d[0], g: d[1], b: d[2] };
+  $('bgFill').style.background = `rgb(${d[0]},${d[1]},${d[2]})`;
+  toast('💧 RGB(' + d[0] + ',' + d[1] + ',' + d[2] + ')');
+  setTool('select');
+}
 
-function onMouseDown(e){
-  if (!state.canvas) return;
+overlayCanvas.addEventListener('mousedown', e => {
+  const s = currentSprite();
+  if (!s) return;
   const { x, y } = getCanvasCoords(e);
 
+  // Alt + click = pick color
   if (e.altKey){ pickColorAt(Math.floor(x), Math.floor(y)); return; }
-  if (state.pickColor){
-    pickColorAt(Math.floor(x), Math.floor(y));
-    state.pickColor = false;
-    $('pickColorBtn').classList.remove('on');
-    return;
-  }
+  if (state.tool === 'pick'){ pickColorAt(Math.floor(x), Math.floor(y)); return; }
+
+  // Right click = delete line
   if (e.button === 2){
     const line = findLineAt(x, y);
     if (line){
-      if (line.type === 'v' && state.vLines.length > 2) state.vLines.splice(line.idx, 1);
-      else if (line.type === 'h' && state.hLines.length > 2) state.hLines.splice(line.idx, 1);
-      computeAnchors(false); renderAll();
+      if (line.type === 'v' && s.vLines.length > 2) s.vLines.splice(line.idx, 1);
+      else if (line.type === 'h' && s.hLines.length > 2) s.hLines.splice(line.idx, 1);
+      computeAnchorsForSprite(s, false);
+      renderAll();
     }
     return;
   }
 
-  /* Manual anchor mode: click để đặt anchor */
+  // Add line
+  if (state.tool === 'addv'){
+    s.vLines.push(Math.round(x));
+    s.vLines.sort((a,b) => a-b);
+    computeAnchorsForSprite(s, false);
+    renderAll();
+    return;
+  }
+  if (state.tool === 'addh'){
+    s.hLines.push(Math.round(y));
+    s.hLines.sort((a,b) => a-b);
+    computeAnchorsForSprite(s, false);
+    renderAll();
+    return;
+  }
+
+  // Manual anchor
   if (state.manualAnchor && state.cell){
-    const idx = state.cell._idx;
-    if (e.button === 0 && !e.shiftKey && !state.drag){
-      state.anchors[idx] = { x: Math.round(x), y: Math.round(y) };
+    if (e.button === 0){
+      s.anchors[state.cell._idx] = { x: Math.round(x), y: Math.round(y) };
       renderOverlay();
-      toast(`🎯 Đặt anchor frame #${idx}`);
+      renderAnchorList();
+      toast('🎯 Anchor #' + state.cell._idx);
       return;
     }
   }
 
-  if (e.shiftKey){
-    const nearV = state.vLines.some(v => Math.abs(v - x) < 4);
-    const nearH = state.hLines.some(v => Math.abs(v - y) < 4);
-    if (!nearV && !nearH){
-      if (Math.abs(x - state.canvas.width/2) > Math.abs(y - state.canvas.height/2)){
-        state.vLines.push(Math.round(x)); state.vLines.sort((a,b) => a-b);
-      } else {
-        state.hLines.push(Math.round(y)); state.hLines.sort((a,b) => a-b);
-      }
-      computeAnchors(false); renderAll();
-    }
+  // Drag line
+  const line = findLineAt(x, y);
+  if (line){
+    state.drag = { type: line.type, idx: line.idx };
     return;
   }
 
-  const line = findLineAt(x, y);
-  if (line){ state.drag = { type: line.type, idx: line.idx }; return; }
-
+  // Select cell
   const cell = findCellAt(x, y);
   if (cell){
     state.cell = cell;
     state.cellMoveOffset = { x: 0, y: 0 };
-    $('dxInput').value = 0; $('dyInput').value = 0;
-    $('cellInfo').textContent = `(${cell.x1},${cell.y1}) - ${cell.x2 - cell.x1}×${cell.y2 - cell.y1}`;
-    $('cellLabel').textContent = '#' + cell._idx;
-    $('moveApply').disabled = false;
-    $('moveReset').disabled = false;
-    $('cellFillTrans').disabled = false;
-    $('bgApplyCell').disabled = false;
+    state.cellOriginal = null;
     state.drag = { type: 'cell', startX: Math.floor(x), startY: Math.floor(y), cell: { ...cell } };
-    renderAll();
+    renderOverlay();
     return;
   }
 
   state.cell = null;
-  $('cellInfo').textContent = 'Click ô giữa các đường kẻ';
-  $('cellLabel').textContent = '-';
-  $('moveApply').disabled = true; $('moveReset').disabled = true;
-  $('cellFillTrans').disabled = true; $('bgApplyCell').disabled = true;
-  renderAll();
-}
+  renderOverlay();
+});
+overlayCanvas.addEventListener('contextmenu', e => e.preventDefault());
 
-function onMouseMove(e){
-  if (!state.canvas) return;
+document.addEventListener('mousemove', e => {
+  const s = currentSprite();
+  if (!s || !state.drag) return;
   const { x, y } = getCanvasCoords(e);
-  if (!state.drag) return;
+
   if (state.drag.type === 'v'){
     let nx = x;
-    if (state.snapOn) nx = Math.round(nx);
-    nx = Math.max(state.vLines[state.drag.idx - 1] + 5,
-         Math.min(state.vLines[state.drag.idx + 1] - 5, nx));
-    state.vLines[state.drag.idx] = nx;
+    if (state.snap) nx = Math.round(nx);
+    nx = Math.max(s.vLines[state.drag.idx - 1] + 5,
+         Math.min(s.vLines[state.drag.idx + 1] - 5, nx));
+    s.vLines[state.drag.idx] = nx;
     renderOverlay();
   } else if (state.drag.type === 'h'){
     let ny = y;
-    if (state.snapOn) ny = Math.round(ny);
-    ny = Math.max(state.hLines[state.drag.idx - 1] + 5,
-         Math.min(state.hLines[state.drag.idx + 1] - 5, ny));
-    state.hLines[state.drag.idx] = ny;
+    if (state.snap) ny = Math.round(ny);
+    ny = Math.max(s.hLines[state.drag.idx - 1] + 5,
+         Math.min(s.hLines[state.drag.idx + 1] - 5, ny));
+    s.hLines[state.drag.idx] = ny;
     renderOverlay();
   } else if (state.drag.type === 'cell'){
     const dx = Math.floor(x) - state.drag.startX;
     const dy = Math.floor(y) - state.drag.startY;
-    state.cellMoveOffset.x = dx; state.cellMoveOffset.y = dy;
-    $('dxInput').value = dx; $('dyInput').value = dy;
+    state.cellMoveOffset.x = dx;
+    state.cellMoveOffset.y = dy;
     previewCellMove();
     renderOverlay();
   }
-}
+});
 
-function onMouseUp(){
-  if (!state.drag) return;
+document.addEventListener('mouseup', () => {
+  const s = currentSprite();
+  if (!state.drag || !s) return;
   if (state.drag.type === 'v' || state.drag.type === 'h'){
-    state.vLines.sort((a,b) => a-b); state.hLines.sort((a,b) => a-b);
-    computeAnchors(false);
+    s.vLines.sort((a,b) => a-b);
+    s.hLines.sort((a,b) => a-b);
+    computeAnchorsForSprite(s, false);
     renderAll();
   } else if (state.drag.type === 'cell'){
     if (state.cellMoveOffset.x !== 0 || state.cellMoveOffset.y !== 0){
-      pushHistory();
+      // Commit
       state.cellOriginal = null;
       state.cellMoveOffset = { x: 0, y: 0 };
-      computeAnchors(false);
+      // Redraw main
+      const mc = mainCanvas.getContext('2d');
+      mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+      mc.drawImage(s.canvas, 0, 0);
+      computeAnchorsForSprite(s, false);
       renderAll();
-      toast('✓ Đã di chuyển + tính lại anchor');
     }
   }
   state.drag = null;
-}
+});
 
 function previewCellMove(){
-  if (!state.cell) return;
+  const s = currentSprite();
+  if (!s || !state.cell) return;
   if (!state.cellOriginal){
-    const w = state.cell.x2 - state.cell.x1, h = state.cell.y2 - state.cell.y1;
-    const data = state.ctx.getImageData(state.cell.x1, state.cell.y1, w, h);
+    const w = state.cell.x2 - state.cell.x1;
+    const h = state.cell.y2 - state.cell.y1;
+    const data = s.ctx.getImageData(state.cell.x1, state.cell.y1, w, h);
     state.cellOriginal = { x1: state.cell.x1, y1: state.cell.y1, w, h, imageData: data };
   }
   const o = state.cellOriginal;
-  state.ctx.clearRect(o.x1, o.y1, o.w, o.h);
+  s.ctx.clearRect(o.x1, o.y1, o.w, o.h);
   const tmp = document.createElement('canvas');
   tmp.width = o.w; tmp.height = o.h;
   tmp.getContext('2d').putImageData(o.imageData, 0, 0);
-  state.ctx.drawImage(tmp, o.x1 + state.cellMoveOffset.x, o.y1 + state.cellMoveOffset.y);
+  s.ctx.drawImage(tmp, o.x1 + state.cellMoveOffset.x, o.y1 + state.cellMoveOffset.y);
+  // Redraw main canvas
+  const mc = mainCanvas.getContext('2d');
+  mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+  mc.drawImage(s.canvas, 0, 0);
 }
-
-overlay.addEventListener('mousedown', onMouseDown);
-overlay.addEventListener('contextmenu', e => e.preventDefault());
-document.addEventListener('mousemove', onMouseMove);
-document.addEventListener('mouseup', onMouseUp);
 
 /* ============================================================
-   BACKGROUND REMOVE
+   ZOOM
    ============================================================ */
-$('pickColorBtn').addEventListener('click', () => {
-  state.pickColor = true;
-  $('pickColorBtn').classList.add('on');
-  toast('💧 Click vào ảnh để chọn màu nền');
-});
-function pickColorAt(x, y){
-  if (x < 0 || y < 0 || x >= state.canvas.width || y >= state.canvas.height) return;
-  const d = state.ctx.getImageData(x, y, 1, 1).data;
-  state.bgColor = { r: d[0], g: d[1], b: d[2] };
-  $('bgSwatchFill').style.background = `rgb(${d[0]},${d[1]},${d[2]})`;
-  toast(`✓ Pick RGB(${d[0]},${d[1]},${d[2]})`, 'ok');
+stageCanvas.addEventListener('wheel', e => {
+  if (!currentSprite()) return;
+  if (e.ctrlKey || e.metaKey || e.deltaY){
+    if (e.ctrlKey || e.metaKey){
+      e.preventDefault();
+      state.zoom = Math.max(0.25, Math.min(6, state.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
+      applyZoom();
+    }
+  }
+}, { passive: false });
+
+function applyZoom(){
+  mainCanvas.style.transform = `scale(${state.zoom})`;
+  mainCanvas.style.transformOrigin = 'top left';
+  overlayCanvas.style.transform = `scale(${state.zoom})`;
+  overlayCanvas.style.transformOrigin = 'top left';
+  const pct = Math.round(state.zoom * 100) + '%';
+  $('zoomLabel').textContent = pct;
+  $('statZoom').textContent = pct;
 }
+
+/* ============================================================
+   INSPECTOR CONTROLS
+   ============================================================ */
+// Grid
+$('autoVBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  const n = parseInt(prompt('Số cột:', s.vLines.length - 1 || 8)) || 8;
+  s.vLines = [0];
+  for (let i = 1; i < n; i++) s.vLines.push(Math.round(i * s.canvas.width / n));
+  s.vLines.push(s.canvas.width);
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('autoHBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  const n = parseInt(prompt('Số hàng:', s.hLines.length - 1 || 1)) || 1;
+  s.hLines = [0];
+  for (let i = 1; i < n; i++) s.hLines.push(Math.round(i * s.canvas.height / n));
+  s.hLines.push(s.canvas.height);
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('addVBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  const mid = s.vLines.length > 1
+    ? (s.vLines[s.vLines.length-2] + s.vLines[s.vLines.length-1]) / 2
+    : s.canvas.width / 2;
+  s.vLines.push(Math.round(mid));
+  s.vLines.sort((a,b) => a-b);
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('addHBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  const mid = s.hLines.length > 1
+    ? (s.hLines[s.hLines.length-2] + s.hLines[s.hLines.length-1]) / 2
+    : s.canvas.height / 2;
+  s.hLines.push(Math.round(mid));
+  s.hLines.sort((a,b) => a-b);
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('clearVBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  s.vLines = [0, s.canvas.width];
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('clearHBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  s.hLines = [0, s.canvas.height];
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+
+// Resize
+document.querySelectorAll('#resizeAnchorGrid .anchor-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#resizeAnchorGrid .anchor-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    state.resizeAnchor = btn.dataset.a;
+  });
+});
+$('resizeBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  const nW = parseInt($('canvasW').value);
+  const nH = parseInt($('canvasH').value);
+  if (!nW || !nH) return;
+
+  const oW = s.canvas.width, oH = s.canvas.height;
+  const tmp = document.createElement('canvas');
+  tmp.width = oW; tmp.height = oH;
+  tmp.getContext('2d').drawImage(s.canvas, 0, 0);
+
+  s.canvas.width = nW; s.canvas.height = nH;
+  s.ctx = s.canvas.getContext('2d', { willReadFrequently: true });
+  s.ctx.imageSmoothingEnabled = false;
+
+  let dx = 0, dy = 0;
+  const a = state.resizeAnchor;
+  if (a[1] === 'c') dx = (nW - oW)/2; else if (a[1] === 'r') dx = nW - oW;
+  if (a[0] === 'm') dy = (nH - oH)/2; else if (a[0] === 'b') dy = nH - oH;
+  s.ctx.drawImage(tmp, Math.round(dx), Math.round(dy));
+
+  s.vLines[0] = 0; s.vLines[s.vLines.length-1] = nW;
+  s.hLines[0] = 0; s.hLines[s.hLines.length-1] = nH;
+  computeAnchorsForSprite(s, false);
+  selectSprite(s.id);
+});
+
+$('cropBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  const bbox = detectBBox(s.canvas, 0, 0, s.canvas.width, s.canvas.height);
+  if (!bbox){ toast('Ảnh trống', true); return; }
+  const tmp = document.createElement('canvas');
+  tmp.width = bbox.w; tmp.height = bbox.h;
+  tmp.getContext('2d').drawImage(s.canvas, -bbox.x, -bbox.y);
+  s.canvas.width = bbox.w; s.canvas.height = bbox.h;
+  s.ctx = s.canvas.getContext('2d', { willReadFrequently: true });
+  s.ctx.imageSmoothingEnabled = false;
+  s.ctx.drawImage(tmp, 0, 0);
+  s.vLines = [0, bbox.w];
+  s.hLines = [0, bbox.h];
+  computeAnchorsForSprite(s, false);
+  selectSprite(s.id);
+  toast('✂ ' + bbox.w + '×' + bbox.h);
+});
+
+// Anchor
+$('anchorMode').addEventListener('change', e => {
+  const s = currentSprite();
+  if (!s) return;
+  s.anchorMode = e.target.value;
+  state.manualAnchor = s.anchorMode === 'manual';
+  if (!state.manualAnchor) computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('anchorRecompute').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  computeAnchorsForSprite(s, true);
+  renderAll();
+});
+$('anchorClear').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  s.anchors = [];
+  renderAll();
+});
+
+// BG
+$('pickBtn').addEventListener('click', () => setTool('pick'));
 $('bgTol').addEventListener('input', e => $('bgTolVal').textContent = e.target.value);
 $('bgMode').addEventListener('change', e => {
   $('bgColorRow').style.display = e.target.value === 'color' ? 'flex' : 'none';
 });
 $('bgApplyAll').addEventListener('click', () => {
-  if (!state.canvas) return;
-  applyBgRemove(0, 0, state.canvas.width, state.canvas.height);
+  const s = currentSprite();
+  if (!s) return;
+  applyBg(s, 0, 0, s.canvas.width, s.canvas.height);
 });
 $('bgApplyCell').addEventListener('click', () => {
-  if (!state.cell) return;
-  applyBgRemove(state.cell.x1, state.cell.y1,
+  const s = currentSprite();
+  if (!s || !state.cell) return;
+  applyBg(s, state.cell.x1, state.cell.y1,
     state.cell.x2 - state.cell.x1, state.cell.y2 - state.cell.y1);
 });
-function applyBgRemove(x, y, w, h){
-  pushHistory();
-  const imgData = state.ctx.getImageData(x, y, w, h);
+function applyBg(s, x, y, w, h){
+  const imgData = s.ctx.getImageData(x, y, w, h);
   const d = imgData.data;
   const bg = state.bgColor;
   const tol = parseInt($('bgTol').value);
@@ -1072,200 +1709,248 @@ function applyBgRemove(x, y, w, h){
       count++;
     }
   }
-  state.ctx.putImageData(imgData, x, y);
-  computeAnchors(false);
+  s.ctx.putImageData(imgData, x, y);
+  // Redraw
+  const mc = mainCanvas.getContext('2d');
+  mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+  mc.drawImage(s.canvas, 0, 0);
+  computeAnchorsForSprite(s, false);
   renderAll();
-  toast(`✓ Xử lý ${count} pixel`);
+  toast('✓ ' + count + ' pixel');
 }
 
-/* ============================================================
-   RESIZE
-   ============================================================ */
-document.querySelectorAll('.anchor-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.anchor-btn').forEach(b => b.classList.remove('on'));
-    btn.classList.add('on');
-    state.anchor_ = btn.dataset.a;
-  });
+// Meta
+$('metaAnim').addEventListener('change', e => {
+  $('customAnimRow').style.display = e.target.value === 'custom' ? 'flex' : 'none';
 });
-$('resizeApply').addEventListener('click', () => {
-  if (!state.canvas) return;
-  const nW = parseInt($('canvasW').value), nH = parseInt($('canvasH').value);
-  if (!nW || !nH || nW < 1 || nH < 1) return;
-  pushHistory();
-  const oW = state.canvas.width, oH = state.canvas.height;
-  const oD = state.ctx.getImageData(0, 0, oW, oH);
-  const tmp = document.createElement('canvas');
-  tmp.width = oW; tmp.height = oH;
-  tmp.getContext('2d').putImageData(oD, 0, 0);
-  state.canvas.width = nW; state.canvas.height = nH;
-  state.overlay.width = nW; state.overlay.height = nH;
-  state.ctx.imageSmoothingEnabled = false;
-  state.octx.imageSmoothingEnabled = false;
-  let dx = 0, dy = 0;
-  const a = state.anchor_;
-  if (a[1] === 'c') dx = (nW - oW) / 2; else if (a[1] === 'r') dx = nW - oW;
-  if (a[0] === 'm') dy = (nH - oH) / 2; else if (a[0] === 'b') dy = nH - oH;
-  state.ctx.drawImage(tmp, Math.round(dx), Math.round(dy));
-  state.vLines[0] = 0; state.vLines[state.vLines.length-1] = nW;
-  state.hLines[0] = 0; state.hLines[state.hLines.length-1] = nH;
-  state.cell = null;
-  $('sizeLabel').textContent = nW + '×' + nH;
-  computeAnchors(false); renderAll();
-  toast(`✓ ${oW}×${oH} → ${nW}×${nH}`);
+$('metaFile').addEventListener('change', e => {
+  const s = currentSprite();
+  if (!s) return;
+  s.fileName = e.target.value.trim() || s.fileName;
 });
-
-$('cropTight').addEventListener('click', () => {
-  if (!state.canvas) return;
-  pushHistory();
-  const bbox = detectBBox(0, 0, state.canvas.width, state.canvas.height);
-  if (!bbox){ toast('Ảnh trống?', 'err'); state.history.pop(); updateUndoBtn(); return; }
-  const tmp = document.createElement('canvas');
-  tmp.width = bbox.w; tmp.height = bbox.h;
-  tmp.getContext('2d').drawImage(state.canvas, -bbox.x, -bbox.y);
-  state.canvas.width = bbox.w; state.canvas.height = bbox.h;
-  state.overlay.width = bbox.w; state.overlay.height = bbox.h;
-  state.ctx.imageSmoothingEnabled = false;
-  state.octx.imageSmoothingEnabled = false;
-  state.ctx.drawImage(tmp, 0, 0);
-  state.vLines = [0, bbox.w];
-  state.hLines = [0, bbox.h];
-  state.cell = null;
-  $('canvasW').value = bbox.w; $('canvasH').value = bbox.h;
-  $('sizeLabel').textContent = bbox.w + '×' + bbox.h;
-  computeAnchors(false); renderAll();
-  toast(`✂ Cắt sát: ${bbox.w}×${bbox.h}`);
+$('metaModel').addEventListener('change', e => {
+  const s = currentSprite();
+  if (!s) return;
+  s.model = e.target.value.trim() || 'player';
+  renderLibrary();
+  updateBadges();
 });
-
-/* ============================================================
-   CELL MOVE
-   ============================================================ */
-$('moveApply').addEventListener('click', () => {
-  if (!state.cell) return;
-  pushHistory();
-  state.cellMoveOffset.x = parseInt($('dxInput').value) || 0;
-  state.cellMoveOffset.y = parseInt($('dyInput').value) || 0;
-  previewCellMove();
-  state.cellOriginal = null; state.cellMoveOffset = { x:0, y:0 };
-  computeAnchors(false); renderAll();
-});
-$('moveReset').addEventListener('click', () => {
-  if (!state.cell) return;
-  if (state.cellOriginal){
-    state.ctx.putImageData(state.cellOriginal.imageData, state.cellOriginal.x1, state.cellOriginal.y1);
-    state.cellOriginal = null;
+$('metaAnim').addEventListener('change', e => {
+  const s = currentSprite();
+  if (!s) return;
+  if (e.target.value === 'custom'){
+    setTimeout(() => {
+      const v = $('metaAnimCustom').value.trim();
+      if (v){ s.anim = v; renderLibrary(); updateBadges(); }
+    }, 100);
+  } else {
+    s.anim = e.target.value;
+    renderLibrary();
+    updateBadges();
   }
-  state.cellMoveOffset = { x: 0, y: 0 };
-  $('dxInput').value = 0; $('dyInput').value = 0;
-  computeAnchors(false); renderOverlay();
 });
-$('cellFillTrans').addEventListener('click', () => {
-  if (!state.cell) return;
-  pushHistory();
-  state.ctx.clearRect(state.cell.x1, state.cell.y1,
-    state.cell.x2 - state.cell.x1, state.cell.y2 - state.cell.y1);
-  computeAnchors(false); renderAll();
+$('metaAnimCustom').addEventListener('change', e => {
+  const s = currentSprite();
+  if (!s) return;
+  s.anim = e.target.value.trim() || 'custom';
+  renderLibrary();
+  updateBadges();
+});
+$('metaFps').addEventListener('change', e => {
+  const s = currentSprite();
+  if (!s) return;
+  s.fps = Math.max(1, Math.min(60, parseInt(e.target.value) || 10));
+});
+$('metaLoop').addEventListener('change', e => {
+  const s = currentSprite();
+  if (!s) return;
+  s.loop = e.target.value === '1';
 });
 
 /* ============================================================
-   EXPORT METADATA v2
+   PREVIEW
    ============================================================ */
-function encodeMetaBytes(jsonStr){
-  const magic = [0x44, 0x48, 0x55, 0x4E];
-  const v = 0x0002;
-  const jb = new TextEncoder().encode(jsonStr);
-  const len = jb.length;
-  return [...magic, v & 0xFF, (v >> 8) & 0xFF,
-    len & 0xFF, (len >> 8) & 0xFF, (len >> 16) & 0xFF, (len >> 24) & 0xFF,
-    ...jb];
-}
-function writeMetaRow(c, y, bytes){
-  const ctx2 = c.getContext('2d', { willReadFrequently: true });
-  const imgData = ctx2.createImageData(c.width, 1);
-  const d = imgData.data;
-  for (let i = 0; i < bytes.length; i++){
-    const p = Math.floor(i / 3), ch = i % 3;
-    if (p >= c.width) break;
-    d[p * 4 + ch] = bytes[i];
-    d[p * 4 + 3] = 255;
+const previewCanvas = $('previewCanvas');
+const pctx = previewCanvas.getContext('2d');
+
+function renderPreviewInfo(){
+  const s = currentSprite();
+  if (!s){
+    $('previewInfo').textContent = 'Chọn 1 sprite để xem thông tin.';
+    return;
   }
-  ctx2.putImageData(imgData, 0, y);
+  const frames = s.vLines.length - 1;
+  const anchors = s.anchors.filter(a => a).length;
+  $('previewInfo').innerHTML =
+    `<b>${s.model}/${s.anim}</b><br>` +
+    `File: ${s.fileName}.png<br>` +
+    `Size: ${s.canvas.width}×${s.canvas.height}<br>` +
+    `Frames: <span style="color:var(--accent2)">${frames}</span><br>` +
+    `FPS: ${s.fps} · ${s.loop ? 'loop' : 'once'}<br>` +
+    `Anchors: ${anchors}/${frames}<br>` +
+    `Duration: ${(frames / s.fps).toFixed(2)}s`;
+
+  // Update slider
+  const slider = $('previewFrameSlider');
+  slider.max = Math.max(0, frames - 1);
+  slider.value = state.previewFrame;
+  $('previewFrameVal').textContent = state.previewFrame;
 }
+$('previewFrameSlider').addEventListener('input', e => {
+  state.previewFrame = parseInt(e.target.value);
+  $('previewFrameVal').textContent = state.previewFrame;
+  drawPreview();
+});
 
-function exportWithMeta(){
-  if (!state.canvas) return;
-  const name = $('exportName').value.trim() || 'sprite';
-  const label = $('exportLabel').value;
-  const fps = parseInt($('exportFps').value) || 10;
-  const loop = $('exportLoop').value === '1';
-  const W = state.canvas.width, H = state.canvas.height;
-  const out = document.createElement('canvas');
-  out.width = W; out.height = H + 1;
-  const oc = out.getContext('2d', { willReadFrequently: true });
-  oc.imageSmoothingEnabled = false;
-  oc.drawImage(state.canvas, 0, 0);
+function drawPreview(){
+  const s = currentSprite();
+  if (!s) return;
+  const frames = s.vLines.length - 1;
+  if (frames < 1) return;
+  const idx = Math.max(0, Math.min(frames - 1, state.previewFrame));
 
-  const meta = {
-    v: 2,
-    label, fps, loop,
-    frames: state.vLines.length - 1,
-    spriteH: H,
-    vLines: state.vLines.map(v => Math.round(v)),
-    hLines: state.hLines.map(v => Math.round(v)),
-    anchorMode: state.anchorMode,
-    anchors: state.anchors.map(a => a ? [a.x, a.y] : null)
+  pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+  pctx.fillStyle = '#0a0d08';
+  pctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+  pctx.imageSmoothingEnabled = false;
+
+  const sx = s.vLines[idx];
+  const sw = s.vLines[idx+1] - sx;
+  const sh = s.canvas.height;
+
+  const scale = Math.min(
+    (previewCanvas.width - 20) / sw,
+    (previewCanvas.height - 20) / sh,
+    3
+  );
+  const dw = sw * scale, dh = sh * scale;
+  const dx = (previewCanvas.width - dw) / 2;
+  const dy = (previewCanvas.height - dh) / 2;
+
+  pctx.drawImage(s.canvas, sx, 0, sw, sh, dx, dy, dw, dh);
+
+  // Anchor dot
+  const a = s.anchors[idx];
+  if (a){
+    const ay = dy + (a.y / sh) * dh;
+    const ax = dx + dw / 2;
+    pctx.strokeStyle = '#ff3050';
+    pctx.lineWidth = 2;
+    pctx.beginPath();
+    pctx.arc(ax, ay, 4, 0, Math.PI*2);
+    pctx.stroke();
+    pctx.fillStyle = '#ff3050';
+    pctx.beginPath();
+    pctx.arc(ax, ay, 2, 0, Math.PI*2);
+    pctx.fill();
+  }
+}
+$('previewPlayBtn').addEventListener('click', () => {
+  if (state.previewPlaying) return;
+  state.previewPlaying = true;
+  state.previewTime = 0;
+  const loop = () => {
+    if (!state.previewPlaying) return;
+    const s = currentSprite();
+    if (!s){ state.previewPlaying = false; return; }
+    const frames = s.vLines.length - 1;
+    if (frames < 1){ state.previewPlaying = false; return; }
+    state.previewTime += 1 / 60;
+    state.previewFrame = Math.floor(state.previewTime * s.fps) % frames;
+    if (!s.loop && state.previewTime * s.fps >= frames){
+      state.previewPlaying = false;
+      state.previewFrame = frames - 1;
+    }
+    $('previewFrameSlider').value = state.previewFrame;
+    $('previewFrameVal').textContent = state.previewFrame;
+    drawPreview();
+    if (state.previewPlaying) state.previewRAF = requestAnimationFrame(loop);
   };
-  writeMetaRow(out, H, encodeMetaBytes(JSON.stringify(meta)));
-  out.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name + '.png';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast(`💾 ${name}.png · ${W}×${H} · meta v2 · ${meta.anchors.filter(x=>x).length} anchors`, 'ok');
-  }, 'image/png');
-}
-function exportPlain(){
-  if (!state.canvas) return;
-  const name = $('exportName').value.trim() || 'sprite';
-  state.canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name + '.png';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast(`💾 ${name}.png (no meta)`, 'ok');
-  }, 'image/png');
-}
-$('exportBtn').addEventListener('click', exportWithMeta);
-$('exportBtn2').addEventListener('click', exportWithMeta);
-$('exportPlainBtn').addEventListener('click', exportPlain);
+  state.previewRAF = requestAnimationFrame(loop);
+});
+$('previewStopBtn').addEventListener('click', () => {
+  state.previewPlaying = false;
+  if (state.previewRAF) cancelAnimationFrame(state.previewRAF);
+});
 
 /* ============================================================
-   KEYBOARD / HELP
+   HELP
+   ============================================================ */
+$('helpBtn').addEventListener('click', () => {
+  showModal('HƯỚNG DẪN SỬ DỤNG', `
+    <div style="font-size:11px;line-height:1.9;font-family:Consolas,monospace;color:var(--dim)">
+      <b style="color:var(--accent2)">TOOLS</b><br>
+      • <b>Select</b> — kéo line, kéo cell, chọn cell<br>
+      • <b>+V / +H</b> — thêm line dọc/ngang<br>
+      • <b>Pick</b> — chọn màu nền<br>
+      <br>
+      <b style="color:var(--accent2)">PHÍM TẮT</b><br>
+      • <b>Shift + click</b> — thêm line<br>
+      • <b>Right-click line</b> — xóa<br>
+      • <b>Alt + click</b> — pick màu nhanh<br>
+      • <b>Ctrl + scroll</b> — zoom<br>
+      • <b>Click cell</b> — chọn cell<br>
+      • <b>Kéo cell</b> — move content<br>
+      <br>
+      <b style="color:var(--accent2)">WORKFLOW</b><br>
+      1. Upload PNG<br>
+      2. Bấm <b>🤖 Auto</b> để auto-detect frame<br>
+      3. Kiểm tra lưới đỏ, kéo cho khớp<br>
+      4. Chọn mode anchor → bấm <b>🎯 Anchors</b><br>
+      5. Xoá nền nếu cần<br>
+      6. Đặt Model + Animation + FPS<br>
+      7. Bấm <b>💾 Export Current</b> cho từng file<br>
+      8. Bấm <b>📦 Export Project</b> để tải sprites.json
+    </div>
+  `);
+});
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+function showModal(title, bodyHTML){
+  $('modalTitle').textContent = title;
+  $('modalBody').innerHTML = bodyHTML;
+  $('modal').classList.add('show');
+}
+$('modalCancel').addEventListener('click', () => $('modal').classList.remove('show'));
+$('modalOk').addEventListener('click', () => $('modal').classList.remove('show'));
+$('modal').addEventListener('click', e => {
+  if (e.target === $('modal')) $('modal').classList.remove('show');
+});
+
+/* ============================================================
+   KEYBOARD SHORTCUTS
    ============================================================ */
 document.addEventListener('keydown', e => {
-  if ((e.ctrlKey||e.metaKey) && e.key === 'z'){ e.preventDefault(); undo(); return; }
-  if ((e.ctrlKey||e.metaKey) && e.key === 's'){ e.preventDefault(); exportWithMeta(); return; }
-  if (e.key === 'Escape'){
-    state.pickColor = false;
-    $('pickColorBtn').classList.remove('on');
-    state.cell = null; renderAll();
-  }
-  if (state.cell && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
+  if ((e.ctrlKey || e.metaKey) && e.key === 's'){
     e.preventDefault();
-    let dx = parseInt($('dxInput').value) || 0;
-    let dy = parseInt($('dyInput').value) || 0;
-    if (e.key === 'ArrowUp') dy -= 1;
-    if (e.key === 'ArrowDown') dy += 1;
-    if (e.key === 'ArrowLeft') dx -= 1;
-    if (e.key === 'ArrowRight') dx += 1;
-    $('dxInput').value = dx; $('dyInput').value = dy;
-    state.cellMoveOffset = { x: dx, y: dy };
-    previewCellMove(); renderOverlay();
+    if (currentSprite()) $('exportBtn').click();
+    return;
+  }
+  if (e.key === 'Escape'){
+    state.cell = null;
+    renderOverlay();
+    setTool('select');
+  }
+  if (e.key === 'Delete' && state.cell){
+    const s = currentSprite();
+    if (!s) return;
+    s.ctx.clearRect(state.cell.x1, state.cell.y1,
+      state.cell.x2 - state.cell.x1, state.cell.y2 - state.cell.y1);
+    const mc = mainCanvas.getContext('2d');
+    mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+    mc.drawImage(s.canvas, 0, 0);
+    computeAnchorsForSprite(s, false);
+    renderAll();
   }
 });
-$('helpBtn').addEventListener('click', () => $('help').classList.toggle('show'));
+
+/* ============================================================
+   INIT
+   ============================================================ */
+setTool('select');
+applyZoom();
 </script>
 </body>
-                                 </html>
+  </html>
