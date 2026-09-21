@@ -110,8 +110,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
   pointer-events:auto;touch-action:none}
 #joyBaseR{width:100%;height:100%;border-radius:50%;background:rgba(0,0,0,.3);
   border:3px solid rgba(255,255,255,.4);position:relative}
-#joyKnobR{position:absolute;left:50%;top:50%;width:54px;height:54px;
-  margin-left:-27px;margin-top:-27px;
+#joyKnobR{position:absolute;left:50%;top:50%;width:54px;height:54px;margin-left:-27px;margin-top:-27px;
   background:rgba(220,220,220,.85);border:3px solid #1a1f14;border-radius:50%;
   box-shadow:inset 0 0 0 2px #fff,3px 3px 0 rgba(0,0,0,.6)}
 .tb{position:absolute;border-radius:50%;background:rgba(180,80,60,.9);border:3px solid #1a1f14;
@@ -187,7 +186,7 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
       <div style="font-size:10px;color:#586850;margin-top:14px;font-family:Consolas,monospace;line-height:1.6">
         <b style="color:#88ff60">WASD</b> di chuyển · <b style="color:#88ff60">Space</b> nhảy<br>
         <b style="color:#88ff60">Chuột trái</b> tấn công · <b style="color:#88ff60">C</b> ngồi<br>
-        <b style="color:#88ff60">1-4</b> chọn kiếm · <b style="color:#88ff60">T</b> chỉnh frame
+        <b style="color:#88ff60">1-4</b> chọn kiếm
       </div>
     </div>
     <div id="menuMP" class="menu-page hidden">
@@ -245,43 +244,35 @@ let rng = Math.random, SEED = 0;
 function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 
 /* ============================================================
-   SPRITE CONFIG
+   CONSTANTS
    ============================================================ */
-const SPRITE_FILES = {
-  idle:   { src:'assets/player_idle.png',   frames:10, fps:6,  loop:true,  label:'Idle' },
-  run:    { src:'assets/player_run.png',    frames:10, fps:14, loop:true,  label:'Run' },
-  jump:   { src:'assets/player_jump.png',   frames:9,  fps:12, loop:false, label:'Jump' },
-  attack: { src:'assets/player_attack.png', frames:10, fps:16, loop:false, label:'Attack' },
-  sit:    { src:'assets/player_sit.png',    frames:10, fps:6,  loop:true,  label:'Sit' },
-  hurt:   { src:'assets/player_death.png',  frames:8,  fps:8,  loop:false, label:'Death' }
-};
-
-const DEST_HEIGHT = 120;
-const FOOT_OFFSET = 14;
+const DEST_HEIGHT = 80;      // Chiều cao nhân vật (baby size)
+const FOOT_OFFSET = 10;
 const ATTACK_DURATION = 10 / 16;
-const HURT_DURATION   = 8 / 8;
-const JUMP_DURATION   = 0.65;
+const HURT_DURATION = 8 / 8;
+const JUMP_DURATION = 0.65;
+const DEBUG_FRAME = false;
 
 /* ============================================================
-   METADATA DECODER v2
+   METADATA DECODER v3
    ============================================================ */
-function decodeSpriteMetadata(img){
+function decodeMetadata(img){
   try {
-    const cnv = document.createElement('canvas');
-    cnv.width = img.width; cnv.height = 1;
-    const c = cnv.getContext('2d', { willReadFrequently: true });
-    c.drawImage(img, 0, img.height - 1, img.width, 1, 0, 0, img.width, 1);
-    const d = c.getImageData(0, 0, img.width, 1).data;
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = 1;
+    const cx = c.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(img, 0, img.height - 1, img.width, 1, 0, 0, img.width, 1);
+    const d = cx.getImageData(0, 0, img.width, 1).data;
     if (d[0] !== 0x44 || d[1] !== 0x48 || d[2] !== 0x55 || d[3] !== 0x4E) return null;
     const version = d[4] | (d[5] << 8);
     const len = d[6] | (d[7] << 8) | (d[8] << 16) | (d[9] << 24);
-    if (len <= 0 || len > 200000) return null;
+    if (len <= 0 || len > 300000) return null;
     const bytes = [];
     for (let i = 0; i < len; i++){
       const pos = 10 + i;
-      const p = Math.floor(pos / 3), ch = pos % 3;
-      if (p * 4 + ch >= d.length) break;
-      bytes.push(d[p * 4 + ch]);
+      const p = Math.floor(pos/3), ch = pos%3;
+      if (p*4+ch >= d.length) break;
+      bytes.push(d[p*4+ch]);
     }
     const meta = JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
     meta._version = version;
@@ -290,47 +281,52 @@ function decodeSpriteMetadata(img){
 }
 
 /* ============================================================
-   AUTO-DETECT 4-CẠNH (fallback khi không có metadata)
+   AUTO-DETECT
    ============================================================ */
-function autoDetectFrameLines(canvas, minGap){
+function autoDetectFrameLines(canvas, expectedFrames){
   const W = canvas.width, H = canvas.height;
-  const ctx2 = canvas.getContext('2d', { willReadFrequently: true });
-  const data = ctx2.getImageData(0, 0, W, H).data;
-  minGap = minGap || 3;
+  const cx = canvas.getContext('2d', { willReadFrequently: true });
+  const data = cx.getImageData(0, 0, W, H).data;
   const empty = new Uint8Array(W);
   for (let x = 0; x < W; x++){
     let has = 0;
     for (let y = 0; y < H; y++){
-      if (data[(y * W + x) * 4 + 3] > 5){ has = 1; break; }
+      if (data[(y*W+x)*4+3] > 5){ has = 1; break; }
     }
     empty[x] = has ? 0 : 1;
   }
-  const lines = [0];
+  const gaps = [];
   let i = 0;
   while (i < W && empty[i]) i++;
-  if (i >= W) return null;
   while (i < W){
     while (i < W && !empty[i]) i++;
-    const gs = i;
+    const start = i;
     while (i < W && empty[i]) i++;
-    const ge = i;
-    if (i >= W) break;
-    if (ge - gs >= minGap) lines.push(Math.round((gs + ge) / 2));
+    const end = i;
+    if (end - start >= 2) gaps.push({ start, end, size: end - start });
   }
+  const need = expectedFrames ? expectedFrames - 1 : gaps.length;
+  let chosen;
+  if (expectedFrames && gaps.length >= need){
+    const sorted = [...gaps].sort((a, b) => b.size - a.size);
+    chosen = sorted.slice(0, need).sort((a, b) => a.start - b.start);
+  } else {
+    chosen = gaps;
+  }
+  const lines = [0];
+  for (const g of chosen) lines.push(Math.round((g.start + g.end) / 2));
   lines.push(W);
   return lines.length >= 3 ? lines : null;
 }
-
-function detectBBoxFromCanvas(canvas, x1, y1, x2, y2){
+function detectBBox(canvas, x1, y1, x2, y2){
   const W = canvas.width;
-  const ctx2 = canvas.getContext('2d', { willReadFrequently: true });
-  const d = ctx2.getImageData(x1, y1, x2 - x1, y2 - y1).data;
-  const w = x2 - x1, h = y2 - y1;
+  const cx = canvas.getContext('2d', { willReadFrequently: true });
+  const d = cx.getImageData(x1, y1, x2-x1, y2-y1).data;
+  const w = x2-x1, h = y2-y1;
   let minX = w, minY = h, maxX = -1, maxY = -1;
   for (let y = 0; y < h; y++){
     for (let x = 0; x < w; x++){
-      const i = (y * w + x) * 4;
-      if (d[i+3] > 10){
+      if (d[(y*w+x)*4+3] > 10){
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
         if (y < minY) minY = y;
@@ -339,149 +335,191 @@ function detectBBoxFromCanvas(canvas, x1, y1, x2, y2){
     }
   }
   if (maxX < 0) return null;
-  return { x: x1 + minX, y: y1 + minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+  return { x: x1+minX, y: y1+minY, w: maxX-minX+1, h: maxY-minY+1 };
 }
 
 /* ============================================================
-   LOAD 6 SPRITE FILES
+   MODEL MANAGER
    ============================================================ */
-const loadReport = { files: {} };
+const Models = {
+  data: new Map(),      // modelName → { animations: Map<animName, sprite> }
 
-for (const name in SPRITE_FILES){
-  const s = SPRITE_FILES[name];
-  s.img = new Image();
-  s.loaded = false;
-  s.hasMeta = false;
-  s.vLines = null;
-  s.anchors = null;         // [{x, y}] — tọa độ tuyệt đối trong ảnh gốc
-  s.spriteH = 0;
-  s.frameW = 0;
-  s.frameH = 0;
+  addSprite(modelName, animName, sprite){
+    if (!this.data.has(modelName)) this.data.set(modelName, { animations: new Map() });
+    this.data.get(modelName).animations.set(animName, sprite);
+  },
 
-  s.img.onload = () => {
-    s.loaded = true;
-    const meta = decodeSpriteMetadata(s.img);
-    let realImg;
+  get(modelName, animName){
+    const m = this.data.get(modelName);
+    if (!m) return null;
+    return m.animations.get(animName) || null;
+  },
 
-    if (meta && meta.vLines && meta.vLines.length >= 2){
-      s.hasMeta = true;
-      s.vLines = [...meta.vLines];
-      s.spriteH = meta.spriteH || (s.img.height - 1);
-      if (meta.frames) s.frames = meta.frames;
-      if (meta.fps) s.fps = meta.fps;
-      if (typeof meta.loop === 'boolean') s.loop = meta.loop;
+  hasModel(modelName){ return this.data.has(modelName); }
+};
 
-      /* Anchors: [[x,y], ...] → [{x,y}] */
-      if (meta.anchors && Array.isArray(meta.anchors)){
-        s.anchors = meta.anchors.map(a => Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null));
-      }
+/* ============================================================
+   LOAD PROJECT (sprites.json + PNGs)
+   ============================================================ */
+let projectLoaded = false;
 
-      /* Cắt bỏ metadata row → canvas chỉ chứa sprite */
-      const cnv = document.createElement('canvas');
-      cnv.width = s.img.width;
-      cnv.height = s.spriteH;
-      const cc = cnv.getContext('2d', { willReadFrequently: true });
-      cc.imageSmoothingEnabled = false;
-      cc.drawImage(s.img, 0, 0, s.img.width, s.spriteH, 0, 0, s.img.width, s.spriteH);
-      realImg = cnv;
-      s.renderImg = cnv;
-      s.canvasCache = cnv;
-
-      console.log(`✓ ${name.padEnd(7)} [META v${meta._version||1}] ${s.img.width}×${s.spriteH} · ${s.frames} frames · ${s.anchors ? s.anchors.filter(a=>a).length + ' anchors' : 'no anchors'}`);
-    } else {
-      /* Không có metadata → auto-detect */
-      const cnv = document.createElement('canvas');
-      cnv.width = s.img.width;
-      cnv.height = s.img.height;
-      const cc = cnv.getContext('2d', { willReadFrequently: true });
-      cc.imageSmoothingEnabled = false;
-      cc.drawImage(s.img, 0, 0);
-      realImg = cnv;
-      s.renderImg = cnv;
-      s.canvasCache = cnv;
-      s.spriteH = s.img.height;
-
-      const detected = autoDetectFrameLines(cnv, 3);
-      if (detected && detected.length - 1 >= 2){
-        s.vLines = detected;
-        s.frames = detected.length - 1;
-
-        /* Tự tính anchor cho mỗi frame từ bbox */
-        s.anchors = [];
-        for (let i = 0; i < s.frames; i++){
-          const bbox = detectBBoxFromCanvas(cnv, detected[i], 0, detected[i+1], s.spriteH);
-          if (bbox){
-            s.anchors.push({ x: bbox.x + bbox.w / 2, y: bbox.y + bbox.h });
-          } else {
-            s.anchors.push(null);
-          }
-        }
-        console.log(`✓ ${name.padEnd(7)} [AUTO] ${s.img.width}×${s.spriteH} · ${s.frames} frames · ${s.anchors.filter(a=>a).length} anchors`);
-      } else {
-        /* Fallback chia đều */
-        s.vLines = null;
-        s.frameW = s.img.width / s.frames;
-        s.frameH = s.img.height;
-
-        /* Tự tính anchor */
-        s.anchors = [];
-        for (let i = 0; i < s.frames; i++){
-          const x1 = Math.round(i * s.frameW);
-          const x2 = Math.round((i+1) * s.frameW);
-          const bbox = detectBBoxFromCanvas(cnv, x1, 0, x2, s.spriteH);
-          if (bbox){
-            s.anchors.push({ x: bbox.x + bbox.w / 2, y: bbox.y + bbox.h });
-          } else {
-            s.anchors.push(null);
-          }
-        }
-        console.log(`✓ ${name.padEnd(7)} [EQUAL] ${s.img.width}×${s.spriteH} · chia đều ${s.frames} frames · ${s.anchors.filter(a=>a).length} anchors`);
-      }
+async function loadProject(){
+  try {
+    // Load sprites.json
+    const res = await fetch('sprites.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('sprites.json not found');
+    const project = await res.json();
+    if (project.format !== 'dh-studio-project' || !project.models){
+      throw new Error('Invalid sprites.json format');
     }
 
-    loadReport.files[name] = 'ok';
-    updateLoadStatus();
-  };
-
-  s.img.onerror = () => {
-    s.loaded = false;
-    loadReport.files[name] = 'err';
-    console.error(`✗ ${name} : ${s.src}`);
-    updateLoadStatus();
-  };
-
-  s.img.src = s.src;
+    // Load all PNG files
+    const loadPromises = [];
+    for (const modelName in project.models){
+      const model = project.models[modelName];
+      for (const animName in model.animations){
+        const cfg = model.animations[animName];
+        const src = `assets/${cfg.fileName}.png`;
+        loadPromises.push(loadSprite(src, modelName, animName, cfg));
+      }
+    }
+    await Promise.all(loadPromises);
+    projectLoaded = true;
+    console.log('✓ Project loaded: ' + Models.data.size + ' models');
+    updateLoadStatus('ok');
+  } catch(e){
+    console.warn('Không có sprites.json, dùng fallback:', e.message);
+    await loadFallbackSprites();
+  }
 }
 
-function updateLoadStatus(){
+function loadSprite(src, modelName, animName, cfg){
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      // Check embedded metadata (ưu tiên)
+      const meta = decodeMetadata(img);
+      let spriteH, vLines, anchors, fps, loop;
+
+      if (meta && meta.vLines){
+        spriteH = meta.spriteH || (img.height - 1);
+        vLines = meta.vLines;
+        anchors = meta.anchors ? meta.anchors.map(a => Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null)) : [];
+        fps = meta.fps || cfg.fps || 10;
+        loop = meta.loop !== undefined ? meta.loop : (cfg.loop !== false);
+      } else {
+        spriteH = cfg.spriteH || img.height;
+        vLines = cfg.vLines || [0, img.width];
+        anchors = (cfg.anchors || []).map(a => Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null));
+        fps = cfg.fps || 10;
+        loop = cfg.loop !== false;
+      }
+
+      // Tạo canvas sạch (không metadata)
+      const cnv = document.createElement('canvas');
+      cnv.width = img.width;
+      cnv.height = spriteH;
+      const cc = cnv.getContext('2d', { willReadFrequently: true });
+      cc.imageSmoothingEnabled = false;
+      cc.drawImage(img, 0, 0, img.width, spriteH, 0, 0, img.width, spriteH);
+
+      const sprite = {
+        model: modelName,
+        anim: animName,
+        renderImg: cnv,
+        canvas: cnv,
+        spriteH: spriteH,
+        vLines: vLines,
+        hLines: [0, spriteH],
+        anchors: anchors,
+        fps: fps,
+        loop: loop,
+        frames: vLines.length - 1
+      };
+
+      // Nếu không có anchors → auto-detect
+      if (!anchors.length || anchors.every(a => !a)){
+        autoComputeAnchors(sprite);
+      }
+
+      Models.addSprite(modelName, animName, sprite);
+      console.log(`  ✓ ${modelName}/${animName}: ${sprite.frames}f @ ${fps}fps`);
+      resolve();
+    };
+    img.onerror = () => {
+      console.warn(`  ✗ ${src} not found`);
+      resolve();
+    };
+    img.src = src;
+  });
+}
+
+function autoComputeAnchors(sprite){
+  const s = sprite;
+  s.anchors = [];
+  for (let i = 0; i < s.frames; i++){
+    const bbox = detectBBox(s.canvas, s.vLines[i], 0, s.vLines[i+1], s.spriteH);
+    if (bbox) s.anchors.push({ x: null, y: bbox.y + bbox.h });
+    else s.anchors.push(null);
+  }
+}
+
+/* Fallback — load mặc định 6 animation */
+async function loadFallbackSprites(){
+  const defaults = [
+    { model: 'player', anim: 'idle',   file: 'player_idle' },
+    { model: 'player', anim: 'run',    file: 'player_run' },
+    { model: 'player', anim: 'jump',   file: 'player_jump' },
+    { model: 'player', anim: 'attack', file: 'player_attack' },
+    { model: 'player', anim: 'sit',    file: 'player_sit' },
+    { model: 'player', anim: 'hurt',   file: 'player_death' }
+  ];
+  const promises = defaults.map(d => loadSprite(
+    `assets/${d.file}.png`,
+    d.model, d.anim,
+    { fileName: d.file, fps: 10, loop: true, vLines: null, anchors: [], spriteH: 0 }
+  ));
+  await Promise.all(promises);
+  updateLoadStatus('fallback');
+}
+
+function updateLoadStatus(mode){
   const el = document.getElementById('loadStatus');
-  const total = Object.keys(SPRITE_FILES).length;
-  const ok = Object.values(loadReport.files).filter(v => v === 'ok').length;
-  const err = Object.values(loadReport.files).filter(v => v === 'err').length;
-  if (ok === 0 && err === 0){ el.classList.add('hidden'); return; }
+  const total = Models.data.size;
+  if (total === 0){
+    el.classList.remove('hidden');
+    el.innerHTML = `<b><span class="err">⚠ KHÔNG LOAD ĐƯỢC SPRITE NÀO</span></b><br>
+      Kiểm tra: assets/*.png có tồn tại không?`;
+    return;
+  }
   el.classList.remove('hidden');
-  let html = ok === total
-    ? `<b><span class="ok">✓ SPRITE OK — ${total}/${total}</span></b><br>`
-    : `<b><span class="err">⚠ SPRITE THIẾU (${ok}/${total})</span></b><br>`;
-  for (const name in SPRITE_FILES){
-    const s = SPRITE_FILES[name];
-    const status = loadReport.files[name];
-    const icon = status === 'ok' ? '<span class="ok">✓</span>' :
-                 status === 'err' ? '<span class="err">✗</span>' : '…';
-    html += `${icon} ${s.label.padEnd(8)}`;
-    if (s.loaded){
-      const tag = s.hasMeta
-        ? `<span class="meta">[META]</span>`
-        : (s.vLines ? `<span class="meta">[AUTO]</span>` : `[EQUAL]`);
-      const anchorCount = s.anchors ? s.anchors.filter(a=>a).length : 0;
-      html += ` ${tag} <span style="color:#6a7860">${s.img.width}×${s.spriteH} · ${s.frames} fr · ${anchorCount} ⚓</span>`;
-    } else if (status === 'err'){
-      html += ` <span class="err">THIẾU</span>`;
-    }
+  let html = `<b><span class="ok">✓ Đã load ${total} models</span></b>`;
+  if (mode === 'fallback') html += ` <span class="meta">[fallback]</span>`;
+  html += '<br>';
+  for (const [modelName, model] of Models.data){
+    html += `📦 ${modelName}: ${model.animations.size} anims — `;
+    html += [...model.animations.keys()].join(', ');
     html += '<br>';
   }
   el.innerHTML = html;
-  if (ok === total) setTimeout(() => el.classList.add('hidden'), 6000);
+  setTimeout(() => el.classList.add('hidden'), 6000);
+}
+
+/* ============================================================
+   PLAYER SPRITE ACCESS
+   ============================================================ */
+function getPlayerSprite(anim){
+  // Fallback chain: player/anim → player/idle → null
+  let s = Models.get('player', anim);
+  if (!s && anim !== 'idle') s = Models.get('player', 'idle');
+  if (!s){
+    // Thử model đầu tiên có
+    for (const [modelName, model] of Models.data){
+      s = model.animations.get(anim) || model.animations.get('idle');
+      if (s) break;
+    }
+  }
+  return s;
 }
 
 /* ============================================================
@@ -626,7 +664,7 @@ function initInv(){
 const player = {
   x: WORLD_W*TILE/2, y: WORLD_H*TILE/2,
   hp: 20, maxHp: 20,
-  radius: 12, speed: 160,
+  radius: 10, speed: 160,
   facing: 1, selected: 0,
   animT: 0, currentAnim: 'idle', animTime: 0,
   _stepAcc: 0, attackT: 0, hurtT: 0, jumpT: 0, jumpY: 0,
@@ -648,7 +686,7 @@ addEventListener('orientationchange', () => setTimeout(resize, 100));
 resize();
 
 /* ============================================================
-   AIM SYSTEM
+   AIM
    ============================================================ */
 const aim = { angle: 0, joyId: null, joyX: 0, joyY: 0, autoAttack: false, cx: 0, cy: 0 };
 const joyZoneR = document.getElementById('joyZoneR');
@@ -669,12 +707,8 @@ function moveAimJoy(cx, cy){
   if (d > max){ dx = dx/d*max; dy = dy/d*max; }
   aim.joyX = dx / max; aim.joyY = dy / max;
   joyKnobR.style.transform = `translate(${dx}px, ${dy}px)`;
-  if (d > 8){
-    aim.angle = Math.atan2(aim.joyY, aim.joyX);
-    aim.autoAttack = d > 15;
-  } else {
-    aim.autoAttack = false;
-  }
+  if (d > 8){ aim.angle = Math.atan2(aim.joyY, aim.joyX); aim.autoAttack = d > 15; }
+  else aim.autoAttack = false;
 }
 function endAimJoy(e){
   if (e.pointerId !== aim.joyId) return;
@@ -729,7 +763,6 @@ addEventListener('wheel', e => {
   renderHotbar();
 }, { passive:true });
 
-/* Joystick trái */
 const joy = { id:null, x:0, y:0, cx:0, cy:0 };
 const joyZone = document.getElementById('joyZone');
 const joyKnob = document.getElementById('joyKnob');
@@ -760,7 +793,6 @@ addEventListener('pointermove', e => {
 addEventListener('pointerup', endJoy);
 addEventListener('pointercancel', endJoy);
 
-/* Touch look */
 let lookId = null, lookX = 0, lookY = 0;
 cv.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch') return;
@@ -865,13 +897,11 @@ function updatePlayer(dt){
   }
   const mag = Math.hypot(dx, dy);
   if (mag > 1){ dx /= mag; dy /= mag; }
-
   if (player.sitting && mag > 0.15) player.sitting = false;
   if (player.sitting){ dx = 0; dy = 0; }
 
-  /* Aim */
   if (aim.joyId !== null){
-    /* dùng aim.angle */
+    /* use aim.angle */
   } else {
     const wx = mouse.x + cam.x, wy = mouse.y + cam.y;
     aim.angle = Math.atan2(wy - player.y, wx - player.x);
@@ -891,7 +921,7 @@ function updatePlayer(dt){
   if (player.jumpT > 0){
     player.jumpT = Math.max(0, player.jumpT - dt);
     const prog = 1 - player.jumpT / JUMP_DURATION;
-    player.jumpY = -Math.sin(prog * Math.PI) * 32;
+    player.jumpY = -Math.sin(prog * Math.PI) * 28;
   } else player.jumpY = 0;
 
   if (aim.autoAttack && player.attackT <= 0) tryAttack();
@@ -1111,82 +1141,133 @@ function getNightFactor(){
 }
 
 /* ============================================================
-   DRAW PLAYER — dùng vLines + anchors
+   DRAW PLAYER — dùng sprite từ Models
+   Chỉ dùng anchor.y, căn giữa cell theo X
    ============================================================ */
-function drawSpriteFor(s, idx, cx, cy, facing, alpha){
-  /* cx, cy = vị trí anchor muốn đặt (điểm chân nhân vật) */
-  if (!s || !s.loaded) return;
+function drawSpriteAt(sprite, idx, cx, cy, facing){
+  if (!sprite || !sprite.renderImg) return;
+  const s = sprite;
 
+  /* Cắt frame từ vLines */
   let srcX, srcW;
-  if (s.vLines && s.vLines[idx + 1] !== undefined){
+  if (s.vLines && s.vLines[idx+1] !== undefined){
     srcX = s.vLines[idx];
-    srcW = s.vLines[idx + 1] - s.vLines[idx];
+    srcW = s.vLines[idx+1] - s.vLines[idx];
   } else {
-    srcX = Math.round(idx * s.frameW);
-    srcW = Math.round(s.frameW);
+    const fw = s.canvas.width / s.frames;
+    srcX = Math.round(idx * fw);
+    srcW = Math.round(fw);
   }
   const srcH = s.spriteH;
 
-  /* Lấy anchor của frame */
-  let anchor;
-  if (s.anchors && s.anchors[idx]){
-    anchor = s.anchors[idx];
-  } else {
-    /* Fallback: giữa đáy cell */
-    anchor = { x: srcX + srcW/2, y: srcH };
-  }
-
   const scale = DEST_HEIGHT / srcH;
-  const anchorLocalX = anchor.x - srcX;
-
-  /* Vẽ sao cho anchor rơi vào (cx, cy) */
-  const drawX = Math.round(cx - anchorLocalX * scale);
-  const drawY = Math.round(cy - anchor.y * scale);
   const drawW = Math.round(srcW * scale);
   const drawH = Math.round(srcH * scale);
 
+  /* X: căn giữa ô */
+  const drawX = Math.round(cx - drawW / 2);
+
+  /* Y: dùng anchor.y nếu có, không thì đáy */
+  let anchorY = srcH;
+  if (s.anchors && s.anchors[idx] && s.anchors[idx].y != null){
+    anchorY = s.anchors[idx].y;
+    anchorY = Math.max(0, Math.min(srcH, anchorY));
+  }
+  const drawY = Math.round(cy - anchorY * scale);
+
   ctx.save();
-  if (alpha !== undefined) ctx.globalAlpha = alpha;
   if (facing < 0){
     ctx.translate(cx, 0);
     ctx.scale(-1, 1);
-    /* Lật: anchor local tính lại theo trục đối xứng qua cx */
-    const flippedLocalX = (srcX + srcW) - anchor.x;
-    const dX = Math.round(-(flippedLocalX * scale));
-    ctx.drawImage(s.renderImg, srcX, 0, srcW, srcH, dX, drawY, drawW, drawH);
+    ctx.drawImage(s.renderImg, srcX, 0, srcW, srcH, -drawW/2, drawY, drawW, drawH);
   } else {
     ctx.drawImage(s.renderImg, srcX, 0, srcW, srcH, drawX, drawY, drawW, drawH);
   }
   ctx.restore();
+
+  if (DEBUG_FRAME){
+    ctx.strokeStyle = '#ff3060';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(drawX, drawY, drawW, drawH);
+  }
 }
 
 function drawPlayer(){
-  const sx = player.x - cam.x;
-  const syGround = player.y - cam.y + FOOT_OFFSET;
+  const sx = Math.round(player.x - cam.x);
+  const syGround = Math.round(player.y - cam.y + FOOT_OFFSET);
   const sySprite = syGround + player.jumpY;
 
   /* Shadow */
   const shadowScale = 1 - Math.abs(player.jumpY) / 70;
   ctx.fillStyle = `rgba(0,0,0,${0.4 * shadowScale})`;
   ctx.beginPath();
-  ctx.ellipse(sx, syGround, 16 * shadowScale, 5 * shadowScale, 0, 0, Math.PI*2);
+  ctx.ellipse(sx, syGround, 11 * shadowScale, 4 * shadowScale, 0, 0, Math.PI*2);
   ctx.fill();
 
-  const s = SPRITE_FILES[player.currentAnim];
-  if (!s || !s.loaded){
+  const sprite = getPlayerSprite(player.currentAnim);
+  if (!sprite){
     drawFallbackBody(sx, sySprite, player.animT, player.currentAnim, player.facing, LOCAL_COLORS);
     return;
   }
 
-  const rawIdx = Math.floor(player.animTime * s.fps);
+  const rawIdx = Math.floor(player.animTime * sprite.fps);
+  const total = sprite.frames || (sprite.vLines ? sprite.vLines.length - 1 : 8);
   let idx;
-  if (s.loop){
-    idx = ((rawIdx % s.frames) + s.frames) % s.frames;
+  if (sprite.loop){
+    idx = ((rawIdx % total) + total) % total;
   } else {
-    idx = Math.max(0, Math.min(s.frames - 1, rawIdx));
+    idx = Math.max(0, Math.min(total - 1, rawIdx));
   }
 
-  drawSpriteFor(s, idx, sx, sySprite, player.facing);
+  drawSpriteAt(sprite, idx, sx, sySprite, player.facing);
+}
+
+const LOCAL_COLORS = { legs:'#2a3a5a', shoes:'#1a1a1a', body:'#3a5a9a', bodyShade:'#2a4a7a', skin:'#f0c8a0', hair:'#3a2010' };
+function drawFallbackBody(sx, sy, animT, animName, facing, colors){
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath(); ctx.ellipse(sx, sy+10, 10, 3, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = colors.body;
+  ctx.fillRect(sx-7, sy-12, 14, 15);
+  ctx.fillStyle = colors.skin;
+  ctx.fillRect(sx-6, sy-22, 12, 10);
+}
+
+const REMOTE_PALETTE = [
+  { legs:'#5a2a3a', shoes:'#2a1020', body:'#d04a5a', bodyShade:'#a02a3a', skin:'#f0c8a0', hair:'#2a1010' },
+  { legs:'#2a3a5a', shoes:'#1a1a3a', body:'#4a6ad0', bodyShade:'#2a4aa0', skin:'#f0c8a0', hair:'#202010' },
+  { legs:'#3a5a2a', shoes:'#1a3a10', body:'#6ad04a', bodyShade:'#4aa02a', skin:'#f0c8a0', hair:'#302010' },
+  { legs:'#5a4a2a', shoes:'#3a2a10', body:'#d0b04a', bodyShade:'#a0902a', skin:'#f0c8a0', hair:'#101010' },
+  { legs:'#4a2a5a', shoes:'#2a103a', body:'#b04ad0', bodyShade:'#802aa0', skin:'#f0c8a0', hair:'#202020' }
+];
+function hashCode(s){ let h = 0; for (let i=0;i<s.length;i++) h = ((h<<5) - h) + s.charCodeAt(i) | 0; return h; }
+function drawRemotePlayer(p){
+  const sx = p.x - cam.x, sy = p.y - cam.y;
+  if (sx < -80 || sx > VW+80 || sy < -80 || sy > VH+80) return;
+  const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name)) % REMOTE_PALETTE.length];
+  // Thử dùng sprite player/idle cho remote
+  const sprite = getPlayerSprite('idle');
+  if (sprite){
+    drawSpriteAt(sprite, 0, sx, sy + FOOT_OFFSET, p.facing);
+  } else {
+    ctx.fillStyle = pal.body;
+    ctx.fillRect(sx-7, sy-12, 14, 15);
+    ctx.fillStyle = pal.skin;
+    ctx.fillRect(sx-6, sy-22, 12, 10);
+  }
+  ctx.font = 'bold 10px Consolas, monospace';
+  ctx.textAlign = 'center';
+  const w = ctx.measureText(p.name).width + 8;
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  ctx.fillRect(sx - w/2, sy - 40, w, 13);
+  ctx.fillStyle = '#88ffd8';
+  ctx.fillText(p.name, sx, sy - 30);
+  const hpPct = Math.max(0, Math.min(1, (p.hp ?? 20) / 20));
+  const bw = 26;
+  ctx.fillStyle = 'rgba(0,0,0,0.8)';
+  ctx.fillRect(sx - bw/2 - 1, sy - 26, bw + 2, 5);
+  ctx.fillStyle = hpPct > 0.5 ? '#4ade4a' : hpPct > 0.25 ? '#ffcc40' : '#e8503a';
+  ctx.fillRect(sx - bw/2, sy - 25, bw * hpPct, 3);
+  ctx.textAlign = 'left';
 }
 
 function drawAimArrow(){
@@ -1196,8 +1277,8 @@ function drawAimArrow(){
   const a = aim.angle;
   const cosA = Math.cos(a), sinA = Math.sin(a);
   const dist = (aim.joyId !== null)
-    ? 28 + Math.hypot(aim.joyX, aim.joyY) * 26
-    : 46;
+    ? 26 + Math.hypot(aim.joyX, aim.joyY) * 24
+    : 42;
   const tipX = sx + cosA * dist;
   const tipY = sy + sinA * dist;
 
@@ -1224,51 +1305,6 @@ function drawAimArrow(){
   ctx.arc(tipX, tipY, 3, 0, Math.PI*2);
   ctx.fill();
   ctx.restore();
-}
-
-const LOCAL_COLORS = { legs:'#2a3a5a', shoes:'#1a1a1a', body:'#3a5a9a', bodyShade:'#2a4a7a', skin:'#f0c8a0', hair:'#3a2010' };
-function drawFallbackBody(sx, sy, animT, animName, facing, colors){
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.beginPath(); ctx.ellipse(sx, sy+14, 12, 4, 0, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = colors.body;
-  ctx.fillRect(sx-8, sy-14, 16, 18);
-  ctx.fillStyle = colors.skin;
-  ctx.fillRect(sx-7, sy-26, 14, 12);
-}
-
-const REMOTE_PALETTE = [
-  { legs:'#5a2a3a', shoes:'#2a1020', body:'#d04a5a', bodyShade:'#a02a3a', skin:'#f0c8a0', hair:'#2a1010' },
-  { legs:'#2a3a5a', shoes:'#1a1a3a', body:'#4a6ad0', bodyShade:'#2a4aa0', skin:'#f0c8a0', hair:'#202010' },
-  { legs:'#3a5a2a', shoes:'#1a3a10', body:'#6ad04a', bodyShade:'#4aa02a', skin:'#f0c8a0', hair:'#302010' },
-  { legs:'#5a4a2a', shoes:'#3a2a10', body:'#d0b04a', bodyShade:'#a0902a', skin:'#f0c8a0', hair:'#101010' },
-  { legs:'#4a2a5a', shoes:'#2a103a', body:'#b04ad0', bodyShade:'#802aa0', skin:'#f0c8a0', hair:'#202020' }
-];
-function hashCode(s){ let h = 0; for (let i=0;i<s.length;i++) h = ((h<<5) - h) + s.charCodeAt(i) | 0; return h; }
-function drawRemotePlayer(p){
-  const sx = p.x - cam.x, sy = p.y - cam.y;
-  if (sx < -80 || sx > VW+80 || sy < -80 || sy > VH+80) return;
-  const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name)) % REMOTE_PALETTE.length];
-  ctx.fillStyle = pal.body;
-  ctx.fillRect(sx-8, sy-14, 16, 18);
-  ctx.fillStyle = pal.skin;
-  ctx.fillRect(sx-7, sy-26, 14, 12);
-  ctx.fillStyle = '#1a1a1a';
-  ctx.fillRect(sx-4, sy-22, 2, 2);
-  ctx.fillRect(sx+2, sy-22, 2, 2);
-  ctx.font = 'bold 10px Consolas, monospace';
-  ctx.textAlign = 'center';
-  const w = ctx.measureText(p.name).width + 8;
-  ctx.fillStyle = 'rgba(0,0,0,0.65)';
-  ctx.fillRect(sx - w/2, sy - 44, w, 13);
-  ctx.fillStyle = '#88ffd8';
-  ctx.fillText(p.name, sx, sy - 34);
-  const hpPct = Math.max(0, Math.min(1, (p.hp ?? 20) / 20));
-  const bw = 26;
-  ctx.fillStyle = 'rgba(0,0,0,0.8)';
-  ctx.fillRect(sx - bw/2 - 1, sy - 30, bw + 2, 5);
-  ctx.fillStyle = hpPct > 0.5 ? '#4ade4a' : hpPct > 0.25 ? '#ffcc40' : '#e8503a';
-  ctx.fillRect(sx - bw/2, sy - 29, bw * hpPct, 3);
-  ctx.textAlign = 'left';
 }
 
 function render(){
@@ -1533,8 +1569,12 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 mouse.x = VW/2; mouse.y = VH/2;
-showMenuPage('main');
-requestAnimationFrame(loop);
+
+/* Load project trước khi start */
+loadProject().then(() => {
+  showMenuPage('main');
+  requestAnimationFrame(loop);
+});
 </script>
 </body>
           </html>
