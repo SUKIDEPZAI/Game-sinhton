@@ -197,7 +197,7 @@ input[type=file]{display:none}
 <body>
 <div class="app">
 <header class="header">
-  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.2</span></div>
+  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.3</span></div>
   <div class="header-tools">
     <button class="btn" id="uploadBtn">📁 Upload PNG</button>
     <button class="btn" id="importBtn">📥 Import JSON</button>
@@ -230,9 +230,6 @@ input[type=file]{display:none}
       <div class="sep"></div>
       <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--dim)">
         <input type="checkbox" id="snapChk" checked style="accent-color:var(--accent)">Snap
-      </label>
-      <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--dim)">
-        <input type="checkbox" id="debugChk" style="accent-color:var(--accent)">Debug
       </label>
       <span class="zoom" id="zoomLabel">100%</span>
     </div>
@@ -315,7 +312,7 @@ input[type=file]{display:none}
             <select id="anchorMode">
               <option value="stable-x">Ổn định X + chân Y ✓</option>
               <option value="stable">Ổn định cả X và Y</option>
-              <option value="per-frame">Riêng từng frame (dễ trôi)</option>
+              <option value="per-frame">Riêng từng frame</option>
               <option value="bottom-center">Đáy-giữa (tính lại)</option>
               <option value="center">Tâm (tính lại)</option>
               <option value="manual">Chỉnh tay</option>
@@ -324,14 +321,25 @@ input[type=file]{display:none}
           <div class="field"><label></label>
             <button class="mini" id="anchorRecompute" style="flex:1;padding:6px">🔄 Tính lại</button>
             <button class="mini" id="anchorClear">🗑</button></div>
+          <div class="field"><label></label>
+            <button class="mini" id="alignFramesBtn" style="flex:1;padding:8px;
+              background:linear-gradient(180deg,#88d858,#4a8a30);color:#0a1a06;
+              font-weight:bold;font-size:11px">
+              🎯 CĂN CHỈNH FRAME VÀO ANCHOR XANH
+            </button>
+          </div>
           <div class="help-box">
-            <b>Ổn định X + chân Y:</b> không trôi ngang, chân bám đất<br>
-            <b>Ổn định cả:</b> cố định hoàn toàn<br>
-            <b>Chấm đỏ</b> = anchor · <b>Chấm xanh</b> = stable
+            <b>Anchor mode:</b><br>
+            • <b>Ổn định X + chân Y:</b> không trôi ngang<br>
+            • <b>Ổn định cả:</b> cố định hoàn toàn<br>
+            • <b>Riêng frame:</b> mỗi frame có anchor riêng<br><br>
+            <b>🎯 Căn chỉnh:</b> dịch nội dung mỗi frame để
+            bbox (nhân vật) trùng với <b>anchor xanh</b> → animation
+            không còn "giật"/"trôi". Bấm sau khi đã chọn anchor.
           </div>
         </div>
         <div class="sec">
-          <div class="sec-title">📋 DANH SÁCH</div>
+          <div class="sec-title">📋 DANH SÁCH ANCHOR</div>
           <div class="lines-list" id="anchorList" style="max-height:200px"></div>
         </div>
       </div>
@@ -384,6 +392,7 @@ input[type=file]{display:none}
               <option value="jump">jump</option>
               <option value="attack">attack</option>
               <option value="sit">sit</option>
+              <option value="death">death</option>
               <option value="hurt">hurt</option>
               <option value="custom">custom...</option>
             </select>
@@ -452,7 +461,6 @@ const state = {
   zoom: 1,
   tool: 'select',
   snap: true,
-  debug: false,
   cell: null,
   drag: null,
   cellMoveOffset: { x: 0, y: 0 },
@@ -481,7 +489,7 @@ function toast(msg, isErr){
   el.textContent = msg;
   el.className = 'show' + (isErr ? ' err' : '');
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+  el._t = setTimeout(() => el.classList.remove('show'), 2400);
 }
 function setStatus(msg, isErr){
   const el = $('statMsg');
@@ -490,7 +498,7 @@ function setStatus(msg, isErr){
 }
 
 /* ============================================================
-   METADATA v3
+   METADATA
    ============================================================ */
 function decodeMetadata(img){
   try {
@@ -534,7 +542,7 @@ function writeMetaRow(canvas, y, bytes){
 }
 
 /* ============================================================
-   AUTO-DETECT
+   DETECT
    ============================================================ */
 function autoDetectFrameLines(canvas, expectedFrames){
   const W = canvas.width, H = canvas.height;
@@ -561,11 +569,9 @@ function autoDetectFrameLines(canvas, expectedFrames){
   const need = expectedFrames ? expectedFrames - 1 : gaps.length;
   let chosen;
   if (expectedFrames && gaps.length >= need){
-    const sorted = [...gaps].sort((a, b) => b.size - a.size);
-    chosen = sorted.slice(0, need).sort((a, b) => a.start - b.start);
-  } else {
-    chosen = gaps;
-  }
+    const sorted = [...gaps].sort((a,b) => b.size - a.size);
+    chosen = sorted.slice(0, need).sort((a,b) => a.start - b.start);
+  } else chosen = gaps;
   const lines = [0];
   for (const g of chosen) lines.push(Math.round((g.start + g.end) / 2));
   lines.push(W);
@@ -592,11 +598,10 @@ function detectBBox(canvas, x1, y1, x2, y2){
 }
 
 /* ============================================================
-   SPRITE MANAGEMENT
+   SPRITE MGMT
    ============================================================ */
 function genId(){ return 's' + Date.now() + '_' + Math.floor(Math.random()*10000); }
 
-/* Preset animation — auto-detect từ tên file */
 const ANIM_PRESETS = {
   idle:   { anim:'idle',   fps:6,  loop:true  },
   run:    { anim:'run',    fps:14, loop:true  },
@@ -605,11 +610,11 @@ const ANIM_PRESETS = {
   fall:   { anim:'jump',   fps:12, loop:false },
   attack: { anim:'attack', fps:16, loop:false },
   atk:    { anim:'attack', fps:16, loop:false },
-  hit:    { anim:'attack', fps:16, loop:false },
+  hit:    { anim:'hurt',   fps:8,  loop:false },
   sit:    { anim:'sit',    fps:6,  loop:true  },
-  hurt:   { anim:'hurt',   fps:8,  loop:false },
-  death:  { anim:'hurt',   fps:8,  loop:false },
-  dead:   { anim:'hurt',   fps:8,  loop:false }
+  hurt:   { anim:'death',  fps:8,  loop:false },
+  death:  { anim:'death',  fps:8,  loop:false },
+  dead:   { anim:'death',  fps:8,  loop:false }
 };
 
 function addSpriteFromFile(file){
@@ -619,8 +624,6 @@ function addSpriteFromFile(file){
       const img = new Image();
       img.onload = () => {
         const meta = decodeMetadata(img);
-
-        /* Detect từ tên file */
         const fn = file.name.toLowerCase();
         let detectedModel = 'player';
         if (fn.includes('player')) detectedModel = 'player';
@@ -653,10 +656,6 @@ function addSpriteFromFile(file){
           version: meta ? (meta.v || 1) : 0
         };
 
-        if (detectedAnim){
-          console.log(`🎬 Auto-detected: ${sprite.model}/${sprite.anim} · ${sprite.fps}fps · ${sprite.loop?'loop':'once'}`);
-        }
-
         const cnv = document.createElement('canvas');
         cnv.width = img.width;
         cnv.height = sprite.spriteH;
@@ -681,7 +680,7 @@ function addSpriteFromFile(file){
         }
         resolve(sprite);
       };
-      img.onerror = () => reject(new Error('Load fail: ' + file.name));
+      img.onerror = () => reject(new Error('Load fail'));
       img.src = e.target.result;
     };
     reader.onerror = () => reject(new Error('Read fail'));
@@ -689,12 +688,10 @@ function addSpriteFromFile(file){
   });
 }
 
-/* Tính anchors + stable anchor */
 function computeAnchorsForSprite(sprite, verbose){
   const s = sprite;
   const lines = s.vLines;
   if (!lines || lines.length < 2) return;
-
   const anchors = [];
   for (let r = 0; r < s.hLines.length - 1; r++){
     for (let c = 0; c < lines.length - 1; c++){
@@ -702,17 +699,12 @@ function computeAnchorsForSprite(sprite, verbose){
       const y1 = s.hLines[r], y2 = s.hLines[r+1];
       const bbox = detectBBox(s.canvas, x1, y1, x2, y2);
       if (!bbox){ anchors.push(null); continue; }
-
       let ax, ay;
       switch (s.anchorMode){
         case 'bottom-left':  ax = bbox.x; ay = bbox.y + bbox.h; break;
         case 'bottom-right': ax = bbox.x + bbox.w; ay = bbox.y + bbox.h; break;
         case 'center':       ax = bbox.x + bbox.w/2; ay = bbox.y + bbox.h/2; break;
         case 'top-center':   ax = bbox.x + bbox.w/2; ay = bbox.y; break;
-        case 'stable':
-        case 'stable-x':
-        case 'per-frame':
-        case 'bottom-center':
         default:
           ax = bbox.x + bbox.w/2;
           ay = bbox.y + bbox.h;
@@ -722,12 +714,10 @@ function computeAnchorsForSprite(sprite, verbose){
   }
   s.anchors = anchors;
 
-  /* Tính stable anchor — trung bình local offset X, trung bình Y */
   let sumLocalX = 0, sumY = 0, count = 0;
   for (let i = 0; i < anchors.length; i++){
     if (!anchors[i]) continue;
-    const srcX = lines[i];
-    sumLocalX += anchors[i].x - srcX;
+    sumLocalX += anchors[i].x - lines[i];
     sumY += anchors[i].y;
     count++;
   }
@@ -739,9 +729,79 @@ function computeAnchorsForSprite(sprite, verbose){
   } else {
     s.stableAnchor = null;
   }
-
   if (verbose) toast('🎯 ' + anchors.filter(a=>a).length + ' anchors · stable=(' +
     (s.stableAnchor ? s.stableAnchor.x + ',' + s.stableAnchor.y : 'null') + ')');
+}
+
+/* ============================================================
+   🎯 CĂN CHỈNH FRAME VÀO ANCHOR XANH
+   Dịch nội dung từng frame sao cho bbox trùng stable anchor
+   ============================================================ */
+function alignFramesToAnchor(sprite){
+  const s = sprite;
+  if (!s || !s.vLines || s.vLines.length < 2) return -1;
+
+  /* Đảm bảo có stableAnchor */
+  computeAnchorsForSprite(s, false);
+  if (!s.stableAnchor) return -1;
+
+  const targetX = s.stableAnchor.x;
+  const targetY = s.stableAnchor.y;
+  const totalCols = s.vLines.length - 1;
+  const totalRows = s.hLines.length - 1;
+  let movedCount = 0;
+
+  for (let r = 0; r < totalRows; r++){
+    for (let c = 0; c < totalCols; c++){
+      const x1 = s.vLines[c];
+      const x2 = s.vLines[c+1];
+      const y1 = s.hLines[r];
+      const y2 = s.hLines[r+1];
+      const cellW = x2 - x1;
+      const cellH = y2 - y1;
+      if (cellW <= 0 || cellH <= 0) continue;
+
+      const bbox = detectBBox(s.canvas, x1, y1, x2, y2);
+      if (!bbox) continue;
+
+      /* Vị trí hiện tại của anchor so với cell */
+      const currentLocalX = (bbox.x + bbox.w / 2) - x1;
+      const currentLocalY = (bbox.y + bbox.h) - y1;
+
+      /* targetX là local trong cell (đã đúng)
+         targetY là tuyệt đối trong ảnh → chuyển sang cell-local */
+      const targetLocalX = targetX;
+      const targetLocalY = targetY - y1;
+
+      const dx = Math.round(targetLocalX - currentLocalX);
+      const dy = Math.round(targetLocalY - currentLocalY);
+
+      if (dx === 0 && dy === 0) continue;
+      movedCount++;
+
+      /* Trích cell */
+      const cellData = s.ctx.getImageData(x1, y1, cellW, cellH);
+      const tmp = document.createElement('canvas');
+      tmp.width = cellW; tmp.height = cellH;
+      tmp.getContext('2d').putImageData(cellData, 0, 0);
+
+      /* Xóa cell */
+      s.ctx.clearRect(x1, y1, cellW, cellH);
+
+      /* Vẽ lại với offset */
+      s.ctx.drawImage(tmp, x1 + dx, y1 + dy);
+    }
+  }
+
+  /* Redraw main canvas */
+  const mc = mainCanvas.getContext('2d');
+  mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+  mc.drawImage(s.canvas, 0, 0);
+
+  /* Tính lại anchors */
+  computeAnchorsForSprite(s, false);
+
+  return movedCount;
 }
 
 /* ============================================================
@@ -815,7 +875,8 @@ function selectSprite(id){
   $('canvasW').value = s.canvas.width;
   $('canvasH').value = s.canvas.height;
   $('metaModel').value = s.model;
-  $('metaAnim').value = ['idle','run','jump','attack','sit','hurt'].includes(s.anim) ? s.anim : 'custom';
+  const knownAnims = ['idle','run','jump','attack','sit','death','hurt'];
+  $('metaAnim').value = knownAnims.includes(s.anim) ? s.anim : 'custom';
   if ($('metaAnim').value === 'custom'){
     $('customAnimRow').style.display = 'flex';
     $('metaAnimCustom').value = s.anim;
@@ -840,7 +901,6 @@ function renderOverlay(){
   const oc = overlayCanvas.getContext('2d');
   oc.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-  /* Lưới */
   oc.strokeStyle = 'rgba(255,80,80,.9)';
   oc.lineWidth = 1;
   for (const x of s.vLines){
@@ -856,7 +916,6 @@ function renderOverlay(){
     oc.stroke();
   }
 
-  /* Số frame */
   oc.font = 'bold 11px Consolas, monospace';
   oc.fillStyle = '#88ff60';
   oc.strokeStyle = 'rgba(0,0,0,.8)';
@@ -864,14 +923,15 @@ function renderOverlay(){
   let idx = 0;
   for (let r = 0; r < s.hLines.length - 1; r++){
     for (let c = 0; c < s.vLines.length - 1; c++){
-      const x = s.vLines[c] + 4, y = s.hLines[r] + 14;
+      const x = s.vLines[c] + 4;
+      const y = s.hLines[r] + 14;
       oc.strokeText(idx, x, y);
       oc.fillText(idx, x, y);
       idx++;
     }
   }
 
-  /* Anchors đỏ */
+  /* Anchor đỏ */
   s.anchors.forEach(a => {
     if (!a) return;
     const ax = a.x != null ? a.x : 0;
@@ -891,13 +951,12 @@ function renderOverlay(){
     oc.stroke();
   });
 
-  /* Stable anchor — đường xanh cyan */
+  /* Stable anchor — xanh cyan */
   if (s.stableAnchor && s.anchorMode !== 'per-frame'){
     const sa = s.stableAnchor;
     oc.strokeStyle = '#00d0ff';
     oc.lineWidth = 2;
     oc.setLineDash([4, 3]);
-    /* Đường dọc ở vị trí stableX của từng frame */
     for (let i = 0; i < s.vLines.length - 1; i++){
       const x = s.vLines[i] + sa.x;
       if (x < 0 || x > overlayCanvas.width) continue;
@@ -905,14 +964,21 @@ function renderOverlay(){
       oc.moveTo(x, 0); oc.lineTo(x, overlayCanvas.height);
       oc.stroke();
     }
-    /* Đường ngang stableY */
     oc.beginPath();
     oc.moveTo(0, sa.y); oc.lineTo(overlayCanvas.width, sa.y);
     oc.stroke();
     oc.setLineDash([]);
+    /* Chấm xanh tại tâm mỗi frame */
+    for (let i = 0; i < s.vLines.length - 1; i++){
+      const cx = s.vLines[i] + sa.x;
+      const cy = sa.y;
+      oc.fillStyle = '#00d0ff';
+      oc.strokeStyle = '#fff';
+      oc.lineWidth = 2;
+      oc.beginPath(); oc.arc(cx, cy, 4, 0, Math.PI*2); oc.fill(); oc.stroke();
+    }
   }
 
-  /* Cell đang chọn */
   if (state.cell){
     oc.strokeStyle = 'rgba(136,255,96,.95)';
     oc.lineWidth = 3;
@@ -997,12 +1063,8 @@ function renderAnchorList(){
     row.innerHTML = `<span class="idx">#${i}</span>`;
     const txt = document.createElement('span');
     txt.style.cssText = 'flex:1;color:var(--accent2);font-family:Consolas,monospace;font-size:10px';
-    if (a){
-      txt.textContent = `x=${a.x} y=${a.y}`;
-    } else {
-      txt.textContent = 'trống';
-      txt.style.color = '#ffcc40';
-    }
+    if (a) txt.textContent = `x=${a.x} y=${a.y}`;
+    else { txt.textContent = 'trống'; txt.style.color = '#ffcc40'; }
     row.appendChild(txt);
     el.appendChild(row);
   });
@@ -1029,8 +1091,7 @@ function updateBadges(){
    ============================================================ */
 $('uploadBtn').addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', e => {
-  const files = [...e.target.files];
-  handleFiles(files);
+  handleFiles([...e.target.files]);
   fileInput.value = '';
 });
 document.addEventListener('dragover', e => e.preventDefault());
@@ -1142,7 +1203,6 @@ function exportSpritePNG(s, withMeta){
     const oc = out.getContext('2d', { willReadFrequently: true });
     oc.imageSmoothingEnabled = false;
     oc.drawImage(s.canvas, 0, 0);
-
     if (withMeta){
       const meta = {
         v: 3, label: s.anim, model: s.model,
@@ -1157,7 +1217,6 @@ function exportSpritePNG(s, withMeta){
       };
       writeMetaRow(out, s.canvas.height, encodeMetadata(meta));
     }
-
     out.toBlob(blob => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1185,7 +1244,6 @@ $('exportAllBtn').addEventListener('click', async () => {
     await exportSpritePNG(sprites[i], true);
     await new Promise(r => setTimeout(r, 250));
   }
-  /* JSON */
   const project = buildProjectJson();
   const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -1225,7 +1283,6 @@ $('toolPick').addEventListener('click', () => setTool('pick'));
 setTool('select');
 
 $('snapChk').addEventListener('change', e => state.snap = e.target.checked);
-$('debugChk').addEventListener('change', e => state.debug = e.target.checked);
 
 $('autoDetect').addEventListener('click', () => {
   const s = currentSprite();
@@ -1233,8 +1290,7 @@ $('autoDetect').addEventListener('click', () => {
   let lines = autoDetectFrameLines(s.canvas, null);
   if (!lines || lines.length < 4){
     const userFrames = parseInt(prompt(
-      'Detect được ' + (lines ? lines.length - 1 : 0) + ' frame.\nNhập số frame đúng:', '10'
-    ));
+      'Detect được ' + (lines ? lines.length - 1 : 0) + ' frame.\nNhập số frame đúng:', '10'));
     if (userFrames && userFrames > 1){
       lines = autoDetectFrameLines(s.canvas, userFrames);
     }
@@ -1254,6 +1310,27 @@ $('computeAnchors').addEventListener('click', () => {
   const s = currentSprite();
   if (!s) return;
   computeAnchorsForSprite(s, true);
+  renderAll();
+});
+
+/* 🎯 NÚT CĂN CHỈNH FRAME */
+$('alignFramesBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  if (s.vLines.length < 3){
+    toast('Chưa có frame nào để căn', true);
+    return;
+  }
+  const moved = alignFramesToAnchor(s);
+  if (moved < 0){
+    toast('❌ Không tính được anchor', true);
+    return;
+  }
+  if (moved === 0){
+    toast('✓ Tất cả frame đã khớp anchor');
+  } else {
+    toast('🎯 Đã căn ' + moved + ' frame vào anchor xanh');
+  }
   renderAll();
 });
 
@@ -1562,9 +1639,7 @@ $('anchorMode').addEventListener('change', e => {
   const s = currentSprite(); if (!s) return;
   s.anchorMode = e.target.value;
   state.manualAnchor = s.anchorMode === 'manual';
-  if (!state.manualAnchor){
-    computeAnchorsForSprite(s, false);
-  }
+  if (!state.manualAnchor) computeAnchorsForSprite(s, false);
   renderAll();
 });
 $('anchorRecompute').addEventListener('click', () => {
@@ -1705,22 +1780,6 @@ function drawPreview(){
   const dx = (previewCanvas.width - dw) / 2;
   const dy = (previewCanvas.height - dh) / 2;
   pctx.drawImage(s.canvas, sx, 0, sw, sh, dx, dy, dw, dh);
-
-  /* Stable anchor — chấm cyan */
-  if (s.stableAnchor && s.anchorMode !== 'per-frame'){
-    const sa = s.stableAnchor;
-    const ax = dx + sa.x * scale;
-    const ay = dy + sa.y * scale;
-    pctx.strokeStyle = '#00d0ff';
-    pctx.lineWidth = 2;
-    pctx.beginPath();
-    pctx.arc(ax, ay, 5, 0, Math.PI*2);
-    pctx.stroke();
-    pctx.fillStyle = '#00d0ff';
-    pctx.beginPath();
-    pctx.arc(ax, ay, 2, 0, Math.PI*2);
-    pctx.fill();
-  }
   /* Anchor đỏ */
   const a = s.anchors[idx];
   if (a){
@@ -1730,6 +1789,17 @@ function drawPreview(){
     pctx.lineWidth = 2;
     pctx.beginPath(); pctx.arc(ax, ay, 4, 0, Math.PI*2); pctx.stroke();
     pctx.fillStyle = '#ff3050';
+    pctx.beginPath(); pctx.arc(ax, ay, 2, 0, Math.PI*2); pctx.fill();
+  }
+  /* Stable anchor xanh */
+  if (s.stableAnchor && s.anchorMode !== 'per-frame'){
+    const sa = s.stableAnchor;
+    const ax = dx + (sa.x / sw) * dw;
+    const ay = dy + (sa.y / sh) * dh;
+    pctx.strokeStyle = '#00d0ff';
+    pctx.lineWidth = 2;
+    pctx.beginPath(); pctx.arc(ax, ay, 5, 0, Math.PI*2); pctx.stroke();
+    pctx.fillStyle = '#00d0ff';
     pctx.beginPath(); pctx.arc(ax, ay, 2, 0, Math.PI*2); pctx.fill();
   }
 }
@@ -1766,17 +1836,16 @@ $('previewStopBtn').addEventListener('click', () => {
    ============================================================ */
 $('helpBtn').addEventListener('click', () => {
   alert('HƯỚNG DẪN:\n\n' +
-    '1. Upload PNG → tự động detect model + anim + fps\n' +
-    '2. Bấm 🤖 Auto để auto-detect frame\n' +
-    '3. Kéo line đỏ cho khớp\n' +
+    '1. Upload PNG → auto detect model/anim/fps\n' +
+    '2. 🤖 Auto để tách frame\n' +
+    '3. Kéo line đỏ khớp nhân vật\n' +
     '4. Chọn anchor mode (mặc định stable-x)\n' +
-    '5. Bấm 🎯 Anchors để tính lại\n' +
-    '6. Đặt Model/Anim/FPS trong tab META\n' +
-    '7. Bấm 📦 Export All → tải 6 PNG + sprites.json\n\n' +
-    'ANCHOR MODE:\n' +
-    '• Ổn định X + chân Y = không trôi ngang, chân bám đất\n' +
-    '• Ổn định cả = cố định hoàn toàn\n' +
-    '• Riêng frame = mỗi frame 1 anchor (dễ trôi)\n\n' +
+    '5. 🎯 Anchors để tính\n' +
+    '6. 🎯 CĂN CHỈNH FRAME VÀO ANCHOR XANH (mới)\n' +
+    '   → Dịch nội dung từng frame để bbox trùng\n' +
+    '     anchor cyan → không còn trôi/giật\n' +
+    '7. Đặt Model/Anim/FPS trong tab META\n' +
+    '8. 📦 Export All → tải PNG + sprites.json\n\n' +
     'PHÍM TẮT:\n' +
     'Ctrl+scroll = zoom\n' +
     'Right-click line = xóa\n' +
@@ -1813,4 +1882,4 @@ setTool('select');
 applyZoom();
 </script>
 </body>
-              </html>
+                </html>
