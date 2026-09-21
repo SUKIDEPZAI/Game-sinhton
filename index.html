@@ -16,9 +16,6 @@
   --aim-knob: 62px;
   --aim-offset-right: 125px;
   --aim-offset-bottom: 75px;
-  --atk-size: 86px;
-  --atk-right: 25px;
-  --atk-bottom: 55px;
   --jump-size: 58px;
   --jump-right: 25px;
   --jump-bottom: 155px;
@@ -26,8 +23,6 @@
   --sit-right: 110px;
   --sit-bottom: 145px;
   --btn-opacity: 1;
-  /* Offset khi kéo nút */
-  --atk-tx: 0px; --atk-ty: 0px;
   --jump-tx: 0px; --jump-ty: 0px;
   --sit-tx: 0px; --sit-ty: 0px;
   --mjoy-tx: 0px; --mjoy-ty: 0px;
@@ -183,16 +178,6 @@ body.is-touch #touchUI{display:block}
   transition:transform .08s, opacity .1s;
   touch-action:none;
 }
-.circle-button:active{transform:var(--btn-base-tx, translate(0,0)) scale(.86)}
-
-.attack-button{
-  right:var(--atk-right);bottom:var(--atk-bottom);
-  width:var(--atk-size);height:var(--atk-size);
-  font-size:calc(var(--atk-size) * 0.44);
-  background:linear-gradient(145deg, #e86c55, #a72d25);
-  transform:translate(var(--atk-tx), var(--atk-ty));
-}
-.attack-button:active{transform:translate(var(--atk-tx), var(--atk-ty)) scale(.86)}
 
 .action-button{
   right:var(--sit-right);bottom:var(--sit-bottom);
@@ -215,16 +200,13 @@ body.is-touch #touchUI{display:block}
 body.is-touch #hotbar{transform:translateX(-50%) scale(.72);bottom:4px}
 body.is-touch #hpBar{bottom:62px;transform:translateX(-50%) scale(.85)}
 
-/* EDIT MODE */
 body.edit-btn-mode .circle-button,
 body.edit-btn-mode .joystick{
   outline:3px dashed #ffd060;
   outline-offset:3px;
   cursor:move;
 }
-body.edit-btn-mode #btnAttack::after,
-body.edit-btn-mode #btnJump::after,
-body.edit-btn-mode #btnSit::after{
+body.edit-btn-mode .circle-button::after{
   content:'✥';
   position:absolute;
   top:-8px;right:-8px;
@@ -300,7 +282,6 @@ body.edit-btn-mode #editOverlay{display:flex}
   </div>
   <button id="btnJump" class="circle-button jump-button">⤒</button>
   <button id="btnSit" class="circle-button action-button">🪑</button>
-  <button id="btnAttack" class="circle-button attack-button">⚔</button>
 </div>
 
 <div id="editOverlay">
@@ -407,11 +388,14 @@ function initRNG(seed){ SEED = seed>>>0; rng = mulberry32(SEED); }
 const DEST_HEIGHT = 55;
 const FOOT_OFFSET = 8;
 const ATTACK_DURATION = 10 / 16;
-const HURT_DURATION = 8 / 8;
+const DEATH_DURATION = 0.9;
 const JUMP_DURATION = 0.65;
 
 function $(id){ return document.getElementById(id); }
 
+/* ============================================================
+   METADATA DECODER
+   ============================================================ */
 function decodeMetadata(img){
   try {
     const c = document.createElement('canvas');
@@ -432,6 +416,10 @@ function decodeMetadata(img){
     return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
   } catch(e){ return null; }
 }
+
+/* ============================================================
+   AUTO-DETECT
+   ============================================================ */
 function autoDetectFrameLines(canvas, expectedFrames){
   const W = canvas.width, H = canvas.height;
   const cx = canvas.getContext('2d', { willReadFrequently: true });
@@ -485,6 +473,9 @@ function detectBBox(canvas, x1, y1, x2, y2){
   return { x: x1+minX, y: y1+minY, w: maxX-minX+1, h: maxY-minY+1 };
 }
 
+/* ============================================================
+   MODELS
+   ============================================================ */
 const Models = {
   data: new Map(),
   addSprite(m, a, s){
@@ -603,17 +594,18 @@ function autoComputeAnchors(sprite){
   if (!s.anchorMode) s.anchorMode = 'stable-x';
 }
 async function loadFallbackSprites(){
+  /* ⚡ player_hurt.png = animation death */
   const defaults = [
-    { model: 'player', anim: 'idle', file: 'player_idle' },
-    { model: 'player', anim: 'run', file: 'player_run' },
-    { model: 'player', anim: 'jump', file: 'player_jump' },
+    { model: 'player', anim: 'idle',   file: 'player_idle' },
+    { model: 'player', anim: 'run',    file: 'player_run' },
+    { model: 'player', anim: 'jump',   file: 'player_jump' },
     { model: 'player', anim: 'attack', file: 'player_attack' },
-    { model: 'player', anim: 'sit', file: 'player_sit' },
-    { model: 'player', anim: 'hurt', file: 'player_death' }
+    { model: 'player', anim: 'sit',    file: 'player_sit' },
+    { model: 'player', anim: 'death',  file: 'player_hurt' }
   ];
   const promises = defaults.map(d => loadSprite(
     `assets/${d.file}.png`, d.model, d.anim,
-    { fileName: d.file, fps: 10, loop: true, vLines: null, anchors: [], spriteH: 0, frames: 10 }));
+    { fileName: d.file, fps: 10, loop: false, vLines: null, anchors: [], spriteH: 0, frames: 10 }));
   await Promise.all(promises);
   updateLoadStatus('fallback');
 }
@@ -747,7 +739,7 @@ const Audio2D = (() => {
 })();
 
 /* ============================================================
-   WORLD / TILES / ITEMS
+   WORLD / ITEMS
    ============================================================ */
 const TILE = 32;
 const T = { AIR:0, GRASS:1 };
@@ -875,7 +867,6 @@ function endAimJoystick(e){
   aim.autoAttack = false;
   aim.joyX = 0; aim.joyY = 0;
   aimKnob.style.transform = 'translate(-50%,-50%)';
-  /* Không reset aim.angle — giữ hướng cuối cùng */
 }
 addEventListener('pointermove', e => {
   if (e.pointerId === aim.joyId){ e.preventDefault(); updateAimJoystick(e.clientX, e.clientY); }
@@ -889,7 +880,7 @@ addEventListener('pointercancel', endAimJoystick);
 const keys = {};
 const mouse = { x: 0, y: 0 };
 let gameStarted = false, paused = false;
-let mobileAimUsed = false;   /* Đánh dấu user đã dùng joystick aim */
+let mobileAimUsed = false;
 mouse.x = VW/2; mouse.y = VH/2;
 
 addEventListener('keydown', e => {
@@ -912,7 +903,7 @@ cv.addEventListener('pointermove', e => {
     const r = cv.getBoundingClientRect();
     mouse.x = e.clientX - r.left;
     mouse.y = e.clientY - r.top;
-    mobileAimUsed = false;   /* PC dùng chuột → không dùng aim mobile */
+    mobileAimUsed = false;
   }
 }, { passive: true });
 cv.addEventListener('pointerdown', e => {
@@ -927,7 +918,6 @@ addEventListener('wheel', e => {
   renderHotbar();
 }, { passive:true });
 
-/* Touch look */
 let lookId = null, lookX = 0, lookY = 0;
 cv.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch') return;
@@ -962,8 +952,6 @@ function bindBtn(id, downFn, upFn){
   el.addEventListener('pointerup', up);
   el.addEventListener('pointercancel', up);
 }
-let attackTouch = false;
-bindBtn('btnAttack', () => { attackTouch = true; tryAttack(); }, () => { attackTouch = false; });
 bindBtn('btnJump', () => tryJump(), null);
 bindBtn('btnSit', () => trySit(), null);
 
@@ -976,6 +964,7 @@ function tryJump(){
   player.sitting = false;
   player.jumpT = JUMP_DURATION;
   Audio2D.sfx.jump();
+  net.broadcastPos();
 }
 function trySit(){
   if (!gameStarted || paused) return;
@@ -983,6 +972,7 @@ function trySit(){
   if (player.attackT > 0) return;
   player.sitting = !player.sitting;
   Audio2D.sfx.click();
+  net.broadcastPos();
 }
 let lastAttackT = 0;
 function tryAttack(){
@@ -1044,22 +1034,13 @@ function updatePlayer(dt){
   if (player.sitting && mag > 0.15) player.sitting = false;
   if (player.sitting){ dx = 0; dy = 0; }
 
-  /* Aim */
   if (aim.joyId !== null){
-    /* Joystick đang kéo → đã cập nhật angle */
     mobileAimUsed = true;
   } else if (!mobileAimUsed && !isTouchDevice){
-    /* PC: mũi tên theo chuột */
-    const wx = mouse.x + cam.x;
-    const wy = mouse.y + cam.y;
-    aim.angle = Math.atan2(wy - player.y, wx - player.x);
-  } else if (!isTouchDevice && !mobileAimUsed){
     const wx = mouse.x + cam.x;
     const wy = mouse.y + cam.y;
     aim.angle = Math.atan2(wy - player.y, wx - player.x);
   }
-  /* Mobile: giữ aim.angle cuối cùng khi không kéo joystick */
-
   const cosA = Math.cos(aim.angle);
   if (Math.abs(cosA) > 0.15) player.facing = cosA > 0 ? 1 : -1;
 
@@ -1079,11 +1060,10 @@ function updatePlayer(dt){
   } else player.jumpY = 0;
 
   if (aim.autoAttack && player.attackT <= 0) tryAttack();
-  if (attackTouch && player.attackT <= 0) tryAttack();
 
   let target = 'idle';
   if (player.attackT > 0)     target = 'attack';
-  else if (player.hurtT > 0)  target = 'hurt';
+  else if (player.hurtT > 0)  target = 'death';
   else if (player.jumpT > 0)  target = 'jump';
   else if (player.sitting)    target = 'sit';
   else if (mag > 0.1)         target = 'run';
@@ -1105,6 +1085,7 @@ function respawnPlayer(){
   player.jumpT = 0; player.jumpY = 0;
   player.attackT = 0; player.hurtT = 0;
   player.sitting = false;
+  player.currentAnim = 'idle';
   cam.x = player.x - VW/2; cam.y = player.y - VH/2;
   if (net.active) net.broadcastPos();
   updateHpBar();
@@ -1170,10 +1151,12 @@ const net = {
       try {
         conn.send({ t:'world', seed: SEED, data: u8ToB64(world) });
         for (const [id, p] of this.players){
-          conn.send({ t:'pos', id, name: p.name, x: p.x, y: p.y, facing: p.facing, hp: p.hp });
+          conn.send({ t:'pos', id, name: p.name, x: p.x, y: p.y,
+                     facing: p.facing, hp: p.hp, sitting: !!p.sitting });
         }
         conn.send({ t:'pos', id: this.myId, name: this.name,
-                    x: player.x, y: player.y, facing: player.facing, hp: player.hp });
+                    x: player.x, y: player.y, facing: player.facing,
+                    hp: player.hp, sitting: player.sitting });
       } catch(e){}
       toast('⚔️ Đối thủ mới!');
       updateNetHud();
@@ -1190,9 +1173,12 @@ const net = {
       resetPlayerPosition();
       if (this.onWorldReady) this.onWorldReady();
     } else if (d.t === 'pos'){
+      const existing = this.players.get(d.id);
       this.players.set(d.id, {
         name: d.name, x: d.x, y: d.y, facing: d.facing, hp: d.hp,
-        lastSeen: performance.now(), animT: 0
+        sitting: !!d.sitting,
+        lastSeen: performance.now(),
+        animT: existing ? existing.animT : 0
       });
       if (this.mode === 'host' && conn){
         for (const [id, c] of this.clients){
@@ -1204,7 +1190,7 @@ const net = {
     } else if (d.t === 'hit'){
       if (d.target === this.myId){
         player.hp = Math.max(0, player.hp - d.dmg);
-        player.hurtT = HURT_DURATION;
+        player.hurtT = DEATH_DURATION;
         flashDamage(); Audio2D.sfx.hurt(); updateHpBar();
         toast(`⚔️ ${d.fromName} gây ${d.dmg}!`);
         if (player.hp <= 0){ Audio2D.sfx.kill(); respawnPlayer(); }
@@ -1221,7 +1207,8 @@ const net = {
   broadcastPos(){
     if (!this.active) return;
     this.send({ t:'pos', id: this.myId, name: this.name,
-                x: player.x, y: player.y, facing: player.facing, hp: player.hp });
+                x: player.x, y: player.y, facing: player.facing,
+                hp: player.hp, sitting: player.sitting });
   },
   send(msg){
     if (!this.active) return;
@@ -1385,16 +1372,32 @@ const REMOTE_PALETTE = [
   { body:'#d0b04a' }, { body:'#b04ad0' }
 ];
 function hashCode(s){ let h = 0; for (let i=0;i<s.length;i++) h = ((h<<5) - h) + s.charCodeAt(i) | 0; return h; }
+
 function drawRemotePlayer(p){
   const sx = p.x - cam.x, sy = p.y - cam.y;
   if (sx < -80 || sx > VW+80 || sy < -80 || sy > VH+80) return;
   const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name)) % REMOTE_PALETTE.length];
-  const sprite = getPlayerSprite('idle');
-  if (sprite) drawSpriteAt(sprite, 0, sx, sy + FOOT_OFFSET, p.facing);
-  else {
+
+  const animName = p.sitting ? 'sit' : 'idle';
+  const sprite = getPlayerSprite(animName);
+  if (sprite){
+    const rawIdx = Math.floor((p.animT || 0) * sprite.fps);
+    const total = sprite.frames || 1;
+    const idx = sprite.loop
+      ? ((rawIdx % total) + total) % total
+      : Math.max(0, Math.min(total-1, rawIdx));
+    drawSpriteAt(sprite, idx, sx, sy + FOOT_OFFSET, p.facing);
+  } else {
     ctx.fillStyle = pal.body; ctx.fillRect(sx-6, sy-10, 12, 13);
     ctx.fillStyle = '#f0c8a0'; ctx.fillRect(sx-5, sy-18, 10, 8);
   }
+
+  if (p.sitting){
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🪑', sx, sy - 40);
+  }
+
   ctx.font = 'bold 10px Consolas, monospace';
   ctx.textAlign = 'center';
   const w = ctx.measureText(p.name).width + 8;
@@ -1418,19 +1421,15 @@ function drawAimArrow(){
   if (!gameStarted || paused) return;
 
   const sx = Math.round(player.x - cam.x);
-  /* Orbit quanh bụng: player.y là chân, bụng ở -14 */
   const syBelly = Math.round(player.y - cam.y - 14);
   const a = aim.angle;
   const cosA = Math.cos(a), sinA = Math.sin(a);
   const px = -sinA, py = cosA;
 
-  /* Bán kính orbit — xa hơn */
   const orbitR = 42;
-
   const cx = sx + cosA * orbitR;
   const cy = syBelly + sinA * orbitR;
 
-  /* Mũi tên nhỏ hơn */
   const headLen = 10;
   const headW = 6;
 
@@ -1445,7 +1444,6 @@ function drawAimArrow(){
 
   ctx.save();
 
-  /* Đổ bóng */
   ctx.globalAlpha = 0.4;
   ctx.fillStyle = '#000000';
   ctx.beginPath();
@@ -1456,7 +1454,6 @@ function drawAimArrow(){
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  /* Viền đen */
   ctx.strokeStyle = '#000000';
   ctx.lineWidth = 2.5;
   ctx.lineJoin = 'round';
@@ -1467,7 +1464,6 @@ function drawAimArrow(){
   ctx.closePath();
   ctx.stroke();
 
-  /* Fill gradient trắng */
   const grad = ctx.createLinearGradient(b2X, b2Y, tipX, tipY);
   grad.addColorStop(0,   '#c8d8c0');
   grad.addColorStop(0.5, '#ffffff');
@@ -1480,7 +1476,6 @@ function drawAimArrow(){
   ctx.closePath();
   ctx.fill();
 
-  /* Highlight cánh trên */
   ctx.fillStyle = 'rgba(255,255,255,.9)';
   ctx.beginPath();
   ctx.moveTo(tipX, tipY);
@@ -1489,7 +1484,6 @@ function drawAimArrow(){
   ctx.closePath();
   ctx.fill();
 
-  /* Shadow cánh dưới */
   ctx.fillStyle = 'rgba(0,0,0,.25)';
   ctx.beginPath();
   ctx.moveTo(tipX, tipY);
@@ -1498,7 +1492,6 @@ function drawAimArrow(){
   ctx.closePath();
   ctx.fill();
 
-  /* Glow xanh khi kéo joystick */
   if (aim.joyId !== null){
     const t = performance.now() / 150;
     const pulse = 1 + Math.sin(t) * 0.2;
@@ -1510,7 +1503,6 @@ function drawAimArrow(){
     ctx.globalAlpha = 1;
   }
 
-  /* Cung đỏ auto-attack */
   if (aim.autoAttack){
     ctx.strokeStyle = '#ff5050';
     ctx.lineWidth = 2;
@@ -1626,26 +1618,24 @@ function toast(msg){
 }
 
 /* ============================================================
-   BUTTON SETTINGS — KÉO THẢ DI CHUYỂN NÚT
+   BUTTON SETTINGS — KÉO THẢ
    ============================================================ */
 const ButtonSettings = (() => {
   const KEY = 'dh_btn_position_v2';
-  const KEYS = ['moveJoy', 'aimJoy', 'atk', 'jump', 'sit'];
-  let offsets = { moveJoy:{dx:0,dy:0}, aimJoy:{dx:0,dy:0}, atk:{dx:0,dy:0}, jump:{dx:0,dy:0}, sit:{dx:0,dy:0} };
+  const KEYS = ['moveJoy', 'aimJoy', 'jump', 'sit'];
+  let offsets = { moveJoy:{dx:0,dy:0}, aimJoy:{dx:0,dy:0}, jump:{dx:0,dy:0}, sit:{dx:0,dy:0} };
   let backup = null;
   let editMode = false;
 
   const VARS = {
     moveJoy: ['--mjoy-tx', '--mjoy-ty'],
     aimJoy:  ['--ajoy-tx', '--ajoy-ty'],
-    atk:     ['--atk-tx', '--atk-ty'],
     jump:    ['--jump-tx', '--jump-ty'],
     sit:     ['--sit-tx', '--sit-ty']
   };
   const ELEMS = {
     moveJoy: 'moveJoystick',
     aimJoy: 'aimJoystick',
-    atk: 'btnAttack',
     jump: 'btnJump',
     sit: 'btnSit'
   };
@@ -1661,11 +1651,7 @@ const ButtonSettings = (() => {
       }
     } catch(e){}
   }
-
-  function save(){
-    try { localStorage.setItem(KEY, JSON.stringify(offsets)); } catch(e){}
-  }
-
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(offsets)); } catch(e){} }
   function applyOne(key){
     const root = document.documentElement;
     const [vx, vy] = VARS[key];
@@ -1673,31 +1659,21 @@ const ButtonSettings = (() => {
     root.style.setProperty(vx, o.dx + 'px');
     root.style.setProperty(vy, o.dy + 'px');
   }
-
-  function applyAll(){
-    for (const k of KEYS) applyOne(k);
-  }
+  function applyAll(){ for (const k of KEYS) applyOne(k); }
 
   function makeDraggable(key){
     const el = $(ELEMS[key]);
     if (!el) return;
-    let dragging = false;
-    let startX = 0, startY = 0;
-    let startDx = 0, startDy = 0;
-
+    let dragging = false, startX = 0, startY = 0, startDx = 0, startDy = 0;
     el.addEventListener('pointerdown', e => {
       if (!editMode) return;
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       dragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      startDx = offsets[key].dx;
-      startDy = offsets[key].dy;
+      startX = e.clientX; startY = e.clientY;
+      startDx = offsets[key].dx; startDy = offsets[key].dy;
       el.style.zIndex = '99999';
       try { el.setPointerCapture(e.pointerId); } catch(err){}
     }, true);
-
     el.addEventListener('pointermove', e => {
       if (!dragging) return;
       e.preventDefault();
@@ -1705,12 +1681,7 @@ const ButtonSettings = (() => {
       offsets[key].dy = startDy + (e.clientY - startY);
       applyOne(key);
     }, true);
-
-    const stop = e => {
-      if (!dragging) return;
-      dragging = false;
-      el.style.zIndex = '';
-    };
+    const stop = () => { dragging = false; el.style.zIndex = ''; };
     el.addEventListener('pointerup', stop, true);
     el.addEventListener('pointercancel', stop, true);
   }
@@ -1721,18 +1692,15 @@ const ButtonSettings = (() => {
     editMode = true;
     document.body.classList.add('edit-btn-mode');
     $('menu').classList.add('hidden');
-    // Không pause game nếu đang chơi
   }
-
   function commitSave(){
     editMode = false;
     document.body.classList.remove('edit-btn-mode');
     save();
     toast('💾 Đã lưu vị trí nút');
     if (gameStarted){ paused = false; }
-    if (!gameStarted) $('menu').classList.remove('hidden');
+    else $('menu').classList.remove('hidden');
   }
-
   function cancelEdit(){
     if (backup) offsets = JSON.parse(JSON.stringify(backup));
     applyAll();
@@ -1740,7 +1708,6 @@ const ButtonSettings = (() => {
     document.body.classList.remove('edit-btn-mode');
     if (!gameStarted) $('menu').classList.remove('hidden');
   }
-
   function reset(){
     localStorage.removeItem(KEY);
     for (const k of KEYS) offsets[k] = { dx: 0, dy: 0 };
@@ -1749,8 +1716,7 @@ const ButtonSettings = (() => {
   }
 
   function init(){
-    load();
-    applyAll();
+    load(); applyAll();
     for (const k of KEYS) makeDraggable(k);
     $('editSave').addEventListener('click', commitSave);
     $('editCancel').addEventListener('click', cancelEdit);
@@ -1759,7 +1725,6 @@ const ButtonSettings = (() => {
       applyAll();
     });
   }
-
   return { init, openEditor, reset };
 })();
 
@@ -1908,6 +1873,9 @@ function loop(now){
     lastT = now;
     if (gameStarted && !paused){
       updatePlayer(dt); updateDayNight(dt);
+    }
+    for (const [id, p] of net.players){
+      p.animT = (p.animT || 0) + dt;
     }
     for (const p of G.particles){
       p.life -= dt;
