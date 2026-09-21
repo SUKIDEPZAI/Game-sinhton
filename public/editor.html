@@ -11,28 +11,24 @@
   --accent:#6fbf4a;--accent2:#88ff60;--accent3:#4a8a30;
   --text:#e8f0d8;--dim:#889878;--dim2:#586850;
   --danger:#e8503a;--warning:#ffcc40;--info:#88d8ff;
-  --line-red:rgba(255,80,80,.9);
-  --anchor-red:#ff3050;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
   font-family:'Segoe UI',Arial,sans-serif;font-size:12px;user-select:none}
 button{cursor:pointer;font-family:inherit;color:inherit}
-input,select,textarea{font-family:inherit;color:inherit}
-
+input,select{font-family:inherit;color:inherit}
 .app{display:flex;flex-direction:column;height:100%}
 
-/* HEADER */
 .header{height:44px;background:linear-gradient(180deg,var(--panel),var(--bg));
   border-bottom:2px solid var(--border);display:flex;align-items:center;
   padding:0 14px;gap:16px;flex-shrink:0}
 .brand{font-family:Consolas,monospace;font-size:14px;font-weight:900;
   color:var(--accent2);letter-spacing:2px;text-shadow:0 0 12px rgba(136,255,96,.4)}
-.brand .ver{font-size:9px;color:var(--dim2);margin-left:6px;letter-spacing:1px}
+.brand .ver{font-size:9px;color:var(--dim2);margin-left:6px}
 .header-tools{display:flex;gap:5px;margin-left:auto}
 .btn{background:linear-gradient(180deg,var(--panel2),var(--panel));
   border:1px solid var(--border);border-radius:3px;padding:6px 11px;
-  font-size:11px;font-weight:bold;letter-spacing:.5px;transition:all .1s;
+  font-size:11px;font-weight:bold;transition:all .1s;
   box-shadow:0 1px 0 rgba(0,0,0,.5);display:inline-flex;align-items:center;gap:5px}
 .btn:hover{background:linear-gradient(180deg,#2f3a2a,#232e20)}
 .btn:active{transform:translateY(1px)}
@@ -41,12 +37,9 @@ input,select,textarea{font-family:inherit;color:inherit}
 .btn.danger{background:linear-gradient(180deg,#d05848,#8a2a20);color:#fff}
 .btn.on{background:linear-gradient(180deg,#ffd060,#d09020);color:#1a0a00}
 .btn:disabled{opacity:.35;cursor:not-allowed}
-.btn svg{width:12px;height:12px}
 
-/* MAIN 3-COLUMN */
 .main{display:flex;flex:1;overflow:hidden}
 
-/* LEFT LIBRARY */
 .library{width:220px;background:var(--panel);border-right:1px solid var(--border);
   display:flex;flex-direction:column;flex-shrink:0}
 .panel-h{height:32px;background:var(--bg2);border-bottom:1px solid var(--border);
@@ -64,7 +57,7 @@ input,select,textarea{font-family:inherit;color:inherit}
 .model-header .arrow{font-size:9px;transition:transform .15s}
 .model-header.collapsed .arrow{transform:rotate(-90deg)}
 .model-header .count{margin-left:auto;color:var(--dim);font-weight:normal;font-size:10px}
-.model-body{padding-left:6px;overflow:hidden}
+.model-body{padding-left:6px}
 .model-body.hidden{display:none}
 
 .anim-item{display:flex;align-items:center;gap:5px;padding:4px 6px;margin-top:3px;
@@ -78,20 +71,18 @@ input,select,textarea{font-family:inherit;color:inherit}
   text-overflow:ellipsis;white-space:nowrap}
 .anim-item .meta{font-size:9px;color:var(--dim);font-family:Consolas,monospace}
 .anim-item.active .meta{color:#c8ffb8}
-
 .lib-empty{text-align:center;padding:30px 10px;color:var(--dim2);
   font-family:Consolas,monospace;font-size:10px;line-height:1.7}
 .lib-empty kbd{background:var(--panel2);border:1px solid var(--border);border-radius:2px;
   padding:1px 5px;color:var(--accent2)}
 
-/* CENTER CANVAS */
 .stage{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0d1109}
 .stage-bar{height:32px;background:var(--bg2);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 8px;gap:4px;flex-shrink:0}
-.stage-bar .sep{width:1px;height:18px;background:var(--border2);margin:0 4px}
-.stage-bar .btn{padding:4px 9px;font-size:10px}
+  display:flex;align-items:center;padding:0 8px;gap:4px;flex-shrink:0;overflow-x:auto}
+.stage-bar .sep{width:1px;height:18px;background:var(--border2);margin:0 4px;flex-shrink:0}
+.stage-bar .btn{padding:4px 9px;font-size:10px;white-space:nowrap}
 .stage-bar .zoom{font-family:Consolas,monospace;color:var(--accent2);
-  margin-left:auto;padding:0 10px;font-size:11px;font-weight:bold}
+  margin-left:auto;padding:0 10px;font-size:11px;font-weight:bold;flex-shrink:0}
 .stage-canvas{flex:1;position:relative;overflow:auto;
   background-image:linear-gradient(45deg,#151c11 25%,transparent 25%),
     linear-gradient(-45deg,#151c11 25%,transparent 25%),
@@ -112,12 +103,11 @@ input,select,textarea{font-family:inherit;color:inherit}
 .empty-state kbd{background:var(--panel2);border:1px solid var(--border);border-radius:3px;
   padding:2px 7px;font-family:Consolas,monospace;color:var(--accent2);font-size:10px}
 
-/* RIGHT INSPECTOR */
 .inspector{width:300px;background:var(--panel);border-left:1px solid var(--border);
   display:flex;flex-direction:column;flex-shrink:0}
 .tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
 .tab{flex:1;padding:8px 4px;text-align:center;font-family:Consolas,monospace;
-  font-size:10px;font-weight:bold;letter-spacing:.5px;color:var(--dim);
+  font-size:10px;font-weight:bold;color:var(--dim);
   cursor:pointer;border-bottom:2px solid transparent;transition:all .1s}
 .tab:hover{color:var(--text);background:var(--panel)}
 .tab.active{color:var(--accent2);border-bottom-color:var(--accent2);background:var(--panel)}
@@ -134,7 +124,7 @@ input,select,textarea{font-family:inherit;color:inherit}
 
 .field{display:flex;align-items:center;gap:8px;margin:6px 0}
 .field label{flex:0 0 82px;font-size:10px;color:var(--dim);
-  font-family:Consolas,monospace;letter-spacing:.5px}
+  font-family:Consolas,monospace}
 .field input[type=number],.field input[type=text],
 .field select{flex:1;background:#000;color:var(--accent2);
   border:1px solid var(--border2);border-radius:3px;padding:5px 8px;
@@ -144,7 +134,7 @@ input,select,textarea{font-family:inherit;color:inherit}
 .field .val{flex:0 0 40px;text-align:right;color:var(--accent2);
   font-family:Consolas,monospace;font-size:11px}
 .field .mini{flex:0 0 auto;background:var(--panel2);border:1px solid var(--border);
-  border-radius:3px;padding:4px 9px;font-size:10px;font-weight:bold}
+  border-radius:3px;padding:4px 9px;font-size:10px;font-weight:bold;cursor:pointer}
 .field .mini:hover{background:#2f3a2a}
 
 .lines-list{max-height:100px;overflow-y:auto;background:#000;border:1px solid var(--border2);
@@ -157,14 +147,14 @@ input,select,textarea{font-family:inherit;color:inherit}
   border:1px solid var(--border2);border-radius:2px;padding:2px 4px;
   font-size:10px;font-family:Consolas,monospace;text-align:center}
 .line-row .del{margin-left:auto;background:none;border:none;
-  color:var(--danger);font-size:12px;padding:0 3px;opacity:.6}
+  color:var(--danger);font-size:12px;padding:0 3px;opacity:.6;cursor:pointer}
 .line-row .del:hover{opacity:1}
 
 .anchor-grid{display:grid;grid-template-columns:repeat(3,32px);
   grid-template-rows:repeat(3,32px);gap:3px;justify-content:center;margin:8px 0}
 .anchor-btn{background:var(--panel2);border:1px solid var(--border);
-  border-radius:3px;color:var(--dim);font-size:14px;display:flex;
-  align-items:center;justify-content:center;transition:all .1s}
+  border-radius:3px;color:var(--dim);font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .1s}
 .anchor-btn:hover{background:#2f3a2a}
 .anchor-btn.on{background:var(--accent);color:#0a1a06;border-color:var(--accent2)}
 
@@ -173,15 +163,13 @@ input,select,textarea{font-family:inherit;color:inherit}
 .swatch-fill{position:absolute;inset:0}
 
 .anim-preview{width:100%;height:140px;background:#0a0d08;
-  border:1px solid var(--border2);border-radius:4px;image-rendering:pixelated;
-  display:block}
+  border:1px solid var(--border2);border-radius:4px;image-rendering:pixelated;display:block}
 
 .help-box{background:#0a0d08;border-left:3px solid var(--accent3);
   padding:8px 10px;border-radius:3px;font-size:10px;color:var(--dim);
   font-family:Consolas,monospace;line-height:1.7;margin-top:8px}
 .help-box b{color:var(--accent2)}
 
-/* STATUS BAR */
 .status-bar{height:24px;background:var(--bg2);border-top:1px solid var(--border);
   display:flex;align-items:center;padding:0 14px;gap:16px;
   font-family:Consolas,monospace;font-size:10px;color:var(--dim);flex-shrink:0}
@@ -189,17 +177,6 @@ input,select,textarea{font-family:inherit;color:inherit}
 .status-bar .err{color:#ff9898}
 .status-bar .item{display:flex;gap:5px;align-items:center}
 .status-bar .item .lbl{color:var(--dim2)}
-
-/* MODAL */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;
-  display:none;align-items:center;justify-content:center;padding:20px}
-.modal.show{display:flex}
-.modal-box{background:var(--panel2);border:2px solid var(--border);border-radius:6px;
-  padding:20px;max-width:480px;width:100%;
-  box-shadow:inset 0 0 0 1px #3f4a3a,0 12px 40px rgba(0,0,0,.8)}
-.modal-box h3{font-family:Consolas,monospace;font-size:12px;
-  color:var(--accent2);letter-spacing:2px;margin-bottom:14px}
-.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
 
 #toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
   background:rgba(20,28,18,.96);border:1px solid var(--accent3);
@@ -209,7 +186,6 @@ input,select,textarea{font-family:inherit;color:inherit}
 #toast.show{opacity:1}
 #toast.err{border-color:var(--danger);color:#ff9898}
 
-/* Scrollbar */
 ::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
@@ -220,55 +196,43 @@ input[type=file]{display:none}
 </head>
 <body>
 <div class="app">
-
 <header class="header">
-  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.0</span></div>
+  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.1</span></div>
   <div class="header-tools">
     <button class="btn" id="uploadBtn">📁 Upload PNG</button>
     <button class="btn" id="importBtn">📥 Import JSON</button>
-    <button class="btn" id="exportAllBtn">📦 Export Project</button>
-    <button class="btn primary" id="exportBtn" disabled>💾 Export Current</button>
-    <button class="btn" id="helpBtn">❓ Help</button>
+    <button class="btn primary" id="exportAllBtn">📦 Export All</button>
+    <button class="btn" id="exportBtn" disabled>💾 Export Current</button>
+    <button class="btn" id="helpBtn">❓</button>
   </div>
 </header>
 
 <main class="main">
-
-  <!-- LEFT: LIBRARY -->
   <aside class="library">
     <div class="panel-h">📚 LIBRARY<span class="cnt" id="libCount">0</span></div>
     <div class="library-body" id="libraryBody">
       <div class="lib-empty">
-        Chưa có sprite nào.<br><br>
-        Bấm <kbd>Upload PNG</kbd> hoặc<br>
-        kéo thả file vào đây.<br><br>
-        Hoặc <kbd>Import JSON</kbd><br>
-        từ project đã export.
+        Chưa có sprite.<br><br>
+        <kbd>Upload PNG</kbd> để bắt đầu.
       </div>
     </div>
   </aside>
 
-  <!-- CENTER: STAGE -->
   <section class="stage">
     <div class="stage-bar">
-      <button class="btn" id="toolSelect" title="Chọn/Kéo line">🖱 Select</button>
-      <button class="btn" id="toolAddV" title="Thêm line dọc">┃ +V</button>
-      <button class="btn" id="toolAddH" title="Thêm line ngang">━ +H</button>
-      <button class="btn" id="toolPick" title="Pick màu nền">💧 Pick</button>
+      <button class="btn on" id="toolSelect">🖱 Select</button>
+      <button class="btn" id="toolAddV">┃ +V</button>
+      <button class="btn" id="toolAddH">━ +H</button>
+      <button class="btn" id="toolPick">💧 Pick</button>
       <div class="sep"></div>
       <button class="btn" id="autoDetect">🤖 Auto</button>
       <button class="btn" id="computeAnchors">🎯 Anchors</button>
       <div class="sep"></div>
-      <button class="btn" id="undoBtn" disabled>↶</button>
-      <button class="btn" id="redoBtn" disabled>↷</button>
-      <div class="sep"></div>
       <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--dim)">
-        <input type="checkbox" id="snapChk" checked style="accent-color:var(--accent)">
-        Snap
+        <input type="checkbox" id="snapChk" checked style="accent-color:var(--accent)">Snap
       </label>
       <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--dim)">
-        <input type="checkbox" id="debugChk" style="accent-color:var(--accent)">
-        Debug
+        <input type="checkbox" id="debugChk" style="accent-color:var(--accent)">Debug
       </label>
       <span class="zoom" id="zoomLabel">100%</span>
     </div>
@@ -276,10 +240,7 @@ input[type=file]{display:none}
       <div class="empty-state" id="emptyState">
         <div class="ic">📁</div>
         <div class="title">SPRITE STUDIO</div>
-        <div class="hint">
-          Upload PNG để bắt đầu. Tool tự động detect frame, tính anchor,
-          xoá nền, và export kèm metadata cho game.
-        </div>
+        <div class="hint">Upload PNG để bắt đầu.</div>
       </div>
       <div class="canvas-holder" id="canvasHolder" style="display:none">
         <canvas id="mainCanvas"></canvas>
@@ -288,7 +249,6 @@ input[type=file]{display:none}
     </div>
   </section>
 
-  <!-- RIGHT: INSPECTOR -->
   <aside class="inspector">
     <div class="tabs">
       <div class="tab active" data-tab="frame">FRAME</div>
@@ -299,13 +259,10 @@ input[type=file]{display:none}
     </div>
     <div class="tab-panels">
 
-      <!-- FRAME TAB -->
       <div class="panel active" data-panel="frame">
         <div class="sec">
-          <div class="sec-title">
-            <span>📏 LƯỚI FRAME</span>
-            <span class="badge" id="gridBadge">0×0</span>
-          </div>
+          <div class="sec-title"><span>📏 LƯỚI FRAME</span>
+            <span class="badge" id="gridBadge">0×0</span></div>
           <div class="field">
             <label>Cột ngang</label>
             <button class="mini" id="autoVBtn">Auto N</button>
@@ -342,44 +299,34 @@ input[type=file]{display:none}
             <button class="anchor-btn" data-a="bc">↓</button>
             <button class="anchor-btn" data-a="br">↘</button>
           </div>
-          <div class="field">
-            <label></label>
-            <button class="mini" id="resizeBtn" style="flex:1;padding:6px">Áp dụng</button>
-          </div>
-          <div class="field">
-            <label></label>
-            <button class="mini" id="cropBtn" style="flex:1;padding:6px">✂ Cắt sát</button>
-          </div>
+          <div class="field"><label></label>
+            <button class="mini" id="resizeBtn" style="flex:1;padding:6px">Áp dụng</button></div>
+          <div class="field"><label></label>
+            <button class="mini" id="cropBtn" style="flex:1;padding:6px">✂ Cắt sát</button></div>
         </div>
       </div>
 
-      <!-- ANCHOR TAB -->
       <div class="panel" data-panel="anchor">
         <div class="sec">
-          <div class="sec-title">
-            <span>🎯 ANCHOR</span>
-            <span class="badge" id="anchorBadge">0/0</span>
-          </div>
+          <div class="sec-title"><span>🎯 ANCHOR</span>
+            <span class="badge" id="anchorBadge">0/0</span></div>
           <div class="field">
             <label>Mode</label>
             <select id="anchorMode">
               <option value="bottom-center">Đáy-giữa</option>
               <option value="bottom-left">Đáy-trái</option>
               <option value="bottom-right">Đáy-phải</option>
-              <option value="center">Tâm giữa</option>
+              <option value="center">Tâm</option>
+              <option value="top-center">Đỉnh-giữa</option>
               <option value="manual">Chỉnh tay</option>
             </select>
           </div>
-          <div class="field">
-            <label></label>
+          <div class="field"><label></label>
             <button class="mini" id="anchorRecompute" style="flex:1;padding:6px">🔄 Tính lại</button>
-            <button class="mini" id="anchorClear">🗑</button>
-          </div>
+            <button class="mini" id="anchorClear">🗑</button></div>
           <div class="help-box">
-            <b>Mode:</b><br>
-            • <b>Đáy-giữa:</b> chân nhân vật, dùng cho mọi frame<br>
-            • <b>Chỉnh tay:</b> click vào canvas để đặt anchor<br>
-            • <b>Chấm đỏ</b> = anchor hiện tại
+            <b>Chấm đỏ</b> = anchor.<br>
+            Mode <b>Chỉnh tay</b>: click vào canvas để đặt anchor cho frame đang chọn.
           </div>
         </div>
         <div class="sec">
@@ -388,14 +335,13 @@ input[type=file]{display:none}
         </div>
       </div>
 
-      <!-- BG TAB -->
       <div class="panel" data-panel="bg">
         <div class="sec">
           <div class="sec-title">🎨 XÓA NỀN</div>
           <div class="field">
             <label>Màu nền</label>
             <div class="swatch" id="bgSwatch"><div class="swatch-fill" id="bgFill"></div></div>
-            <button class="mini" id="pickBtn">💧 Pick</button>
+            <button class="mini" id="pickBtn">💧</button>
           </div>
           <div class="field">
             <label>Tolerance</label>
@@ -407,8 +353,8 @@ input[type=file]{display:none}
             <select id="bgMode">
               <option value="alpha">Trong suốt</option>
               <option value="color">Đổi màu</option>
-              <option value="white">Thành trắng</option>
-              <option value="black">Thành đen</option>
+              <option value="white">Trắng</option>
+              <option value="black">Đen</option>
             </select>
           </div>
           <div class="field" id="bgColorRow" style="display:none">
@@ -416,25 +362,18 @@ input[type=file]{display:none}
             <input type="color" id="bgNewColor" value="#ffffff"
               style="width:50px;height:28px;background:#000;border:1px solid var(--border2)">
           </div>
-          <div class="field">
-            <label></label>
+          <div class="field"><label></label>
             <button class="mini" id="bgApplyAll" style="flex:1;padding:6px">🌐 Toàn ảnh</button>
-            <button class="mini" id="bgApplyCell" style="flex:1;padding:6px" disabled>▣ Cell</button>
-          </div>
-          <div class="help-box">
-            <b>Tip:</b> Pick màu nền → chọn "Trong suốt" → Áp dụng.
-            Tolerance cao hơn = xóa nhiều hơn.
-          </div>
+            <button class="mini" id="bgApplyCell" style="flex:1;padding:6px" disabled>▣ Cell</button></div>
         </div>
       </div>
 
-      <!-- META TAB -->
       <div class="panel" data-panel="meta">
         <div class="sec">
           <div class="sec-title">📝 METADATA</div>
           <div class="field">
             <label>Model</label>
-            <input type="text" id="metaModel" value="player" placeholder="player">
+            <input type="text" id="metaModel" value="player">
           </div>
           <div class="field">
             <label>Animation</label>
@@ -452,28 +391,22 @@ input[type=file]{display:none}
             <label>Tên riêng</label>
             <input type="text" id="metaAnimCustom" placeholder="skill_1">
           </div>
-          <div class="field">
-            <label>FPS</label>
-            <input type="number" id="metaFps" value="10" min="1" max="60">
-          </div>
-          <div class="field">
-            <label>Loop</label>
+          <div class="field"><label>FPS</label>
+            <input type="number" id="metaFps" value="10" min="1" max="60"></div>
+          <div class="field"><label>Loop</label>
             <select id="metaLoop">
-              <option value="1">Có (lặp)</option>
-              <option value="0">Không (1 lần)</option>
+              <option value="1">Có</option>
+              <option value="0">Không</option>
             </select>
           </div>
-          <div class="field">
-            <label>File name</label>
-            <input type="text" id="metaFile" placeholder="player_idle">
-          </div>
+          <div class="field"><label>File name</label>
+            <input type="text" id="metaFile" placeholder="player_idle"></div>
         </div>
       </div>
 
-      <!-- PREVIEW TAB -->
       <div class="panel" data-panel="preview">
         <div class="sec">
-          <div class="sec-title">▶ PREVIEW ANIMATION</div>
+          <div class="sec-title">▶ PREVIEW</div>
           <canvas id="previewCanvas" class="anim-preview" width="280" height="140"></canvas>
           <div class="field" style="margin-top:8px">
             <label></label>
@@ -488,15 +421,12 @@ input[type=file]{display:none}
         </div>
         <div class="sec">
           <div class="sec-title">📊 INFO</div>
-          <div class="help-box" id="previewInfo">
-            Chọn 1 sprite để xem thông tin.
-          </div>
+          <div class="help-box" id="previewInfo">Chọn sprite để xem.</div>
         </div>
       </div>
 
     </div>
   </aside>
-
 </main>
 
 <footer class="status-bar">
@@ -504,60 +434,31 @@ input[type=file]{display:none}
   <div class="item"><span class="lbl">Current:</span><span id="statCurrent">—</span></div>
   <div class="item"><span class="lbl">Size:</span><span id="statSize">—</span></div>
   <div class="item"><span class="lbl">Zoom:</span><span id="statZoom">100%</span></div>
-  <div class="item" style="margin-left:auto">
-    <span id="statMsg">Sẵn sàng. Upload PNG để bắt đầu.</span>
-  </div>
+  <div class="item" style="margin-left:auto"><span id="statMsg">Sẵn sàng.</span></div>
 </footer>
-
 </div>
 
 <input type="file" id="fileInput" multiple accept="image/png,image/jpeg,image/webp">
 <input type="file" id="jsonInput" accept=".json,application/json">
-
-<div class="modal" id="modal">
-  <div class="modal-box">
-    <h3 id="modalTitle">Title</h3>
-    <div id="modalBody"></div>
-    <div class="modal-actions">
-      <button class="btn" id="modalCancel">Hủy</button>
-      <button class="btn primary" id="modalOk">OK</button>
-    </div>
-  </div>
-</div>
-
 <div id="toast"></div>
 
 <script>
 "use strict";
 
-/* ============================================================
-   STATE
-   ============================================================ */
 const state = {
-  sprites: new Map(),   // id → sprite {id, model, anim, src, img, loaded, ...}
+  sprites: new Map(),
   currentId: null,
   zoom: 1,
-  // tools
   tool: 'select',
   snap: true,
   debug: false,
-  // cell
   cell: null,
-  // drag
   drag: null,
   cellMoveOffset: { x: 0, y: 0 },
   cellOriginal: null,
-  // anchors
   resizeAnchor: 'mc',
-  // bg
   bgColor: { r: 255, g: 255, b: 255 },
-  pickMode: false,
-  // manual anchor
   manualAnchor: false,
-  // history
-  history: [],
-  historyIdx: -1,
-  // preview
   previewPlaying: false,
   previewTime: 0,
   previewFrame: 0,
@@ -572,7 +473,6 @@ const overlayCanvas = $('overlayCanvas');
 const canvasHolder = $('canvasHolder');
 const stageCanvas = $('stageCanvas');
 const emptyState = $('emptyState');
-
 const currentSprite = () => state.currentId ? state.sprites.get(state.currentId) : null;
 
 function toast(msg, isErr){
@@ -589,7 +489,7 @@ function setStatus(msg, isErr){
 }
 
 /* ============================================================
-   METADATA ENCODE/DECODE (v3)
+   METADATA v3
    ============================================================ */
 function decodeMetadata(img){
   try {
@@ -670,7 +570,6 @@ function autoDetectFrameLines(canvas, expectedFrames){
   lines.push(W);
   return lines.length >= 3 ? lines : null;
 }
-
 function detectBBox(canvas, x1, y1, x2, y2){
   const W = canvas.width;
   const cx = canvas.getContext('2d', { willReadFrequently: true });
@@ -692,11 +591,9 @@ function detectBBox(canvas, x1, y1, x2, y2){
 }
 
 /* ============================================================
-   SPRITE MANAGEMENT
+   SPRITE MGMT
    ============================================================ */
-function genId(){
-  return 's' + Date.now() + '_' + Math.floor(Math.random()*10000);
-}
+function genId(){ return 's' + Date.now() + '_' + Math.floor(Math.random()*10000); }
 
 function addSpriteFromFile(file){
   return new Promise((resolve, reject) => {
@@ -710,11 +607,8 @@ function addSpriteFromFile(file){
           fileName: file.name.replace(/\.[^.]+$/, ''),
           model: 'player',
           anim: 'idle',
-          img: img,
-          loaded: true,
-          // State
-          canvas: null,
-          ctx: null,
+          img, loaded: true,
+          canvas: null, ctx: null,
           spriteH: meta ? (meta.spriteH || img.height - 1) : img.height,
           vLines: meta ? (meta.vLines || [0, img.width]) : [0, img.width],
           hLines: meta ? (meta.hLines || [0, img.height - 1]) : [0, img.height],
@@ -724,7 +618,6 @@ function addSpriteFromFile(file){
           loop: meta ? (meta.loop !== false) : true,
           version: meta ? (meta.v || 1) : 0
         };
-        // Auto-detect model/anim from filename
         const fn = file.name.toLowerCase();
         if (fn.includes('player')) sprite.model = 'player';
         else if (fn.includes('enemy')) sprite.model = 'enemy';
@@ -736,7 +629,6 @@ function addSpriteFromFile(file){
         else if (fn.includes('sit')) sprite.anim = 'sit';
         else if (fn.includes('hurt') || fn.includes('death') || fn.includes('dead')) sprite.anim = 'hurt';
 
-        // Create canvas copy (without metadata row)
         const cnv = document.createElement('canvas');
         cnv.width = img.width;
         cnv.height = sprite.spriteH;
@@ -746,8 +638,7 @@ function addSpriteFromFile(file){
         sprite.canvas = cnv;
         sprite.ctx = cc;
 
-        // Restore anchors or compute
-        if (meta && meta.anchors){
+        if (meta && meta.anchors && meta.anchors.length){
           sprite.anchors = meta.anchors.map(a => {
             if (Array.isArray(a)) return { x: a[0], y: a[1] };
             if (a && typeof a === 'object') return { x: a.x, y: a.y };
@@ -759,7 +650,7 @@ function addSpriteFromFile(file){
         }
         resolve(sprite);
       };
-      img.onerror = () => reject(new Error('Load fail: ' + file.name));
+      img.onerror = () => reject(new Error('Load fail'));
       img.src = e.target.result;
     };
     reader.onerror = () => reject(new Error('Read fail'));
@@ -767,6 +658,7 @@ function addSpriteFromFile(file){
   });
 }
 
+/* ⭐ CHÍNH — anchor.x và anchor.y riêng từng frame */
 function computeAnchorsForSprite(sprite, verbose){
   const s = sprite;
   const lines = s.vLines;
@@ -778,18 +670,17 @@ function computeAnchorsForSprite(sprite, verbose){
       const y1 = s.hLines[r], y2 = s.hLines[r+1];
       const bbox = detectBBox(s.canvas, x1, y1, x2, y2);
       if (!bbox){ anchors.push(null); continue; }
-      let ay;
+
+      let ax, ay;
       switch (s.anchorMode){
-        case 'bottom-left':
-        case 'bottom-right':
+        case 'bottom-left':  ax = bbox.x; ay = bbox.y + bbox.h; break;
+        case 'bottom-right': ax = bbox.x + bbox.w; ay = bbox.y + bbox.h; break;
+        case 'center':       ax = bbox.x + bbox.w/2; ay = bbox.y + bbox.h/2; break;
+        case 'top-center':   ax = bbox.x + bbox.w/2; ay = bbox.y; break;
         case 'bottom-center':
-          ay = bbox.y + bbox.h; break;
-        case 'center':
-          ay = bbox.y + bbox.h/2; break;
-        default:
-          ay = bbox.y + bbox.h;
+        default:             ax = bbox.x + bbox.w/2; ay = bbox.y + bbox.h; break;
       }
-      anchors.push({ x: null, y: Math.round(ay) });
+      anchors.push({ x: Math.round(ax), y: Math.round(ay) });
     }
   }
   s.anchors = anchors;
@@ -797,33 +688,23 @@ function computeAnchorsForSprite(sprite, verbose){
 }
 
 /* ============================================================
-   LIBRARY RENDER
+   LIBRARY
    ============================================================ */
 function renderLibrary(){
   const body = $('libraryBody');
   const sprites = [...state.sprites.values()];
-
   $('libCount').textContent = sprites.length;
   $('statSprites').textContent = sprites.length;
 
   if (sprites.length === 0){
-    body.innerHTML = `<div class="lib-empty">
-      Chưa có sprite nào.<br><br>
-      Bấm <kbd>Upload PNG</kbd> hoặc<br>
-      kéo thả file vào đây.<br><br>
-      Hoặc <kbd>Import JSON</kbd><br>
-      từ project đã export.
-    </div>`;
+    body.innerHTML = `<div class="lib-empty">Chưa có sprite.<br><br><kbd>Upload PNG</kbd> để bắt đầu.</div>`;
     return;
   }
-
-  // Group by model
   const byModel = {};
   for (const s of sprites){
     if (!byModel[s.model]) byModel[s.model] = [];
     byModel[s.model].push(s);
   }
-
   body.innerHTML = '';
   for (const model in byModel){
     const group = document.createElement('div');
@@ -832,11 +713,7 @@ function renderLibrary(){
 
     const header = document.createElement('div');
     header.className = 'model-header';
-    header.innerHTML = `
-      <span class="arrow">▼</span>
-      <span>📦 ${model}</span>
-      <span class="count">${items.length}</span>
-    `;
+    header.innerHTML = `<span class="arrow">▼</span><span>📦 ${model}</span><span class="count">${items.length}</span>`;
     header.addEventListener('click', () => {
       header.classList.toggle('collapsed');
       group.querySelector('.model-body').classList.toggle('hidden');
@@ -848,11 +725,7 @@ function renderLibrary(){
     for (const s of items){
       const item = document.createElement('div');
       item.className = 'anim-item' + (s.id === state.currentId ? ' active' : '');
-      item.innerHTML = `
-        <span class="dot"></span>
-        <span class="name">${s.anim}</span>
-        <span class="meta">${s.vLines.length - 1}f</span>
-      `;
+      item.innerHTML = `<span class="dot"></span><span class="name">${s.anim}</span><span class="meta">${s.vLines.length - 1}f</span>`;
       item.addEventListener('click', () => selectSprite(s.id));
       bodyEl.appendChild(item);
     }
@@ -862,14 +735,13 @@ function renderLibrary(){
 }
 
 /* ============================================================
-   SELECT / RENDER
+   SELECT
    ============================================================ */
 function selectSprite(id){
   state.currentId = id;
   const s = currentSprite();
   if (!s) return;
 
-  // Update canvas
   mainCanvas.width = s.canvas.width;
   mainCanvas.height = s.canvas.height;
   overlayCanvas.width = s.canvas.width;
@@ -883,7 +755,6 @@ function selectSprite(id){
   canvasHolder.style.display = 'inline-block';
   emptyState.style.display = 'none';
 
-  // Update inspector fields
   $('canvasW').value = s.canvas.width;
   $('canvasH').value = s.canvas.height;
   $('metaModel').value = s.model;
@@ -900,13 +771,8 @@ function selectSprite(id){
   $('anchorMode').value = s.anchorMode;
   state.manualAnchor = s.anchorMode === 'manual';
 
-  renderOverlay();
-  renderLineLists();
-  renderAnchorList();
-  updateBadges();
-  renderPreviewInfo();
+  renderAll();
   renderLibrary();
-
   $('exportBtn').disabled = false;
   setStatus('Đang edit: ' + s.model + '/' + s.anim);
 }
@@ -917,23 +783,21 @@ function renderOverlay(){
   const oc = overlayCanvas.getContext('2d');
   oc.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-  // Lines
   oc.strokeStyle = 'rgba(255,80,80,.9)';
   oc.lineWidth = 1;
   for (const x of s.vLines){
     oc.beginPath();
-    oc.moveTo(Math.round(x) + 0.5, 0);
-    oc.lineTo(Math.round(x) + 0.5, overlayCanvas.height);
+    oc.moveTo(Math.round(x)+0.5, 0);
+    oc.lineTo(Math.round(x)+0.5, overlayCanvas.height);
     oc.stroke();
   }
   for (const y of s.hLines){
     oc.beginPath();
-    oc.moveTo(0, Math.round(y) + 0.5);
-    oc.lineTo(overlayCanvas.width, Math.round(y) + 0.5);
+    oc.moveTo(0, Math.round(y)+0.5);
+    oc.lineTo(overlayCanvas.width, Math.round(y)+0.5);
     oc.stroke();
   }
 
-  // Frame numbers
   oc.font = 'bold 11px Consolas, monospace';
   oc.fillStyle = '#88ff60';
   oc.strokeStyle = 'rgba(0,0,0,.8)';
@@ -941,57 +805,39 @@ function renderOverlay(){
   let idx = 0;
   for (let r = 0; r < s.hLines.length - 1; r++){
     for (let c = 0; c < s.vLines.length - 1; c++){
-      const x = s.vLines[c] + 4;
-      const y = s.hLines[r] + 14;
+      const x = s.vLines[c] + 4, y = s.hLines[r] + 14;
       oc.strokeText(idx, x, y);
       oc.fillText(idx, x, y);
       idx++;
     }
   }
 
-  // Anchors
+  /* Anchors */
   s.anchors.forEach(a => {
     if (!a) return;
-    const cx = a.x !== null ? a.x : ((s.vLines[0] || 0) + s.canvas.width) / 2;
-    // Find frame center if x null
-    let centerX = cx;
-    if (a.x === null || a.x === undefined){
-      // Tìm frame chứa anchor.y này
-      const frameIdx = s.anchors.indexOf(a);
-      const totalCols = s.vLines.length - 1;
-      const totalRows = s.hLines.length - 1;
-      const col = frameIdx % totalCols;
-      const row = Math.floor(frameIdx / totalCols);
-      centerX = (s.vLines[col] + s.vLines[col+1]) / 2;
-    }
+    const ax = a.x != null ? a.x : 0;
+    const ay = a.y != null ? a.y : 0;
     oc.strokeStyle = 'rgba(0,0,0,.9)';
     oc.lineWidth = 3;
-    oc.beginPath();
-    oc.arc(centerX, a.y, 5, 0, Math.PI*2);
-    oc.stroke();
+    oc.beginPath(); oc.arc(ax, ay, 5, 0, Math.PI*2); oc.stroke();
     oc.fillStyle = '#ff3050';
     oc.strokeStyle = '#fff';
     oc.lineWidth = 2;
-    oc.beginPath();
-    oc.arc(centerX, a.y, 4, 0, Math.PI*2);
-    oc.fill();
-    oc.stroke();
-    // Cross
+    oc.beginPath(); oc.arc(ax, ay, 4, 0, Math.PI*2); oc.fill(); oc.stroke();
     oc.strokeStyle = 'rgba(255,48,80,.7)';
     oc.lineWidth = 1;
     oc.beginPath();
-    oc.moveTo(centerX - 8, a.y); oc.lineTo(centerX + 8, a.y);
-    oc.moveTo(centerX, a.y - 8); oc.lineTo(centerX, a.y + 8);
+    oc.moveTo(ax - 8, ay); oc.lineTo(ax + 8, ay);
+    oc.moveTo(ax, ay - 8); oc.lineTo(ax, ay + 8);
     oc.stroke();
   });
 
-  // Cell
   if (state.cell){
     oc.strokeStyle = 'rgba(136,255,96,.95)';
     oc.lineWidth = 3;
-    oc.setLineDash([6, 4]);
-    oc.strokeRect(state.cell.x1 + 1, state.cell.y1 + 1,
-      state.cell.x2 - state.cell.x1 - 2, state.cell.y2 - state.cell.y1 - 2);
+    oc.setLineDash([6,4]);
+    oc.strokeRect(state.cell.x1+1, state.cell.y1+1,
+      state.cell.x2-state.cell.x1-2, state.cell.y2-state.cell.y1-2);
     oc.setLineDash([]);
   }
 }
@@ -999,20 +845,18 @@ function renderOverlay(){
 function renderLineLists(){
   const s = currentSprite();
   if (!s) return;
-  const vl = $('vList');
-  vl.innerHTML = '';
+  const vl = $('vList'); vl.innerHTML = '';
   s.vLines.forEach((x, i) => {
     const row = document.createElement('div');
     row.className = 'line-row';
     row.innerHTML = `<span class="idx">#${i}</span>`;
     const inp = document.createElement('input');
-    inp.type = 'number';
-    inp.value = Math.round(x);
+    inp.type = 'number'; inp.value = Math.round(x);
     inp.addEventListener('change', () => {
       const v = parseInt(inp.value);
       if (!isNaN(v)){
         s.vLines[i] = Math.max(0, Math.min(s.canvas.width, v));
-        s.vLines.sort((a,b) => a-b);
+        s.vLines.sort((a,b)=>a-b);
         computeAnchorsForSprite(s, false);
         renderAll();
       }
@@ -1031,20 +875,18 @@ function renderLineLists(){
     vl.appendChild(row);
   });
 
-  const hl = $('hList');
-  hl.innerHTML = '';
+  const hl = $('hList'); hl.innerHTML = '';
   s.hLines.forEach((y, i) => {
     const row = document.createElement('div');
     row.className = 'line-row';
     row.innerHTML = `<span class="idx">#${i}</span>`;
     const inp = document.createElement('input');
-    inp.type = 'number';
-    inp.value = Math.round(y);
+    inp.type = 'number'; inp.value = Math.round(y);
     inp.addEventListener('change', () => {
       const v = parseInt(inp.value);
       if (!isNaN(v)){
         s.hLines[i] = Math.max(0, Math.min(s.canvas.height, v));
-        s.hLines.sort((a,b) => a-b);
+        s.hLines.sort((a,b)=>a-b);
         computeAnchorsForSprite(s, false);
         renderAll();
       }
@@ -1067,8 +909,7 @@ function renderLineLists(){
 function renderAnchorList(){
   const s = currentSprite();
   if (!s) return;
-  const el = $('anchorList');
-  el.innerHTML = '';
+  const el = $('anchorList'); el.innerHTML = '';
   s.anchors.forEach((a, i) => {
     const row = document.createElement('div');
     row.className = 'line-row';
@@ -1076,7 +917,7 @@ function renderAnchorList(){
     const txt = document.createElement('span');
     txt.style.cssText = 'flex:1;color:var(--accent2);font-family:Consolas,monospace;font-size:10px';
     if (a){
-      txt.textContent = `y=${a.y}${a.x !== null ? ' x='+a.x : ''}`;
+      txt.textContent = `x=${a.x} y=${a.y}`;
     } else {
       txt.textContent = 'trống';
       txt.style.color = '#ffcc40';
@@ -1093,18 +934,17 @@ function renderAll(){
   updateBadges();
   renderPreviewInfo();
 }
-
 function updateBadges(){
   const s = currentSprite();
   if (!s) return;
   $('gridBadge').textContent = (s.vLines.length-1) + '×' + (s.hLines.length-1);
-  $('anchorBadge').textContent = s.anchors.filter(a => a).length + '/' + s.anchors.length;
+  $('anchorBadge').textContent = s.anchors.filter(a=>a).length + '/' + s.anchors.length;
   $('statCurrent').textContent = s.model + '/' + s.anim;
   $('statSize').textContent = s.canvas.width + '×' + s.canvas.height;
 }
 
 /* ============================================================
-   INPUT: UPLOAD
+   UPLOAD
    ============================================================ */
 $('uploadBtn').addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', e => {
@@ -1113,12 +953,12 @@ fileInput.addEventListener('change', e => {
   fileInput.value = '';
 });
 document.addEventListener('dragover', e => e.preventDefault());
-document.addEventListener('drop', async e => {
+document.addEventListener('drop', e => {
   e.preventDefault();
   const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
   if (files.length) handleFiles(files);
 });
-document.addEventListener('paste', async e => {
+document.addEventListener('paste', e => {
   const files = [];
   for (const item of e.clipboardData.items){
     if (item.type.startsWith('image/')) files.push(item.getAsFile());
@@ -1134,41 +974,32 @@ async function handleFiles(files){
       const sprite = await addSpriteFromFile(f);
       state.sprites.set(sprite.id, sprite);
       loaded++;
-    } catch(e){
-      console.error(e);
-    }
+    } catch(e){ console.error(e); }
   }
   renderLibrary();
   if (loaded > 0){
-    // Auto select first
     if (!state.currentId){
       const first = [...state.sprites.values()][0];
       selectSprite(first.id);
     }
-    toast('✓ Đã load ' + loaded + ' file');
+    toast('✓ Loaded ' + loaded);
     setStatus('Đã load ' + loaded + ' file', false);
   } else {
-    setStatus('Không load được file nào', true);
+    setStatus('Không load được', true);
   }
 }
 
-/* ============================================================
-   INPUT: JSON PROJECT
-   ============================================================ */
+/* Import JSON */
 $('importBtn').addEventListener('click', () => jsonInput.click());
 jsonInput.addEventListener('change', async e => {
   const f = e.target.files[0];
   if (!f) return;
   try {
-    const text = await f.text();
-    const json = JSON.parse(text);
+    const json = JSON.parse(await f.text());
     if (json.format !== 'dh-studio-project' || !json.models){
-      toast('File JSON không đúng định dạng', true);
+      toast('File JSON sai định dạng', true);
       return;
     }
-    // Re-download sprites from JSON? Actually sprites must already be in map or we ask user to upload PNGs
-    toast('Đã đọc JSON: ' + Object.keys(json.models).length + ' models. Upload PNG để hoàn tất.');
-    // Apply config to existing sprites by fileName
     for (const modelName in json.models){
       const model = json.models[modelName];
       for (const animName in model.animations){
@@ -1179,7 +1010,7 @@ jsonInput.addEventListener('change', async e => {
             s.anim = animName;
             s.vLines = [...cfg.vLines];
             s.hLines = [...cfg.hLines];
-            s.anchors = cfg.anchors.map(a => a ? { x: a[0], y: a[1] } : null);
+            s.anchors = (cfg.anchors || []).map(a => a ? { x: a[0], y: a[1] } : null);
             s.fps = cfg.fps;
             s.loop = cfg.loop;
             s.anchorMode = cfg.anchorMode || 'bottom-center';
@@ -1188,9 +1019,8 @@ jsonInput.addEventListener('change', async e => {
       }
     }
     renderAll();
-  } catch(e){
-    toast('Lỗi đọc JSON: ' + e.message, true);
-  }
+    toast('✓ Đã import JSON');
+  } catch(e){ toast('Lỗi: ' + e.message, true); }
   jsonInput.value = '';
 });
 
@@ -1221,40 +1051,65 @@ function buildProjectJson(){
   return project;
 }
 
-$('exportBtn').addEventListener('click', () => {
+function exportSpritePNG(s, withMeta){
+  return new Promise(resolve => {
+    const out = document.createElement('canvas');
+    out.width = s.canvas.width;
+    out.height = s.canvas.height + (withMeta ? 1 : 0);
+    const oc = out.getContext('2d', { willReadFrequently: true });
+    oc.imageSmoothingEnabled = false;
+    oc.drawImage(s.canvas, 0, 0);
+
+    if (withMeta){
+      const meta = {
+        v: 3, label: s.anim, model: s.model,
+        fps: s.fps, loop: s.loop,
+        frames: s.vLines.length - 1,
+        spriteH: s.canvas.height,
+        vLines: s.vLines.map(v => Math.round(v)),
+        hLines: s.hLines.map(v => Math.round(v)),
+        anchorMode: s.anchorMode,
+        anchors: s.anchors.map(a => a ? [a.x, a.y] : null)
+      };
+      writeMetaRow(out, s.canvas.height, encodeMetadata(meta));
+    }
+
+    out.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = s.fileName + '.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      resolve();
+    }, 'image/png');
+  });
+}
+
+$('exportBtn').addEventListener('click', async () => {
   const s = currentSprite();
   if (!s) return;
-  // Export current sprite PNG
-  const out = document.createElement('canvas');
-  out.width = s.canvas.width;
-  out.height = s.canvas.height;
-  const oc = out.getContext('2d');
-  oc.imageSmoothingEnabled = false;
-  oc.drawImage(s.canvas, 0, 0);
-
-  out.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = s.fileName + '.png';
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast('💾 Đã tải ' + s.fileName + '.png (không metadata)');
-  }, 'image/png');
+  await exportSpritePNG(s, true);
+  toast('💾 ' + s.fileName + '.png');
 });
 
-$('exportAllBtn').addEventListener('click', () => {
+$('exportAllBtn').addEventListener('click', async () => {
+  const sprites = [...state.sprites.values()];
+  if (!sprites.length){ toast('Chưa có sprite', true); return; }
+  toast('📦 Đang tải ' + sprites.length + ' file...');
+  for (let i = 0; i < sprites.length; i++){
+    await exportSpritePNG(sprites[i], true);
+    await new Promise(r => setTimeout(r, 250));
+  }
+  // JSON
   const project = buildProjectJson();
-  // Download JSON
   const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = 'sprites.json';
+  a.href = url; a.download = 'sprites.json';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  toast('📦 Đã tải sprites.json — ' + Object.keys(project.models).length + ' models');
+  toast('📦 Đã tải ' + sprites.length + ' PNG + sprites.json');
 });
 
 /* ============================================================
@@ -1271,15 +1126,13 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 /* ============================================================
-   TOOLBAR
+   TOOLS
    ============================================================ */
 function setTool(tool){
   state.tool = tool;
   ['toolSelect','toolAddV','toolAddH','toolPick'].forEach(id => $(id).classList.remove('on'));
-  if (tool === 'select') $('toolSelect').classList.add('on');
-  if (tool === 'addv') $('toolAddV').classList.add('on');
-  if (tool === 'addh') $('toolAddH').classList.add('on');
-  if (tool === 'pick') $('toolPick').classList.add('on');
+  const map = { select:'toolSelect', addv:'toolAddV', addh:'toolAddH', pick:'toolPick' };
+  if (map[tool]) $(map[tool]).classList.add('on');
 }
 $('toolSelect').addEventListener('click', () => setTool('select'));
 $('toolAddV').addEventListener('click', () => setTool('addv'));
@@ -1288,21 +1141,29 @@ $('toolPick').addEventListener('click', () => setTool('pick'));
 setTool('select');
 
 $('snapChk').addEventListener('change', e => state.snap = e.target.checked);
-$('debugChk').addEventListener('change', e => {
-  state.debug = e.target.checked;
-  renderOverlay();
-});
+$('debugChk').addEventListener('change', e => state.debug = e.target.checked);
 
 $('autoDetect').addEventListener('click', () => {
   const s = currentSprite();
   if (!s) return;
-  const lines = autoDetectFrameLines(s.canvas, null);
-  if (!lines){ toast('Không tách được frame', true); return; }
+  let lines = autoDetectFrameLines(s.canvas, null);
+  if (!lines || lines.length < 4){
+    const userFrames = parseInt(prompt(
+      'Detect được ' + (lines ? lines.length - 1 : 0) + ' frame.\nNhập số frame đúng:', '10'
+    ));
+    if (userFrames && userFrames > 1){
+      lines = autoDetectFrameLines(s.canvas, userFrames);
+    }
+  }
+  if (!lines || lines.length < 3){
+    toast('Không tách được frame', true);
+    return;
+  }
   s.vLines = lines;
   s.hLines = [0, s.canvas.height];
   computeAnchorsForSprite(s, false);
   renderAll();
-  toast('🤖 ' + (lines.length - 1) + ' frame + ' + s.anchors.filter(a=>a).length + ' anchor');
+  toast('🤖 ' + (lines.length - 1) + ' frame');
 });
 
 $('computeAnchors').addEventListener('click', () => {
@@ -1348,11 +1209,9 @@ function findCellAt(x, y){
   return {
     x1: s.vLines[ci], y1: s.hLines[ri],
     x2: s.vLines[ci+1], y2: s.hLines[ri+1],
-    _col: ci, _row: ri,
     _idx: ri * (s.vLines.length - 1) + ci
   };
 }
-
 function pickColorAt(x, y){
   const s = currentSprite();
   if (!s) return;
@@ -1369,11 +1228,9 @@ overlayCanvas.addEventListener('mousedown', e => {
   if (!s) return;
   const { x, y } = getCanvasCoords(e);
 
-  // Alt + click = pick color
   if (e.altKey){ pickColorAt(Math.floor(x), Math.floor(y)); return; }
   if (state.tool === 'pick'){ pickColorAt(Math.floor(x), Math.floor(y)); return; }
 
-  // Right click = delete line
   if (e.button === 2){
     const line = findLineAt(x, y);
     if (line){
@@ -1385,7 +1242,6 @@ overlayCanvas.addEventListener('mousedown', e => {
     return;
   }
 
-  // Add line
   if (state.tool === 'addv'){
     s.vLines.push(Math.round(x));
     s.vLines.sort((a,b) => a-b);
@@ -1401,7 +1257,6 @@ overlayCanvas.addEventListener('mousedown', e => {
     return;
   }
 
-  // Manual anchor
   if (state.manualAnchor && state.cell){
     if (e.button === 0){
       s.anchors[state.cell._idx] = { x: Math.round(x), y: Math.round(y) };
@@ -1412,14 +1267,12 @@ overlayCanvas.addEventListener('mousedown', e => {
     }
   }
 
-  // Drag line
   const line = findLineAt(x, y);
   if (line){
     state.drag = { type: line.type, idx: line.idx };
     return;
   }
 
-  // Select cell
   const cell = findCellAt(x, y);
   if (cell){
     state.cell = cell;
@@ -1443,15 +1296,13 @@ document.addEventListener('mousemove', e => {
   if (state.drag.type === 'v'){
     let nx = x;
     if (state.snap) nx = Math.round(nx);
-    nx = Math.max(s.vLines[state.drag.idx - 1] + 5,
-         Math.min(s.vLines[state.drag.idx + 1] - 5, nx));
+    nx = Math.max(s.vLines[state.drag.idx-1]+5, Math.min(s.vLines[state.drag.idx+1]-5, nx));
     s.vLines[state.drag.idx] = nx;
     renderOverlay();
   } else if (state.drag.type === 'h'){
     let ny = y;
     if (state.snap) ny = Math.round(ny);
-    ny = Math.max(s.hLines[state.drag.idx - 1] + 5,
-         Math.min(s.hLines[state.drag.idx + 1] - 5, ny));
+    ny = Math.max(s.hLines[state.drag.idx-1]+5, Math.min(s.hLines[state.drag.idx+1]-5, ny));
     s.hLines[state.drag.idx] = ny;
     renderOverlay();
   } else if (state.drag.type === 'cell'){
@@ -1474,10 +1325,8 @@ document.addEventListener('mouseup', () => {
     renderAll();
   } else if (state.drag.type === 'cell'){
     if (state.cellMoveOffset.x !== 0 || state.cellMoveOffset.y !== 0){
-      // Commit
       state.cellOriginal = null;
       state.cellMoveOffset = { x: 0, y: 0 };
-      // Redraw main
       const mc = mainCanvas.getContext('2d');
       mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
       mc.drawImage(s.canvas, 0, 0);
@@ -1503,23 +1352,17 @@ function previewCellMove(){
   tmp.width = o.w; tmp.height = o.h;
   tmp.getContext('2d').putImageData(o.imageData, 0, 0);
   s.ctx.drawImage(tmp, o.x1 + state.cellMoveOffset.x, o.y1 + state.cellMoveOffset.y);
-  // Redraw main canvas
   const mc = mainCanvas.getContext('2d');
   mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
   mc.drawImage(s.canvas, 0, 0);
 }
 
-/* ============================================================
-   ZOOM
-   ============================================================ */
 stageCanvas.addEventListener('wheel', e => {
   if (!currentSprite()) return;
-  if (e.ctrlKey || e.metaKey || e.deltaY){
-    if (e.ctrlKey || e.metaKey){
-      e.preventDefault();
-      state.zoom = Math.max(0.25, Math.min(6, state.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
-      applyZoom();
-    }
+  if (e.ctrlKey || e.metaKey){
+    e.preventDefault();
+    state.zoom = Math.max(0.25, Math.min(6, state.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
+    applyZoom();
   }
 }, { passive: false });
 
@@ -1536,11 +1379,9 @@ function applyZoom(){
 /* ============================================================
    INSPECTOR CONTROLS
    ============================================================ */
-// Grid
 $('autoVBtn').addEventListener('click', () => {
-  const s = currentSprite();
-  if (!s) return;
-  const n = parseInt(prompt('Số cột:', s.vLines.length - 1 || 8)) || 8;
+  const s = currentSprite(); if (!s) return;
+  const n = parseInt(prompt('Số cột:', s.vLines.length - 1 || 10)) || 10;
   s.vLines = [0];
   for (let i = 1; i < n; i++) s.vLines.push(Math.round(i * s.canvas.width / n));
   s.vLines.push(s.canvas.width);
@@ -1548,8 +1389,7 @@ $('autoVBtn').addEventListener('click', () => {
   renderAll();
 });
 $('autoHBtn').addEventListener('click', () => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   const n = parseInt(prompt('Số hàng:', s.hLines.length - 1 || 1)) || 1;
   s.hLines = [0];
   for (let i = 1; i < n; i++) s.hLines.push(Math.round(i * s.canvas.height / n));
@@ -1558,43 +1398,34 @@ $('autoHBtn').addEventListener('click', () => {
   renderAll();
 });
 $('addVBtn').addEventListener('click', () => {
-  const s = currentSprite();
-  if (!s) return;
-  const mid = s.vLines.length > 1
-    ? (s.vLines[s.vLines.length-2] + s.vLines[s.vLines.length-1]) / 2
-    : s.canvas.width / 2;
+  const s = currentSprite(); if (!s) return;
+  const mid = s.vLines.length > 1 ? (s.vLines[s.vLines.length-2] + s.vLines[s.vLines.length-1])/2 : s.canvas.width/2;
   s.vLines.push(Math.round(mid));
   s.vLines.sort((a,b) => a-b);
   computeAnchorsForSprite(s, false);
   renderAll();
 });
 $('addHBtn').addEventListener('click', () => {
-  const s = currentSprite();
-  if (!s) return;
-  const mid = s.hLines.length > 1
-    ? (s.hLines[s.hLines.length-2] + s.hLines[s.hLines.length-1]) / 2
-    : s.canvas.height / 2;
+  const s = currentSprite(); if (!s) return;
+  const mid = s.hLines.length > 1 ? (s.hLines[s.hLines.length-2] + s.hLines[s.hLines.length-1])/2 : s.canvas.height/2;
   s.hLines.push(Math.round(mid));
   s.hLines.sort((a,b) => a-b);
   computeAnchorsForSprite(s, false);
   renderAll();
 });
 $('clearVBtn').addEventListener('click', () => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   s.vLines = [0, s.canvas.width];
   computeAnchorsForSprite(s, false);
   renderAll();
 });
 $('clearHBtn').addEventListener('click', () => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   s.hLines = [0, s.canvas.height];
   computeAnchorsForSprite(s, false);
   renderAll();
 });
 
-// Resize
 document.querySelectorAll('#resizeAnchorGrid .anchor-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#resizeAnchorGrid .anchor-btn').forEach(b => b.classList.remove('on'));
@@ -1603,27 +1434,22 @@ document.querySelectorAll('#resizeAnchorGrid .anchor-btn').forEach(btn => {
   });
 });
 $('resizeBtn').addEventListener('click', () => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   const nW = parseInt($('canvasW').value);
   const nH = parseInt($('canvasH').value);
   if (!nW || !nH) return;
-
   const oW = s.canvas.width, oH = s.canvas.height;
   const tmp = document.createElement('canvas');
   tmp.width = oW; tmp.height = oH;
   tmp.getContext('2d').drawImage(s.canvas, 0, 0);
-
   s.canvas.width = nW; s.canvas.height = nH;
   s.ctx = s.canvas.getContext('2d', { willReadFrequently: true });
   s.ctx.imageSmoothingEnabled = false;
-
   let dx = 0, dy = 0;
   const a = state.resizeAnchor;
-  if (a[1] === 'c') dx = (nW - oW)/2; else if (a[1] === 'r') dx = nW - oW;
-  if (a[0] === 'm') dy = (nH - oH)/2; else if (a[0] === 'b') dy = nH - oH;
+  if (a[1] === 'c') dx = (nW-oW)/2; else if (a[1] === 'r') dx = nW-oW;
+  if (a[0] === 'm') dy = (nH-oH)/2; else if (a[0] === 'b') dy = nH-oH;
   s.ctx.drawImage(tmp, Math.round(dx), Math.round(dy));
-
   s.vLines[0] = 0; s.vLines[s.vLines.length-1] = nW;
   s.hLines[0] = 0; s.hLines[s.hLines.length-1] = nH;
   computeAnchorsForSprite(s, false);
@@ -1631,8 +1457,7 @@ $('resizeBtn').addEventListener('click', () => {
 });
 
 $('cropBtn').addEventListener('click', () => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   const bbox = detectBBox(s.canvas, 0, 0, s.canvas.width, s.canvas.height);
   if (!bbox){ toast('Ảnh trống', true); return; }
   const tmp = document.createElement('canvas');
@@ -1649,44 +1474,38 @@ $('cropBtn').addEventListener('click', () => {
   toast('✂ ' + bbox.w + '×' + bbox.h);
 });
 
-// Anchor
 $('anchorMode').addEventListener('change', e => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   s.anchorMode = e.target.value;
   state.manualAnchor = s.anchorMode === 'manual';
   if (!state.manualAnchor) computeAnchorsForSprite(s, false);
   renderAll();
 });
 $('anchorRecompute').addEventListener('click', () => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   computeAnchorsForSprite(s, true);
   renderAll();
 });
 $('anchorClear').addEventListener('click', () => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   s.anchors = [];
   renderAll();
 });
 
-// BG
 $('pickBtn').addEventListener('click', () => setTool('pick'));
 $('bgTol').addEventListener('input', e => $('bgTolVal').textContent = e.target.value);
 $('bgMode').addEventListener('change', e => {
   $('bgColorRow').style.display = e.target.value === 'color' ? 'flex' : 'none';
 });
 $('bgApplyAll').addEventListener('click', () => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   applyBg(s, 0, 0, s.canvas.width, s.canvas.height);
 });
 $('bgApplyCell').addEventListener('click', () => {
   const s = currentSprite();
   if (!s || !state.cell) return;
   applyBg(s, state.cell.x1, state.cell.y1,
-    state.cell.x2 - state.cell.x1, state.cell.y2 - state.cell.y1);
+    state.cell.x2-state.cell.x1, state.cell.y2-state.cell.y1);
 });
 function applyBg(s, x, y, w, h){
   const imgData = s.ctx.getImageData(x, y, w, h);
@@ -1710,7 +1529,6 @@ function applyBg(s, x, y, w, h){
     }
   }
   s.ctx.putImageData(imgData, x, y);
-  // Redraw
   const mc = mainCanvas.getContext('2d');
   mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
   mc.drawImage(s.canvas, 0, 0);
@@ -1719,51 +1537,36 @@ function applyBg(s, x, y, w, h){
   toast('✓ ' + count + ' pixel');
 }
 
-// Meta
-$('metaAnim').addEventListener('change', e => {
-  $('customAnimRow').style.display = e.target.value === 'custom' ? 'flex' : 'none';
-});
-$('metaFile').addEventListener('change', e => {
-  const s = currentSprite();
-  if (!s) return;
-  s.fileName = e.target.value.trim() || s.fileName;
-});
 $('metaModel').addEventListener('change', e => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   s.model = e.target.value.trim() || 'player';
-  renderLibrary();
-  updateBadges();
+  renderLibrary(); updateBadges();
 });
 $('metaAnim').addEventListener('change', e => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   if (e.target.value === 'custom'){
-    setTimeout(() => {
-      const v = $('metaAnimCustom').value.trim();
-      if (v){ s.anim = v; renderLibrary(); updateBadges(); }
-    }, 100);
+    $('customAnimRow').style.display = 'flex';
   } else {
+    $('customAnimRow').style.display = 'none';
     s.anim = e.target.value;
-    renderLibrary();
-    updateBadges();
+    renderLibrary(); updateBadges();
   }
 });
 $('metaAnimCustom').addEventListener('change', e => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   s.anim = e.target.value.trim() || 'custom';
-  renderLibrary();
-  updateBadges();
+  renderLibrary(); updateBadges();
+});
+$('metaFile').addEventListener('change', e => {
+  const s = currentSprite(); if (!s) return;
+  s.fileName = e.target.value.trim() || s.fileName;
 });
 $('metaFps').addEventListener('change', e => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   s.fps = Math.max(1, Math.min(60, parseInt(e.target.value) || 10));
 });
 $('metaLoop').addEventListener('change', e => {
-  const s = currentSprite();
-  if (!s) return;
+  const s = currentSprite(); if (!s) return;
   s.loop = e.target.value === '1';
 });
 
@@ -1775,22 +1578,16 @@ const pctx = previewCanvas.getContext('2d');
 
 function renderPreviewInfo(){
   const s = currentSprite();
-  if (!s){
-    $('previewInfo').textContent = 'Chọn 1 sprite để xem thông tin.';
-    return;
-  }
+  if (!s){ $('previewInfo').textContent = 'Chọn sprite để xem.'; return; }
   const frames = s.vLines.length - 1;
-  const anchors = s.anchors.filter(a => a).length;
+  const anchors = s.anchors.filter(a=>a).length;
   $('previewInfo').innerHTML =
     `<b>${s.model}/${s.anim}</b><br>` +
     `File: ${s.fileName}.png<br>` +
     `Size: ${s.canvas.width}×${s.canvas.height}<br>` +
     `Frames: <span style="color:var(--accent2)">${frames}</span><br>` +
     `FPS: ${s.fps} · ${s.loop ? 'loop' : 'once'}<br>` +
-    `Anchors: ${anchors}/${frames}<br>` +
-    `Duration: ${(frames / s.fps).toFixed(2)}s`;
-
-  // Update slider
+    `Anchors: ${anchors}/${frames}`;
   const slider = $('previewFrameSlider');
   slider.max = Math.max(0, frames - 1);
   slider.value = state.previewFrame;
@@ -1801,48 +1598,31 @@ $('previewFrameSlider').addEventListener('input', e => {
   $('previewFrameVal').textContent = state.previewFrame;
   drawPreview();
 });
-
 function drawPreview(){
-  const s = currentSprite();
-  if (!s) return;
-  const frames = s.vLines.length - 1;
-  if (frames < 1) return;
+  const s = currentSprite(); if (!s) return;
+  const frames = s.vLines.length - 1; if (frames < 1) return;
   const idx = Math.max(0, Math.min(frames - 1, state.previewFrame));
-
   pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
   pctx.fillStyle = '#0a0d08';
   pctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
   pctx.imageSmoothingEnabled = false;
-
   const sx = s.vLines[idx];
   const sw = s.vLines[idx+1] - sx;
   const sh = s.canvas.height;
-
-  const scale = Math.min(
-    (previewCanvas.width - 20) / sw,
-    (previewCanvas.height - 20) / sh,
-    3
-  );
+  const scale = Math.min((previewCanvas.width - 20) / sw, (previewCanvas.height - 20) / sh, 3);
   const dw = sw * scale, dh = sh * scale;
   const dx = (previewCanvas.width - dw) / 2;
   const dy = (previewCanvas.height - dh) / 2;
-
   pctx.drawImage(s.canvas, sx, 0, sw, sh, dx, dy, dw, dh);
-
-  // Anchor dot
   const a = s.anchors[idx];
   if (a){
+    const ax = dx + ((a.x - sx) / sw) * dw;
     const ay = dy + (a.y / sh) * dh;
-    const ax = dx + dw / 2;
     pctx.strokeStyle = '#ff3050';
     pctx.lineWidth = 2;
-    pctx.beginPath();
-    pctx.arc(ax, ay, 4, 0, Math.PI*2);
-    pctx.stroke();
+    pctx.beginPath(); pctx.arc(ax, ay, 4, 0, Math.PI*2); pctx.stroke();
     pctx.fillStyle = '#ff3050';
-    pctx.beginPath();
-    pctx.arc(ax, ay, 2, 0, Math.PI*2);
-    pctx.fill();
+    pctx.beginPath(); pctx.arc(ax, ay, 2, 0, Math.PI*2); pctx.fill();
   }
 }
 $('previewPlayBtn').addEventListener('click', () => {
@@ -1855,7 +1635,7 @@ $('previewPlayBtn').addEventListener('click', () => {
     if (!s){ state.previewPlaying = false; return; }
     const frames = s.vLines.length - 1;
     if (frames < 1){ state.previewPlaying = false; return; }
-    state.previewTime += 1 / 60;
+    state.previewTime += 1/60;
     state.previewFrame = Math.floor(state.previewTime * s.fps) % frames;
     if (!s.loop && state.previewTime * s.fps >= frames){
       state.previewPlaying = false;
@@ -1877,50 +1657,21 @@ $('previewStopBtn').addEventListener('click', () => {
    HELP
    ============================================================ */
 $('helpBtn').addEventListener('click', () => {
-  showModal('HƯỚNG DẪN SỬ DỤNG', `
-    <div style="font-size:11px;line-height:1.9;font-family:Consolas,monospace;color:var(--dim)">
-      <b style="color:var(--accent2)">TOOLS</b><br>
-      • <b>Select</b> — kéo line, kéo cell, chọn cell<br>
-      • <b>+V / +H</b> — thêm line dọc/ngang<br>
-      • <b>Pick</b> — chọn màu nền<br>
-      <br>
-      <b style="color:var(--accent2)">PHÍM TẮT</b><br>
-      • <b>Shift + click</b> — thêm line<br>
-      • <b>Right-click line</b> — xóa<br>
-      • <b>Alt + click</b> — pick màu nhanh<br>
-      • <b>Ctrl + scroll</b> — zoom<br>
-      • <b>Click cell</b> — chọn cell<br>
-      • <b>Kéo cell</b> — move content<br>
-      <br>
-      <b style="color:var(--accent2)">WORKFLOW</b><br>
-      1. Upload PNG<br>
-      2. Bấm <b>🤖 Auto</b> để auto-detect frame<br>
-      3. Kiểm tra lưới đỏ, kéo cho khớp<br>
-      4. Chọn mode anchor → bấm <b>🎯 Anchors</b><br>
-      5. Xoá nền nếu cần<br>
-      6. Đặt Model + Animation + FPS<br>
-      7. Bấm <b>💾 Export Current</b> cho từng file<br>
-      8. Bấm <b>📦 Export Project</b> để tải sprites.json
-    </div>
-  `);
+  alert('HƯỚNG DẪN:\n\n' +
+    '1. Upload PNG → tự động đọc metadata\n' +
+    '2. Bấm 🤖 Auto để auto-detect frame\n' +
+    '3. Kéo line đỏ cho khớp nhân vật\n' +
+    '4. Chọn anchor mode → bấm 🎯 Anchors\n' +
+    '5. Set Model + Anim + FPS trong tab META\n' +
+    '6. Bấm 📦 Export All → tải tất cả PNG + JSON\n\n' +
+    'PHÍM TẮT:\n' +
+    'Ctrl+scroll = zoom\n' +
+    'Right-click line = xóa\n' +
+    'Alt+click = pick màu');
 });
 
 /* ============================================================
-   MODAL
-   ============================================================ */
-function showModal(title, bodyHTML){
-  $('modalTitle').textContent = title;
-  $('modalBody').innerHTML = bodyHTML;
-  $('modal').classList.add('show');
-}
-$('modalCancel').addEventListener('click', () => $('modal').classList.remove('show'));
-$('modalOk').addEventListener('click', () => $('modal').classList.remove('show'));
-$('modal').addEventListener('click', e => {
-  if (e.target === $('modal')) $('modal').classList.remove('show');
-});
-
-/* ============================================================
-   KEYBOARD SHORTCUTS
+   KEYBOARD
    ============================================================ */
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 's'){
@@ -1934,10 +1685,9 @@ document.addEventListener('keydown', e => {
     setTool('select');
   }
   if (e.key === 'Delete' && state.cell){
-    const s = currentSprite();
-    if (!s) return;
+    const s = currentSprite(); if (!s) return;
     s.ctx.clearRect(state.cell.x1, state.cell.y1,
-      state.cell.x2 - state.cell.x1, state.cell.y2 - state.cell.y1);
+      state.cell.x2-state.cell.x1, state.cell.y2-state.cell.y1);
     const mc = mainCanvas.getContext('2d');
     mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
     mc.drawImage(s.canvas, 0, 0);
@@ -1946,9 +1696,6 @@ document.addEventListener('keydown', e => {
   }
 });
 
-/* ============================================================
-   INIT
-   ============================================================ */
 setTool('select');
 applyZoom();
 </script>
