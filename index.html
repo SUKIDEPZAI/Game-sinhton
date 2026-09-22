@@ -244,10 +244,10 @@ body.edit-btn-mode #editOverlay{display:flex}
   box-shadow:0 3px 0 rgba(0,0,0,.5);touch-action:manipulation}
 #settingsBtn.show{display:flex}
 
-/* 🆕 ROOM LIST */
+/* ROOM LIST */
 .room-list-header{
   display:flex;align-items:center;gap:8px;
-  font-size:11px;color:#a8b498;margin:8px 0 6px;
+  font-size:11px;color:#a8b498;margin:12px 0 6px;
   padding:0 2px;font-family:Consolas,monospace;letter-spacing:1px;
 }
 .room-list-header .badge{
@@ -269,8 +269,8 @@ body.edit-btn-mode #editOverlay{display:flex}
 @keyframes spin{ to{transform:rotate(360deg)} }
 .room-list{
   background:#0a0d08;border:1px solid #2a3328;
-  border-radius:4px;max-height:180px;overflow-y:auto;
-  padding:4px;margin-bottom:10px;min-height:64px;
+  border-radius:4px;max-height:200px;overflow-y:auto;
+  padding:4px;margin-bottom:6px;min-height:64px;
 }
 .room-empty{
   text-align:center;padding:22px 10px;color:#586850;
@@ -278,11 +278,18 @@ body.edit-btn-mode #editOverlay{display:flex}
 }
 .room-item{
   display:flex;align-items:center;gap:8px;
-  padding:6px 8px;border-radius:3px;cursor:pointer;
+  padding:8px 10px;border-radius:3px;cursor:pointer;
   font-family:Consolas,monospace;font-size:11px;
-  transition:background .1s;
+  transition:all .12s;border:1px solid transparent;
 }
-.room-item:hover{background:rgba(136,255,96,.08)}
+.room-item:not(.full):hover{
+  background:rgba(136,255,96,.15);
+  border-color:#4a8a30;
+  transform:translateX(2px);
+}
+.room-item:not(.full):active{
+  transform:translateX(0) scale(.98);
+}
 .room-item .code{
   color:#88ff60;font-weight:bold;letter-spacing:1.5px;
   min-width:64px;
@@ -380,6 +387,9 @@ body.edit-btn-mode #editOverlay{display:flex}
     <div id="menuMP" class="menu-page hidden">
       <h3>CHIẾN TRƯỜNG PvP</h3>
 
+      <label>TÊN CỦA BẠN</label>
+      <input type="text" id="playerName" maxlength="12" placeholder="Hunter" value="Hunter">
+
       <div class="room-list-header">
         <span>🏠 PHÒNG GẦN ĐÂY</span>
         <span class="badge" id="roomListCount">0</span>
@@ -389,23 +399,22 @@ body.edit-btn-mode #editOverlay{display:flex}
         <div class="room-empty">Đang tải...</div>
       </div>
 
-      <button class="mbtn" onclick="Game.hostRoom()">🏠 Tạo phòng (tối đa 5)</button>
-      <button class="mbtn" onclick="Game.showJoin()">🔗 Vào phòng</button>
+      <button class="mbtn primary" onclick="Game.hostRoom()">🏠 Tạo phòng mới</button>
+      <button class="mbtn" onclick="Game.toggleJoinByCode()">🔑 Nhập mã phòng</button>
+
       <div id="hostPanel" class="hidden" style="margin-top:10px">
-        <label>TÊN CỦA BẠN</label>
-        <input type="text" id="hostName" maxlength="12" placeholder="Hunter" value="Hunter">
         <div id="roomCodeDisplay" class="code-display hidden"></div>
         <div class="status-text" id="hostStatus"></div>
       </div>
+
       <div id="joinPanel" class="hidden" style="margin-top:10px">
-        <label>TÊN CỦA BẠN</label>
-        <input type="text" id="joinName" maxlength="12" placeholder="Hunter" value="Hunter">
         <label>MÃ PHÒNG</label>
         <input type="text" id="joinCode" maxlength="6" placeholder="ABC123"
           style="text-transform:uppercase;font-size:18px;letter-spacing:4px">
         <button class="mbtn primary" onclick="Game.joinRoom()" style="margin-top:10px">Kết nối</button>
         <div class="status-text" id="joinStatus"></div>
       </div>
+
       <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
     </div>
     <div id="menuSettings" class="menu-page hidden">
@@ -1396,7 +1405,7 @@ function updateNetHud(){
 }
 
 /* ============================================================
-   🆕 ROOM LIST API
+   ROOM LIST API
    ============================================================ */
 let roomPollingTimer = null;
 let roomHeartbeatTimer = null;
@@ -1531,7 +1540,8 @@ function renderRoomList(rooms){
       '<span class="count ' + countClass + '">' + r.count + '/' + (r.max || MAX_PLAYERS) + '</span>' +
       '<span class="age">' + formatAge(now - r.ts) + '</span>';
     if (!isFull){
-      item.addEventListener('click', () => Game.joinFromList(r.code));
+      item.addEventListener('click', () => Game.joinFromList(r.code, r.name));
+      item.title = 'Click để vào phòng ' + r.code;
     } else {
       item.title = 'Phòng đã đầy';
     }
@@ -2021,6 +2031,59 @@ const ButtonSettings = (() => {
 })();
 
 /* ============================================================
+   🆕 NAME + JOIN HELPERS
+   ============================================================ */
+function getPlayerName(){
+  const el = $('playerName');
+  const name = (el && el.value.trim()) || 'Hunter';
+  if (name.length > 12) return name.slice(0, 12);
+  return name;
+}
+
+/* Vào phòng trực tiếp khi click list */
+async function joinRoomDirect(code, hostName){
+  const name = getPlayerName();
+  if (net.active){
+    toast('⚠ Đang trong phòng khác', true);
+    return;
+  }
+
+  /* Pre-check: phòng đầy? */
+  const list = await apiListRooms();
+  if (list){
+    const room = list.find(r => r.code === code);
+    if (room && room.count >= (room.max || MAX_PLAYERS)){
+      toast('❌ Phòng ' + code + ' đã đầy (' + room.count + '/' + MAX_PLAYERS + ')', true);
+      return;
+    }
+  }
+
+  toast('🔗 Đang vào phòng ' + code + '...');
+  try {
+    net.onWorldReady = () => { initInv(); startGame('client'); };
+    await net.startClient(name, code);
+  } catch(e){
+    toast('❌ ' + (e.message || 'Không vào được'), true);
+  }
+}
+
+/* Vào phòng bằng code thủ công */
+async function joinRoomByCode(){
+  const code = ($('joinCode').value || '').trim().toUpperCase();
+  const status = $('joinStatus');
+  if (code.length < 4){ status.textContent = '❌ Mã không hợp lệ'; return; }
+  if (net.active){ status.textContent = '⚠ Đang trong phòng khác'; return; }
+
+  const name = getPlayerName();
+  status.textContent = 'Đang kết nối...';
+  try {
+    net.onWorldReady = () => { initInv(); startGame('client'); };
+    await net.startClient(name, code);
+    status.textContent = '✓ Đã kết nối';
+  } catch(e){ status.textContent = '❌ ' + (e.message || e); }
+}
+
+/* ============================================================
    MENU
    ============================================================ */
 window.Game = {
@@ -2036,8 +2099,7 @@ window.Game = {
     if (gameStarted){ $('menu').classList.add('hidden'); paused = false; }
   },
   hostRoom: () => hostRoom(),
-  showJoin: () => showJoin(),
-  joinRoom: () => joinRoom(),
+  joinRoom: () => joinRoomByCode(),
   resumeGame: () => togglePause(),
   pauseSettings: () => {
     paused = false;
@@ -2045,13 +2107,9 @@ window.Game = {
     backToMenu(); showMenuPage('settings');
   },
   quitToMenu: () => backToMenu(),
-  joinFromList: (code) => {
-    showJoin();
-    setTimeout(() => {
-      $('joinCode').value = code;
-      $('joinName').focus();
-    }, 100);
-  },
+
+  joinFromList: (code, hostName) => joinRoomDirect(code, hostName),
+
   refreshRooms: () => {
     const btn = $('roomRefreshBtn');
     if (btn) btn.classList.add('spinning');
@@ -2059,7 +2117,16 @@ window.Game = {
       if (btn) setTimeout(() => btn.classList.remove('spinning'), 300);
     });
   },
+
+  toggleJoinByCode: () => {
+    const p = $('joinPanel');
+    const hp = $('hostPanel');
+    hp.classList.add('hidden');
+    p.classList.toggle('hidden');
+    if (!p.classList.contains('hidden')) setTimeout(() => $('joinCode').focus(), 100);
+  },
 };
+
 const menuPages = {
   main: $('menuMain'),
   mp: $('menuMP'),
@@ -2071,10 +2138,12 @@ function showMenuPage(name){
   if (name === 'mp') startRoomPolling();
   else stopRoomPolling();
 }
+
 async function hostRoom(){
+  if (net.active){ toast('⚠ Đang trong phòng khác', true); return; }
   $('hostPanel').classList.remove('hidden');
   $('joinPanel').classList.add('hidden');
-  const name = $('hostName').value.trim() || 'Host';
+  const name = getPlayerName();
   const status = $('hostStatus');
   const codeEl = $('roomCodeDisplay');
   status.textContent = 'Đang kết nối...';
@@ -2099,33 +2168,7 @@ async function hostRoom(){
     setTimeout(() => startGame('host'), 800);
   } catch(e){ status.textContent = '❌ Lỗi: ' + (e.message || e); }
 }
-function showJoin(){
-  $('hostPanel').classList.add('hidden');
-  $('joinPanel').classList.remove('hidden');
-  setTimeout(() => $('joinCode').focus(), 100);
-}
-async function joinRoom(){
-  const code = $('joinCode').value.trim().toUpperCase();
-  const name = $('joinName').value.trim() || 'Hunter';
-  const status = $('joinStatus');
-  if (code.length < 4){ status.textContent = '❌ Mã không hợp lệ'; return; }
 
-  const list = await apiListRooms();
-  if (list){
-    const room = list.find(r => r.code === code);
-    if (room && room.count >= (room.max || MAX_PLAYERS)){
-      status.textContent = '❌ Phòng đã đầy (' + room.count + '/' + MAX_PLAYERS + ')';
-      return;
-    }
-  }
-
-  status.textContent = 'Đang kết nối...';
-  try {
-    net.onWorldReady = () => { initInv(); startGame('client'); };
-    await net.startClient(name, code);
-    status.textContent = '✓ Đã kết nối...';
-  } catch(e){ status.textContent = '❌ ' + (e.message || e); }
-}
 function bindSlider(id, valId, cb){
   const s = $(id), v = $(valId);
   if (!s) return;
@@ -2163,7 +2206,7 @@ function startGame(mode){
   renderHotbar(); updateHpBar();
   startNetSync(); updateNetHud();
   toast(mode === 'sp' ? '🎮 Chơi đơn' :
-        mode === 'host' ? '🏠 Phòng: ' + net.roomCode : '⚔️ Đã vào phòng');
+        mode === 'host' ? '🏠 Phòng: ' + net.roomCode : '⚔️ Đã vào phòng ' + net.roomCode);
 }
 function togglePause(){
   if (!gameStarted) return;
@@ -2225,10 +2268,15 @@ mouse.x = VW/2; mouse.y = VH/2;
 ButtonSettings.init();
 $('roomRefreshBtn').addEventListener('click', () => Game.refreshRooms());
 
+/* Enter trong ô join code → join luôn */
+$('joinCode').addEventListener('keydown', e => {
+  if (e.key === 'Enter'){ e.preventDefault(); joinRoomByCode(); }
+});
+
 loadProject().then(() => {
   showMenuPage('main');
   requestAnimationFrame(loop);
 });
 </script>
 </body>
-</html>
+    </html>
