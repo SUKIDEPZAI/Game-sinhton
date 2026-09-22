@@ -23,6 +23,7 @@ const ROOM_TTL = 5 * 60 * 1000;   // 5 phút
    ============================================================ */
 const ALLOWED_ORIGINS = [
   'https://dragon.dragonhunter.gamer.free',
+  'https://sukidepzai.github.io',
   // dev local
   'http://localhost:3000',
   'http://localhost:5500',
@@ -47,37 +48,22 @@ app.use(cors({
 app.use(express.json({ limit: '15mb' }));
 
 /* ============================================================
+   🆕 CORS riêng cho /rooms — public API, cho phép mọi origin
+   ============================================================ */
+app.use('/rooms', cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+  credentials: false
+}));
+
+/* ============================================================
    STATIC FILES — serve public/ folder
-   Truy cập: https://game-sinhton.onrender.com/editor.html
    ============================================================ */
 app.use(express.static(path.join(__dirname, 'public')));
 
 /* ============================================================
-   HEALTH
-   ============================================================ */
-app.get('/', (_, res) => res.send(
-  '<h1>Dragon Hunter Backend</h1>' +
-  '<ul>' +
-  '<li><a href="/health">/health</a> — kiểm tra server</li>' +
-  '<li><a href="/rooms">/rooms</a> — danh sách phòng PvP</li>' +
-  '<li><a href="/editor.html">/editor.html</a> — Sprite Sheet Editor</li>' +
-  '<li>PeerJS signaling: <code>/peerjs/myapp/*</code></li>' +
-  '</ul>'
-));
-app.get('/health', (_, res) => res.json({
-  ok: true,
-  ts: Date.now(),
-  rooms: rooms.size,
-  maxPlayers: MAX_PLAYERS
-}));
-
-/* ============================================================
    🆕 ROOM REGISTRY (in-memory, TTL 5 phút)
-   ============================================================
-   POST   /rooms                 — đăng ký phòng mới { code, name }
-   POST   /rooms/:code/count     — cập nhật số người { count }
-   GET    /rooms                 — danh sách phòng (mới nhất trước)
-   DELETE /rooms/:code           — xoá phòng
    ============================================================ */
 const rooms = new Map();
 
@@ -131,8 +117,8 @@ app.post('/rooms/:code/count', (req, res) => {
 app.get('/rooms', (req, res) => {
   cleanupRooms();
   const list = [...rooms.values()]
-    .sort((a, b) => b.ts - a.ts)   // mới nhất trước
-    .slice(0, 20);                 // tối đa 20 phòng
+    .sort((a, b) => b.ts - a.ts)
+    .slice(0, 20);
   res.json({
     rooms: list,
     total: list.length,
@@ -150,6 +136,25 @@ app.delete('/rooms/:code', (req, res) => {
 });
 
 /* ============================================================
+   HEALTH
+   ============================================================ */
+app.get('/', (_, res) => res.send(
+  '<h1>Dragon Hunter Backend</h1>' +
+  '<ul>' +
+  '<li><a href="/health">/health</a> — kiểm tra server</li>' +
+  '<li><a href="/rooms">/rooms</a> — danh sách phòng PvP</li>' +
+  '<li><a href="/editor.html">/editor.html</a> — Sprite Sheet Editor</li>' +
+  '<li>PeerJS signaling: <code>/peerjs/myapp/*</code></li>' +
+  '</ul>'
+));
+app.get('/health', (_, res) => res.json({
+  ok: true,
+  ts: Date.now(),
+  rooms: rooms.size,
+  maxPlayers: MAX_PLAYERS
+}));
+
+/* ============================================================
    PeerJS signaling
    ============================================================ */
 const PORT = process.env.PORT || 10000;
@@ -157,7 +162,7 @@ const server = app.listen(PORT, () => console.log('🌐 Listening on', PORT));
 
 const peerServer = ExpressPeerServer(server, {
   path: '/myapp',
-  proxied: true,             // BẮT BUỘC trên Render (reverse proxy)
+  proxied: true,
   allow_discovery: false,
   alive_timeout: 60000
 });
@@ -172,6 +177,10 @@ peerServer.on('disconnect', c => console.log('Peer -', c.getId()));
 app.use((req, res) => {
   res.status(404).json({
     error: 'Not found',
+    path: req.path,
+    hint: 'Trang chủ: / · Health: /health · Rooms: /rooms · Editor: /editor.html'
+  });
+});   error: 'Not found',
     path: req.path,
     hint: 'Trang chủ: / · Health: /health · Rooms: /rooms · Editor: /editor.html'
   });

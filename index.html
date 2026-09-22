@@ -442,7 +442,7 @@ window.addEventListener('unhandledrejection', e => console.error('[PROMISE]', e.
 const BACKEND = { host:'game-sinhton.onrender.com', port:443, peerPath:'/peerjs/myapp', secure:true };
 const BACKEND_URL = 'https://' + BACKEND.host;
 const MAX_PLAYERS = 5;
-const DEATH_RESPAWN_DELAY = 1.5;
+const DEATH_RESPAWN_DELAY = 0.8;
 const buzz = ms => { if (navigator.vibrate) try{ navigator.vibrate(ms||6); }catch(e){} };
 const isTouchDevice = matchMedia('(pointer:coarse)').matches ||
   ('ontouchstart' in window && !matchMedia('(pointer:fine)').matches);
@@ -1098,18 +1098,14 @@ function burstHitVisual(x, y){
    UPDATE PLAYER
    ============================================================ */
 function updatePlayer(dt){
-  /* 🆕 DEATH STATE — không cho di chuyển, đếm ngược hồi sinh */
   if (player.hp <= 0){
     player.deathT += dt;
     player.animTime += dt;
-
-    /* Clamp animTime để giữ frame cuối */
     const deathSprite = getPlayerSprite('death');
     if (deathSprite && !deathSprite.loop){
       const maxTime = deathSprite.frames / deathSprite.fps;
       if (player.animTime > maxTime) player.animTime = maxTime;
     }
-
     if (player.deathT >= DEATH_RESPAWN_DELAY){
       respawnPlayer();
     }
@@ -1129,11 +1125,9 @@ function updatePlayer(dt){
   if (player.sitting && mag > 0.15) player.sitting = false;
   if (player.sitting){ dx = 0; dy = 0; }
 
-  /* ---------- AIM ---------- */
   if (aim.joyId !== null){
     mobileAimUsed = true;
   } else if (!mobileAimUsed && !isTouchDevice){
-    /* PC: xoay mượt (lerp) theo chuột — KHÔNG auto-attack */
     const wx = mouse.x + cam.x;
     const wy = mouse.y + cam.y;
     const targetA = Math.atan2(wy - player.y, wx - player.x);
@@ -1264,7 +1258,6 @@ const net = {
   },
   _acceptClient(conn){
     conn.on('open', () => {
-      /* 🆕 Reject nếu phòng đầy */
       if (this.clients.size >= MAX_PLAYERS - 1){
         try { conn.send({ t:'full', max: MAX_PLAYERS }); } catch(e){}
         setTimeout(() => { try { conn.close(); } catch(e){} }, 200);
@@ -1320,7 +1313,6 @@ const net = {
         flashDamage(); Audio2D.sfx.hurt(); updateHpBar();
         toast(`⚔️ ${d.fromName} gây ${d.dmg}!`);
         if (player.hp <= 0){
-          /* 🆕 Chết: chạy animation death, sau 1.5s hồi sinh */
           Audio2D.sfx.kill();
           player.deathT = 0;
           player.currentAnim = 'death';
@@ -1359,8 +1351,6 @@ const net = {
     this.hostConn = null;
     if (this.peer){ try { this.peer.destroy(); } catch(e){} }
     this.peer = null; this.myId = null;
-
-    /* 🆕 Xoá phòng nếu mình là host */
     if (wasRoom && wasMode === 'host'){
       apiDeleteRoom(wasRoom);
     }
@@ -1410,37 +1400,73 @@ function updateNetHud(){
    ============================================================ */
 let roomPollingTimer = null;
 let roomHeartbeatTimer = null;
+let backendAwake = false;
+
+async function wakeUpBackend(){
+  if (backendAwake) return true;
+  try {
+    const res = await fetch(BACKEND_URL + '/health', {
+      cache: 'no-store',
+      signal: AbortSignal.timeout ? AbortSignal.timeout(35000) : undefined
+    });
+    backendAwake = res.ok;
+    if (res.ok) console.log('✓ Backend awake');
+    return res.ok;
+  } catch(e){
+    console.warn('Wake-up fail:', e.message);
+    return false;
+  }
+}
 
 async function apiRegisterRoom(code, name){
   try {
-    await fetch(BACKEND_URL + '/rooms', {
+    const res = await fetch(BACKEND_URL + '/rooms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, name })
+      body: JSON.stringify({ code, name }),
+      signal: AbortSignal.timeout ? AbortSignal.timeout(35000) : undefined
     });
-  } catch(e){ console.warn('Register room fail:', e); }
+    return res.ok;
+  } catch(e){
+    console.warn('Register room fail:', e.message);
+    return false;
+  }
 }
 async function apiUpdateRoomCount(code, count){
   try {
     await fetch(BACKEND_URL + '/rooms/' + code + '/count', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ count })
+      body: JSON.stringify({ count }),
+      signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined
     });
   } catch(e){}
 }
 async function apiDeleteRoom(code){
   try {
-    await fetch(BACKEND_URL + '/rooms/' + code, { method: 'DELETE' });
+    await fetch(BACKEND_URL + '/rooms/' + code, {
+      method: 'DELETE',
+      signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined
+    });
   } catch(e){}
 }
-async function apiListRooms(){
-  try {
-    const res = await fetch(BACKEND_URL + '/rooms', { cache: 'no-store' });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.rooms || [];
-  } catch(e){ return []; }
+async function apiListRooms(retries = 2){
+  for (let i = 0; i <= retries; i++){
+    try {
+      const res = await fetch(BACKEND_URL + '/rooms', {
+        cache: 'no-store',
+        signal: AbortSignal.timeout ? AbortSignal.timeout(35000) : undefined
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      backendAwake = true;
+      return data.rooms || [];
+    } catch(e){
+      console.warn('List rooms attempt', i+1, 'fail:', e.message);
+      if (i === retries) return null;
+      await new Promise(r => setTimeout(r, 800));
+    }
+  }
 }
 
 function startRoomHeartbeat(){
@@ -1458,7 +1484,7 @@ function updateRoomHeartbeat(){
 
 function startRoomPolling(){
   if (roomPollingTimer) return;
-  fetchAndRenderRooms();
+  wakeUpBackend().then(() => fetchAndRenderRooms());
   roomPollingTimer = setInterval(fetchAndRenderRooms, 3000);
 }
 function stopRoomPolling(){
@@ -1466,7 +1492,22 @@ function stopRoomPolling(){
 }
 async function fetchAndRenderRooms(){
   const list = await apiListRooms();
+  if (list === null){
+    renderRoomListError();
+    return;
+  }
   renderRoomList(list);
+}
+function renderRoomListError(){
+  const el = $('roomList');
+  const cnt = $('roomListCount');
+  if (!el) return;
+  cnt.textContent = '!';
+  el.innerHTML =
+    '<div class="room-empty" style="color:#ff9898">' +
+    '⚠ Không kết nối được server<br>' +
+    '<small style="color:#889878">Render có thể đang khởi động (~30s) — thử lại sau</small>' +
+    '</div>';
 }
 function renderRoomList(rooms){
   const el = $('roomList');
@@ -1599,7 +1640,6 @@ function drawPlayer(){
   const total = sprite.frames || (sprite.vLines ? sprite.vLines.length - 1 : 8);
   let idx;
   if (player.hp <= 0 && !sprite.loop){
-    /* 🆕 Đang chết — giữ frame cuối */
     idx = total - 1;
   } else if (sprite.loop){
     idx = ((rawIdx % total) + total) % total;
@@ -1666,11 +1706,11 @@ function drawRemotePlayer(p){
 }
 
 /* ============================================================
-   AIM ARROW — NHỎ + ORBIT BỤNG
+   AIM ARROW
    ============================================================ */
 function drawAimArrow(){
   if (!gameStarted || paused) return;
-  if (player.hp <= 0) return;   /* 🆕 Không vẽ mũi tên khi chết */
+  if (player.hp <= 0) return;
 
   const sx = Math.round(player.x - cam.x);
   const syBelly = Math.round(player.y - cam.y - 14);
@@ -1870,7 +1910,7 @@ function toast(msg){
 }
 
 /* ============================================================
-   BUTTON SETTINGS — KÉO THẢ
+   BUTTON SETTINGS
    ============================================================ */
 const ButtonSettings = (() => {
   const KEY = 'dh_btn_position_v2';
@@ -2038,6 +2078,9 @@ async function hostRoom(){
   const status = $('hostStatus');
   const codeEl = $('roomCodeDisplay');
   status.textContent = 'Đang kết nối...';
+
+  wakeUpBackend();
+
   try {
     const code = await net.startHost(name);
     codeEl.textContent = code;
@@ -2047,8 +2090,10 @@ async function hostRoom(){
     world.fill(0); generateWorld();
     resetPlayerPosition(); initInv();
 
-    /* 🆕 Đăng ký phòng + heartbeat */
-    await apiRegisterRoom(code, name);
+    apiRegisterRoom(code, name).then(ok => {
+      if (ok) console.log('✓ Room registered:', code);
+      else console.warn('✗ Room register failed:', code);
+    });
     startRoomHeartbeat();
 
     setTimeout(() => startGame('host'), 800);
@@ -2065,12 +2110,13 @@ async function joinRoom(){
   const status = $('joinStatus');
   if (code.length < 4){ status.textContent = '❌ Mã không hợp lệ'; return; }
 
-  /* 🆕 Pre-check: phòng đầy không? */
   const list = await apiListRooms();
-  const room = list.find(r => r.code === code);
-  if (room && room.count >= (room.max || MAX_PLAYERS)){
-    status.textContent = '❌ Phòng đã đầy (' + room.count + '/' + MAX_PLAYERS + ')';
-    return;
+  if (list){
+    const room = list.find(r => r.code === code);
+    if (room && room.count >= (room.max || MAX_PLAYERS)){
+      status.textContent = '❌ Phòng đã đầy (' + room.count + '/' + MAX_PLAYERS + ')';
+      return;
+    }
   }
 
   status.textContent = 'Đang kết nối...';
