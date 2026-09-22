@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DH Studio — Sprite Editor</title>
+<title>DH Studio — Sprite Editor v4</title>
 <style>
 :root{
   --bg:#0a0e08;--bg2:#131a12;--panel:#1a2218;--panel2:#232e20;
@@ -11,6 +11,7 @@
   --accent:#6fbf4a;--accent2:#88ff60;--accent3:#4a8a30;
   --text:#e8f0d8;--dim:#889878;--dim2:#586850;
   --danger:#e8503a;--warning:#ffcc40;--info:#88d8ff;
+  --weapon:#ff8060;--skill:#b880ff;--handle:#00d0ff;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
@@ -19,172 +20,291 @@ button{cursor:pointer;font-family:inherit;color:inherit}
 input,select{font-family:inherit;color:inherit}
 .app{display:flex;flex-direction:column;height:100%}
 
-.header{height:44px;background:linear-gradient(180deg,var(--panel),var(--bg));
+/* ================= HEADER ================= */
+.header{height:48px;background:linear-gradient(180deg,#1f2a1a,#0f1409);
   border-bottom:2px solid var(--border);display:flex;align-items:center;
-  padding:0 14px;gap:16px;flex-shrink:0}
-.brand{font-family:Consolas,monospace;font-size:14px;font-weight:900;
-  color:var(--accent2);letter-spacing:2px;text-shadow:0 0 12px rgba(136,255,96,.4)}
-.brand .ver{font-size:9px;color:var(--dim2);margin-left:6px}
-.header-tools{display:flex;gap:5px;margin-left:auto}
-.btn{background:linear-gradient(180deg,var(--panel2),var(--panel));
-  border:1px solid var(--border);border-radius:3px;padding:6px 11px;
-  font-size:11px;font-weight:bold;transition:all .1s;
-  box-shadow:0 1px 0 rgba(0,0,0,.5);display:inline-flex;align-items:center;gap:5px}
-.btn:hover{background:linear-gradient(180deg,#2f3a2a,#232e20)}
-.btn:active{transform:translateY(1px)}
-.btn.primary{background:linear-gradient(180deg,#88d858,var(--accent3));color:#0a1a06;
-  box-shadow:0 1px 0 #1a3a10,inset 0 1px 0 #b8ff88}
-.btn.danger{background:linear-gradient(180deg,#d05848,#8a2a20);color:#fff}
-.btn.on{background:linear-gradient(180deg,#ffd060,#d09020);color:#1a0a00}
-.btn:disabled{opacity:.35;cursor:not-allowed}
+  padding:0 16px;gap:12px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:10}
+.brand{font-family:Consolas,monospace;font-size:15px;font-weight:900;
+  color:var(--accent2);letter-spacing:2px;text-shadow:0 0 14px rgba(136,255,96,.5)}
+.brand .ver{font-size:9px;color:var(--dim2);margin-left:6px;letter-spacing:1px}
+.header-tools{display:flex;gap:6px;margin-left:auto;align-items:center}
 
+.btn{background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--border);border-radius:4px;padding:7px 12px;
+  font-size:11px;font-weight:600;transition:all .15s;
+  box-shadow:0 1px 0 rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{background:linear-gradient(180deg,#2f3a2a,#232e20);transform:translateY(-1px);
+  box-shadow:0 2px 6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
+.btn:active{transform:translateY(0);box-shadow:0 1px 0 rgba(0,0,0,.5)}
+.btn.primary{background:linear-gradient(180deg,#88d858,var(--accent3));color:#0a1a06;
+  box-shadow:0 2px 0 #1a3a10,inset 0 1px 0 #b8ff88}
+.btn.primary:hover{background:linear-gradient(180deg,#98e868,#5a9a40)}
+.btn.danger{background:linear-gradient(180deg,#d05848,#8a2a20);color:#fff}
+.btn.on{background:linear-gradient(180deg,#ffd060,#d09020);color:#1a0a00;
+  box-shadow:0 2px 0 #8a5a10,inset 0 1px 0 #ffe888}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important}
+.btn.icon{padding:7px 9px;font-size:14px}
+.btn.small{padding:5px 9px;font-size:10px}
+
+.upload-group{display:flex;gap:0}
+.upload-group select{
+  background:#000;color:var(--accent2);border:1px solid var(--border);border-right:none;
+  border-radius:4px 0 0 4px;padding:7px 10px;font-size:11px;font-weight:600;
+  font-family:Consolas,monospace;cursor:pointer}
+.upload-group select:focus{outline:none;border-color:var(--accent)}
+.upload-group .btn{border-radius:0 4px 4px 0}
+
+/* ================= MAIN ================= */
 .main{display:flex;flex:1;overflow:hidden}
 
-.library{width:220px;background:var(--panel);border-right:1px solid var(--border);
+/* ================= LIBRARY ================= */
+.library{width:240px;background:var(--panel);border-right:1px solid var(--border);
   display:flex;flex-direction:column;flex-shrink:0}
-.panel-h{height:32px;background:var(--bg2);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 10px;
-  font-family:Consolas,monospace;font-size:10px;font-weight:bold;
+.panel-h{height:36px;background:linear-gradient(180deg,#1f2a1a,#131a12);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;
+  padding:0 12px;font-family:Consolas,monospace;font-size:10px;font-weight:bold;
   letter-spacing:1.5px;color:var(--accent2);flex-shrink:0}
-.panel-h .cnt{margin-left:auto;color:var(--dim2);font-weight:normal}
-.library-body{flex:1;overflow-y:auto;padding:6px}
+.panel-h .cnt{margin-left:auto;background:var(--accent3);color:var(--accent2);
+  padding:1px 7px;border-radius:10px;font-weight:bold;font-size:10px}
+.library-body{flex:1;overflow-y:auto;padding:8px}
 
-.model-group{margin-bottom:8px}
-.model-header{display:flex;align-items:center;gap:6px;padding:5px 6px;
-  background:var(--panel2);border-radius:3px;cursor:pointer;
-  font-family:Consolas,monospace;font-size:11px;font-weight:bold;color:var(--accent2)}
-.model-header:hover{background:#2f3a2a}
-.model-header .arrow{font-size:9px;transition:transform .15s}
+.model-group{margin-bottom:10px}
+.model-header{display:flex;align-items:center;gap:8px;padding:7px 10px;
+  background:linear-gradient(180deg,var(--panel2),#1a2218);
+  border-radius:5px;cursor:pointer;transition:all .15s;
+  font-family:Consolas,monospace;font-size:11px;font-weight:bold;color:var(--accent2);
+  border:1px solid transparent}
+.model-header:hover{background:linear-gradient(180deg,#2f3a2a,#232e20);border-color:var(--border2)}
+.model-header.weapon{color:var(--weapon);border-color:rgba(255,128,96,.3)}
+.model-header.skill{color:var(--skill);border-color:rgba(184,128,255,.3)}
+.model-header .arrow{font-size:10px;transition:transform .2s}
 .model-header.collapsed .arrow{transform:rotate(-90deg)}
 .model-header .count{margin-left:auto;color:var(--dim);font-weight:normal;font-size:10px}
-.model-body{padding-left:6px}
+.model-body{padding-left:8px;margin-top:4px}
 .model-body.hidden{display:none}
 
-.anim-item{display:flex;align-items:center;gap:5px;padding:4px 6px;margin-top:3px;
-  border-radius:3px;cursor:pointer;font-size:11px;
-  border-left:2px solid transparent}
-.anim-item:hover{background:var(--panel2)}
-.anim-item.active{background:var(--accent3);border-left-color:var(--accent2);color:#fff}
-.anim-item .dot{width:6px;height:6px;border-radius:50%;background:var(--dim2);flex-shrink:0}
-.anim-item.active .dot{background:var(--accent2)}
+.anim-item{display:flex;align-items:center;gap:6px;padding:6px 8px;margin-top:3px;
+  border-radius:4px;cursor:pointer;font-size:11px;
+  border-left:3px solid transparent;transition:all .12s;position:relative}
+.anim-item:hover{background:var(--panel2);border-left-color:var(--dim2)}
+.anim-item.active{background:linear-gradient(90deg,var(--accent3),#3a6a25);
+  border-left-color:var(--accent2);color:#fff;
+  box-shadow:inset 0 0 20px rgba(136,255,96,.15)}
+.anim-item .dot{width:7px;height:7px;border-radius:50%;background:var(--dim2);flex-shrink:0;
+  transition:all .15s}
+.anim-item.active .dot{background:var(--accent2);box-shadow:0 0 8px var(--accent2)}
 .anim-item .name{flex:1;font-family:Consolas,monospace;overflow:hidden;
-  text-overflow:ellipsis;white-space:nowrap}
+  text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .anim-item .meta{font-size:9px;color:var(--dim);font-family:Consolas,monospace}
 .anim-item.active .meta{color:#c8ffb8}
-.lib-empty{text-align:center;padding:30px 10px;color:var(--dim2);
-  font-family:Consolas,monospace;font-size:10px;line-height:1.7}
-.lib-empty kbd{background:var(--panel2);border:1px solid var(--border);border-radius:2px;
-  padding:1px 5px;color:var(--accent2)}
+.anim-item.dup-warn{background:rgba(232,80,58,.15)}
+.anim-item.dup-warn::after{
+  content:'⚠';position:absolute;right:4px;top:2px;
+  color:#ff9898;font-size:13px;font-weight:bold;
+}
+.lib-empty{text-align:center;padding:40px 12px;color:var(--dim2);
+  font-family:Consolas,monospace;font-size:11px;line-height:1.8}
+.lib-empty kbd{background:var(--panel2);border:1px solid var(--border);border-radius:3px;
+  padding:2px 6px;color:var(--accent2);font-family:Consolas,monospace}
 
-.stage{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0d1109}
-.stage-bar{height:32px;background:var(--bg2);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 8px;gap:4px;flex-shrink:0;overflow-x:auto}
-.stage-bar .sep{width:1px;height:18px;background:var(--border2);margin:0 4px;flex-shrink:0}
-.stage-bar .btn{padding:4px 9px;font-size:10px;white-space:nowrap}
+/* ================= STAGE ================= */
+.stage{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0d1109;position:relative}
+.stage-bar{height:40px;background:linear-gradient(180deg,#1a2218,#131a12);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;
+  padding:0 10px;gap:5px;flex-shrink:0;overflow-x:auto}
+.stage-bar::-webkit-scrollbar{height:3px}
+.stage-bar .sep{width:1px;height:22px;background:var(--border2);margin:0 6px;flex-shrink:0}
+.stage-bar .btn{padding:5px 10px;font-size:10px}
 .stage-bar .zoom{font-family:Consolas,monospace;color:var(--accent2);
-  margin-left:auto;padding:0 10px;font-size:11px;font-weight:bold;flex-shrink:0}
+  margin-left:auto;padding:0 12px;font-size:12px;font-weight:bold;flex-shrink:0}
+
 .stage-canvas{flex:1;position:relative;overflow:auto;
-  background-image:linear-gradient(45deg,#151c11 25%,transparent 25%),
+  background-image:
+    linear-gradient(45deg,#151c11 25%,transparent 25%),
     linear-gradient(-45deg,#151c11 25%,transparent 25%),
     linear-gradient(45deg,transparent 75%,#151c11 75%),
     linear-gradient(-45deg,transparent 75%,#151c11 75%);
-  background-size:20px 20px;
-  background-position:0 0,0 10px,10px -10px,-10px 0px}
-.canvas-holder{position:relative;display:inline-block;margin:24px}
+  background-size:24px 24px;
+  background-position:0 0,0 12px,12px -12px,-12px 0px}
+.canvas-holder{position:relative;display:inline-block;margin:32px}
 #mainCanvas,#overlayCanvas{display:block;image-rendering:pixelated;
-  box-shadow:0 0 0 1px #000,0 0 40px rgba(0,0,0,.9)}
-#overlayCanvas{position:absolute;top:0;left:0;pointer-events:auto;cursor:crosshair}
-.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:14px;pointer-events:none;text-align:center}
-.empty-state .ic{font-size:56px;opacity:.4}
-.empty-state .title{font-family:Consolas,monospace;font-size:15px;color:var(--accent2);
-  letter-spacing:3px;font-weight:bold}
-.empty-state .hint{font-size:11px;color:var(--dim);max-width:340px;line-height:1.8}
-.empty-state kbd{background:var(--panel2);border:1px solid var(--border);border-radius:3px;
-  padding:2px 7px;font-family:Consolas,monospace;color:var(--accent2);font-size:10px}
+  box-shadow:0 0 0 2px #000,0 0 60px rgba(0,0,0,.95),0 0 100px rgba(136,255,96,.05)}
+#overlayCanvas{position:absolute;top:0;left:0;pointer-events:auto}
+#overlayCanvas.grab{cursor:grab}
+#overlayCanvas.grabbing{cursor:grabbing}
+#overlayCanvas.crosshair{cursor:crosshair}
+#overlayCanvas.move{cursor:move}
 
-.inspector{width:300px;background:var(--panel);border-left:1px solid var(--border);
+.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:18px;pointer-events:none;text-align:center}
+.empty-state .ic{font-size:64px;opacity:.4;filter:drop-shadow(0 0 20px rgba(136,255,96,.3))}
+.empty-state .title{font-family:Consolas,monospace;font-size:18px;color:var(--accent2);
+  letter-spacing:4px;font-weight:bold;text-shadow:0 0 20px rgba(136,255,96,.4)}
+.empty-state .hint{font-size:12px;color:var(--dim);max-width:400px;line-height:1.9}
+.empty-state kbd{background:var(--panel2);border:1px solid var(--border);border-radius:4px;
+  padding:3px 8px;font-family:Consolas,monospace;color:var(--accent2);font-size:11px}
+
+/* 🆕 Floating zoom controls */
+.zoom-controls{position:absolute;bottom:16px;right:16px;display:flex;flex-direction:column;
+  gap:4px;background:rgba(20,24,16,.95);border:1px solid var(--border2);
+  border-radius:6px;padding:4px;z-index:5;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+.zoom-controls button{width:32px;height:32px;border:none;border-radius:4px;
+  background:var(--panel2);color:var(--text);font-size:16px;font-weight:bold;
+  cursor:pointer;transition:all .15s}
+.zoom-controls button:hover{background:var(--accent3);color:#fff}
+.zoom-controls .zoom-val{width:40px;height:32px;display:flex;align-items:center;
+  justify-content:center;font-family:Consolas,monospace;font-size:10px;
+  color:var(--accent2);font-weight:bold;background:#000;border-radius:4px}
+
+/* ================= INSPECTOR ================= */
+.inspector{width:320px;background:var(--panel);border-left:1px solid var(--border);
   display:flex;flex-direction:column;flex-shrink:0}
 .tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
-.tab{flex:1;padding:8px 4px;text-align:center;font-family:Consolas,monospace;
+.tab{flex:1;padding:11px 4px;text-align:center;font-family:Consolas,monospace;
   font-size:10px;font-weight:bold;color:var(--dim);
-  cursor:pointer;border-bottom:2px solid transparent;transition:all .1s}
-.tab:hover{color:var(--text);background:var(--panel)}
-.tab.active{color:var(--accent2);border-bottom-color:var(--accent2);background:var(--panel)}
+  cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;
+  position:relative}
+.tab:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.tab.active{color:var(--accent2);border-bottom-color:var(--accent2);
+  background:rgba(136,255,96,.05)}
 .tab-panels{flex:1;overflow-y:auto}
-.panel{padding:12px;display:none}
-.panel.active{display:block}
+.panel{padding:14px;display:none}
+.panel.active{display:block;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-.sec{margin-bottom:14px}
+.sec{margin-bottom:16px}
 .sec-title{font-family:Consolas,monospace;font-size:10px;font-weight:bold;
-  color:var(--accent2);letter-spacing:1.5px;margin-bottom:8px;
-  display:flex;align-items:center;justify-content:space-between}
+  color:var(--accent2);letter-spacing:1.5px;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:6px;border-bottom:1px solid var(--border2)}
 .sec-title .badge{background:var(--accent3);color:var(--accent2);
-  padding:1px 6px;border-radius:8px;font-size:9px;font-weight:normal}
+  padding:2px 8px;border-radius:10px;font-size:9px;font-weight:bold}
+.sec-title .badge.weapon{background:#4a2010;color:var(--weapon)}
+.sec-title .badge.skill{background:#2a1a40;color:var(--skill)}
 
-.field{display:flex;align-items:center;gap:8px;margin:6px 0}
+.field{display:flex;align-items:center;gap:10px;margin:8px 0}
 .field label{flex:0 0 82px;font-size:10px;color:var(--dim);
-  font-family:Consolas,monospace}
+  font-family:Consolas,monospace;letter-spacing:.5px}
 .field input[type=number],.field input[type=text],
 .field select{flex:1;background:#000;color:var(--accent2);
-  border:1px solid var(--border2);border-radius:3px;padding:5px 8px;
-  font-size:11px;font-family:Consolas,monospace;text-align:center}
-.field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
-.field input[type=range]{flex:1;accent-color:var(--accent);height:16px}
-.field .val{flex:0 0 40px;text-align:right;color:var(--accent2);
-  font-family:Consolas,monospace;font-size:11px}
+  border:1px solid var(--border2);border-radius:4px;padding:6px 10px;
+  font-size:11px;font-family:Consolas,monospace;text-align:center;
+  transition:all .15s}
+.field input:focus,.field select:focus{outline:none;
+  border-color:var(--accent);box-shadow:0 0 0 2px rgba(111,191,74,.2)}
+.field input[type=range]{flex:1;accent-color:var(--accent);height:18px}
+.field .val{flex:0 0 44px;text-align:right;color:var(--accent2);
+  font-family:Consolas,monospace;font-size:11px;font-weight:bold}
 .field .mini{flex:0 0 auto;background:var(--panel2);border:1px solid var(--border);
-  border-radius:3px;padding:4px 9px;font-size:10px;font-weight:bold;cursor:pointer}
-.field .mini:hover{background:#2f3a2a}
+  border-radius:4px;padding:5px 10px;font-size:10px;font-weight:600;cursor:pointer;
+  transition:all .12s}
+.field .mini:hover{background:var(--accent3);border-color:var(--accent)}
 
-.lines-list{max-height:100px;overflow-y:auto;background:#000;border:1px solid var(--border2);
-  border-radius:3px;padding:4px;margin-top:6px}
-.line-row{display:flex;align-items:center;gap:5px;padding:2px 3px;border-radius:2px;
-  font-family:Consolas,monospace;font-size:10px}
+/* 🆕 Lines list với drag handle */
+.lines-list{max-height:140px;overflow-y:auto;background:#000;
+  border:1px solid var(--border2);border-radius:5px;padding:5px;margin-top:8px}
+.lines-list::-webkit-scrollbar{width:5px}
+.line-row{display:flex;align-items:center;gap:6px;padding:4px 5px;border-radius:3px;
+  font-family:Consolas,monospace;font-size:10px;transition:background .1s}
 .line-row:hover{background:var(--panel2)}
-.line-row .idx{color:var(--dim2);width:22px}
-.line-row input{width:55px;background:#0a0d08;color:var(--accent2);
-  border:1px solid var(--border2);border-radius:2px;padding:2px 4px;
+.line-row.cur{background:rgba(136,255,96,.12);border-left:2px solid var(--accent2)}
+.line-row .idx{color:var(--dim2);width:24px;font-weight:bold}
+.line-row .handle-ic{width:12px;height:12px;color:var(--handle);font-size:10px;
+  display:flex;align-items:center;justify-content:center;cursor:grab}
+.line-row input{width:60px;background:#0a0d08;color:var(--accent2);
+  border:1px solid var(--border2);border-radius:3px;padding:3px 5px;
   font-size:10px;font-family:Consolas,monospace;text-align:center}
+.line-row input:focus{outline:none;border-color:var(--accent)}
 .line-row .del{margin-left:auto;background:none;border:none;
-  color:var(--danger);font-size:12px;padding:0 3px;opacity:.6;cursor:pointer}
-.line-row .del:hover{opacity:1}
+  color:var(--danger);font-size:13px;padding:2px 5px;opacity:.5;cursor:pointer;
+  border-radius:3px;transition:all .12s}
+.line-row .del:hover{opacity:1;background:rgba(232,80,58,.2)}
 
-.anchor-grid{display:grid;grid-template-columns:repeat(3,32px);
-  grid-template-rows:repeat(3,32px);gap:3px;justify-content:center;margin:8px 0}
+.anchor-grid{display:grid;grid-template-columns:repeat(3,36px);
+  grid-template-rows:repeat(3,36px);gap:4px;justify-content:center;margin:10px 0}
 .anchor-btn{background:var(--panel2);border:1px solid var(--border);
-  border-radius:3px;color:var(--dim);font-size:14px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .1s}
-.anchor-btn:hover{background:#2f3a2a}
-.anchor-btn.on{background:var(--accent);color:#0a1a06;border-color:var(--accent2)}
+  border-radius:5px;color:var(--dim);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .12s}
+.anchor-btn:hover{background:var(--accent3);color:#fff}
+.anchor-btn.on{background:var(--accent);color:#0a1a06;border-color:var(--accent2);
+  box-shadow:0 0 12px rgba(136,255,96,.4)}
 
-.swatch{width:32px;height:32px;border:2px solid var(--border);border-radius:4px;
+.swatch{width:36px;height:36px;border:2px solid var(--border);border-radius:6px;
   position:relative;overflow:hidden;flex-shrink:0}
 .swatch-fill{position:absolute;inset:0}
 
-.anim-preview{width:100%;height:140px;background:#0a0d08;
-  border:1px solid var(--border2);border-radius:4px;image-rendering:pixelated;display:block}
+.anim-preview{width:100%;height:160px;background:#000;
+  border:1px solid var(--border2);border-radius:6px;image-rendering:pixelated;display:block}
 
 .help-box{background:#0a0d08;border-left:3px solid var(--accent3);
-  padding:8px 10px;border-radius:3px;font-size:10px;color:var(--dim);
-  font-family:Consolas,monospace;line-height:1.7;margin-top:8px}
+  padding:10px 12px;border-radius:4px;font-size:10px;color:var(--dim);
+  font-family:Consolas,monospace;line-height:1.8;margin-top:10px}
 .help-box b{color:var(--accent2)}
+.help-box.weapon{border-left-color:var(--weapon)}
+.help-box.skill{border-left-color:var(--skill)}
+.help-box.warn{border-left-color:var(--warning);color:var(--warning)}
+.help-box kbd{background:var(--panel2);border:1px solid var(--border);
+  border-radius:3px;padding:1px 5px;color:var(--accent2);font-size:9px}
 
-.status-bar{height:24px;background:var(--bg2);border-top:1px solid var(--border);
-  display:flex;align-items:center;padding:0 14px;gap:16px;
-  font-family:Consolas,monospace;font-size:10px;color:var(--dim);flex-shrink:0}
-.status-bar .ok{color:var(--accent2)}
+/* ================= STATUS BAR ================= */
+.status-bar{height:26px;background:linear-gradient(180deg,#1a2218,#0f1409);
+  border-top:1px solid var(--border);display:flex;align-items:center;
+  padding:0 16px;gap:20px;font-family:Consolas,monospace;font-size:10px;
+  color:var(--dim);flex-shrink:0}
+.status-bar .ok{color:var(--accent2);font-weight:bold}
 .status-bar .err{color:#ff9898}
-.status-bar .item{display:flex;gap:5px;align-items:center}
+.status-bar .weapon{color:var(--weapon);font-weight:bold}
+.status-bar .skill{color:var(--skill);font-weight:bold}
+.status-bar .info{color:var(--info)}
+.status-bar .item{display:flex;gap:6px;align-items:center}
 .status-bar .item .lbl{color:var(--dim2)}
 
-#toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
-  background:rgba(20,28,18,.96);border:1px solid var(--accent3);
-  border-radius:6px;padding:10px 20px;font-family:Consolas,monospace;
+#toast{position:fixed;bottom:48px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:rgba(20,28,18,.98);border:1px solid var(--accent3);
+  border-radius:6px;padding:12px 24px;font-family:Consolas,monospace;
   font-size:11px;color:var(--accent2);z-index:300;opacity:0;
-  transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
-#toast.show{opacity:1}
+  transition:all .25s;pointer-events:none;max-width:90vw;text-align:center;
+  box-shadow:0 8px 32px rgba(0,0,0,.7)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.err{border-color:var(--danger);color:#ff9898}
+#toast.warn{border-color:var(--warning);color:var(--warning)}
+
+/* 🆕 Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;
+  display:none;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(4px)}
+.modal-bg.show{display:flex;animation:fadeIn .15s}
+.modal{background:linear-gradient(180deg,#232e20,#1a2218);
+  border:2px solid var(--accent3);border-radius:10px;
+  padding:24px 28px;max-width:560px;width:100%;
+  box-shadow:0 12px 60px rgba(0,0,0,.9)}
+.modal h3{font-family:Consolas,monospace;color:var(--accent2);font-size:14px;
+  letter-spacing:2px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal input[type=text]{width:100%;background:#000;color:var(--accent2);
+  border:1px solid var(--border2);border-radius:4px;padding:10px 12px;
+  font-size:12px;font-family:Consolas,monospace;margin:8px 0}
+.modal input:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(111,191,74,.2)}
+.modal .actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.export-list{background:#0a0d08;border:1px solid var(--border2);
+  border-radius:5px;padding:12px;margin:12px 0;max-height:260px;overflow-y:auto;
+  font-family:Consolas,monospace;font-size:11px;line-height:1.8}
+.export-list .mdl{color:var(--accent2);font-weight:bold;margin-top:8px;
+  display:flex;align-items:center;gap:6px}
+.export-list .mdl:first-child{margin-top:0}
+.export-list .anim{color:var(--dim);padding-left:20px}
+.export-list .anim .fn{color:#88d8ff}
+
+/* 🆕 Keyboard hint overlay */
+.kbd-hint{position:absolute;bottom:16px;left:16px;
+  background:rgba(20,24,16,.95);border:1px solid var(--border2);
+  border-radius:6px;padding:8px 12px;font-family:Consolas,monospace;
+  font-size:10px;color:var(--dim);line-height:1.7;z-index:5;
+  box-shadow:0 4px 16px rgba(0,0,0,.6);opacity:.7;
+  transition:opacity .2s}
+.kbd-hint:hover{opacity:1}
+.kbd-hint b{color:var(--accent2);font-weight:bold}
 
 ::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-track{background:var(--bg)}
@@ -197,13 +317,29 @@ input[type=file]{display:none}
 <body>
 <div class="app">
 <header class="header">
-  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.4</span></div>
+  <div class="brand">🐉 DH STUDIO<span class="ver">v4.0</span></div>
   <div class="header-tools">
-    <button class="btn" id="uploadBtn">📁 Upload PNG</button>
-    <button class="btn" id="importBtn">📥 Import JSON</button>
+    <button class="btn icon" id="undoBtn" title="Undo (Ctrl+Z)" disabled>↶</button>
+    <button class="btn icon" id="redoBtn" title="Redo (Ctrl+Y)" disabled>↷</button>
+    <div style="width:1px;height:24px;background:var(--border2)"></div>
+    <div class="upload-group">
+      <select id="uploadModelPreset" title="Chọn model trước khi upload">
+        <option value="auto">🤖 Auto</option>
+        <option value="player">🎮 Player</option>
+        <option value="weapon">⚔️ Weapon</option>
+        <option value="skill">✨ Skill</option>
+        <option value="effect">💥 Effect</option>
+        <option value="enemy">👹 Enemy</option>
+        <option value="npc">🧑 NPC</option>
+        <option value="boss">🐉 Boss</option>
+        <option value="item">💎 Item</option>
+      </select>
+      <button class="btn" id="uploadBtn">📁 Upload</button>
+    </div>
+    <button class="btn" id="loadProjectBtn" title="Load sprites.json">📂 Load</button>
     <button class="btn primary" id="exportAllBtn">📦 Export All</button>
-    <button class="btn" id="exportBtn" disabled>💾 Export Current</button>
-    <button class="btn" id="helpBtn">❓</button>
+    <button class="btn" id="exportBtn" disabled>💾 Save</button>
+    <button class="btn icon" id="helpBtn" title="Hướng dẫn (?)">❓</button>
   </div>
 </header>
 
@@ -213,35 +349,58 @@ input[type=file]{display:none}
     <div class="library-body" id="libraryBody">
       <div class="lib-empty">
         Chưa có sprite.<br><br>
-        <kbd>Upload PNG</kbd> để bắt đầu.
+        <kbd>📂 Load</kbd> sprites.json<br>
+        hoặc <kbd>📁 Upload</kbd> PNG
       </div>
     </div>
   </aside>
 
   <section class="stage">
     <div class="stage-bar">
-      <button class="btn on" id="toolSelect">🖱 Select</button>
-      <button class="btn" id="toolAddV">┃ +V</button>
-      <button class="btn" id="toolAddH">━ +H</button>
-      <button class="btn" id="toolPick">💧 Pick</button>
+      <button class="btn on" id="toolSelect" title="Chọn / kéo line">🖱 Select</button>
+      <button class="btn" id="toolAddV" title="Thêm line dọc">┃ +V</button>
+      <button class="btn" id="toolAddH" title="Thêm line ngang">━ +H</button>
+      <button class="btn" id="toolPick" title="Pick màu">💧 Pick</button>
+      <button class="btn" id="toolPan" title="Kéo canvas">✋ Pan</button>
       <div class="sep"></div>
-      <button class="btn" id="autoDetect">🤖 Auto</button>
-      <button class="btn" id="computeAnchors">🎯 Anchors</button>
+      <button class="btn" id="autoDetect" title="Tự tách frame">🤖 Auto</button>
+      <button class="btn" id="computeAnchors" title="Tính anchor">🎯 Anchors</button>
+      <button class="btn" id="mirrorBtn" title="Lật ngang ảnh">↔️ Mirror</button>
       <div class="sep"></div>
-      <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--dim)">
+      <label style="display:flex;align-items:center;gap:6px;font-size:10px;
+        color:var(--dim);cursor:pointer;padding:0 6px">
         <input type="checkbox" id="snapChk" checked style="accent-color:var(--accent)">Snap
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:10px;
+        color:var(--dim);cursor:pointer;padding:0 6px">
+        <input type="checkbox" id="gridChk" style="accent-color:var(--accent)">Grid
       </label>
       <span class="zoom" id="zoomLabel">100%</span>
     </div>
     <div class="stage-canvas" id="stageCanvas">
       <div class="empty-state" id="emptyState">
         <div class="ic">📁</div>
-        <div class="title">SPRITE STUDIO</div>
-        <div class="hint">Upload PNG để bắt đầu.</div>
+        <div class="title">SPRITE STUDIO v4</div>
+        <div class="hint">
+          <b>📂 Load</b> để load sprites.json cũ<br>
+          hoặc <b>📁 Upload</b> để bắt đầu.<br><br>
+          <kbd>Click</kbd> chọn line · <kbd>Kéo</kbd> di chuyển · <kbd>Right-click</kbd> xóa
+        </div>
       </div>
       <div class="canvas-holder" id="canvasHolder" style="display:none">
         <canvas id="mainCanvas"></canvas>
         <canvas id="overlayCanvas"></canvas>
+      </div>
+
+      <div class="zoom-controls">
+        <button id="zoomInBtn" title="Phóng to">+</button>
+        <div class="zoom-val" id="zoomVal">100%</div>
+        <button id="zoomOutBtn" title="Thu nhỏ">−</button>
+        <button id="zoomFitBtn" title="Fit" style="font-size:11px">⛶</button>
+      </div>
+
+      <div class="kbd-hint" id="kbdHint">
+        <b>Space</b> pan · <b>Ctrl+Z</b> undo · <b>Ctrl+0</b> reset zoom · <b>Alt+Click</b> pick
       </div>
     </div>
   </section>
@@ -262,7 +421,7 @@ input[type=file]{display:none}
             <span class="badge" id="gridBadge">0×0</span></div>
           <div class="field">
             <label>Cột ngang</label>
-            <button class="mini" id="autoVBtn">Auto N</button>
+            <button class="mini" id="autoVBtn">Auto</button>
             <button class="mini" id="addVBtn">+1</button>
             <button class="mini" id="clearVBtn">Xóa</button>
           </div>
@@ -271,7 +430,7 @@ input[type=file]{display:none}
         <div class="sec">
           <div class="field">
             <label>Hàng dọc</label>
-            <button class="mini" id="autoHBtn">Auto N</button>
+            <button class="mini" id="autoHBtn">Auto</button>
             <button class="mini" id="addHBtn">+1</button>
             <button class="mini" id="clearHBtn">Xóa</button>
           </div>
@@ -297,9 +456,9 @@ input[type=file]{display:none}
             <button class="anchor-btn" data-a="br">↘</button>
           </div>
           <div class="field"><label></label>
-            <button class="mini" id="resizeBtn" style="flex:1;padding:6px">Áp dụng</button></div>
+            <button class="mini" id="resizeBtn" style="flex:1;padding:7px">Áp dụng</button></div>
           <div class="field"><label></label>
-            <button class="mini" id="cropBtn" style="flex:1;padding:6px">✂ Cắt sát</button></div>
+            <button class="mini" id="cropBtn" style="flex:1;padding:7px">✂ Cắt sát</button></div>
         </div>
       </div>
 
@@ -313,45 +472,38 @@ input[type=file]{display:none}
               <option value="stable-x">Ổn định X + chân Y ✓</option>
               <option value="stable">Ổn định cả X và Y</option>
               <option value="per-frame">Riêng từng frame</option>
-              <option value="bottom-center">Đáy-giữa (tính lại)</option>
-              <option value="center">Tâm (tính lại)</option>
+              <option value="bottom-center">Đáy-giữa</option>
+              <option value="center">Tâm</option>
               <option value="manual">Chỉnh tay</option>
             </select>
           </div>
           <div class="field"><label></label>
-            <button class="mini" id="anchorRecompute" style="flex:1;padding:6px">🔄 Tính lại</button>
+            <button class="mini" id="anchorRecompute" style="flex:1;padding:7px">🔄 Tính lại</button>
             <button class="mini" id="anchorClear">🗑</button></div>
 
           <div class="field">
             <label>Padding</label>
             <input type="number" id="padXInput" value="12" min="0" max="64"
-              style="flex:0 0 50px;width:50px" title="px mỗi bên">
+              style="flex:0 0 50px;width:50px">
             <label style="flex:0 0 auto">Gap</label>
             <input type="number" id="gapXInput" value="6" min="0" max="64"
-              style="flex:0 0 50px;width:50px" title="px giữa các frame">
+              style="flex:0 0 50px;width:50px">
           </div>
           <div class="field"><label></label>
-            <button class="mini" id="alignFramesBtn" style="flex:1;padding:8px;
+            <button class="mini" id="alignFramesBtn" style="flex:1;padding:10px;
               background:linear-gradient(180deg,#88d858,#4a8a30);color:#0a1a06;
               font-weight:bold;font-size:11px">
-              🎯 MỞ RỘNG + CĂN CHỈNH FRAME
+              🎯 MỞ RỘNG + CĂN CHỈNH
             </button>
           </div>
           <div class="help-box">
-            <b>Anchor mode:</b><br>
-            • <b>Ổn định X + chân Y:</b> không trôi ngang<br>
-            • <b>Ổn định cả:</b> cố định hoàn toàn<br>
-            • <b>Riêng frame:</b> mỗi frame có anchor riêng<br><br>
-            <b>🎯 Mở rộng + căn chỉnh:</b><br>
-            • Thêm <b>padding</b> mỗi bên + <b>gap</b> giữa frame<br>
-            • Cắt bbox thực của nhân vật<br>
-            • Đặt <b>anchor cố định</b> (tâm X + đáy Y) cho MỌI frame<br>
-            • Dịch nội dung về đúng anchor → <b>0 pixel drift</b>
+            <b>Anchor mode:</b> ổn định X + chân Y = không trôi.<br>
+            <b>🎯 Mở rộng:</b> thêm padding + gap, cắt bbox, đặt anchor cố định.
           </div>
         </div>
         <div class="sec">
-          <div class="sec-title">📋 DANH SÁCH ANCHOR</div>
-          <div class="lines-list" id="anchorList" style="max-height:200px"></div>
+          <div class="sec-title">📋 ANCHOR LIST</div>
+          <div class="lines-list" id="anchorList" style="max-height:220px"></div>
         </div>
       </div>
 
@@ -380,28 +532,49 @@ input[type=file]{display:none}
           <div class="field" id="bgColorRow" style="display:none">
             <label>Màu mới</label>
             <input type="color" id="bgNewColor" value="#ffffff"
-              style="width:50px;height:28px;background:#000;border:1px solid var(--border2)">
+              style="width:52px;height:32px;background:#000;border:1px solid var(--border2);
+              border-radius:4px;cursor:pointer">
           </div>
           <div class="field"><label></label>
-            <button class="mini" id="bgApplyAll" style="flex:1;padding:6px">🌐 Toàn ảnh</button>
-            <button class="mini" id="bgApplyCell" style="flex:1;padding:6px" disabled>▣ Cell</button></div>
+            <button class="mini" id="bgApplyAll" style="flex:1;padding:7px">🌐 Toàn ảnh</button>
+            <button class="mini" id="bgApplyCell" style="flex:1;padding:7px" disabled>▣ Cell</button></div>
         </div>
       </div>
 
       <div class="panel" data-panel="meta">
         <div class="sec">
-          <div class="sec-title">📝 METADATA</div>
+          <div class="sec-title"><span>📝 METADATA</span>
+            <span class="badge" id="modelBadge">—</span></div>
           <div class="field">
             <label>Model</label>
-            <input type="text" id="metaModel" value="player">
+            <select id="metaModel">
+              <option value="player">player</option>
+              <option value="weapon">weapon ⚔️</option>
+              <option value="skill">skill ✨</option>
+              <option value="enemy">enemy</option>
+              <option value="npc">npc</option>
+              <option value="boss">boss</option>
+              <option value="effect">effect</option>
+              <option value="item">item</option>
+              <option value="custom">custom...</option>
+            </select>
+          </div>
+          <div class="field" id="customModelRow" style="display:none">
+            <label>Tên model</label>
+            <input type="text" id="metaModelCustom" placeholder="tên_model">
           </div>
           <div class="field">
             <label>Animation</label>
             <select id="metaAnim">
               <option value="idle">idle</option>
               <option value="run">run</option>
+              <option value="walk">walk</option>
               <option value="jump">jump</option>
               <option value="attack">attack</option>
+              <option value="block">block</option>
+              <option value="hurt">hurt</option>
+              <option value="dash">dash</option>
+              <option value="cast">cast</option>
               <option value="sit">sit</option>
               <option value="death">death</option>
               <option value="custom">custom...</option>
@@ -412,7 +585,9 @@ input[type=file]{display:none}
             <input type="text" id="metaAnimCustom" placeholder="skill_1">
           </div>
           <div class="field"><label>FPS</label>
-            <input type="number" id="metaFps" value="10" min="1" max="60"></div>
+            <input type="number" id="metaFps" value="10" min="1" max="60">
+            <button class="mini" id="autoFpsBtn" title="Auto FPS">⚡</button>
+          </div>
           <div class="field"><label>Loop</label>
             <select id="metaLoop">
               <option value="1">Có</option>
@@ -421,16 +596,25 @@ input[type=file]{display:none}
           </div>
           <div class="field"><label>File name</label>
             <input type="text" id="metaFile" placeholder="player_idle"></div>
+          <div class="field"><label></label>
+            <button class="mini" id="renameFileBtn" style="flex:1;padding:7px;
+              background:linear-gradient(180deg,#e8c060,#a08030);color:#1a0a00">
+              ✏️ Đổi tên theo model
+            </button>
+          </div>
+          <div class="help-box" id="metaHint">
+            <b>Auto-detect:</b> filename chứa <b>weapon</b>/<b>skill</b> tự chọn model.
+          </div>
         </div>
       </div>
 
       <div class="panel" data-panel="preview">
         <div class="sec">
           <div class="sec-title">▶ PREVIEW</div>
-          <canvas id="previewCanvas" class="anim-preview" width="280" height="140"></canvas>
-          <div class="field" style="margin-top:8px">
+          <canvas id="previewCanvas" class="anim-preview" width="280" height="160"></canvas>
+          <div class="field" style="margin-top:10px">
             <label></label>
-            <button class="mini" id="previewPlayBtn" style="flex:1;padding:6px">▶ Play</button>
+            <button class="mini" id="previewPlayBtn" style="flex:1;padding:7px">▶ Play</button>
             <button class="mini" id="previewStopBtn">⏸</button>
           </div>
           <div class="field">
@@ -451,16 +635,53 @@ input[type=file]{display:none}
 
 <footer class="status-bar">
   <div class="item"><span class="lbl">Sprites:</span><span id="statSprites" class="ok">0</span></div>
+  <div class="item" id="projItem" style="display:none">
+    <span class="lbl">📂 JSON:</span><span id="statProj" class="info">0</span>
+  </div>
   <div class="item"><span class="lbl">Current:</span><span id="statCurrent">—</span></div>
   <div class="item"><span class="lbl">Size:</span><span id="statSize">—</span></div>
+  <div class="item"><span class="lbl">Lines:</span><span id="statLines">0</span></div>
   <div class="item"><span class="lbl">Zoom:</span><span id="statZoom">100%</span></div>
   <div class="item" style="margin-left:auto"><span id="statMsg">Sẵn sàng.</span></div>
 </footer>
 </div>
 
-<input type="file" id="fileInput" multiple accept="image/png,image/jpeg,image/webp">
+<input type="file" id="fileInput" multiple accept="image/png,image/jpeg,image/webp,.json,application/json">
 <input type="file" id="jsonInput" accept=".json,application/json">
 <div id="toast"></div>
+
+<!-- Load project modal -->
+<div id="loadModal" class="modal-bg">
+  <div class="modal">
+    <h3>📂 LOAD PROJECT</h3>
+    <div style="font-size:11px;color:var(--dim);font-family:Consolas,monospace;line-height:1.7;margin-bottom:8px">
+      Nhập URL tới file <b style="color:var(--info)">sprites.json</b> có sẵn.
+      Editor sẽ giữ nguyên toàn bộ model cũ và chỉ merge thêm sprite mới khi export.
+    </div>
+    <input type="text" id="loadUrlInput" placeholder="./sprites.json" value="./sprites.json">
+    <div class="actions">
+      <button class="btn" id="loadCancelBtn">✕ Hủy</button>
+      <button class="btn primary" id="loadConfirmBtn">📂 Load</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export modal -->
+<div id="exportModal" class="modal-bg">
+  <div class="modal">
+    <h3>📦 EXPORT PREVIEW</h3>
+    <div style="font-size:11px;color:var(--dim);font-family:Consolas,monospace;line-height:1.7;margin-bottom:8px">
+      Bạn sẽ export <b id="exportCount">0</b> sprite. Kiểm tra kỹ trước khi tải:
+    </div>
+    <div class="export-list" id="exportList"></div>
+    <div class="help-box warn" id="exportWarn" style="display:none"></div>
+    <div class="actions">
+      <button class="btn" id="exportCancelBtn">✕ Hủy</button>
+      <button class="btn" style="background:linear-gradient(180deg,#e8c060,#a08030);color:#1a0a00"
+        id="exportConfirmBtn">📦 Tải xuống</button>
+    </div>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -471,6 +692,7 @@ const state = {
   zoom: 1,
   tool: 'select',
   snap: true,
+  showGrid: false,
   cell: null,
   drag: null,
   cellMoveOffset: { x: 0, y: 0 },
@@ -481,7 +703,17 @@ const state = {
   previewPlaying: false,
   previewTime: 0,
   previewFrame: 0,
-  previewRAF: null
+  previewRAF: null,
+  loadedProjectModels: new Set(),
+  projectJson: null,
+  /* 🆕 Undo/Redo */
+  history: [],
+  historyIdx: -1,
+  maxHistory: 40,
+  /* 🆕 Pan */
+  pan: { x: 0, y: 0, active: false, startX: 0, startY: 0 },
+  /* 🆕 Hover line */
+  hoverLine: null
 };
 
 const $ = id => document.getElementById(id);
@@ -494,17 +726,86 @@ const stageCanvas = $('stageCanvas');
 const emptyState = $('emptyState');
 const currentSprite = () => state.currentId ? state.sprites.get(state.currentId) : null;
 
-function toast(msg, isErr){
+function toast(msg, isErr, isWarn){
   const el = $('toast');
   el.textContent = msg;
-  el.className = 'show' + (isErr ? ' err' : '');
+  el.className = 'show' + (isErr ? ' err' : (isWarn ? ' warn' : ''));
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2400);
+  el._t = setTimeout(() => el.classList.remove('show'), 2800);
 }
 function setStatus(msg, isErr){
   const el = $('statMsg');
   el.textContent = msg;
   el.className = isErr ? 'err' : '';
+}
+
+/* ============================================================
+   🆕 UNDO / REDO
+   ============================================================ */
+function pushHistory(label){
+  const s = currentSprite();
+  if (!s) return;
+  const snap = {
+    spriteId: s.id,
+    vLines: [...s.vLines],
+    hLines: [...s.hLines],
+    anchors: JSON.parse(JSON.stringify(s.anchors)),
+    stableAnchor: s.stableAnchor ? { ...s.stableAnchor } : null,
+    label: label || 'action',
+    ts: Date.now()
+  };
+  /* Cắt future nếu có */
+  state.history = state.history.slice(0, state.historyIdx + 1);
+  state.history.push(snap);
+  if (state.history.length > state.maxHistory) state.history.shift();
+  state.historyIdx = state.history.length - 1;
+  updateHistoryButtons();
+}
+function undo(){
+  if (state.historyIdx <= 0) return;
+  state.historyIdx--;
+  applyHistorySnap();
+}
+function redo(){
+  if (state.historyIdx >= state.history.length - 1) return;
+  state.historyIdx++;
+  applyHistorySnap();
+}
+function applyHistorySnap(){
+  const snap = state.history[state.historyIdx];
+  if (!snap) return;
+  const s = state.sprites.get(snap.spriteId);
+  if (!s) return;
+  s.vLines = [...snap.vLines];
+  s.hLines = [...snap.hLines];
+  s.anchors = JSON.parse(JSON.stringify(snap.anchors));
+  s.stableAnchor = snap.stableAnchor ? { ...snap.stableAnchor } : null;
+  if (state.currentId !== snap.spriteId) selectSprite(snap.spriteId, true);
+  else renderAll();
+  toast('↶ ' + snap.label, false, false);
+}
+function updateHistoryButtons(){
+  $('undoBtn').disabled = state.historyIdx <= 0;
+  $('redoBtn').disabled = state.historyIdx >= state.history.length - 1;
+}
+
+/* ============================================================
+   FILENAME HELPERS
+   ============================================================ */
+const MODEL_PREFIXES = ['player', 'weapon', 'skill', 'enemy', 'npc', 'boss', 'effect', 'item'];
+
+function ensureUniqueFilename(baseName){
+  const names = new Set([...state.sprites.values()].map(s => s.fileName));
+  if (!names.has(baseName)) return baseName;
+  let i = 2;
+  while (names.has(baseName + '_' + i)) i++;
+  return baseName + '_' + i;
+}
+function renameWithPrefix(fileName, model){
+  const parts = fileName.split('_');
+  if (parts.length > 1 && MODEL_PREFIXES.includes(parts[0].toLowerCase())) parts.shift();
+  const base = parts.join('_') || 'sprite';
+  return model + '_' + base;
 }
 
 /* ============================================================
@@ -612,22 +913,86 @@ function detectBBox(canvas, x1, y1, x2, y2){
    ============================================================ */
 function genId(){ return 's' + Date.now() + '_' + Math.floor(Math.random()*10000); }
 
-const ANIM_PRESETS = {
-  idle:   { anim:'idle',   fps:6,  loop:true  },
-  run:    { anim:'run',    fps:14, loop:true  },
-  walk:   { anim:'run',    fps:12, loop:true  },
-  jump:   { anim:'jump',   fps:12, loop:false },
-  fall:   { anim:'jump',   fps:12, loop:false },
-  attack: { anim:'attack', fps:16, loop:false },
-  atk:    { anim:'attack', fps:16, loop:false },
-  hit:    { anim:'death',  fps:8,  loop:false },
-  sit:    { anim:'sit',    fps:6,  loop:true  },
-  hurt:   { anim:'death',  fps:8,  loop:false },
-  death:  { anim:'death',  fps:8,  loop:false },
-  dead:   { anim:'death',  fps:8,  loop:false }
+const MODEL_KEYWORDS = {
+  player: ['player', 'hero', 'char', 'hunter'],
+  weapon: ['weapon', 'sword', 'blade', 'katana', 'bow', 'staff', 'axe', 'spear', 'dagger', 'shield', 'gun', 'wand'],
+  skill:  ['skill', 'spell', 'magic', 'cast', 'aura', 'buff', 'debuff', 'burst', 'beam', 'projectile'],
+  enemy:  ['enemy', 'monster', 'mob', 'slime', 'goblin', 'skeleton', 'zombie', 'orc'],
+  npc:    ['npc', 'villager', 'merchant', 'shop', 'blacksmith', 'guard'],
+  boss:   ['boss', 'dragon', 'demon', 'titan', 'lord', 'king'],
+  effect: ['effect', 'slash', 'impact', 'hit', 'explosion', 'spark', 'smoke', 'dust', 'trail'],
+  item:   ['item', 'pickup', 'coin', 'gem', 'potion', 'chest', 'key']
 };
 
-function addSpriteFromFile(file){
+const ANIM_PRESETS = {
+  idle:   { anim:'idle',   fps:6,  loop:true  },
+  walk:   { anim:'walk',   fps:10, loop:true  },
+  run:    { anim:'run',    fps:14, loop:true  },
+  sprint: { anim:'run',    fps:18, loop:true  },
+  jump:   { anim:'jump',   fps:12, loop:false },
+  fall:   { anim:'jump',   fps:12, loop:false },
+  land:   { anim:'land',   fps:14, loop:false },
+  dash:   { anim:'dash',   fps:20, loop:false },
+  roll:   { anim:'dash',   fps:18, loop:false },
+  attack: { anim:'attack', fps:16, loop:false },
+  atk:    { anim:'attack', fps:16, loop:false },
+  slash:  { anim:'attack', fps:18, loop:false },
+  swing:  { anim:'attack', fps:18, loop:false },
+  hit:    { anim:'hurt',   fps:12, loop:false },
+  hurt:   { anim:'hurt',   fps:12, loop:false },
+  damage: { anim:'hurt',   fps:12, loop:false },
+  block:  { anim:'block',  fps:10, loop:false },
+  shield: { anim:'block',  fps:10, loop:false },
+  parry:  { anim:'block',  fps:14, loop:false },
+  cast:   { anim:'cast',   fps:14, loop:false },
+  spell:  { anim:'cast',   fps:14, loop:false },
+  skill:  { anim:'cast',   fps:14, loop:false },
+  sit:    { anim:'sit',    fps:6,  loop:true  },
+  sleep:  { anim:'sit',    fps:4,  loop:true  },
+  taunt:  { anim:'taunt',  fps:10, loop:false },
+  dance:  { anim:'taunt',  fps:12, loop:true  },
+  death:  { anim:'death',  fps:10, loop:false },
+  dead:   { anim:'death',  fps:10, loop:false },
+  die:    { anim:'death',  fps:10, loop:false },
+  ko:     { anim:'death',  fps:8,  loop:false }
+};
+
+function getFpsForAnim(anim, model){
+  if (model === 'weapon'){
+    const map = { idle:6, walk:10, run:14, jump:12, attack:16, block:10, hurt:12, dash:20, cast:14, sit:6, death:10, taunt:10 };
+    return map[anim] || 10;
+  }
+  if (model === 'skill' || model === 'effect'){
+    const map = { cast:14, attack:20, skill:16, impact:24, explosion:20, beam:16 };
+    return map[anim] || 16;
+  }
+  for (const key in ANIM_PRESETS){
+    if (ANIM_PRESETS[key].anim === anim) return ANIM_PRESETS[key].fps;
+  }
+  return 10;
+}
+
+function detectModelFromFilename(fn){
+  const lower = fn.toLowerCase();
+  const priority = ['weapon', 'skill', 'effect', 'item', 'boss', 'enemy', 'npc', 'player'];
+  for (const model of priority){
+    const keywords = MODEL_KEYWORDS[model] || [];
+    for (const kw of keywords){
+      if (lower.includes(kw)) return model;
+    }
+  }
+  return null;
+}
+function detectAnimFromFilename(fn){
+  const lower = fn.toLowerCase();
+  const sortedKeys = Object.keys(ANIM_PRESETS).sort((a,b) => b.length - a.length);
+  for (const key of sortedKeys){
+    if (lower.includes(key)) return ANIM_PRESETS[key];
+  }
+  return null;
+}
+
+function addSpriteFromFile(file, forceModel){
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = e => {
@@ -635,22 +1000,32 @@ function addSpriteFromFile(file){
       img.onload = () => {
         const meta = decodeMetadata(img);
         const fn = file.name.toLowerCase();
-        let detectedModel = 'player';
-        if (fn.includes('player')) detectedModel = 'player';
-        else if (fn.includes('enemy')) detectedModel = 'enemy';
-        else if (fn.includes('npc')) detectedModel = 'npc';
-        else if (fn.includes('boss')) detectedModel = 'boss';
+        const detectedModel = detectModelFromFilename(fn);
+        const detectedAnim = detectAnimFromFilename(fn);
 
-        let detectedAnim = null;
-        for (const key in ANIM_PRESETS){
-          if (fn.includes(key)){ detectedAnim = ANIM_PRESETS[key]; break; }
+        let finalModel;
+        if (meta && meta.model) finalModel = meta.model;
+        else if (forceModel && forceModel !== 'auto') finalModel = forceModel;
+        else if (detectedModel) finalModel = detectedModel;
+        else finalModel = 'player';
+
+        let fileName = file.name.replace(/\.[^.]+$/, '');
+        if (finalModel !== 'player'){
+          const hasCorrectPrefix = fileName.toLowerCase().startsWith(finalModel.toLowerCase() + '_');
+          if (!hasCorrectPrefix) fileName = renameWithPrefix(fileName, finalModel);
+        } else {
+          const parts = fileName.split('_');
+          if (!(parts.length > 1 && MODEL_PREFIXES.includes(parts[0].toLowerCase()))){
+            fileName = 'player_' + fileName;
+          }
         }
+        fileName = ensureUniqueFilename(fileName);
 
         const sprite = {
           id: genId(),
-          fileName: file.name.replace(/\.[^.]+$/, ''),
-          model: detectedModel,
-          anim: detectedAnim ? detectedAnim.anim : 'idle',
+          fileName: fileName,
+          model: finalModel,
+          anim: meta && meta.label ? meta.label : (detectedAnim ? detectedAnim.anim : 'idle'),
           img, loaded: true,
           canvas: null, ctx: null,
           spriteH: meta ? (meta.spriteH || img.height - 1) : img.height,
@@ -659,11 +1034,17 @@ function addSpriteFromFile(file){
           anchors: [],
           stableAnchor: null,
           anchorMode: meta ? (meta.anchorMode || 'stable-x') : 'stable-x',
-          fps: meta ? (meta.fps || (detectedAnim ? detectedAnim.fps : 10)) :
-                    (detectedAnim ? detectedAnim.fps : 10),
-          loop: meta ? (meta.loop !== false) :
-                    (detectedAnim ? detectedAnim.loop : true),
-          version: meta ? (meta.v || 1) : 0
+          fps: meta && meta.fps ? meta.fps :
+               (detectedAnim ? detectedAnim.fps : getFpsForAnim('idle', finalModel)),
+          loop: meta && meta.loop !== undefined ? meta.loop :
+                (detectedAnim ? detectedAnim.loop : true),
+          version: meta ? (meta.v || 1) : 0,
+          autoDetected: {
+            model: detectedModel,
+            anim: detectedAnim ? detectedAnim.anim : null,
+            fps: detectedAnim ? detectedAnim.fps : null,
+            renamedFrom: (fileName !== file.name.replace(/\.[^.]+$/, '')) ? file.name.replace(/\.[^.]+$/, '') : null
+          }
         };
 
         const cnv = document.createElement('canvas');
@@ -739,86 +1120,18 @@ function computeAnchorsForSprite(sprite, verbose){
   } else {
     s.stableAnchor = null;
   }
-  if (verbose) toast('🎯 ' + anchors.filter(a=>a).length + ' anchors · stable=(' +
-    (s.stableAnchor ? s.stableAnchor.x + ',' + s.stableAnchor.y : 'null') + ')');
+  if (verbose) toast('🎯 ' + anchors.filter(a=>a).length + ' anchors');
 }
 
 /* ============================================================
-   🎯 CĂN CHỈNH FRAME VÀO ANCHOR XANH (in-place, cũ)
-   ============================================================ */
-function alignFramesToAnchor(sprite){
-  const s = sprite;
-  if (!s || !s.vLines || s.vLines.length < 2) return -1;
-
-  computeAnchorsForSprite(s, false);
-  if (!s.stableAnchor) return -1;
-
-  const targetX = s.stableAnchor.x;
-  const targetY = s.stableAnchor.y;
-  const totalCols = s.vLines.length - 1;
-  const totalRows = s.hLines.length - 1;
-  let movedCount = 0;
-
-  for (let r = 0; r < totalRows; r++){
-    for (let c = 0; c < totalCols; c++){
-      const x1 = s.vLines[c];
-      const x2 = s.vLines[c+1];
-      const y1 = s.hLines[r];
-      const y2 = s.hLines[r+1];
-      const cellW = x2 - x1;
-      const cellH = y2 - y1;
-      if (cellW <= 0 || cellH <= 0) continue;
-
-      const bbox = detectBBox(s.canvas, x1, y1, x2, y2);
-      if (!bbox) continue;
-
-      const currentLocalX = (bbox.x + bbox.w / 2) - x1;
-      const currentLocalY = (bbox.y + bbox.h) - y1;
-
-      const targetLocalX = targetX;
-      const targetLocalY = targetY - y1;
-
-      const dx = Math.round(targetLocalX - currentLocalX);
-      const dy = Math.round(targetLocalY - currentLocalY);
-
-      if (dx === 0 && dy === 0) continue;
-      movedCount++;
-
-      const cellData = s.ctx.getImageData(x1, y1, cellW, cellH);
-      const tmp = document.createElement('canvas');
-      tmp.width = cellW; tmp.height = cellH;
-      tmp.getContext('2d').putImageData(cellData, 0, 0);
-
-      s.ctx.clearRect(x1, y1, cellW, cellH);
-      s.ctx.drawImage(tmp, x1 + dx, y1 + dy);
-    }
-  }
-
-  const mc = mainCanvas.getContext('2d');
-  mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-  mc.drawImage(s.canvas, 0, 0);
-
-  computeAnchorsForSprite(s, false);
-
-  return movedCount;
-}
-
-/* ============================================================
-   🎯 MỞ RỘNG CANVAS + CĂN CHỈNH FRAME (pixel-perfect)
-   - Thêm padding mỗi bên + gap giữa các frame
-   - Cắt bbox thực của nội dung từng frame
-   - Đặt anchor cố định: tâm X + đáy Y của vùng content
-   - Dịch nội dung để bbox khớp anchor → không drift
+   MỞ RỘNG + CĂN CHỈNH FRAME
    ============================================================ */
 function expandAndAlignFrames(sprite, padding = 12, gap = 6){
   const s = sprite;
   if (!s || !s.vLines || s.vLines.length < 2){
     return { ok: false, msg: 'Chưa có frame' };
   }
-
   const frames = s.vLines.length - 1;
-
-  /* ---------- 1. Detect bbox từng frame ---------- */
   const bboxes = [];
   let maxW = 0, maxH = 0;
   for (let i = 0; i < frames; i++){
@@ -832,8 +1145,6 @@ function expandAndAlignFrames(sprite, padding = 12, gap = 6){
   if (maxW === 0 || maxH === 0){
     return { ok: false, msg: 'Không detect được nội dung' };
   }
-
-  /* ---------- 2. Kích thước canvas mới ---------- */
   const contentW = maxW;
   const contentH = maxH;
   const newFrameW = contentW + padding * 2;
@@ -841,18 +1152,15 @@ function expandAndAlignFrames(sprite, padding = 12, gap = 6){
   const newCanvasW = frames * newFrameW + (frames - 1) * gap;
   const newCanvasH = newFrameH;
 
-  /* ---------- 3. Anchor target (CỐ ĐỊNH cho mọi frame) ---------- */
   const targetAnchorLocalX = padding + Math.floor(contentW / 2);
   const targetAnchorLocalY = padding + contentH;
 
-  /* ---------- 4. Tạo canvas mới ---------- */
   const newCanvas = document.createElement('canvas');
   newCanvas.width = newCanvasW;
   newCanvas.height = newCanvasH;
   const nctx = newCanvas.getContext('2d', { willReadFrequently: true });
   nctx.imageSmoothingEnabled = false;
 
-  /* ---------- 5. Vẽ từng frame với align chính xác ---------- */
   const newVLines = [];
   const newAnchors = [];
   let movedCount = 0;
@@ -867,22 +1175,16 @@ function expandAndAlignFrames(sprite, padding = 12, gap = 6){
       continue;
     }
 
-    /* Vị trí bbox trong cell mới:
-       - Tâm X bbox === cellX + targetAnchorLocalX
-       - Đáy Y bbox === targetAnchorLocalY
-       Dùng Math.floor cho odd width để tránh sub-pixel. */
     const bbCenterOffset = Math.floor(bb.w / 2);
     const destBBoxX = cellX + targetAnchorLocalX - bbCenterOffset;
     const destBBoxY = targetAnchorLocalY - bb.h;
 
-    /* Cắt đúng bbox → không mang pixel rác */
     nctx.drawImage(
       s.canvas,
       bb.x, bb.y, bb.w, bb.h,
       destBBoxX, destBBoxY, bb.w, bb.h
     );
 
-    /* Anchor tuyệt đối của frame = CỐ ĐỊNH cho mọi frame */
     newAnchors.push({
       x: cellX + targetAnchorLocalX,
       y: targetAnchorLocalY
@@ -892,7 +1194,6 @@ function expandAndAlignFrames(sprite, padding = 12, gap = 6){
   }
   newVLines.push(newCanvasW);
 
-  /* ---------- 6. Ghi lại vào sprite ---------- */
   s.canvas.width = newCanvasW;
   s.canvas.height = newCanvasH;
   s.ctx = s.canvas.getContext('2d', { willReadFrequently: true });
@@ -903,7 +1204,6 @@ function expandAndAlignFrames(sprite, padding = 12, gap = 6){
   s.hLines = [0, newCanvasH];
   s.anchors = newAnchors;
 
-  /* stableAnchor cố định = anchor local trong cell */
   s.stableAnchor = {
     x: targetAnchorLocalX,
     y: targetAnchorLocalY
@@ -931,9 +1231,19 @@ function renderLibrary(){
   $('statSprites').textContent = sprites.length;
 
   if (sprites.length === 0){
-    body.innerHTML = `<div class="lib-empty">Chưa có sprite.<br><br><kbd>Upload PNG</kbd> để bắt đầu.</div>`;
+    body.innerHTML = `<div class="lib-empty">Chưa có sprite.<br><br><kbd>📂 Load</kbd> hoặc <kbd>📁 Upload</kbd></div>`;
+    updateProjDisplay();
     return;
   }
+
+  const seen = new Map();
+  const dupIds = new Set();
+  for (const s of sprites){
+    const key = s.model + '/' + s.anim;
+    if (seen.has(key)){ dupIds.add(s.id); dupIds.add(seen.get(key)); }
+    else seen.set(key, s.id);
+  }
+
   const byModel = {};
   for (const s of sprites){
     if (!byModel[s.model]) byModel[s.model] = [];
@@ -945,9 +1255,16 @@ function renderLibrary(){
     group.className = 'model-group';
     const items = byModel[model];
 
+    const modelIcons = {
+      player: '🎮', weapon: '⚔️', skill: '✨', effect: '💥',
+      enemy: '👹', npc: '🧑', boss: '🐉', item: '💎'
+    };
+    const icon = modelIcons[model] || '📦';
+
     const header = document.createElement('div');
-    header.className = 'model-header';
-    header.innerHTML = `<span class="arrow">▼</span><span>📦 ${model}</span><span class="count">${items.length}</span>`;
+    header.className = 'model-header' + (model === 'weapon' ? ' weapon' : '') +
+                                      (model === 'skill' ? ' skill' : '');
+    header.innerHTML = `<span class="arrow">▼</span><span>${icon} ${model}</span><span class="count">${items.length}</span>`;
     header.addEventListener('click', () => {
       header.classList.toggle('collapsed');
       group.querySelector('.model-body').classList.toggle('hidden');
@@ -959,19 +1276,38 @@ function renderLibrary(){
     for (const s of items){
       const item = document.createElement('div');
       item.className = 'anim-item' + (s.id === state.currentId ? ' active' : '');
-      item.innerHTML = `<span class="dot"></span><span class="name">${s.anim}</span><span class="meta">${s.vLines.length - 1}f</span>`;
+      if (dupIds.has(s.id)) item.classList.add('dup-warn');
+      item.innerHTML = `<span class="dot"></span><span class="name">${s.anim}</span><span class="meta">${s.vLines.length - 1}f · ${s.fps}fps</span>`;
+      item.title = s.fileName + '.png' + (dupIds.has(s.id) ? ' (TRÙNG model+anim!)' : '');
       item.addEventListener('click', () => selectSprite(s.id));
       bodyEl.appendChild(item);
     }
     group.appendChild(bodyEl);
     body.appendChild(group);
   }
+  updateProjDisplay();
+}
+
+function updateProjDisplay(){
+  const item = $('projItem');
+  const cnt = $('statProj');
+  if (!item) return;
+  if (state.projectJson){
+    let total = 0;
+    for (const m in state.projectJson.models){
+      total += Object.keys(state.projectJson.models[m].animations).length;
+    }
+    item.style.display = 'flex';
+    cnt.textContent = total;
+  } else {
+    item.style.display = 'none';
+  }
 }
 
 /* ============================================================
    SELECT
    ============================================================ */
-function selectSprite(id){
+function selectSprite(id, noHistory){
   state.currentId = id;
   const s = currentSprite();
   if (!s) return;
@@ -991,8 +1327,19 @@ function selectSprite(id){
 
   $('canvasW').value = s.canvas.width;
   $('canvasH').value = s.canvas.height;
-  $('metaModel').value = s.model;
-  const knownAnims = ['idle','run','jump','attack','sit','death'];
+
+  const knownModels = ['player', 'weapon', 'skill', 'enemy', 'npc', 'boss', 'effect', 'item'];
+  if (knownModels.includes(s.model)){
+    $('metaModel').value = s.model;
+    $('customModelRow').style.display = 'none';
+  } else {
+    $('metaModel').value = 'custom';
+    $('customModelRow').style.display = 'flex';
+    $('metaModelCustom').value = s.model;
+  }
+  updateModelBadge(s.model);
+
+  const knownAnims = ['idle', 'run', 'walk', 'jump', 'attack', 'block', 'hurt', 'dash', 'cast', 'sit', 'death'];
   $('metaAnim').value = knownAnims.includes(s.anim) ? s.anim : 'custom';
   if ($('metaAnim').value === 'custom'){
     $('customAnimRow').style.display = 'flex';
@@ -1006,48 +1353,139 @@ function selectSprite(id){
   $('anchorMode').value = s.anchorMode;
   state.manualAnchor = s.anchorMode === 'manual';
 
+  updateMetaHint(s.model);
+
   renderAll();
   renderLibrary();
   $('exportBtn').disabled = false;
   setStatus('Đang edit: ' + s.model + '/' + s.anim);
+
+  /* 🆕 Push history khi đổi sprite */
+  if (!noHistory){
+    state.history = [];
+    state.historyIdx = -1;
+    pushHistory('load ' + s.model + '/' + s.anim);
+  }
 }
 
+function updateModelBadge(model){
+  const b = $('modelBadge');
+  b.textContent = model;
+  b.className = 'badge';
+  if (model === 'weapon') b.classList.add('weapon');
+  else if (model === 'skill') b.classList.add('skill');
+}
+
+function updateMetaHint(model){
+  const el = $('metaHint');
+  el.className = 'help-box';
+  if (model === 'weapon'){
+    el.classList.add('weapon');
+    el.innerHTML = '<b>⚔️ Weapon:</b> sprite gắn vào tay nhân vật. FPS khớp player.';
+  } else if (model === 'skill'){
+    el.classList.add('skill');
+    el.innerHTML = '<b>✨ Skill:</b> effect phép thuật. FPS 16-24, Loop = Không.';
+  } else if (model === 'effect'){
+    el.classList.add('skill');
+    el.innerHTML = '<b>💥 Effect:</b> slash/impact/explosion. FPS 20-30, Loop = Không.';
+  } else {
+    el.innerHTML = '<b>Auto-detect:</b> filename chứa <b>weapon</b>/<b>skill</b> tự chọn model.';
+  }
+}
+
+/* ============================================================
+   🆕 RENDER OVERLAY — với handle dots
+   ============================================================ */
 function renderOverlay(){
   const s = currentSprite();
   if (!s) return;
   const oc = overlayCanvas.getContext('2d');
   oc.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-  oc.strokeStyle = 'rgba(255,80,80,.9)';
+  /* Grid nếu bật */
+  if (state.showGrid){
+    oc.strokeStyle = 'rgba(136,255,96,.08)';
+    oc.lineWidth = 1;
+    const step = 16;
+    for (let x = 0; x < overlayCanvas.width; x += step){
+      oc.beginPath(); oc.moveTo(x+.5, 0); oc.lineTo(x+.5, overlayCanvas.height); oc.stroke();
+    }
+    for (let y = 0; y < overlayCanvas.height; y += step){
+      oc.beginPath(); oc.moveTo(0, y+.5); oc.lineTo(overlayCanvas.width, y+.5); oc.stroke();
+    }
+  }
+
+  /* Line dọc */
   oc.lineWidth = 1;
-  for (const x of s.vLines){
+  s.vLines.forEach((x, i) => {
+    const isEdge = (i === 0 || i === s.vLines.length - 1);
+    const isHover = state.hoverLine && state.hoverLine.type === 'v' && state.hoverLine.idx === i;
+    const isDrag = state.drag && state.drag.type === 'v' && state.drag.idx === i;
+    oc.strokeStyle = isEdge ? 'rgba(255,80,80,.9)' :
+                     isDrag ? '#88ff60' :
+                     isHover ? '#ffff40' : 'rgba(255,80,80,.7)';
+    oc.lineWidth = (isDrag || isHover) ? 2 : 1;
     oc.beginPath();
     oc.moveTo(Math.round(x)+0.5, 0);
     oc.lineTo(Math.round(x)+0.5, overlayCanvas.height);
     oc.stroke();
-  }
-  for (const y of s.hLines){
+
+    /* Handle dot top */
+    if (!isEdge){
+      const hSize = isDrag ? 7 : (isHover ? 6 : 5);
+      oc.fillStyle = isDrag ? '#88ff60' : (isHover ? '#ffff40' : '#00d0ff');
+      oc.beginPath();
+      oc.arc(Math.round(x)+0.5, 6, hSize, 0, Math.PI*2);
+      oc.fill();
+      oc.strokeStyle = '#000';
+      oc.lineWidth = 1;
+      oc.stroke();
+    }
+  });
+
+  /* Line ngang */
+  s.hLines.forEach((y, i) => {
+    const isEdge = (i === 0 || i === s.hLines.length - 1);
+    const isHover = state.hoverLine && state.hoverLine.type === 'h' && state.hoverLine.idx === i;
+    const isDrag = state.drag && state.drag.type === 'h' && state.drag.idx === i;
+    oc.strokeStyle = isEdge ? 'rgba(255,80,80,.9)' :
+                     isDrag ? '#88ff60' :
+                     isHover ? '#ffff40' : 'rgba(255,80,80,.7)';
+    oc.lineWidth = (isDrag || isHover) ? 2 : 1;
     oc.beginPath();
     oc.moveTo(0, Math.round(y)+0.5);
     oc.lineTo(overlayCanvas.width, Math.round(y)+0.5);
     oc.stroke();
-  }
 
+    if (!isEdge){
+      const hSize = isDrag ? 7 : (isHover ? 6 : 5);
+      oc.fillStyle = isDrag ? '#88ff60' : (isHover ? '#ffff40' : '#00d0ff');
+      oc.beginPath();
+      oc.arc(6, Math.round(y)+0.5, hSize, 0, Math.PI*2);
+      oc.fill();
+      oc.strokeStyle = '#000';
+      oc.lineWidth = 1;
+      oc.stroke();
+    }
+  });
+
+  /* Frame index */
   oc.font = 'bold 11px Consolas, monospace';
   oc.fillStyle = '#88ff60';
-  oc.strokeStyle = 'rgba(0,0,0,.8)';
+  oc.strokeStyle = 'rgba(0,0,0,.9)';
   oc.lineWidth = 3;
   let idx = 0;
   for (let r = 0; r < s.hLines.length - 1; r++){
     for (let c = 0; c < s.vLines.length - 1; c++){
-      const x = s.vLines[c] + 4;
-      const y = s.hLines[r] + 14;
+      const x = s.vLines[c] + 5;
+      const y = s.hLines[r] + 16;
       oc.strokeText(idx, x, y);
       oc.fillText(idx, x, y);
       idx++;
     }
   }
 
+  /* Anchors */
   s.anchors.forEach(a => {
     if (!a) return;
     const ax = a.x != null ? a.x : 0;
@@ -1059,19 +1497,14 @@ function renderOverlay(){
     oc.strokeStyle = '#fff';
     oc.lineWidth = 2;
     oc.beginPath(); oc.arc(ax, ay, 4, 0, Math.PI*2); oc.fill(); oc.stroke();
-    oc.strokeStyle = 'rgba(255,48,80,.7)';
-    oc.lineWidth = 1;
-    oc.beginPath();
-    oc.moveTo(ax - 8, ay); oc.lineTo(ax + 8, ay);
-    oc.moveTo(ax, ay - 8); oc.lineTo(ax, ay + 8);
-    oc.stroke();
   });
 
+  /* Stable anchor */
   if (s.stableAnchor && s.anchorMode !== 'per-frame'){
     const sa = s.stableAnchor;
     oc.strokeStyle = '#00d0ff';
     oc.lineWidth = 2;
-    oc.setLineDash([4, 3]);
+    oc.setLineDash([5, 4]);
     for (let i = 0; i < s.vLines.length - 1; i++){
       const x = s.vLines[i] + sa.x;
       if (x < 0 || x > overlayCanvas.width) continue;
@@ -1093,6 +1526,7 @@ function renderOverlay(){
     }
   }
 
+  /* Selected cell */
   if (state.cell){
     oc.strokeStyle = 'rgba(136,255,96,.95)';
     oc.lineWidth = 3;
@@ -1103,68 +1537,101 @@ function renderOverlay(){
   }
 }
 
+/* 🆕 Render line list với handle icon + highlight */
 function renderLineLists(){
   const s = currentSprite();
   if (!s) return;
   const vl = $('vList'); vl.innerHTML = '';
   s.vLines.forEach((x, i) => {
+    const isEdge = (i === 0 || i === s.vLines.length - 1);
     const row = document.createElement('div');
-    row.className = 'line-row';
-    row.innerHTML = `<span class="idx">#${i}</span>`;
+    row.className = 'line-row' +
+      (state.hoverLine && state.hoverLine.type === 'v' && state.hoverLine.idx === i ? ' cur' : '');
+    row.innerHTML = `<span class="handle-ic">${isEdge ? '▣' : '⋮'}</span><span class="idx">#${i}</span>`;
     const inp = document.createElement('input');
     inp.type = 'number'; inp.value = Math.round(x);
+    inp.disabled = isEdge;
     inp.addEventListener('change', () => {
       const v = parseInt(inp.value);
       if (!isNaN(v)){
+        pushHistory('set vLine #' + i);
         s.vLines[i] = Math.max(0, Math.min(s.canvas.width, v));
         s.vLines.sort((a,b)=>a-b);
         computeAnchorsForSprite(s, false);
         renderAll();
       }
     });
+    inp.addEventListener('focus', () => { state.hoverLine = { type: 'v', idx: i }; renderOverlay(); });
     row.appendChild(inp);
     const del = document.createElement('button');
     del.className = 'del'; del.textContent = '✕';
+    if (isEdge) del.disabled = true;
     del.addEventListener('click', () => {
       if (s.vLines.length > 2){
+        pushHistory('del vLine #' + i);
         s.vLines.splice(i, 1);
         computeAnchorsForSprite(s, false);
         renderAll();
       }
     });
     row.appendChild(del);
+    row.addEventListener('mouseenter', () => {
+      state.hoverLine = { type: 'v', idx: i };
+      renderOverlay();
+    });
+    row.addEventListener('mouseleave', () => {
+      state.hoverLine = null;
+      renderOverlay();
+    });
     vl.appendChild(row);
   });
 
   const hl = $('hList'); hl.innerHTML = '';
   s.hLines.forEach((y, i) => {
+    const isEdge = (i === 0 || i === s.hLines.length - 1);
     const row = document.createElement('div');
-    row.className = 'line-row';
-    row.innerHTML = `<span class="idx">#${i}</span>`;
+    row.className = 'line-row' +
+      (state.hoverLine && state.hoverLine.type === 'h' && state.hoverLine.idx === i ? ' cur' : '');
+    row.innerHTML = `<span class="handle-ic">${isEdge ? '▣' : '⋮'}</span><span class="idx">#${i}</span>`;
     const inp = document.createElement('input');
     inp.type = 'number'; inp.value = Math.round(y);
+    inp.disabled = isEdge;
     inp.addEventListener('change', () => {
       const v = parseInt(inp.value);
       if (!isNaN(v)){
+        pushHistory('set hLine #' + i);
         s.hLines[i] = Math.max(0, Math.min(s.canvas.height, v));
         s.hLines.sort((a,b)=>a-b);
         computeAnchorsForSprite(s, false);
         renderAll();
       }
     });
+    inp.addEventListener('focus', () => { state.hoverLine = { type: 'h', idx: i }; renderOverlay(); });
     row.appendChild(inp);
     const del = document.createElement('button');
     del.className = 'del'; del.textContent = '✕';
+    if (isEdge) del.disabled = true;
     del.addEventListener('click', () => {
       if (s.hLines.length > 2){
+        pushHistory('del hLine #' + i);
         s.hLines.splice(i, 1);
         computeAnchorsForSprite(s, false);
         renderAll();
       }
     });
     row.appendChild(del);
+    row.addEventListener('mouseenter', () => {
+      state.hoverLine = { type: 'h', idx: i };
+      renderOverlay();
+    });
+    row.addEventListener('mouseleave', () => {
+      state.hoverLine = null;
+      renderOverlay();
+    });
     hl.appendChild(row);
   });
+
+  $('statLines').textContent = (s.vLines.length + s.hLines.length);
 }
 
 function renderAnchorList(){
@@ -1198,6 +1665,161 @@ function updateBadges(){
   $('anchorBadge').textContent = s.anchors.filter(a=>a).length + '/' + s.anchors.length;
   $('statCurrent').textContent = s.model + '/' + s.anim;
   $('statSize').textContent = s.canvas.width + '×' + s.canvas.height;
+
+  const el = $('statCurrent');
+  el.className = '';
+  if (s.model === 'weapon') el.className = 'weapon';
+  else if (s.model === 'skill' || s.model === 'effect') el.className = 'skill';
+  else el.className = 'ok';
+}
+
+/* ============================================================
+   🆕 LOAD PROJECT
+   ============================================================ */
+$('loadProjectBtn').addEventListener('click', () => {
+  const savedUrl = localStorage.getItem('dh_editor_load_url') || './sprites.json';
+  $('loadUrlInput').value = savedUrl;
+  $('loadModal').classList.add('show');
+  setTimeout(() => $('loadUrlInput').select(), 100);
+});
+$('loadCancelBtn').addEventListener('click', () => $('loadModal').classList.remove('show'));
+$('loadUrlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter'){ e.preventDefault(); doLoadProject(); }
+  if (e.key === 'Escape') $('loadModal').classList.remove('show');
+});
+$('loadConfirmBtn').addEventListener('click', doLoadProject);
+
+async function doLoadProject(){
+  const url = $('loadUrlInput').value.trim();
+  if (!url){ toast('URL trống', true); return; }
+  localStorage.setItem('dh_editor_load_url', url);
+
+  toast('📂 Đang tải ' + url + '...');
+  setStatus('Loading project...');
+
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const project = await res.json();
+    if (project.format !== 'dh-studio-project' || !project.models){
+      throw new Error('File JSON sai định dạng');
+    }
+
+    /* Merge vào projectJson */
+    if (!state.projectJson){
+      state.projectJson = project;
+    } else {
+      for (const modelName in project.models){
+        if (!state.projectJson.models[modelName]){
+          state.projectJson.models[modelName] = { animations: {} };
+        }
+        const srcAnims = project.models[modelName].animations;
+        for (const animName in srcAnims){
+          state.projectJson.models[modelName].animations[animName] = srcAnims[animName];
+        }
+      }
+    }
+
+    const baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
+    const assetsPath = baseUrl + 'assets/';
+
+    let loaded = 0;
+    const promises = [];
+    for (const modelName in project.models){
+      const model = project.models[modelName];
+      state.loadedProjectModels.add(modelName);
+      for (const animName in model.animations){
+        const cfg = model.animations[animName];
+        promises.push(loadSpriteFromProject(assetsPath, cfg.fileName, modelName, animName, cfg)
+          .then(ok => { if (ok) loaded++; }));
+      }
+    }
+    await Promise.all(promises);
+
+    $('loadModal').classList.remove('show');
+    renderLibrary();
+    toast('✓ Đã load ' + loaded + ' sprite từ project');
+    setStatus('Đã load ' + loaded + ' sprite', false);
+
+    const byModel = {};
+    for (const s of state.sprites.values()){
+      byModel[s.model] = (byModel[s.model] || 0) + 1;
+    }
+    console.log('📂 Loaded models:', byModel);
+  } catch(e){
+    console.error(e);
+    toast('❌ Load fail: ' + e.message, true);
+    setStatus('Load fail: ' + e.message, true);
+  }
+}
+
+function loadSpriteFromProject(assetsPath, fileName, modelName, animName, cfg){
+  return new Promise(resolve => {
+    for (const s of state.sprites.values()){
+      if (s.model === modelName && s.anim === animName){ resolve(false); return; }
+    }
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const meta = decodeMetadata(img);
+      let spriteH, vLines, anchors, stableAnchor, anchorMode, fps, loop;
+
+      if (meta && meta.vLines && meta.vLines.length >= 2){
+        spriteH = meta.spriteH || (img.height - 1);
+        vLines = meta.vLines;
+        anchors = meta.anchors ? meta.anchors.map(x =>
+          Array.isArray(x) ? { x: x[0], y: x[1] } : (x ? { x: x.x, y: x.y } : null)) : [];
+        stableAnchor = meta.stableAnchor ? { x: meta.stableAnchor[0], y: meta.stableAnchor[1] } : null;
+        anchorMode = meta.anchorMode || 'stable-x';
+        fps = meta.fps || cfg.fps || 10;
+        loop = meta.loop !== undefined ? meta.loop : (cfg.loop !== false);
+      } else {
+        spriteH = cfg.spriteH || img.height;
+        vLines = cfg.vLines && cfg.vLines.length >= 2 ? cfg.vLines : [0, img.width];
+        anchors = (cfg.anchors || []).map(x =>
+          Array.isArray(x) ? { x: x[0], y: x[1] } : (x ? { x: x.x, y: x.y } : null));
+        stableAnchor = cfg.stableAnchor ? { x: cfg.stableAnchor[0], y: cfg.stableAnchor[1] } : null;
+        anchorMode = cfg.anchorMode || 'stable-x';
+        fps = cfg.fps || 10;
+        loop = cfg.loop !== false;
+      }
+
+      const cnv = document.createElement('canvas');
+      cnv.width = img.width;
+      cnv.height = spriteH;
+      const cc = cnv.getContext('2d', { willReadFrequently: true });
+      cc.imageSmoothingEnabled = false;
+      cc.drawImage(img, 0, 0, img.width, spriteH, 0, 0, img.width, spriteH);
+
+      const sprite = {
+        id: genId(),
+        fileName: fileName,
+        model: modelName,
+        anim: animName,
+        img, loaded: true,
+        canvas: cnv, ctx: cc,
+        spriteH, vLines, hLines: cfg.hLines || [0, spriteH],
+        anchors, stableAnchor, anchorMode,
+        fps, loop,
+        version: meta ? (meta.v || 1) : 0,
+        fromProject: true
+      };
+
+      if (!sprite.anchors.length || sprite.anchors.every(a => !a) || !sprite.stableAnchor){
+        computeAnchorsForSprite(sprite, false);
+      }
+
+      state.sprites.set(sprite.id, sprite);
+      console.log('  ✓ ' + modelName + '/' + animName + ' ← ' + fileName + '.png');
+      resolve(true);
+    };
+    img.onerror = () => {
+      console.warn('  ✗ Load fail: ' + assetsPath + fileName + '.png');
+      resolve(false);
+    };
+    img.src = assetsPath + fileName + '.png';
+  });
 }
 
 /* ============================================================
@@ -1211,7 +1833,7 @@ fileInput.addEventListener('change', e => {
 document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', e => {
   e.preventDefault();
-  const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+  const files = [...e.dataTransfer.files];
   if (files.length) handleFiles(files);
 });
 document.addEventListener('paste', e => {
@@ -1223,73 +1845,95 @@ document.addEventListener('paste', e => {
 });
 
 async function handleFiles(files){
-  setStatus('Đang load ' + files.length + ' file...');
-  let loaded = 0;
-  for (const f of files){
-    try {
-      const sprite = await addSpriteFromFile(f);
-      state.sprites.set(sprite.id, sprite);
-      loaded++;
-    } catch(e){ console.error(e); }
-  }
-  renderLibrary();
-  if (loaded > 0){
-    if (!state.currentId){
-      const first = [...state.sprites.values()][0];
-      selectSprite(first.id);
+  const preset = $('uploadModelPreset').value || 'auto';
+  const jsonFiles = files.filter(f => f.name.endsWith('.json') || f.type === 'application/json');
+  const imageFiles = files.filter(f => f.type.startsWith('image/'));
+
+  /* JSON */
+  if (jsonFiles.length > 0){
+    for (const jf of jsonFiles){
+      try {
+        const text = await jf.text();
+        const json = JSON.parse(text);
+        if (json.format !== 'dh-studio-project' || !json.models){
+          toast('❌ ' + jf.name + ' sai định dạng', true);
+          continue;
+        }
+        if (!state.projectJson) state.projectJson = json;
+        else {
+          for (const modelName in json.models){
+            if (!state.projectJson.models[modelName]) state.projectJson.models[modelName] = { animations: {} };
+            const srcAnims = json.models[modelName].animations;
+            for (const animName in srcAnims){
+              state.projectJson.models[modelName].animations[animName] = srcAnims[animName];
+            }
+          }
+        }
+        let count = 0;
+        for (const modelName in json.models){
+          state.loadedProjectModels.add(modelName);
+          count += Object.keys(json.models[modelName].animations).length;
+        }
+        const modelList = Object.keys(json.models).join(', ');
+        toast('📂 ' + jf.name + ': ' + count + ' anim · ' + modelList, false, true);
+        console.log('📂 Loaded project:', json.models);
+      } catch(e){ toast('❌ Parse ' + jf.name + ' fail: ' + e.message, true); }
     }
-    toast('✓ Loaded ' + loaded);
-    setStatus('Đã load ' + loaded + ' file', false);
-  } else {
-    setStatus('Không load được', true);
+  }
+
+  /* Images */
+  if (imageFiles.length > 0){
+    setStatus('Đang load ' + imageFiles.length + ' ảnh' + (preset !== 'auto' ? ' (as ' + preset + ')' : '') + '...');
+    let loaded = 0;
+    const renames = [];
+
+    for (const f of imageFiles){
+      try {
+        const sprite = await addSpriteFromFile(f, preset);
+        state.sprites.set(sprite.id, sprite);
+        loaded++;
+        if (sprite.autoDetected && sprite.autoDetected.renamedFrom){
+          renames.push(sprite.autoDetected.renamedFrom + '.png → ' + sprite.fileName + '.png');
+        }
+        console.log(`✓ ${sprite.model}/${sprite.anim} @${sprite.fps}fps — ${sprite.fileName}.png`);
+      } catch(e){ console.error(e); }
+    }
+    renderLibrary();
+    if (loaded > 0){
+      if (!state.currentId){
+        const first = [...state.sprites.values()][0];
+        selectSprite(first.id);
+      }
+      toast('✓ Loaded ' + loaded + ' ảnh');
+      if (renames.length > 0) console.log('📝 Auto-renamed:\n' + renames.join('\n'));
+      setStatus('Đã load ' + loaded + ' ảnh', false);
+    }
+  } else if (jsonFiles.length > 0){
+    setStatus('Đã load project JSON. Giờ upload PNG mới.', false);
   }
 }
 
-$('importBtn').addEventListener('click', () => jsonInput.click());
-jsonInput.addEventListener('change', async e => {
-  const f = e.target.files[0];
-  if (!f) return;
-  try {
-    const json = JSON.parse(await f.text());
-    if (json.format !== 'dh-studio-project' || !json.models){
-      toast('File JSON sai định dạng', true);
-      return;
-    }
-    for (const modelName in json.models){
-      const model = json.models[modelName];
-      for (const animName in model.animations){
-        const cfg = model.animations[animName];
-        for (const s of state.sprites.values()){
-          if (s.fileName === cfg.fileName){
-            s.model = modelName;
-            s.anim = animName;
-            s.vLines = [...cfg.vLines];
-            s.hLines = [...cfg.hLines];
-            s.anchors = (cfg.anchors || []).map(a => a ? { x: a[0], y: a[1] } : null);
-            s.stableAnchor = cfg.stableAnchor ? { x: cfg.stableAnchor[0], y: cfg.stableAnchor[1] } : null;
-            s.anchorMode = cfg.anchorMode || 'stable-x';
-            s.fps = cfg.fps;
-            s.loop = cfg.loop;
-          }
-        }
-      }
-    }
-    renderAll();
-    toast('✓ Đã import JSON');
-  } catch(e){ toast('Lỗi: ' + e.message, true); }
-  jsonInput.value = '';
-});
+$('importBtn') && $('importBtn').addEventListener('click', () => jsonInput.click());
 
 /* ============================================================
    EXPORT
    ============================================================ */
 function buildProjectJson(){
-  const project = {
-    format: 'dh-studio-project',
-    version: 3,
-    exportedAt: new Date().toISOString(),
-    models: {}
-  };
+  let project;
+  if (state.projectJson){
+    project = JSON.parse(JSON.stringify(state.projectJson));
+    project.version = 3;
+    project.exportedAt = new Date().toISOString();
+    console.log('📦 Merge base:', Object.keys(project.models).join(', '));
+  } else {
+    project = {
+      format: 'dh-studio-project',
+      version: 3,
+      exportedAt: new Date().toISOString(),
+      models: {}
+    };
+  }
+
   for (const s of state.sprites.values()){
     if (!project.models[s.model]) project.models[s.model] = { animations: {} };
     project.models[s.model].animations[s.anim] = {
@@ -1305,6 +1949,10 @@ function buildProjectJson(){
       loop: s.loop
     };
   }
+
+  const summary = {};
+  for (const m in project.models) summary[m] = Object.keys(project.models[m].animations).length;
+  console.log('📦 Export summary:', summary);
   return project;
 }
 
@@ -1349,9 +1997,50 @@ $('exportBtn').addEventListener('click', async () => {
   toast('💾 ' + s.fileName + '.png');
 });
 
-$('exportAllBtn').addEventListener('click', async () => {
+$('exportAllBtn').addEventListener('click', showExportPreview);
+$('exportCancelBtn').addEventListener('click', () => $('exportModal').classList.remove('show'));
+$('exportConfirmBtn').addEventListener('click', doExportAll);
+
+function showExportPreview(){
   const sprites = [...state.sprites.values()];
   if (!sprites.length){ toast('Chưa có sprite', true); return; }
+
+  const byModel = {};
+  for (const s of sprites){
+    if (!byModel[s.model]) byModel[s.model] = [];
+    byModel[s.model].push(s);
+  }
+
+  let html = '';
+  for (const model in byModel){
+    html += `<div class="mdl">📦 ${model} (${byModel[model].length})</div>`;
+    for (const s of byModel[model]){
+      html += `<div class="anim">· ${s.anim} <span class="fn">→ ${s.fileName}.png</span></div>`;
+    }
+  }
+  $('exportList').innerHTML = html;
+  $('exportCount').textContent = sprites.length;
+
+  const exportModels = new Set(Object.keys(byModel));
+  const missing = [];
+  for (const m of state.loadedProjectModels){
+    if (!exportModels.has(m)) missing.push(m);
+  }
+  if (missing.length > 0){
+    $('exportWarn').style.display = 'block';
+    $('exportWarn').innerHTML = '⚠️ <b>CẢNH BÁO:</b> Bạn đang export THIẾU model: <b>' + missing.join(', ') + '</b>.<br>' +
+      'Nếu upload đè sprites.json cũ, các model này sẽ bị MẤT!<br><br>' +
+      '<b>Khuyến nghị:</b> Bấm 📂 Load project để load lại file cũ trước khi export.';
+  } else {
+    $('exportWarn').style.display = 'none';
+  }
+
+  $('exportModal').classList.add('show');
+}
+
+async function doExportAll(){
+  $('exportModal').classList.remove('show');
+  const sprites = [...state.sprites.values()];
   toast('📦 Đang tải ' + sprites.length + ' file...');
   for (let i = 0; i < sprites.length; i++){
     await exportSpritePNG(sprites[i], true);
@@ -1365,7 +2054,7 @@ $('exportAllBtn').addEventListener('click', async () => {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
   toast('📦 Đã tải ' + sprites.length + ' PNG + sprites.json');
-});
+}
 
 /* ============================================================
    TABS
@@ -1385,21 +2074,32 @@ document.querySelectorAll('.tab').forEach(tab => {
    ============================================================ */
 function setTool(tool){
   state.tool = tool;
-  ['toolSelect','toolAddV','toolAddH','toolPick'].forEach(id => $(id).classList.remove('on'));
-  const map = { select:'toolSelect', addv:'toolAddV', addh:'toolAddH', pick:'toolPick' };
+  ['toolSelect','toolAddV','toolAddH','toolPick','toolPan'].forEach(id => {
+    const el = $(id); if (el) el.classList.remove('on');
+  });
+  const map = { select:'toolSelect', addv:'toolAddV', addh:'toolAddH', pick:'toolPick', pan:'toolPan' };
   if (map[tool]) $(map[tool]).classList.add('on');
+
+  /* Cursor */
+  overlayCanvas.classList.remove('grab', 'grabbing', 'crosshair', 'move');
+  if (tool === 'pick') overlayCanvas.classList.add('crosshair');
+  else if (tool === 'pan') overlayCanvas.classList.add('grab');
+  else overlayCanvas.classList.add('move');
 }
 $('toolSelect').addEventListener('click', () => setTool('select'));
 $('toolAddV').addEventListener('click', () => setTool('addv'));
 $('toolAddH').addEventListener('click', () => setTool('addh'));
 $('toolPick').addEventListener('click', () => setTool('pick'));
+$('toolPan').addEventListener('click', () => setTool('pan'));
 setTool('select');
 
 $('snapChk').addEventListener('change', e => state.snap = e.target.checked);
+$('gridChk').addEventListener('change', e => { state.showGrid = e.target.checked; renderOverlay(); });
 
 $('autoDetect').addEventListener('click', () => {
   const s = currentSprite();
   if (!s) return;
+  pushHistory('auto detect');
   let lines = autoDetectFrameLines(s.canvas, null);
   if (!lines || lines.length < 4){
     const userFrames = parseInt(prompt(
@@ -1408,10 +2108,7 @@ $('autoDetect').addEventListener('click', () => {
       lines = autoDetectFrameLines(s.canvas, userFrames);
     }
   }
-  if (!lines || lines.length < 3){
-    toast('Không tách được frame', true);
-    return;
-  }
+  if (!lines || lines.length < 3){ toast('Không tách được frame', true); return; }
   s.vLines = lines;
   s.hLines = [0, s.canvas.height];
   computeAnchorsForSprite(s, false);
@@ -1422,34 +2119,50 @@ $('autoDetect').addEventListener('click', () => {
 $('computeAnchors').addEventListener('click', () => {
   const s = currentSprite();
   if (!s) return;
+  pushHistory('recompute anchors');
   computeAnchorsForSprite(s, true);
   renderAll();
 });
 
-/* 🎯 NÚT MỞ RỘNG + CĂN CHỈNH */
+/* 🆕 Mirror */
+$('mirrorBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  pushHistory('mirror');
+  const tmp = document.createElement('canvas');
+  tmp.width = s.canvas.width;
+  tmp.height = s.canvas.height;
+  const tc = tmp.getContext('2d');
+  tc.translate(tmp.width, 0);
+  tc.scale(-1, 1);
+  tc.drawImage(s.canvas, 0, 0);
+  s.ctx.clearRect(0, 0, s.canvas.width, s.canvas.height);
+  s.ctx.drawImage(tmp, 0, 0);
+  const mc = mainCanvas.getContext('2d');
+  mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+  mc.drawImage(s.canvas, 0, 0);
+  computeAnchorsForSprite(s, false);
+  renderAll();
+  toast('↔️ Đã lật ngang');
+});
+
 $('alignFramesBtn').addEventListener('click', () => {
   const s = currentSprite();
   if (!s) return;
-  if (s.vLines.length < 3){
-    toast('Chưa có frame nào để căn', true);
-    return;
-  }
+  if (s.vLines.length < 3){ toast('Chưa có frame nào để căn', true); return; }
+  pushHistory('align frames');
   const padding = Math.max(0, Math.min(64, parseInt($('padXInput').value) || 12));
   const gap     = Math.max(0, Math.min(64, parseInt($('gapXInput').value) || 6));
   $('padXInput').value = padding;
   $('gapXInput').value = gap;
-
   const res = expandAndAlignFrames(s, padding, gap);
-  if (!res.ok){
-    toast('❌ ' + res.msg, true);
-    return;
-  }
-  selectSprite(s.id);
-  toast(`🎯 Mở rộng + căn ${res.frames} frame · pad=${res.padding}px · gap=${res.gap}px`);
+  if (!res.ok){ toast('❌ ' + res.msg, true); return; }
+  selectSprite(s.id, true);
+  toast(`🎯 Mở rộng + căn ${res.frames} frame`);
 });
 
 /* ============================================================
-   CANVAS INTERACTION
+   🆕 CANVAS INTERACTION — drag line trực tiếp
    ============================================================ */
 function getCanvasCoords(e){
   const rect = mainCanvas.getBoundingClientRect();
@@ -1458,18 +2171,22 @@ function getCanvasCoords(e){
     y: (e.clientY - rect.top) / state.zoom
   };
 }
+
 function findLineAt(x, y){
   const s = currentSprite();
   if (!s) return null;
-  const tol = 6 / state.zoom;
+  const tol = 8 / state.zoom;
+  /* Dọc */
   for (let i = 1; i < s.vLines.length - 1; i++){
-    if (Math.abs(s.vLines[i] - x) < tol) return { type: 'v', idx: i };
+    if (Math.abs(s.vLines[i] - x) < tol) return { type: 'v', idx: i, dist: Math.abs(s.vLines[i] - x) };
   }
+  /* Ngang */
   for (let i = 1; i < s.hLines.length - 1; i++){
-    if (Math.abs(s.hLines[i] - y) < tol) return { type: 'h', idx: i };
+    if (Math.abs(s.hLines[i] - y) < tol) return { type: 'h', idx: i, dist: Math.abs(s.hLines[i] - y) };
   }
   return null;
 }
+
 function findCellAt(x, y){
   const s = currentSprite();
   if (!s) return null;
@@ -1487,6 +2204,7 @@ function findCellAt(x, y){
     _idx: ri * (s.vLines.length - 1) + ci
   };
 }
+
 function pickColorAt(x, y){
   const s = currentSprite();
   if (!s) return;
@@ -1498,26 +2216,57 @@ function pickColorAt(x, y){
   setTool('select');
 }
 
+/* 🆕 Hover detection */
+overlayCanvas.addEventListener('mousemove', e => {
+  const s = currentSprite();
+  if (!s) return;
+  if (state.drag) return;
+  const { x, y } = getCanvasCoords(e);
+  const line = findLineAt(x, y);
+  if (line !== state.hoverLine &&
+      (!line || !state.hoverLine || line.type !== state.hoverLine.type || line.idx !== state.hoverLine.idx)){
+    state.hoverLine = line;
+    renderOverlay();
+  }
+  if (line) overlayCanvas.style.cursor = line.type === 'v' ? 'ew-resize' : 'ns-resize';
+  else overlayCanvas.style.cursor = state.tool === 'pick' ? 'crosshair' :
+    state.tool === 'pan' ? 'grab' : 'default';
+});
+
 overlayCanvas.addEventListener('mousedown', e => {
   const s = currentSprite();
   if (!s) return;
   const { x, y } = getCanvasCoords(e);
 
-  if (e.altKey){ pickColorAt(Math.floor(x), Math.floor(y)); return; }
-  if (state.tool === 'pick'){ pickColorAt(Math.floor(x), Math.floor(y)); return; }
+  /* Alt+click hoặc tool=pick → pick màu */
+  if (e.altKey || state.tool === 'pick'){ pickColorAt(Math.floor(x), Math.floor(y)); return; }
 
+  /* Pan tool hoặc middle mouse */
+  if (state.tool === 'pan' || e.button === 1){
+    state.pan = { active: true, startX: e.clientX, startY: e.clientY,
+                  scrollL: stageCanvas.scrollLeft, scrollT: stageCanvas.scrollTop };
+    overlayCanvas.classList.add('grabbing');
+    e.preventDefault();
+    return;
+  }
+
+  /* Right click → xóa line */
   if (e.button === 2){
     const line = findLineAt(x, y);
     if (line){
+      pushHistory('del line');
       if (line.type === 'v' && s.vLines.length > 2) s.vLines.splice(line.idx, 1);
       else if (line.type === 'h' && s.hLines.length > 2) s.hLines.splice(line.idx, 1);
       computeAnchorsForSprite(s, false);
       renderAll();
+      toast('🗑 Đã xóa line');
     }
     return;
   }
 
+  /* Add tool */
   if (state.tool === 'addv'){
+    pushHistory('add vLine');
     s.vLines.push(Math.round(x));
     s.vLines.sort((a,b) => a-b);
     computeAnchorsForSprite(s, false);
@@ -1525,6 +2274,7 @@ overlayCanvas.addEventListener('mousedown', e => {
     return;
   }
   if (state.tool === 'addh'){
+    pushHistory('add hLine');
     s.hLines.push(Math.round(y));
     s.hLines.sort((a,b) => a-b);
     computeAnchorsForSprite(s, false);
@@ -1532,22 +2282,28 @@ overlayCanvas.addEventListener('mousedown', e => {
     return;
   }
 
-  if (state.manualAnchor && state.cell){
-    if (e.button === 0){
-      s.anchors[state.cell._idx] = { x: Math.round(x), y: Math.round(y) };
-      renderOverlay();
-      renderAnchorList();
-      toast('🎯 Anchor #' + state.cell._idx);
-      return;
-    }
-  }
-
-  const line = findLineAt(x, y);
-  if (line){
-    state.drag = { type: line.type, idx: line.idx };
+  /* Manual anchor */
+  if (state.manualAnchor && state.cell && e.button === 0){
+    pushHistory('set anchor #' + state.cell._idx);
+    s.anchors[state.cell._idx] = { x: Math.round(x), y: Math.round(y) };
+    renderOverlay();
+    renderAnchorList();
+    toast('🎯 Anchor #' + state.cell._idx);
     return;
   }
 
+  /* Drag line */
+  const line = findLineAt(x, y);
+  if (line){
+    pushHistory('drag ' + line.type);
+    state.drag = { type: line.type, idx: line.idx,
+                   startX: line.type === 'v' ? s.vLines[line.idx] : 0,
+                   startY: line.type === 'h' ? s.hLines[line.idx] : 0 };
+    renderOverlay();
+    return;
+  }
+
+  /* Select cell */
   const cell = findCellAt(x, y);
   if (cell){
     state.cell = cell;
@@ -1563,7 +2319,17 @@ overlayCanvas.addEventListener('mousedown', e => {
 });
 overlayCanvas.addEventListener('contextmenu', e => e.preventDefault());
 
+/* Global move */
 document.addEventListener('mousemove', e => {
+  /* Pan */
+  if (state.pan.active){
+    const dx = e.clientX - state.pan.startX;
+    const dy = e.clientY - state.pan.startY;
+    stageCanvas.scrollLeft = state.pan.scrollL - dx;
+    stageCanvas.scrollTop = state.pan.scrollT - dy;
+    return;
+  }
+
   const s = currentSprite();
   if (!s || !state.drag) return;
   const { x, y } = getCanvasCoords(e);
@@ -1572,13 +2338,15 @@ document.addEventListener('mousemove', e => {
     let nx = x;
     if (state.snap) nx = Math.round(nx);
     nx = Math.max(s.vLines[state.drag.idx-1]+5, Math.min(s.vLines[state.drag.idx+1]-5, nx));
-    s.vLines[state.drag.idx] = nx;
+    s.vLines[state.drag.idx] = Math.round(nx);
+    renderLineLists();
     renderOverlay();
   } else if (state.drag.type === 'h'){
     let ny = y;
     if (state.snap) ny = Math.round(ny);
     ny = Math.max(s.hLines[state.drag.idx-1]+5, Math.min(s.hLines[state.drag.idx+1]-5, ny));
-    s.hLines[state.drag.idx] = ny;
+    s.hLines[state.drag.idx] = Math.round(ny);
+    renderLineLists();
     renderOverlay();
   } else if (state.drag.type === 'cell'){
     const dx = Math.floor(x) - state.drag.startX;
@@ -1591,6 +2359,11 @@ document.addEventListener('mousemove', e => {
 });
 
 document.addEventListener('mouseup', () => {
+  if (state.pan.active){
+    state.pan.active = false;
+    overlayCanvas.classList.remove('grabbing');
+    return;
+  }
   const s = currentSprite();
   if (!state.drag || !s) return;
   if (state.drag.type === 'v' || state.drag.type === 'h'){
@@ -1632,13 +2405,13 @@ function previewCellMove(){
   mc.drawImage(s.canvas, 0, 0);
 }
 
+/* 🆕 Wheel zoom */
 stageCanvas.addEventListener('wheel', e => {
   if (!currentSprite()) return;
-  if (e.ctrlKey || e.metaKey){
-    e.preventDefault();
-    state.zoom = Math.max(0.25, Math.min(6, state.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
-    applyZoom();
-  }
+  e.preventDefault();
+  const factor = e.deltaY > 0 ? 0.9 : 1.1;
+  state.zoom = Math.max(0.1, Math.min(8, state.zoom * factor));
+  applyZoom();
 }, { passive: false });
 
 function applyZoom(){
@@ -1649,7 +2422,21 @@ function applyZoom(){
   const pct = Math.round(state.zoom * 100) + '%';
   $('zoomLabel').textContent = pct;
   $('statZoom').textContent = pct;
+  $('zoomVal').textContent = pct;
 }
+
+/* 🆕 Zoom buttons */
+$('zoomInBtn').addEventListener('click', () => { state.zoom = Math.min(8, state.zoom * 1.25); applyZoom(); });
+$('zoomOutBtn').addEventListener('click', () => { state.zoom = Math.max(0.1, state.zoom / 1.25); applyZoom(); });
+$('zoomFitBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s){ state.zoom = 1; applyZoom(); return; }
+  const cw = stageCanvas.clientWidth - 80;
+  const ch = stageCanvas.clientHeight - 80;
+  state.zoom = Math.min(cw / s.canvas.width, ch / s.canvas.height, 8);
+  state.zoom = Math.max(0.1, state.zoom);
+  applyZoom();
+});
 
 /* ============================================================
    INSPECTOR CONTROLS
@@ -1657,6 +2444,7 @@ function applyZoom(){
 $('autoVBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
   const n = parseInt(prompt('Số cột:', s.vLines.length - 1 || 10)) || 10;
+  pushHistory('auto V');
   s.vLines = [0];
   for (let i = 1; i < n; i++) s.vLines.push(Math.round(i * s.canvas.width / n));
   s.vLines.push(s.canvas.width);
@@ -1666,6 +2454,7 @@ $('autoVBtn').addEventListener('click', () => {
 $('autoHBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
   const n = parseInt(prompt('Số hàng:', s.hLines.length - 1 || 1)) || 1;
+  pushHistory('auto H');
   s.hLines = [0];
   for (let i = 1; i < n; i++) s.hLines.push(Math.round(i * s.canvas.height / n));
   s.hLines.push(s.canvas.height);
@@ -1674,6 +2463,7 @@ $('autoHBtn').addEventListener('click', () => {
 });
 $('addVBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
+  pushHistory('add V');
   const mid = s.vLines.length > 1 ? (s.vLines[s.vLines.length-2] + s.vLines[s.vLines.length-1])/2 : s.canvas.width/2;
   s.vLines.push(Math.round(mid));
   s.vLines.sort((a,b) => a-b);
@@ -1682,6 +2472,7 @@ $('addVBtn').addEventListener('click', () => {
 });
 $('addHBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
+  pushHistory('add H');
   const mid = s.hLines.length > 1 ? (s.hLines[s.hLines.length-2] + s.hLines[s.hLines.length-1])/2 : s.canvas.height/2;
   s.hLines.push(Math.round(mid));
   s.hLines.sort((a,b) => a-b);
@@ -1690,12 +2481,14 @@ $('addHBtn').addEventListener('click', () => {
 });
 $('clearVBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
+  pushHistory('clear V');
   s.vLines = [0, s.canvas.width];
   computeAnchorsForSprite(s, false);
   renderAll();
 });
 $('clearHBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
+  pushHistory('clear H');
   s.hLines = [0, s.canvas.height];
   computeAnchorsForSprite(s, false);
   renderAll();
@@ -1713,6 +2506,7 @@ $('resizeBtn').addEventListener('click', () => {
   const nW = parseInt($('canvasW').value);
   const nH = parseInt($('canvasH').value);
   if (!nW || !nH) return;
+  pushHistory('resize');
   const oW = s.canvas.width, oH = s.canvas.height;
   const tmp = document.createElement('canvas');
   tmp.width = oW; tmp.height = oH;
@@ -1728,13 +2522,14 @@ $('resizeBtn').addEventListener('click', () => {
   s.vLines[0] = 0; s.vLines[s.vLines.length-1] = nW;
   s.hLines[0] = 0; s.hLines[s.hLines.length-1] = nH;
   computeAnchorsForSprite(s, false);
-  selectSprite(s.id);
+  selectSprite(s.id, true);
 });
 
 $('cropBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
   const bbox = detectBBox(s.canvas, 0, 0, s.canvas.width, s.canvas.height);
   if (!bbox){ toast('Ảnh trống', true); return; }
+  pushHistory('crop');
   const tmp = document.createElement('canvas');
   tmp.width = bbox.w; tmp.height = bbox.h;
   tmp.getContext('2d').drawImage(s.canvas, -bbox.x, -bbox.y);
@@ -1745,7 +2540,7 @@ $('cropBtn').addEventListener('click', () => {
   s.vLines = [0, bbox.w];
   s.hLines = [0, bbox.h];
   computeAnchorsForSprite(s, false);
-  selectSprite(s.id);
+  selectSprite(s.id, true);
   toast('✂ ' + bbox.w + '×' + bbox.h);
 });
 
@@ -1758,11 +2553,13 @@ $('anchorMode').addEventListener('change', e => {
 });
 $('anchorRecompute').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
+  pushHistory('recompute anchor');
   computeAnchorsForSprite(s, true);
   renderAll();
 });
 $('anchorClear').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
+  pushHistory('clear anchor');
   s.anchors = [];
   s.stableAnchor = null;
   renderAll();
@@ -1775,11 +2572,13 @@ $('bgMode').addEventListener('change', e => {
 });
 $('bgApplyAll').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
+  pushHistory('bg all');
   applyBg(s, 0, 0, s.canvas.width, s.canvas.height);
 });
 $('bgApplyCell').addEventListener('click', () => {
   const s = currentSprite();
   if (!s || !state.cell) return;
+  pushHistory('bg cell');
   applyBg(s, state.cell.x1, state.cell.y1,
     state.cell.x2-state.cell.x1, state.cell.y2-state.cell.y1);
 });
@@ -1815,16 +2614,67 @@ function applyBg(s, x, y, w, h){
 
 $('metaModel').addEventListener('change', e => {
   const s = currentSprite(); if (!s) return;
-  s.model = e.target.value.trim() || 'player';
+  if (e.target.value === 'custom'){
+    $('customModelRow').style.display = 'flex';
+    $('metaModelCustom').focus();
+    return;
+  }
+  const newModel = e.target.value;
+  const oldModel = s.model;
+  $('customModelRow').style.display = 'none';
+
+  if (oldModel !== newModel){
+    const oldFileName = s.fileName;
+    let newFileName;
+    if (newModel === 'player'){
+      const parts = oldFileName.split('_');
+      if (parts.length > 1 && MODEL_PREFIXES.includes(parts[0].toLowerCase())){
+        parts[0] = 'player';
+        newFileName = parts.join('_');
+      } else newFileName = 'player_' + oldFileName;
+    } else newFileName = renameWithPrefix(oldFileName, newModel);
+    newFileName = ensureUniqueFilename(newFileName);
+    if (newFileName !== oldFileName){
+      s.fileName = newFileName;
+      $('metaFile').value = newFileName;
+      toast('📝 ' + oldFileName + '.png → ' + newFileName + '.png', false, true);
+    }
+  }
+
+  s.model = newModel;
+  s.fps = getFpsForAnim(s.anim, s.model);
+  $('metaFps').value = s.fps;
+  updateModelBadge(s.model);
+  updateMetaHint(s.model);
   renderLibrary(); updateBadges();
 });
+$('metaModelCustom').addEventListener('change', e => {
+  const s = currentSprite(); if (!s) return;
+  s.model = e.target.value.trim() || 'custom';
+  updateModelBadge(s.model);
+  renderLibrary(); updateBadges();
+});
+
+$('renameFileBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  const oldName = s.fileName;
+  let newName = renameWithPrefix(oldName, s.model);
+  newName = ensureUniqueFilename(newName);
+  if (newName === oldName){ toast('✓ Tên đã đúng prefix'); return; }
+  s.fileName = newName;
+  $('metaFile').value = newName;
+  renderLibrary();
+  toast('📝 ' + oldName + ' → ' + newName);
+});
+
 $('metaAnim').addEventListener('change', e => {
   const s = currentSprite(); if (!s) return;
-  if (e.target.value === 'custom'){
-    $('customAnimRow').style.display = 'flex';
-  } else {
+  if (e.target.value === 'custom') $('customAnimRow').style.display = 'flex';
+  else {
     $('customAnimRow').style.display = 'none';
     s.anim = e.target.value;
+    s.fps = getFpsForAnim(s.anim, s.model);
+    $('metaFps').value = s.fps;
     renderLibrary(); updateBadges();
   }
 });
@@ -1833,9 +2683,24 @@ $('metaAnimCustom').addEventListener('change', e => {
   s.anim = e.target.value.trim() || 'custom';
   renderLibrary(); updateBadges();
 });
+
+$('autoFpsBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  s.fps = getFpsForAnim(s.anim, s.model);
+  $('metaFps').value = s.fps;
+  toast('⚡ Auto FPS: ' + s.fps);
+});
+
 $('metaFile').addEventListener('change', e => {
   const s = currentSprite(); if (!s) return;
-  s.fileName = e.target.value.trim() || s.fileName;
+  let newName = e.target.value.trim() || s.fileName;
+  newName = ensureUniqueFilename(newName);
+  if (newName !== e.target.value.trim()){
+    e.target.value = newName;
+    toast('📝 Đổi thành: ' + newName, false, true);
+  }
+  s.fileName = newName;
+  renderLibrary();
 });
 $('metaFps').addEventListener('change', e => {
   const s = currentSprite(); if (!s) return;
@@ -1883,7 +2748,7 @@ function drawPreview(){
   const frames = s.vLines.length - 1; if (frames < 1) return;
   const idx = Math.max(0, Math.min(frames - 1, state.previewFrame));
   pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-  pctx.fillStyle = '#0a0d08';
+  pctx.fillStyle = '#000';
   pctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
   pctx.imageSmoothingEnabled = false;
   const sx = s.vLines[idx];
@@ -1947,40 +2812,71 @@ $('previewStopBtn').addEventListener('click', () => {
    HELP
    ============================================================ */
 $('helpBtn').addEventListener('click', () => {
-  alert('HƯỚNG DẪN:\n\n' +
-    '1. Upload PNG → auto detect model/anim/fps\n' +
-    '2. 🤖 Auto để tách frame\n' +
-    '3. Kéo line đỏ khớp nhân vật\n' +
-    '4. Chọn anchor mode (mặc định stable-x)\n' +
-    '5. 🎯 Anchors để tính\n' +
-    '6. 🎯 MỞ RỘNG + CĂN CHỈNH FRAME\n' +
-    '   → Thêm padding + gap\n' +
-    '   → Anchor cố định cho MỌI frame\n' +
-    '   → Không còn drift/giật\n' +
-    '7. Đặt Model/Anim/FPS trong tab META\n' +
-    '8. 📦 Export All → tải PNG + sprites.json\n\n' +
+  alert('HƯỚNG DẪN v4.0:\n\n' +
+    'KÉO LINE:\n' +
+    '• Click line dọc/ngang → kéo trực tiếp\n' +
+    '• Handle xanh ở đầu line = điểm kéo\n' +
+    '• Right-click = xóa line\n' +
+    '• Hover line = vàng highlight\n\n' +
+    'TOOLS:\n' +
+    '• 🖱 Select — kéo line, chọn cell\n' +
+    '• ┃ +V / ━ +H — thêm line\n' +
+    '• 💧 Pick — pick màu nền\n' +
+    '• ✋ Pan — kéo canvas (hoặc Space + drag)\n\n' +
     'PHÍM TẮT:\n' +
-    'Ctrl+scroll = zoom\n' +
-    'Right-click line = xóa\n' +
-    'Alt+click = pick màu');
+    '• Ctrl+Z / Ctrl+Y = Undo / Redo\n' +
+    '• Ctrl+0 = Reset zoom\n' +
+    '• Space + drag = Pan\n' +
+    '• Alt+Click = Pick màu\n' +
+    '• Ctrl+Scroll = Zoom\n\n' +
+    'NHẬP SỐ:\n' +
+    '• Panel FRAME → list vLines/hLines → sửa số trực tiếp\n' +
+    '• Line edge (đầu/cuối) bị khóa, không sửa được');
 });
 
 /* ============================================================
    KEYBOARD
    ============================================================ */
 document.addEventListener('keydown', e => {
+  /* Undo/Redo */
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey){
+    e.preventDefault(); undo(); return;
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))){
+    e.preventDefault(); redo(); return;
+  }
+  /* Save */
   if ((e.ctrlKey || e.metaKey) && e.key === 's'){
     e.preventDefault();
     if (currentSprite()) $('exportBtn').click();
     return;
   }
+  /* Reset zoom */
+  if ((e.ctrlKey || e.metaKey) && e.key === '0'){
+    e.preventDefault(); state.zoom = 1; applyZoom(); return;
+  }
+  /* Space = pan temp */
+  if (e.code === 'Space' && !e.repeat && !state.pan.active){
+    state.pan.active = true;
+    state.pan.startX = 0; state.pan.startY = 0;
+    state.pan.scrollL = stageCanvas.scrollLeft;
+    state.pan.scrollT = stageCanvas.scrollTop;
+    overlayCanvas.classList.add('grabbing');
+    e.preventDefault();
+    return;
+  }
+  /* Escape */
   if (e.key === 'Escape'){
     state.cell = null;
     renderOverlay();
     setTool('select');
+    $('loadModal').classList.remove('show');
+    $('exportModal').classList.remove('show');
   }
+  /* Delete cell */
   if (e.key === 'Delete' && state.cell){
     const s = currentSprite(); if (!s) return;
+    pushHistory('delete cell');
     s.ctx.clearRect(state.cell.x1, state.cell.y1,
       state.cell.x2-state.cell.x1, state.cell.y2-state.cell.y1);
     const mc = mainCanvas.getContext('2d');
@@ -1990,9 +2886,24 @@ document.addEventListener('keydown', e => {
     renderAll();
   }
 });
+document.addEventListener('keyup', e => {
+  if (e.code === 'Space' && state.pan.active && !state.pan.mouseActive){
+    state.pan.active = false;
+    overlayCanvas.classList.remove('grabbing');
+  }
+});
+
+/* Pan bằng Space + mouse down */
+overlayCanvas.addEventListener('mousedown', e => {
+  if (e.code !== 'Space' && !state.pan.active) return;
+  state.pan.mouseActive = true;
+}, true);
 
 setTool('select');
 applyZoom();
+
+/* Update undo/redo buttons */
+updateHistoryButtons();
 </script>
 </body>
-</html>
+  </html>
