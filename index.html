@@ -244,7 +244,6 @@ body.edit-btn-mode #editOverlay{display:flex}
   box-shadow:0 3px 0 rgba(0,0,0,.5);touch-action:manipulation}
 #settingsBtn.show{display:flex}
 
-/* ROOM LIST */
 .room-list-header{
   display:flex;align-items:center;gap:8px;
   font-size:11px;color:#a8b498;margin:12px 0 6px;
@@ -392,10 +391,8 @@ body.edit-btn-mode #editOverlay{display:flex}
     </div>
     <div id="menuMP" class="menu-page hidden">
       <h3>CHIẾN TRƯỜNG PvP</h3>
-
       <label>TÊN CỦA BẠN</label>
       <input type="text" id="playerName" maxlength="12" placeholder="Hunter" value="Hunter">
-
       <div class="room-list-header">
         <span>🏠 PHÒNG GẦN ĐÂY</span>
         <span class="badge" id="roomListCount">0</span>
@@ -404,15 +401,12 @@ body.edit-btn-mode #editOverlay{display:flex}
       <div id="roomList" class="room-list">
         <div class="room-empty">Đang tải...</div>
       </div>
-
       <button class="mbtn primary" onclick="Game.hostRoom()">🏠 Tạo phòng mới</button>
       <button class="mbtn" onclick="Game.toggleJoinByCode()">🔑 Nhập mã phòng</button>
-
       <div id="hostPanel" class="hidden" style="margin-top:10px">
         <div id="roomCodeDisplay" class="code-display hidden"></div>
         <div class="status-text" id="hostStatus"></div>
       </div>
-
       <div id="joinPanel" class="hidden" style="margin-top:10px">
         <label>MÃ PHÒNG</label>
         <input type="text" id="joinCode" maxlength="6" placeholder="ABC123"
@@ -420,7 +414,6 @@ body.edit-btn-mode #editOverlay{display:flex}
         <button class="mbtn primary" onclick="Game.joinRoom()" style="margin-top:10px">Kết nối</button>
         <div class="status-text" id="joinStatus"></div>
       </div>
-
       <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
     </div>
     <div id="menuSettings" class="menu-page hidden">
@@ -431,7 +424,6 @@ body.edit-btn-mode #editOverlay{display:flex}
         <input type="range" id="setMusic" min="0" max="100" value="35"><span class="val" id="valMusic">35</span></div>
       <div class="setting-row"><label>🔔 SFX</label>
         <input type="range" id="setSfx" min="0" max="100" value="80"><span class="val" id="valSfx">80</span></div>
-
       <h3 style="margin-top:14px">📐 NÚT MOBILE</h3>
       <button class="mbtn primary" onclick="ButtonSettings.openEditor()" style="padding:12px;font-size:13px">
         🎯 Chỉnh vị trí nút
@@ -442,7 +434,6 @@ body.edit-btn-mode #editOverlay{display:flex}
       <div style="font-size:10px;color:#586850;margin-top:8px;font-family:Consolas,monospace;text-align:left;line-height:1.6">
         Bấm "Chỉnh vị trí" → kéo các nút đến vị trí mong muốn → bấm Lưu.
       </div>
-
       <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
     </div>
   </div>
@@ -481,26 +472,138 @@ const DEATH_DURATION = 0.9;
 const JUMP_DURATION = 0.65;
 
 /* ============================================================
-   🆕 WEAPON CONFIG — vị trí + góc kiếm
+   🆕 WEAPON TYPES — cấu hình riêng cho từng loại vũ khí
    ============================================================
-   handX/handY: vị trí tay cầm (từ tâm chân player)
-   scale: tỉ lệ kiếm so với player height (0.8-1.2 là đẹp)
-   angles[anim]: mảng góc xoay (radian) cho từng frame weapon
-   debug: bật chấm đỏ tại vị trí tay để test
+   Mỗi loại có:
+     - matchKeywords: từ khóa filename để nhận diện
+     - orientation: 'vertical' | 'horizontal' | 'balanced'
+     - pivotX/pivotY: điểm neo (0-1) trong bbox
+     - scale: tỉ lệ so với player height
+     - defaultAngle: góc mặc định (radian) khi giữ
+   ============================================================ */
+const WEAPON_TYPES = {
+  katana: {
+    matchKeywords: ['katana', 'sword', 'blade', 'saber', 'sabre'],
+    orientation: 'vertical',
+    pivotX: 0.5,
+    pivotY: 0.12,
+    scale: 0.85,
+    defaultAngle: 0
+  },
+  dagger: {
+    matchKeywords: ['dagger', 'knife', 'shiv'],
+    orientation: 'vertical',
+    pivotX: 0.5,
+    pivotY: 0.20,
+    scale: 0.55,
+    defaultAngle: 0
+  },
+  greatsword: {
+    matchKeywords: ['greatsword', 'great_sword', 'zweihander', 'claymore', 'broadsword'],
+    orientation: 'vertical',
+    pivotX: 0.5,
+    pivotY: 0.10,
+    scale: 1.30,
+    defaultAngle: 0
+  },
+  bow: {
+    matchKeywords: ['bow', 'longbow', 'shortbow'],
+    orientation: 'horizontal',
+    pivotX: 0.5,
+    pivotY: 0.5,
+    scale: 1.00,
+    defaultAngle: 0
+  },
+  crossbow: {
+    matchKeywords: ['crossbow'],
+    orientation: 'horizontal',
+    pivotX: 0.3,
+    pivotY: 0.5,
+    scale: 0.95,
+    defaultAngle: 0
+  },
+  staff: {
+    matchKeywords: ['staff', 'wand', 'rod', 'scepter'],
+    orientation: 'vertical',
+    pivotX: 0.5,
+    pivotY: 0.25,
+    scale: 1.20,
+    defaultAngle: 0
+  },
+  axe: {
+    matchKeywords: ['axe', 'hatchet', 'tomahawk'],
+    orientation: 'vertical',
+    pivotX: 0.5,
+    pivotY: 0.15,
+    scale: 1.00,
+    defaultAngle: 0
+  },
+  spear: {
+    matchKeywords: ['spear', 'lance', 'halberd', 'pike'],
+    orientation: 'vertical',
+    pivotX: 0.5,
+    pivotY: 0.15,
+    scale: 1.40,
+    defaultAngle: 0
+  },
+  shield: {
+    matchKeywords: ['shield', 'buckler'],
+    orientation: 'balanced',
+    pivotX: 0.5,
+    pivotY: 0.5,
+    scale: 0.80,
+    defaultAngle: 0
+  },
+  gun: {
+    matchKeywords: ['gun', 'rifle', 'pistol', 'revolver'],
+    orientation: 'horizontal',
+    pivotX: 0.3,
+    pivotY: 0.5,
+    scale: 1.00,
+    defaultAngle: 0
+  },
+  generic: {
+    matchKeywords: [],
+    orientation: 'vertical',
+    pivotX: 0.5,
+    pivotY: 0.15,
+    scale: 0.85,
+    defaultAngle: 0
+  }
+};
+
+/* ============================================================
+   🆕 WEAPON CONFIG — user override
+   ============================================================
+   Có thể override từng trường bằng tay. Nếu để null → dùng
+   giá trị từ WEAPON_TYPES tương ứng.
    ============================================================ */
 const WEAPON_CONFIG = {
+  /* Vị trí tay player — từ tâm chân player */
   handX: 4,
-  handY: -30,
-  scale: 0.9,
+  handY: -32,
+
+  /* Góc xoay từng frame cho từng anim (radian) */
   angles: {
     idle:   [0, 0],
     run:    [0.05, 0.10, 0.05],
     jump:   [0, 0.05, 0.10, 0.05],
-    attack: [0.30, -0.20, 0.50],
+    attack: [0.30, -0.20, 0.50, 0.30],
     sit:    [0.15, 0.15],
     death:  [0.20, 0.30, 0.50]
   },
+
+  /* 🆕 Fallback anim khi thiếu */
   fallback: {},
+
+  /* 🆕 Override (null = dùng auto từ WEAPON_TYPES) */
+  overrides: {
+    pivotX: null,
+    pivotY: null,
+    scale: null,
+    defaultAngle: null
+  },
+
   debug: false
 };
 
@@ -531,7 +634,7 @@ function decodeMetadata(img){
 }
 
 /* ============================================================
-   AUTO-DETECT
+   AUTO-DETECT FRAMES — gap detection
    ============================================================ */
 function autoDetectFrameLines(canvas, expectedFrames){
   const W = canvas.width, H = canvas.height;
@@ -584,6 +687,74 @@ function detectBBox(canvas, x1, y1, x2, y2){
   }
   if (maxX < 0) return null;
   return { x: x1+minX, y: y1+minY, w: maxX-minX+1, h: maxY-minY+1 };
+}
+
+/* ============================================================
+   🆕 ANALYZE WEAPON — auto-detect type + orientation
+   ============================================================ */
+function analyzeWeaponSprite(sprite, fileName){
+  const analysis = {
+    type: 'generic',
+    orientation: 'vertical',
+    avgAspect: 1,
+    contentMaxH: 0,
+    contentMaxW: 0,
+    frameBBoxes: []
+  };
+
+  /* Per-frame bbox */
+  let sumW = 0, sumH = 0, count = 0;
+  for (let i = 0; i < sprite.frames; i++){
+    const bb = detectBBox(sprite.canvas, sprite.vLines[i], 0, sprite.vLines[i+1], sprite.spriteH);
+    analysis.frameBBoxes.push(bb);
+    if (bb && bb.w > 0 && bb.h > 0){
+      sumW += bb.w; sumH += bb.h; count++;
+      if (bb.h > analysis.contentMaxH) analysis.contentMaxH = bb.h;
+      if (bb.w > analysis.contentMaxW) analysis.contentMaxW = bb.w;
+    }
+  }
+  if (count > 0){
+    const avgW = sumW / count, avgH = sumH / count;
+    analysis.avgAspect = avgH / Math.max(1, avgW);
+  }
+
+  /* Orientation từ aspect */
+  if (analysis.avgAspect > 1.5) analysis.orientation = 'vertical';
+  else if (analysis.avgAspect < 0.67) analysis.orientation = 'horizontal';
+  else analysis.orientation = 'balanced';
+
+  /* Type từ filename */
+  const lower = (fileName || '').toLowerCase();
+  for (const type in WEAPON_TYPES){
+    if (type === 'generic') continue;
+    const keywords = WEAPON_TYPES[type].matchKeywords || [];
+    for (const kw of keywords){
+      if (lower.includes(kw)){
+        analysis.type = type;
+        return analysis;
+      }
+    }
+  }
+
+  /* Fallback: đoán từ orientation */
+  if (analysis.orientation === 'horizontal') analysis.type = 'bow';
+
+  return analysis;
+}
+
+/* ============================================================
+   🆕 GET WEAPON RENDER CONFIG
+   ============================================================ */
+function getWeaponRenderConfig(weapon){
+  const type = weapon.weaponType || 'generic';
+  const typeCfg = WEAPON_TYPES[type] || WEAPON_TYPES.generic;
+  return {
+    pivotX: WEAPON_CONFIG.overrides.pivotX ?? typeCfg.pivotX,
+    pivotY: WEAPON_CONFIG.overrides.pivotY ?? typeCfg.pivotY,
+    scale:  WEAPON_CONFIG.overrides.scale ?? typeCfg.scale,
+    defaultAngle: WEAPON_CONFIG.overrides.defaultAngle ?? typeCfg.defaultAngle,
+    orientation: typeCfg.orientation
+  };
 }
 
 /* ============================================================
@@ -657,6 +828,7 @@ function loadSprite(src, m, a, cfg){
       cc.imageSmoothingEnabled = false;
       cc.drawImage(img, 0, 0, img.width, spriteH, 0, 0, img.width, spriteH);
 
+      /* 🆕 Auto-detect frames nếu metadata thiếu */
       if (!vLines || vLines.length < 3){
         let detected = autoDetectFrameLines(cnv, null);
         if (!detected || detected.length < 3){
@@ -675,27 +847,26 @@ function loadSprite(src, m, a, cfg){
         model: m, anim: a, renderImg: cnv, canvas: cnv,
         spriteH, vLines, hLines: [0, spriteH],
         anchors, stableAnchor, anchorMode, fps, loop,
-        frames: vLines.length - 1, hasMeta
+        frames: vLines.length - 1, hasMeta,
+        fileName: cfg.fileName || src.split('/').pop().replace('.png','')
       };
       if (!anchors.length || anchors.every(x => !x) || !stableAnchor) autoComputeAnchors(sprite);
 
-      /* 🆕 WEAPON: compute per-frame bbox để biết content thực */
+      /* 🆕 WEAPON: analyze sprite để detect type + bbox */
       if (m === 'weapon'){
-        sprite.frameBBoxes = [];
-        let maxH = 0, maxW = 0;
-        for (let i = 0; i < sprite.frames; i++){
-          const bb = detectBBox(cnv, sprite.vLines[i], 0, sprite.vLines[i+1], spriteH);
-          sprite.frameBBoxes.push(bb);
-          if (bb){
-            if (bb.h > maxH) maxH = bb.h;
-            if (bb.w > maxW) maxW = bb.w;
-          }
-        }
-        sprite.contentMaxH = maxH || spriteH;
-        sprite.contentMaxW = maxW || 100;
-        console.log(`  ⚔️ ${m}/${a} bboxes:`,
-                    sprite.frameBBoxes.map(b => b ? `(${b.w}×${b.h})` : 'null').join(', '),
-                    `contentMaxH=${maxH} contentMaxW=${maxW}`);
+        const analysis = analyzeWeaponSprite(sprite, sprite.fileName);
+        sprite.weaponType = analysis.type;
+        sprite.weaponOrientation = analysis.orientation;
+        sprite.frameBBoxes = analysis.frameBBoxes;
+        sprite.contentMaxH = analysis.contentMaxH || spriteH;
+        sprite.contentMaxW = analysis.contentMaxW || 100;
+        sprite.avgAspect = analysis.avgAspect;
+
+        const typeCfg = WEAPON_TYPES[analysis.type] || WEAPON_TYPES.generic;
+        console.log(`  ⚔️ ${m}/${a}: type=${analysis.type} orient=${analysis.orientation} ` +
+          `aspect=${analysis.avgAspect.toFixed(2)} ` +
+          `content=${analysis.contentMaxW}×${analysis.contentMaxH} ` +
+          `pivot=(${typeCfg.pivotX},${typeCfg.pivotY}) scale=${typeCfg.scale}`);
       }
 
       Models.addSprite(m, a, sprite);
@@ -1517,7 +1688,6 @@ async function wakeUpBackend(){
     return false;
   }
 }
-
 async function apiRegisterRoom(code, name){
   try {
     const res = await fetch(BACKEND_URL + '/rooms', {
@@ -1722,21 +1892,19 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
 }
 
 /* ============================================================
-   🆕 VẼ KIẾM ĐÈ LÊN — dùng bbox để scale + pivot chính xác
+   🆕 VẼ VŨ KHÍ — auto-detect type + pivot + scale
    ============================================================ */
 function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facing){
+  /* Fallback anim nếu thiếu */
   const fallbackAnim = WEAPON_CONFIG.fallback[anim] || 'idle';
   let weapon = Models.get('weapon', anim);
   if (!weapon) weapon = Models.get('weapon', fallbackAnim);
   if (!weapon) weapon = Models.get('weapon', 'idle');
 
-  /* Debug nếu chưa load weapon */
   if (!weapon){
     if (!drawWeapon._logged){
       drawWeapon._logged = true;
-      console.warn('[Weapon] No weapon sprite loaded. Models available:',
-        [...Models.data.keys()]);
-      console.warn('[Weapon] Check: sprites.json có model "weapon"? PNG đã ở assets/?');
+      console.warn('[Weapon] No weapon sprite loaded. Models:', [...Models.data.keys()]);
     }
     return;
   }
@@ -1744,16 +1912,20 @@ function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facin
   const frames = weapon.frames || (weapon.vLines.length - 1);
   if (frames < 1) return;
 
+  /* 🆕 Lấy config theo loại vũ khí */
+  const renderCfg = getWeaponRenderConfig(weapon);
   const cfg = WEAPON_CONFIG.angles[anim] ||
               WEAPON_CONFIG.angles[fallbackAnim] ||
               WEAPON_CONFIG.angles.idle;
+
+  /* Frame mapping — chia đều player frames sang weapon frames */
   const wFrameIdx = Math.min(
     frames - 1,
     Math.floor((playerFrameIdx / Math.max(1, playerTotalFrames)) * frames)
   );
-  const angle = cfg[wFrameIdx] !== undefined ? cfg[wFrameIdx] : 0;
+  const angle = (cfg[wFrameIdx] !== undefined ? cfg[wFrameIdx] : 0) + renderCfg.defaultAngle;
 
-  /* Lấy bbox nội dung — nếu không có thì dùng toàn frame */
+  /* BBox của frame hiện tại */
   const bb = weapon.frameBBoxes && weapon.frameBBoxes[wFrameIdx];
   let srcX, srcY, srcW, srcH;
   if (bb && bb.w > 0 && bb.h > 0){
@@ -1768,29 +1940,25 @@ function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facin
     srcH = weapon.spriteH;
   }
 
-  /* Scale theo contentMaxH — kiếm cao = scale nhỏ, thấp = scale lớn */
+  /* Scale theo content max height của weapon */
   const contentH = weapon.contentMaxH || srcH;
-  const scale = (DEST_HEIGHT * WEAPON_CONFIG.scale) / contentH;
+  const scale = (DEST_HEIGHT * renderCfg.scale) / contentH;
   const dw = srcW * scale;
   const dh = srcH * scale;
 
-  /* Pivot = tâm của bbox */
-  const pivotX = -dw / 2;
-  const pivotY = -dh / 2;
+  /* Pivot tại vị trí cấu hình trong bbox */
+  const pivotX = -dw * renderCfg.pivotX;
+  const pivotY = -dh * renderCfg.pivotY;
 
   ctx.save();
   ctx.translate(sx, syGround);
   if (facing < 0) ctx.scale(-1, 1);
   ctx.translate(WEAPON_CONFIG.handX, WEAPON_CONFIG.handY);
   ctx.rotate(angle);
-  ctx.drawImage(
-    weapon.canvas,
-    srcX, srcY, srcW, srcH,
-    pivotX, pivotY, dw, dh
-  );
+  ctx.drawImage(weapon.canvas, srcX, srcY, srcW, srcH, pivotX, pivotY, dw, dh);
   ctx.restore();
 
-  /* Debug marker — chấm đỏ tại vị trí tay */
+  /* Debug marker */
   if (WEAPON_CONFIG.debug){
     ctx.save();
     ctx.fillStyle = '#ff0000';
@@ -2224,12 +2392,10 @@ async function joinRoomDirect(code, hostName){
     toast('⚠ Đang trong phòng khác — thoát trước', true);
     return;
   }
-
   try { net.disconnect(); } catch(e){}
   await new Promise(r => setTimeout(r, 100));
 
   const name = getPlayerName();
-
   const list = await apiListRooms();
   if (list){
     const room = list.find(r => r.code === code);
@@ -2281,12 +2447,9 @@ async function joinRoomDirect(code, hostName){
       initInv();
       startGame('client');
     };
-
     await net.startClient(name, code);
-
     if (cancelled) return;
     if (msgEl) msgEl.textContent = '✓ Đã kết nối · Đang tải dữ liệu...';
-
   } catch(e){
     clearTimeout(watchdog);
     if (document.body.contains(overlay)) overlay.remove();
@@ -2336,9 +2499,7 @@ window.Game = {
     backToMenu(); showMenuPage('settings');
   },
   quitToMenu: () => backToMenu(),
-
   joinFromList: (code, hostName) => joinRoomDirect(code, hostName),
-
   refreshRooms: () => {
     const btn = $('roomRefreshBtn');
     if (btn) btn.classList.add('spinning');
@@ -2346,7 +2507,6 @@ window.Game = {
       if (btn) setTimeout(() => btn.classList.remove('spinning'), 300);
     });
   },
-
   toggleJoinByCode: () => {
     const p = $('joinPanel');
     const hp = $('hostPanel');
@@ -2376,7 +2536,6 @@ async function hostRoom(){
   const status = $('hostStatus');
   const codeEl = $('roomCodeDisplay');
   status.textContent = 'Đang kết nối...';
-
   wakeUpBackend();
 
   try {
@@ -2387,13 +2546,11 @@ async function hostRoom(){
     initRNG(Date.now() & 0x7fffffff);
     world.fill(0); generateWorld();
     resetPlayerPosition(); initInv();
-
     apiRegisterRoom(code, name).then(ok => {
       if (ok) console.log('✓ Room registered:', code);
       else console.warn('✗ Room register failed:', code);
     });
     startRoomHeartbeat();
-
     setTimeout(() => startGame('host'), 800);
   } catch(e){ status.textContent = '❌ Lỗi: ' + (e.message || e); }
 }
