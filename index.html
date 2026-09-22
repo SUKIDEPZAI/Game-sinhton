@@ -311,6 +311,13 @@ body.edit-btn-mode #editOverlay{display:flex}
 }
 .room-item.full:hover{background:transparent}
 
+/* JOIN OVERLAY */
+#joinOverlay{ animation:pop-in .15s ease-out; }
+@keyframes pop-in{
+  from{ opacity:0; transform:translate(-50%,-50%) scale(.9); }
+  to{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+}
+
 #rotate{display:none;position:fixed;inset:0;background:#0a0d08;color:#e8f0d8;z-index:200;
   align-items:center;justify-content:center;text-align:center;padding:30px;font-size:16px;letter-spacing:2px}
 @media (orientation:portrait) and (max-width:900px){ #rotate{display:flex} }
@@ -1221,47 +1228,88 @@ const net = {
   startHost(name){
     this.name = name || 'Host'; this.mode = 'host'; this.players.clear();
     const code = genRoomCode(); this.roomCode = code;
+    const self = this;
     return new Promise((resolve, reject) => {
       try { this.peer = new Peer('dragonhunter-' + code, PEER_OPTS); }
       catch(e){ reject(e); return; }
       const timer = setTimeout(() => reject(new Error('Hết thời gian')), 20000);
       this.peer.on('open', id => {
         clearTimeout(timer);
-        this.myId = id; this.active = true;
-        this.peer.on('connection', conn => this._acceptClient(conn));
+        self.myId = id; self.active = true;
+        self.peer.on('connection', conn => self._acceptClient(conn));
+        console.log('[Host] Peer open:', id, 'Room:', code);
         resolve(code);
       });
-      this.peer.on('error', e => { clearTimeout(timer); reject(e); });
+      this.peer.on('error', e => {
+        clearTimeout(timer);
+        console.error('[Host] Peer error:', e);
+        reject(e);
+      });
     });
   },
   startClient(name, code){
     this.name = name || 'Hunter'; this.mode = 'client';
     this.players.clear(); this.roomCode = code;
+    const self = this;
     return new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = (fn, val) => {
+        if (settled) return;
+        settled = true;
+        fn(val);
+      };
+
       try { this.peer = new Peer(PEER_OPTS); }
-      catch(e){ reject(e); return; }
-      const timer = setTimeout(() => reject(new Error('Hết thời gian')), 20000);
+      catch(e){ return finish(reject, e); }
+
+      const timer = setTimeout(() => {
+        finish(reject, new Error('Hết thời gian kết nối (20s)'));
+      }, 20000);
+
       this.peer.on('open', id => {
-        this.myId = id;
-        const conn = this.peer.connect('dragonhunter-' + code, { reliable: true });
-        this.hostConn = conn;
-        conn.on('open', () => { clearTimeout(timer); this.active = true; resolve(); });
+        self.myId = id;
+        console.log('[Client] Peer open:', id, '→ connecting to dragonhunter-' + code);
+        const conn = self.peer.connect('dragonhunter-' + code, { reliable: true });
+        self.hostConn = conn;
+
+        conn.on('open', () => {
+          clearTimeout(timer);
+          self.active = true;
+          console.log('[Client] Conn opened to host');
+          finish(resolve);
+        });
+
         conn.on('data', d => {
           if (d && d.t === 'full'){
             toast('❌ Phòng đã đầy (' + (d.max || MAX_PLAYERS) + '/' + MAX_PLAYERS + ')');
-            this.disconnect();
+            self.disconnect();
             if (gameStarted) backToMenu();
             return;
           }
-          this._onData(d, conn);
+          self._onData(d, conn);
         });
-        conn.on('close', () => { toast('❌ Mất kết nối'); this.disconnect(); if (gameStarted) backToMenu(); });
-        conn.on('error', e => { clearTimeout(timer); reject(e); });
+
+        conn.on('close', () => {
+          toast('❌ Mất kết nối với host');
+          self.disconnect();
+          if (gameStarted) backToMenu();
+        });
+
+        conn.on('error', e => {
+          clearTimeout(timer);
+          console.error('[Client] Conn error:', e);
+          finish(reject, new Error('Lỗi kết nối: ' + (e.message || e.type || e)));
+        });
       });
+
       this.peer.on('error', e => {
         clearTimeout(timer);
-        if (String(e).includes('is taken')) reject(new Error('Không tìm thấy phòng'));
-        else reject(e);
+        console.error('[Client] Peer error:', e);
+        const msg = String((e && e.type) || (e && e.message) || e);
+        if (msg.includes('is taken')) finish(reject, new Error('Không tìm thấy phòng'));
+        else if (msg.includes('peer-unavailable')) finish(reject, new Error('Host đã rời phòng'));
+        else if (msg.includes('network')) finish(reject, new Error('Lỗi mạng — kiểm tra kết nối'));
+        else finish(reject, new Error(msg || 'Không kết nối được host'));
       });
     });
   },
@@ -2031,7 +2079,7 @@ const ButtonSettings = (() => {
 })();
 
 /* ============================================================
-   🆕 NAME + JOIN HELPERS
+   NAME + JOIN HELPERS
    ============================================================ */
 function getPlayerName(){
   const el = $('playerName');
@@ -2042,11 +2090,16 @@ function getPlayerName(){
 
 /* Vào phòng trực tiếp khi click list */
 async function joinRoomDirect(code, hostName){
-  const name = getPlayerName();
   if (net.active){
-    toast('⚠ Đang trong phòng khác', true);
+    toast('⚠ Đang trong phòng khác — thoát trước', true);
     return;
   }
+
+  /* Cleanup sạch trước khi connect */
+  try { net.disconnect(); } catch(e){}
+  await new Promise(r => setTimeout(r, 100));
+
+  const name = getPlayerName();
 
   /* Pre-check: phòng đầy? */
   const list = await apiListRooms();
@@ -2058,12 +2111,63 @@ async function joinRoomDirect(code, hostName){
     }
   }
 
-  toast('🔗 Đang vào phòng ' + code + '...');
+  /* Overlay feedback */
+  const overlay = document.createElement('div');
+  overlay.id = 'joinOverlay';
+  overlay.style.cssText =
+    'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);' +
+    'background:rgba(20,24,16,.98);padding:22px 32px;' +
+    'border:2px solid #4a8a30;border-radius:10px;z-index:99999;' +
+    'color:#88ff60;font-family:Consolas,monospace;text-align:center;' +
+    'box-shadow:0 8px 40px rgba(0,0,0,.8);min-width:260px';
+  overlay.innerHTML =
+    '🔗 Đang vào phòng <b>' + code + '</b>...' +
+    '<br><small style="color:#889878;font-size:10px" id="joinOverlayMsg">Đang kết nối tới host</small>' +
+    '<br><button id="joinCancelBtn" style="margin-top:12px;background:#5a5850;border:2px solid #0a0d08;' +
+    'color:#e8f0d8;border-radius:4px;padding:6px 14px;font-size:11px;cursor:pointer;font-family:inherit">✕ Hủy</button>';
+  document.body.appendChild(overlay);
+
+  let cancelled = false;
+  const cancelBtn = overlay.querySelector('#joinCancelBtn');
+  const msgEl = overlay.querySelector('#joinOverlayMsg');
+  cancelBtn.addEventListener('click', () => {
+    cancelled = true;
+    overlay.remove();
+    try { net.disconnect(); } catch(e){}
+    toast('↩ Đã hủy vào phòng');
+  });
+
+  /* Watchdog: 15s chưa vào → báo lỗi */
+  const watchdog = setTimeout(() => {
+    if (cancelled) return;
+    if (document.body.contains(overlay)){
+      overlay.remove();
+      toast('❌ Host không phản hồi — thoát', true);
+      try { net.disconnect(); } catch(e){}
+    }
+  }, 15000);
+
   try {
-    net.onWorldReady = () => { initInv(); startGame('client'); };
+    net.onWorldReady = () => {
+      if (cancelled) return;
+      clearTimeout(watchdog);
+      if (document.body.contains(overlay)) overlay.remove();
+      initInv();
+      startGame('client');
+    };
+
     await net.startClient(name, code);
+
+    if (cancelled) return;
+    if (msgEl) msgEl.textContent = '✓ Đã kết nối · Đang tải dữ liệu...';
+
   } catch(e){
-    toast('❌ ' + (e.message || 'Không vào được'), true);
+    clearTimeout(watchdog);
+    if (document.body.contains(overlay)) overlay.remove();
+    if (!cancelled){
+      toast('❌ ' + (e.message || 'Không vào được phòng'), true);
+      console.error('joinRoomDirect error:', e);
+    }
   }
 }
 
@@ -2279,4 +2383,4 @@ loadProject().then(() => {
 });
 </script>
 </body>
-    </html>
+</html>
