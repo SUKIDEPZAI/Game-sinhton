@@ -481,6 +481,24 @@ const ATTACK_DURATION = 10 / 16;
 const DEATH_DURATION = 0.9;
 const JUMP_DURATION = 0.65;
 
+/* ============================================================
+   WEAPON CONFIG — vị trí + góc kiếm
+   ============================================================ */
+const WEAPON_CONFIG = {
+  handX: 4,
+  handY: -30,
+  scale: 1.1,
+  angles: {
+    idle:   [0, 0],
+    run:    [0.05, 0.10, 0.05],
+    jump:   [0, 0.05, 0.10, 0.05],
+    attack: [0.30, -0.20, 0.50],
+    sit:    [0.15, 0.15],
+    death:  [0.20, 0.30, 0.50]
+  },
+  fallback: {}
+};
+
 function $(id){ return document.getElementById(id); }
 
 /* ============================================================
@@ -719,6 +737,11 @@ function getPlayerSprite(anim){
       if (s) break;
     }
   }
+  return s;
+}
+function getWeaponSprite(anim){
+  let s = Models.get('weapon', anim);
+  if (!s) s = Models.get('weapon', 'idle');
   return s;
 }
 
@@ -1678,6 +1701,42 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
   ctx.restore();
 }
 
+/* Vẽ weapon đè lên player */
+function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facing){
+  const fallbackAnim = WEAPON_CONFIG.fallback[anim] || 'idle';
+  let weapon = Models.get('weapon', anim);
+  if (!weapon) weapon = Models.get('weapon', fallbackAnim);
+  if (!weapon) weapon = Models.get('weapon', 'idle');
+  if (!weapon) return;
+
+  const frames = weapon.frames || (weapon.vLines.length - 1);
+  if (frames < 1) return;
+
+  const cfg = WEAPON_CONFIG.angles[anim] || WEAPON_CONFIG.angles[fallbackAnim] || WEAPON_CONFIG.angles.idle;
+  const wFrameIdx = Math.min(
+    frames - 1,
+    Math.floor((playerFrameIdx / Math.max(1, playerTotalFrames)) * frames)
+  );
+  const angle = cfg[wFrameIdx] !== undefined ? cfg[wFrameIdx] : 0;
+
+  const wx1 = weapon.vLines[wFrameIdx];
+  const wx2 = weapon.vLines[wFrameIdx + 1];
+  const wW = wx2 - wx1;
+  const wH = weapon.spriteH;
+
+  const scale = (DEST_HEIGHT / wH) * WEAPON_CONFIG.scale;
+  const dw = wW * scale;
+  const dh = wH * scale;
+
+  ctx.save();
+  ctx.translate(sx, syGround);
+  if (facing < 0) ctx.scale(-1, 1);
+  ctx.translate(WEAPON_CONFIG.handX, WEAPON_CONFIG.handY);
+  ctx.rotate(angle);
+  ctx.drawImage(weapon.canvas, wx1, 0, wW, wH, -dw / 2, -dh * 0.1, dw, dh);
+  ctx.restore();
+}
+
 function drawPlayer(){
   const sx = Math.round(player.x - cam.x);
   const syGround = Math.round(player.y - cam.y + FOOT_OFFSET);
@@ -1705,6 +1764,9 @@ function drawPlayer(){
     idx = Math.max(0, Math.min(total - 1, rawIdx));
   }
   drawSpriteAt(sprite, idx, sx, sySprite, player.facing);
+
+  const weaponAnim = player.hp <= 0 ? 'death' : player.currentAnim;
+  drawWeapon(weaponAnim, idx, total, sx, syGround + player.jumpY, player.facing);
 }
 
 const LOCAL_COLORS = { body:'#3a5a9a', skin:'#f0c8a0' };
@@ -1736,6 +1798,7 @@ function drawRemotePlayer(p){
     else if (sprite.loop) idx = ((rawIdx % total) + total) % total;
     else idx = Math.max(0, Math.min(total-1, rawIdx));
     drawSpriteAt(sprite, idx, sx, sy + FOOT_OFFSET, p.facing);
+    drawWeapon(animName, idx, total, sx, sy + FOOT_OFFSET, p.facing);
   } else {
     ctx.fillStyle = pal.body; ctx.fillRect(sx-6, sy-10, 12, 13);
     ctx.fillStyle = '#f0c8a0'; ctx.fillRect(sx-5, sy-18, 10, 8);
@@ -2088,20 +2151,17 @@ function getPlayerName(){
   return name;
 }
 
-/* Vào phòng trực tiếp khi click list */
 async function joinRoomDirect(code, hostName){
   if (net.active){
     toast('⚠ Đang trong phòng khác — thoát trước', true);
     return;
   }
 
-  /* Cleanup sạch trước khi connect */
   try { net.disconnect(); } catch(e){}
   await new Promise(r => setTimeout(r, 100));
 
   const name = getPlayerName();
 
-  /* Pre-check: phòng đầy? */
   const list = await apiListRooms();
   if (list){
     const room = list.find(r => r.code === code);
@@ -2111,7 +2171,6 @@ async function joinRoomDirect(code, hostName){
     }
   }
 
-  /* Overlay feedback */
   const overlay = document.createElement('div');
   overlay.id = 'joinOverlay';
   overlay.style.cssText =
@@ -2137,7 +2196,6 @@ async function joinRoomDirect(code, hostName){
     toast('↩ Đã hủy vào phòng');
   });
 
-  /* Watchdog: 15s chưa vào → báo lỗi */
   const watchdog = setTimeout(() => {
     if (cancelled) return;
     if (document.body.contains(overlay)){
@@ -2171,7 +2229,6 @@ async function joinRoomDirect(code, hostName){
   }
 }
 
-/* Vào phòng bằng code thủ công */
 async function joinRoomByCode(){
   const code = ($('joinCode').value || '').trim().toUpperCase();
   const status = $('joinStatus');
@@ -2372,7 +2429,6 @@ mouse.x = VW/2; mouse.y = VH/2;
 ButtonSettings.init();
 $('roomRefreshBtn').addEventListener('click', () => Game.refreshRooms());
 
-/* Enter trong ô join code → join luôn */
 $('joinCode').addEventListener('keydown', e => {
   if (e.key === 'Enter'){ e.preventDefault(); joinRoomByCode(); }
 });
@@ -2383,4 +2439,4 @@ loadProject().then(() => {
 });
 </script>
 </body>
-</html>
+    </html>
