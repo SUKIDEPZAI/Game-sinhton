@@ -197,7 +197,7 @@ input[type=file]{display:none}
 <body>
 <div class="app">
 <header class="header">
-  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.3</span></div>
+  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.3.1</span></div>
   <div class="header-tools">
     <button class="btn" id="uploadBtn">📁 Upload PNG</button>
     <button class="btn" id="importBtn">📥 Import JSON</button>
@@ -393,7 +393,6 @@ input[type=file]{display:none}
               <option value="attack">attack</option>
               <option value="sit">sit</option>
               <option value="death">death</option>
-              <option value="hurt">hurt</option>
               <option value="custom">custom...</option>
             </select>
           </div>
@@ -610,7 +609,7 @@ const ANIM_PRESETS = {
   fall:   { anim:'jump',   fps:12, loop:false },
   attack: { anim:'attack', fps:16, loop:false },
   atk:    { anim:'attack', fps:16, loop:false },
-  hit:    { anim:'hurt',   fps:8,  loop:false },
+  hit:    { anim:'death',  fps:8,  loop:false },
   sit:    { anim:'sit',    fps:6,  loop:true  },
   hurt:   { anim:'death',  fps:8,  loop:false },
   death:  { anim:'death',  fps:8,  loop:false },
@@ -735,13 +734,11 @@ function computeAnchorsForSprite(sprite, verbose){
 
 /* ============================================================
    🎯 CĂN CHỈNH FRAME VÀO ANCHOR XANH
-   Dịch nội dung từng frame sao cho bbox trùng stable anchor
    ============================================================ */
 function alignFramesToAnchor(sprite){
   const s = sprite;
   if (!s || !s.vLines || s.vLines.length < 2) return -1;
 
-  /* Đảm bảo có stableAnchor */
   computeAnchorsForSprite(s, false);
   if (!s.stableAnchor) return -1;
 
@@ -764,12 +761,9 @@ function alignFramesToAnchor(sprite){
       const bbox = detectBBox(s.canvas, x1, y1, x2, y2);
       if (!bbox) continue;
 
-      /* Vị trí hiện tại của anchor so với cell */
       const currentLocalX = (bbox.x + bbox.w / 2) - x1;
       const currentLocalY = (bbox.y + bbox.h) - y1;
 
-      /* targetX là local trong cell (đã đúng)
-         targetY là tuyệt đối trong ảnh → chuyển sang cell-local */
       const targetLocalX = targetX;
       const targetLocalY = targetY - y1;
 
@@ -779,26 +773,20 @@ function alignFramesToAnchor(sprite){
       if (dx === 0 && dy === 0) continue;
       movedCount++;
 
-      /* Trích cell */
       const cellData = s.ctx.getImageData(x1, y1, cellW, cellH);
       const tmp = document.createElement('canvas');
       tmp.width = cellW; tmp.height = cellH;
       tmp.getContext('2d').putImageData(cellData, 0, 0);
 
-      /* Xóa cell */
       s.ctx.clearRect(x1, y1, cellW, cellH);
-
-      /* Vẽ lại với offset */
       s.ctx.drawImage(tmp, x1 + dx, y1 + dy);
     }
   }
 
-  /* Redraw main canvas */
   const mc = mainCanvas.getContext('2d');
   mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
   mc.drawImage(s.canvas, 0, 0);
 
-  /* Tính lại anchors */
   computeAnchorsForSprite(s, false);
 
   return movedCount;
@@ -875,7 +863,7 @@ function selectSprite(id){
   $('canvasW').value = s.canvas.width;
   $('canvasH').value = s.canvas.height;
   $('metaModel').value = s.model;
-  const knownAnims = ['idle','run','jump','attack','sit','death','hurt'];
+  const knownAnims = ['idle','run','jump','attack','sit','death'];
   $('metaAnim').value = knownAnims.includes(s.anim) ? s.anim : 'custom';
   if ($('metaAnim').value === 'custom'){
     $('customAnimRow').style.display = 'flex';
@@ -931,7 +919,6 @@ function renderOverlay(){
     }
   }
 
-  /* Anchor đỏ */
   s.anchors.forEach(a => {
     if (!a) return;
     const ax = a.x != null ? a.x : 0;
@@ -951,7 +938,6 @@ function renderOverlay(){
     oc.stroke();
   });
 
-  /* Stable anchor — xanh cyan */
   if (s.stableAnchor && s.anchorMode !== 'per-frame'){
     const sa = s.stableAnchor;
     oc.strokeStyle = '#00d0ff';
@@ -968,7 +954,6 @@ function renderOverlay(){
     oc.moveTo(0, sa.y); oc.lineTo(overlayCanvas.width, sa.y);
     oc.stroke();
     oc.setLineDash([]);
-    /* Chấm xanh tại tâm mỗi frame */
     for (let i = 0; i < s.vLines.length - 1; i++){
       const cx = s.vLines[i] + sa.x;
       const cy = sa.y;
@@ -1131,7 +1116,6 @@ async function handleFiles(files){
   }
 }
 
-/* Import JSON */
 $('importBtn').addEventListener('click', () => jsonInput.click());
 jsonInput.addEventListener('change', async e => {
   const f = e.target.files[0];
@@ -1313,7 +1297,6 @@ $('computeAnchors').addEventListener('click', () => {
   renderAll();
 });
 
-/* 🎯 NÚT CĂN CHỈNH FRAME */
 $('alignFramesBtn').addEventListener('click', () => {
   const s = currentSprite();
   if (!s) return;
@@ -1780,7 +1763,6 @@ function drawPreview(){
   const dx = (previewCanvas.width - dw) / 2;
   const dy = (previewCanvas.height - dh) / 2;
   pctx.drawImage(s.canvas, sx, 0, sw, sh, dx, dy, dw, dh);
-  /* Anchor đỏ */
   const a = s.anchors[idx];
   if (a){
     const ax = dx + ((a.x - sx) / sw) * dw;
@@ -1791,7 +1773,6 @@ function drawPreview(){
     pctx.fillStyle = '#ff3050';
     pctx.beginPath(); pctx.arc(ax, ay, 2, 0, Math.PI*2); pctx.fill();
   }
-  /* Stable anchor xanh */
   if (s.stableAnchor && s.anchorMode !== 'per-frame'){
     const sa = s.stableAnchor;
     const ax = dx + (sa.x / sw) * dw;
@@ -1882,4 +1863,4 @@ setTool('select');
 applyZoom();
 </script>
 </body>
-                </html>
+  </html>
