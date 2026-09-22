@@ -1,10 +1,3 @@
-/* ============================================================
-   Dragon Hunter Backend
-   - PeerJS signaling
-   - Static files (Sprite Editor tại /editor.html)
-   - Room Registry (in-memory, TTL 5 phút)
-   ============================================================ */
-
 const express = require('express');
 const path = require('path');
 const { ExpressPeerServer } = require('peer');
@@ -12,19 +5,12 @@ const cors = require('cors');
 
 const app = express();
 
-/* ============================================================
-   CONFIG
-   ============================================================ */
 const MAX_PLAYERS = 5;
-const ROOM_TTL = 5 * 60 * 1000;   // 5 phút
+const ROOM_TTL = 5 * 60 * 1000;
 
-/* ============================================================
-   CORS — whitelist domain GitHub Pages
-   ============================================================ */
 const ALLOWED_ORIGINS = [
   'https://dragon.dragonhunter.gamer.free',
   'https://sukidepzai.github.io',
-  // dev local
   'http://localhost:3000',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
@@ -33,10 +19,12 @@ const ALLOWED_ORIGINS = [
 ];
 
 app.use(cors({
-  origin: (origin, cb) => {
+  origin: function (origin, cb) {
     if (!origin) return cb(null, true);
-    if (ALLOWED_ORIGINS.some(o => origin === o || origin.startsWith(o + ':')))
-      return cb(null, true);
+    for (let i = 0; i < ALLOWED_ORIGINS.length; i++) {
+      const o = ALLOWED_ORIGINS[i];
+      if (origin === o || origin.indexOf(o + ':') === 0) return cb(null, true);
+    }
     console.log('CORS blocked:', origin);
     cb(null, false);
   },
@@ -47,78 +35,127 @@ app.use(cors({
 
 app.use(express.json({ limit: '15mb' }));
 
-/* ============================================================
-   🆕 CORS riêng cho /rooms — public API, cho phép mọi origin
-   ============================================================ */
 app.use('/rooms', cors({
   origin: '*',
   methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
-  credentials: false
+  allowedHeaders: ['Content-Type']
 }));
 
-/* ============================================================
-   STATIC FILES — serve public/ folder
-   ============================================================ */
 app.use(express.static(path.join(__dirname, 'public')));
 
-/* ============================================================
-   🆕 ROOM REGISTRY (in-memory, TTL 5 phút)
-   ============================================================ */
 const rooms = new Map();
 
-function cleanupRooms(){
+setInterval(function () {
   const now = Date.now();
-  let removed = 0;
-  for (const [code, r] of rooms){
-    if (now - r.ts > ROOM_TTL){
+  rooms.forEach(function (r, code) {
+    if (now - r.ts > ROOM_TTL) {
       rooms.delete(code);
-      removed++;
+      console.log('Cleaned room', code);
     }
-  }
-  if (removed) console.log('🧹 Cleaned', removed, 'stale rooms');
-}
-setInterval(cleanupRooms, 60000);
+  });
+}, 60000);
 
-/* --- POST /rooms : tạo phòng --- */
-app.post('/rooms', (req, res) => {
-  const { code, name } = req.body || {};
-  if (!code || !name){
-    return res.status(400).json({ error: 'missing fields', need: ['code', 'name'] });
+app.post('/rooms', function (req, res) {
+  const body = req.body || {};
+  const code = body.code;
+  const name = body.name;
+  if (!code || !name) {
+    res.status(400).json({ error: 'missing fields' });
+    return;
   }
-  if (typeof code !== 'string' || code.length < 4 || code.length > 8){
-    return res.status(400).json({ error: 'invalid code' });
+  if (typeof code !== 'string' || code.length < 4 || code.length > 8) {
+    res.status(400).json({ error: 'invalid code' });
+    return;
   }
   rooms.set(code, {
-    code,
+    code: code,
     name: String(name).slice(0, 24),
     count: 1,
     max: MAX_PLAYERS,
     ts: Date.now()
   });
-  console.log('🏠 Room +', code, 'by', name, '(' + rooms.size + ' rooms total)');
-  res.json({ ok: true, code, max: MAX_PLAYERS });
+  console.log('Room +', code, 'by', name);
+  res.json({ ok: true, code: code, max: MAX_PLAYERS });
 });
 
-/* --- POST /rooms/:code/count : cập nhật số người --- */
-app.post('/rooms/:code/count', (req, res) => {
+app.post('/rooms/:code/count', function (req, res) {
   const room = rooms.get(req.params.code);
-  if (!room){
-    return res.status(404).json({ error: 'room not found' });
+  if (!room) {
+    res.status(404).json({ error: 'room not found' });
+    return;
   }
-  const rawCount = parseInt(req.body && req.body.count);
-  const count = isNaN(rawCount) ? 1 : Math.max(1, Math.min(MAX_PLAYERS, rawCount));
+  const raw = parseInt(req.body && req.body.count, 10);
+  const count = isNaN(raw) ? 1 : Math.max(1, Math.min(MAX_PLAYERS, raw));
   room.count = count;
   room.ts = Date.now();
-  res.json({ ok: true, count, max: MAX_PLAYERS });
+  res.json({ ok: true, count: count, max: MAX_PLAYERS });
 });
 
-/* --- GET /rooms : danh sách phòng --- */
-app.get('/rooms', (req, res) => {
-  cleanupRooms();
-  const list = [...rooms.values()]
-    .sort((a, b) => b.ts - a.ts)
-    .slice(0, 20);
+app.get('/rooms', function (req, res) {
+  const list = [];
+  rooms.forEach(function (r) { list.push(r); });
+  list.sort(function (a, b) { return b.ts - a.ts; });
+  res.json({
+    rooms: list.slice(0, 20),
+    total: list.length,
+    maxPlayers: MAX_PLAYERS
+  });
+});
+
+app.delete('/rooms/:code', function (req, res) {
+  const existed = rooms.delete(req.params.code);
+  if (existed) console.log('Room -', req.params.code);
+  res.json({ ok: true, existed: existed });
+});
+
+app.get('/', function (req, res) {
+  res.send(
+    '<h1>Dragon Hunter Backend</h1>' +
+    '<ul>' +
+    '<li><a href="/health">/health</a></li>' +
+    '<li><a href="/rooms">/rooms</a></li>' +
+    '<li><a href="/editor.html">/editor.html</a></li>' +
+    '</ul>'
+  );
+});
+
+app.get('/health', function (req, res) {
+  res.json({
+    ok: true,
+    ts: Date.now(),
+    rooms: rooms.size,
+    maxPlayers: MAX_PLAYERS
+  });
+});
+
+const PORT = process.env.PORT || 10000;
+const server = app.listen(PORT, function () {
+  console.log('Listening on', PORT);
+});
+
+const peerServer = ExpressPeerServer(server, {
+  path: '/myapp',
+  proxied: true,
+  allow_discovery: false,
+  alive_timeout: 60000
+});
+
+app.use('/peerjs', peerServer);
+
+peerServer.on('connection', function (c) {
+  console.log('Peer +', c.getId());
+});
+
+peerServer.on('disconnect', function (c) {
+  console.log('Peer -', c.getId());
+});
+
+app.use(function (req, res) {
+  res.status(404).json({
+    error: 'Not found',
+    path: req.path
+  });
+});ice(0, 20);
   res.json({
     rooms: list,
     total: list.length,
