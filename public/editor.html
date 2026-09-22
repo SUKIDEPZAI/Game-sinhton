@@ -197,7 +197,7 @@ input[type=file]{display:none}
 <body>
 <div class="app">
 <header class="header">
-  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.3.1</span></div>
+  <div class="brand">🐉 DRAGON HUNTER STUDIO<span class="ver">v3.4</span></div>
   <div class="header-tools">
     <button class="btn" id="uploadBtn">📁 Upload PNG</button>
     <button class="btn" id="importBtn">📥 Import JSON</button>
@@ -321,11 +321,20 @@ input[type=file]{display:none}
           <div class="field"><label></label>
             <button class="mini" id="anchorRecompute" style="flex:1;padding:6px">🔄 Tính lại</button>
             <button class="mini" id="anchorClear">🗑</button></div>
+
+          <div class="field">
+            <label>Padding</label>
+            <input type="number" id="padXInput" value="12" min="0" max="64"
+              style="flex:0 0 50px;width:50px" title="px mỗi bên">
+            <label style="flex:0 0 auto">Gap</label>
+            <input type="number" id="gapXInput" value="6" min="0" max="64"
+              style="flex:0 0 50px;width:50px" title="px giữa các frame">
+          </div>
           <div class="field"><label></label>
             <button class="mini" id="alignFramesBtn" style="flex:1;padding:8px;
               background:linear-gradient(180deg,#88d858,#4a8a30);color:#0a1a06;
               font-weight:bold;font-size:11px">
-              🎯 CĂN CHỈNH FRAME VÀO ANCHOR XANH
+              🎯 MỞ RỘNG + CĂN CHỈNH FRAME
             </button>
           </div>
           <div class="help-box">
@@ -333,9 +342,11 @@ input[type=file]{display:none}
             • <b>Ổn định X + chân Y:</b> không trôi ngang<br>
             • <b>Ổn định cả:</b> cố định hoàn toàn<br>
             • <b>Riêng frame:</b> mỗi frame có anchor riêng<br><br>
-            <b>🎯 Căn chỉnh:</b> dịch nội dung mỗi frame để
-            bbox (nhân vật) trùng với <b>anchor xanh</b> → animation
-            không còn "giật"/"trôi". Bấm sau khi đã chọn anchor.
+            <b>🎯 Mở rộng + căn chỉnh:</b><br>
+            • Thêm <b>padding</b> mỗi bên + <b>gap</b> giữa frame<br>
+            • Cắt bbox thực của nhân vật<br>
+            • Đặt <b>anchor cố định</b> (tâm X + đáy Y) cho MỌI frame<br>
+            • Dịch nội dung về đúng anchor → <b>0 pixel drift</b>
           </div>
         </div>
         <div class="sec">
@@ -733,7 +744,7 @@ function computeAnchorsForSprite(sprite, verbose){
 }
 
 /* ============================================================
-   🎯 CĂN CHỈNH FRAME VÀO ANCHOR XANH
+   🎯 CĂN CHỈNH FRAME VÀO ANCHOR XANH (in-place, cũ)
    ============================================================ */
 function alignFramesToAnchor(sprite){
   const s = sprite;
@@ -790,6 +801,124 @@ function alignFramesToAnchor(sprite){
   computeAnchorsForSprite(s, false);
 
   return movedCount;
+}
+
+/* ============================================================
+   🎯 MỞ RỘNG CANVAS + CĂN CHỈNH FRAME (pixel-perfect)
+   - Thêm padding mỗi bên + gap giữa các frame
+   - Cắt bbox thực của nội dung từng frame
+   - Đặt anchor cố định: tâm X + đáy Y của vùng content
+   - Dịch nội dung để bbox khớp anchor → không drift
+   ============================================================ */
+function expandAndAlignFrames(sprite, padding = 12, gap = 6){
+  const s = sprite;
+  if (!s || !s.vLines || s.vLines.length < 2){
+    return { ok: false, msg: 'Chưa có frame' };
+  }
+
+  const frames = s.vLines.length - 1;
+
+  /* ---------- 1. Detect bbox từng frame ---------- */
+  const bboxes = [];
+  let maxW = 0, maxH = 0;
+  for (let i = 0; i < frames; i++){
+    const bb = detectBBox(s.canvas, s.vLines[i], 0, s.vLines[i+1], s.canvas.height);
+    bboxes.push(bb);
+    if (bb){
+      if (bb.w > maxW) maxW = bb.w;
+      if (bb.h > maxH) maxH = bb.h;
+    }
+  }
+  if (maxW === 0 || maxH === 0){
+    return { ok: false, msg: 'Không detect được nội dung' };
+  }
+
+  /* ---------- 2. Kích thước canvas mới ---------- */
+  const contentW = maxW;
+  const contentH = maxH;
+  const newFrameW = contentW + padding * 2;
+  const newFrameH = contentH + padding * 2;
+  const newCanvasW = frames * newFrameW + (frames - 1) * gap;
+  const newCanvasH = newFrameH;
+
+  /* ---------- 3. Anchor target (CỐ ĐỊNH cho mọi frame) ---------- */
+  const targetAnchorLocalX = padding + Math.floor(contentW / 2);
+  const targetAnchorLocalY = padding + contentH;
+
+  /* ---------- 4. Tạo canvas mới ---------- */
+  const newCanvas = document.createElement('canvas');
+  newCanvas.width = newCanvasW;
+  newCanvas.height = newCanvasH;
+  const nctx = newCanvas.getContext('2d', { willReadFrequently: true });
+  nctx.imageSmoothingEnabled = false;
+
+  /* ---------- 5. Vẽ từng frame với align chính xác ---------- */
+  const newVLines = [];
+  const newAnchors = [];
+  let movedCount = 0;
+
+  for (let i = 0; i < frames; i++){
+    const cellX = i * (newFrameW + gap);
+    newVLines.push(cellX);
+
+    const bb = bboxes[i];
+    if (!bb){
+      newAnchors.push(null);
+      continue;
+    }
+
+    /* Vị trí bbox trong cell mới:
+       - Tâm X bbox === cellX + targetAnchorLocalX
+       - Đáy Y bbox === targetAnchorLocalY
+       Dùng Math.floor cho odd width để tránh sub-pixel. */
+    const bbCenterOffset = Math.floor(bb.w / 2);
+    const destBBoxX = cellX + targetAnchorLocalX - bbCenterOffset;
+    const destBBoxY = targetAnchorLocalY - bb.h;
+
+    /* Cắt đúng bbox → không mang pixel rác */
+    nctx.drawImage(
+      s.canvas,
+      bb.x, bb.y, bb.w, bb.h,
+      destBBoxX, destBBoxY, bb.w, bb.h
+    );
+
+    /* Anchor tuyệt đối của frame = CỐ ĐỊNH cho mọi frame */
+    newAnchors.push({
+      x: cellX + targetAnchorLocalX,
+      y: targetAnchorLocalY
+    });
+
+    if (bb.x !== destBBoxX - cellX || bb.y !== destBBoxY) movedCount++;
+  }
+  newVLines.push(newCanvasW);
+
+  /* ---------- 6. Ghi lại vào sprite ---------- */
+  s.canvas.width = newCanvasW;
+  s.canvas.height = newCanvasH;
+  s.ctx = s.canvas.getContext('2d', { willReadFrequently: true });
+  s.ctx.imageSmoothingEnabled = false;
+  s.ctx.drawImage(newCanvas, 0, 0);
+
+  s.vLines = newVLines;
+  s.hLines = [0, newCanvasH];
+  s.anchors = newAnchors;
+
+  /* stableAnchor cố định = anchor local trong cell */
+  s.stableAnchor = {
+    x: targetAnchorLocalX,
+    y: targetAnchorLocalY
+  };
+
+  return {
+    ok: true,
+    movedCount,
+    frames,
+    padding, gap,
+    newW: newCanvasW,
+    newH: newCanvasH,
+    newFrameW,
+    newFrameH
+  };
 }
 
 /* ============================================================
@@ -1297,6 +1426,7 @@ $('computeAnchors').addEventListener('click', () => {
   renderAll();
 });
 
+/* 🎯 NÚT MỞ RỘNG + CĂN CHỈNH */
 $('alignFramesBtn').addEventListener('click', () => {
   const s = currentSprite();
   if (!s) return;
@@ -1304,17 +1434,18 @@ $('alignFramesBtn').addEventListener('click', () => {
     toast('Chưa có frame nào để căn', true);
     return;
   }
-  const moved = alignFramesToAnchor(s);
-  if (moved < 0){
-    toast('❌ Không tính được anchor', true);
+  const padding = Math.max(0, Math.min(64, parseInt($('padXInput').value) || 12));
+  const gap     = Math.max(0, Math.min(64, parseInt($('gapXInput').value) || 6));
+  $('padXInput').value = padding;
+  $('gapXInput').value = gap;
+
+  const res = expandAndAlignFrames(s, padding, gap);
+  if (!res.ok){
+    toast('❌ ' + res.msg, true);
     return;
   }
-  if (moved === 0){
-    toast('✓ Tất cả frame đã khớp anchor');
-  } else {
-    toast('🎯 Đã căn ' + moved + ' frame vào anchor xanh');
-  }
-  renderAll();
+  selectSprite(s.id);
+  toast(`🎯 Mở rộng + căn ${res.frames} frame · pad=${res.padding}px · gap=${res.gap}px`);
 });
 
 /* ============================================================
@@ -1822,9 +1953,10 @@ $('helpBtn').addEventListener('click', () => {
     '3. Kéo line đỏ khớp nhân vật\n' +
     '4. Chọn anchor mode (mặc định stable-x)\n' +
     '5. 🎯 Anchors để tính\n' +
-    '6. 🎯 CĂN CHỈNH FRAME VÀO ANCHOR XANH (mới)\n' +
-    '   → Dịch nội dung từng frame để bbox trùng\n' +
-    '     anchor cyan → không còn trôi/giật\n' +
+    '6. 🎯 MỞ RỘNG + CĂN CHỈNH FRAME\n' +
+    '   → Thêm padding + gap\n' +
+    '   → Anchor cố định cho MỌI frame\n' +
+    '   → Không còn drift/giật\n' +
     '7. Đặt Model/Anim/FPS trong tab META\n' +
     '8. 📦 Export All → tải PNG + sprites.json\n\n' +
     'PHÍM TẮT:\n' +
@@ -1863,4 +1995,4 @@ setTool('select');
 applyZoom();
 </script>
 </body>
-  </html>
+</html>
