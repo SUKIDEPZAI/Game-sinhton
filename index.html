@@ -311,7 +311,6 @@ body.edit-btn-mode #editOverlay{display:flex}
 }
 .room-item.full:hover{background:transparent}
 
-/* JOIN OVERLAY */
 #joinOverlay{ animation:pop-in .15s ease-out; }
 @keyframes pop-in{
   from{ opacity:0; transform:translate(-50%,-50%) scale(.9); }
@@ -482,12 +481,17 @@ const DEATH_DURATION = 0.9;
 const JUMP_DURATION = 0.65;
 
 /* ============================================================
-   WEAPON CONFIG — vị trí + góc kiếm
+   🆕 WEAPON CONFIG — vị trí + góc kiếm
+   ============================================================
+   handX/handY: vị trí tay cầm (từ tâm chân player)
+   scale: tỉ lệ kiếm so với player height (0.8-1.2 là đẹp)
+   angles[anim]: mảng góc xoay (radian) cho từng frame weapon
+   debug: bật chấm đỏ tại vị trí tay để test
    ============================================================ */
 const WEAPON_CONFIG = {
   handX: 4,
   handY: -30,
-  scale: 1.1,
+  scale: 0.9,
   angles: {
     idle:   [0, 0],
     run:    [0.05, 0.10, 0.05],
@@ -496,7 +500,8 @@ const WEAPON_CONFIG = {
     sit:    [0.15, 0.15],
     death:  [0.20, 0.30, 0.50]
   },
-  fallback: {}
+  fallback: {},
+  debug: false
 };
 
 function $(id){ return document.getElementById(id); }
@@ -673,6 +678,26 @@ function loadSprite(src, m, a, cfg){
         frames: vLines.length - 1, hasMeta
       };
       if (!anchors.length || anchors.every(x => !x) || !stableAnchor) autoComputeAnchors(sprite);
+
+      /* 🆕 WEAPON: compute per-frame bbox để biết content thực */
+      if (m === 'weapon'){
+        sprite.frameBBoxes = [];
+        let maxH = 0, maxW = 0;
+        for (let i = 0; i < sprite.frames; i++){
+          const bb = detectBBox(cnv, sprite.vLines[i], 0, sprite.vLines[i+1], spriteH);
+          sprite.frameBBoxes.push(bb);
+          if (bb){
+            if (bb.h > maxH) maxH = bb.h;
+            if (bb.w > maxW) maxW = bb.w;
+          }
+        }
+        sprite.contentMaxH = maxH || spriteH;
+        sprite.contentMaxW = maxW || 100;
+        console.log(`  ⚔️ ${m}/${a} bboxes:`,
+                    sprite.frameBBoxes.map(b => b ? `(${b.w}×${b.h})` : 'null').join(', '),
+                    `contentMaxH=${maxH} contentMaxW=${maxW}`);
+      }
+
       Models.addSprite(m, a, sprite);
       console.log(`  ✓ ${m}/${a}: ${sprite.frames}f @ ${fps}fps [${anchorMode}] ${hasMeta ? '[meta]' : '[auto]'}`);
       resolve();
@@ -737,11 +762,6 @@ function getPlayerSprite(anim){
       if (s) break;
     }
   }
-  return s;
-}
-function getWeaponSprite(anim){
-  let s = Models.get('weapon', anim);
-  if (!s) s = Models.get('weapon', 'idle');
   return s;
 }
 
@@ -1701,40 +1721,88 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
   ctx.restore();
 }
 
-/* Vẽ weapon đè lên player */
+/* ============================================================
+   🆕 VẼ KIẾM ĐÈ LÊN — dùng bbox để scale + pivot chính xác
+   ============================================================ */
 function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facing){
   const fallbackAnim = WEAPON_CONFIG.fallback[anim] || 'idle';
   let weapon = Models.get('weapon', anim);
   if (!weapon) weapon = Models.get('weapon', fallbackAnim);
   if (!weapon) weapon = Models.get('weapon', 'idle');
-  if (!weapon) return;
+
+  /* Debug nếu chưa load weapon */
+  if (!weapon){
+    if (!drawWeapon._logged){
+      drawWeapon._logged = true;
+      console.warn('[Weapon] No weapon sprite loaded. Models available:',
+        [...Models.data.keys()]);
+      console.warn('[Weapon] Check: sprites.json có model "weapon"? PNG đã ở assets/?');
+    }
+    return;
+  }
 
   const frames = weapon.frames || (weapon.vLines.length - 1);
   if (frames < 1) return;
 
-  const cfg = WEAPON_CONFIG.angles[anim] || WEAPON_CONFIG.angles[fallbackAnim] || WEAPON_CONFIG.angles.idle;
+  const cfg = WEAPON_CONFIG.angles[anim] ||
+              WEAPON_CONFIG.angles[fallbackAnim] ||
+              WEAPON_CONFIG.angles.idle;
   const wFrameIdx = Math.min(
     frames - 1,
     Math.floor((playerFrameIdx / Math.max(1, playerTotalFrames)) * frames)
   );
   const angle = cfg[wFrameIdx] !== undefined ? cfg[wFrameIdx] : 0;
 
-  const wx1 = weapon.vLines[wFrameIdx];
-  const wx2 = weapon.vLines[wFrameIdx + 1];
-  const wW = wx2 - wx1;
-  const wH = weapon.spriteH;
+  /* Lấy bbox nội dung — nếu không có thì dùng toàn frame */
+  const bb = weapon.frameBBoxes && weapon.frameBBoxes[wFrameIdx];
+  let srcX, srcY, srcW, srcH;
+  if (bb && bb.w > 0 && bb.h > 0){
+    srcX = bb.x;
+    srcY = bb.y;
+    srcW = bb.w;
+    srcH = bb.h;
+  } else {
+    srcX = weapon.vLines[wFrameIdx];
+    srcY = 0;
+    srcW = weapon.vLines[wFrameIdx + 1] - srcX;
+    srcH = weapon.spriteH;
+  }
 
-  const scale = (DEST_HEIGHT / wH) * WEAPON_CONFIG.scale;
-  const dw = wW * scale;
-  const dh = wH * scale;
+  /* Scale theo contentMaxH — kiếm cao = scale nhỏ, thấp = scale lớn */
+  const contentH = weapon.contentMaxH || srcH;
+  const scale = (DEST_HEIGHT * WEAPON_CONFIG.scale) / contentH;
+  const dw = srcW * scale;
+  const dh = srcH * scale;
+
+  /* Pivot = tâm của bbox */
+  const pivotX = -dw / 2;
+  const pivotY = -dh / 2;
 
   ctx.save();
   ctx.translate(sx, syGround);
   if (facing < 0) ctx.scale(-1, 1);
   ctx.translate(WEAPON_CONFIG.handX, WEAPON_CONFIG.handY);
   ctx.rotate(angle);
-  ctx.drawImage(weapon.canvas, wx1, 0, wW, wH, -dw / 2, -dh * 0.1, dw, dh);
+  ctx.drawImage(
+    weapon.canvas,
+    srcX, srcY, srcW, srcH,
+    pivotX, pivotY, dw, dh
+  );
   ctx.restore();
+
+  /* Debug marker — chấm đỏ tại vị trí tay */
+  if (WEAPON_CONFIG.debug){
+    ctx.save();
+    ctx.fillStyle = '#ff0000';
+    ctx.beginPath();
+    ctx.arc(sx + (facing < 0 ? -WEAPON_CONFIG.handX : WEAPON_CONFIG.handX),
+            syGround + WEAPON_CONFIG.handY, 3, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  }
 }
 
 function drawPlayer(){
@@ -2439,4 +2507,4 @@ loadProject().then(() => {
 });
 </script>
 </body>
-    </html>
+  </html>
