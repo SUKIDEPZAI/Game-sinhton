@@ -594,14 +594,13 @@ function autoComputeAnchors(sprite){
   if (!s.anchorMode) s.anchorMode = 'stable-x';
 }
 async function loadFallbackSprites(){
-  /* ⚡ player_hurt.png = animation death */
   const defaults = [
     { model: 'player', anim: 'idle',   file: 'player_idle' },
     { model: 'player', anim: 'run',    file: 'player_run' },
     { model: 'player', anim: 'jump',   file: 'player_jump' },
     { model: 'player', anim: 'attack', file: 'player_attack' },
     { model: 'player', anim: 'sit',    file: 'player_sit' },
-    { model: 'player', anim: 'death',  file: 'player_hurt' }
+    { model: 'player', anim: 'death',  file: 'player_death' }
   ];
   const promises = defaults.map(d => loadSprite(
     `assets/${d.file}.png`, d.model, d.anim,
@@ -1034,13 +1033,28 @@ function updatePlayer(dt){
   if (player.sitting && mag > 0.15) player.sitting = false;
   if (player.sitting){ dx = 0; dy = 0; }
 
+  /* ---------- AIM ---------- */
   if (aim.joyId !== null){
+    /* MOBILE: joystick điều khiển, xoay trực tiếp (đã set trong updateAimJoystick) */
     mobileAimUsed = true;
   } else if (!mobileAimUsed && !isTouchDevice){
+    /* PC: xoay mượt (lerp) theo chuột — KHÔNG auto-attack */
     const wx = mouse.x + cam.x;
     const wy = mouse.y + cam.y;
-    aim.angle = Math.atan2(wy - player.y, wx - player.x);
+    const targetA = Math.atan2(wy - player.y, wx - player.x);
+
+    /* Lerp có xử lý wrap ±π để không quay vòng dài */
+    let diff = targetA - aim.angle;
+    while (diff >  Math.PI) diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    aim.angle += diff * 0.55;
+    while (aim.angle >  Math.PI) aim.angle -= Math.PI * 2;
+    while (aim.angle < -Math.PI) aim.angle += Math.PI * 2;
+
+    /* PC tuyệt đối KHÔNG auto-attack */
+    aim.autoAttack = false;
   }
+
   const cosA = Math.cos(aim.angle);
   if (Math.abs(cosA) > 0.15) player.facing = cosA > 0 ? 1 : -1;
 
@@ -1899,4 +1913,4 @@ loadProject().then(() => {
 });
 </script>
 </body>
-        </html>
+</html>
