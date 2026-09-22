@@ -243,6 +243,67 @@ body.edit-btn-mode #editOverlay{display:flex}
   display:none;align-items:center;justify-content:center;cursor:pointer;
   box-shadow:0 3px 0 rgba(0,0,0,.5);touch-action:manipulation}
 #settingsBtn.show{display:flex}
+
+/* 🆕 ROOM LIST */
+.room-list-header{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;color:#a8b498;margin:8px 0 6px;
+  padding:0 2px;font-family:Consolas,monospace;letter-spacing:1px;
+}
+.room-list-header .badge{
+  background:#4a8a30;color:#b8ff88;
+  padding:1px 6px;border-radius:8px;font-size:9px;
+}
+.room-list-header .refresh-btn{
+  margin-left:auto;background:transparent;
+  border:1px solid #586850;border-radius:3px;
+  color:#a8b498;padding:3px 8px;font-size:11px;
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.room-list-header .refresh-btn:hover{
+  background:rgba(136,255,96,.1);color:#88ff60;border-color:#4a8a30;
+}
+.room-list-header .refresh-btn.spinning{
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{ to{transform:rotate(360deg)} }
+.room-list{
+  background:#0a0d08;border:1px solid #2a3328;
+  border-radius:4px;max-height:180px;overflow-y:auto;
+  padding:4px;margin-bottom:10px;min-height:64px;
+}
+.room-empty{
+  text-align:center;padding:22px 10px;color:#586850;
+  font-size:11px;font-family:Consolas,monospace;
+}
+.room-item{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 8px;border-radius:3px;cursor:pointer;
+  font-family:Consolas,monospace;font-size:11px;
+  transition:background .1s;
+}
+.room-item:hover{background:rgba(136,255,96,.08)}
+.room-item .code{
+  color:#88ff60;font-weight:bold;letter-spacing:1.5px;
+  min-width:64px;
+}
+.room-item .host{
+  color:#e8f0d8;flex:1;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;
+}
+.room-item .count{
+  color:#a8b498;font-size:10px;min-width:32px;text-align:right;
+}
+.room-item .count.full{color:#ff6060;font-weight:bold}
+.room-item .count.low{color:#88ff60}
+.room-item .age{
+  color:#586850;font-size:10px;min-width:36px;text-align:right;
+}
+.room-item.full{
+  opacity:.5;cursor:not-allowed;
+}
+.room-item.full:hover{background:transparent}
+
 #rotate{display:none;position:fixed;inset:0;background:#0a0d08;color:#e8f0d8;z-index:200;
   align-items:center;justify-content:center;text-align:center;padding:30px;font-size:16px;letter-spacing:2px}
 @media (orientation:portrait) and (max-width:900px){ #rotate{display:flex} }
@@ -318,7 +379,17 @@ body.edit-btn-mode #editOverlay{display:flex}
     </div>
     <div id="menuMP" class="menu-page hidden">
       <h3>CHIẾN TRƯỜNG PvP</h3>
-      <button class="mbtn" onclick="Game.hostRoom()">🏠 Tạo phòng</button>
+
+      <div class="room-list-header">
+        <span>🏠 PHÒNG GẦN ĐÂY</span>
+        <span class="badge" id="roomListCount">0</span>
+        <button class="refresh-btn" id="roomRefreshBtn" title="Làm mới">🔄</button>
+      </div>
+      <div id="roomList" class="room-list">
+        <div class="room-empty">Đang tải...</div>
+      </div>
+
+      <button class="mbtn" onclick="Game.hostRoom()">🏠 Tạo phòng (tối đa 5)</button>
       <button class="mbtn" onclick="Game.showJoin()">🔗 Vào phòng</button>
       <div id="hostPanel" class="hidden" style="margin-top:10px">
         <label>TÊN CỦA BẠN</label>
@@ -369,6 +440,9 @@ window.addEventListener('error', e => console.error('[ERROR]', e.error || e.mess
 window.addEventListener('unhandledrejection', e => console.error('[PROMISE]', e.reason));
 
 const BACKEND = { host:'game-sinhton.onrender.com', port:443, peerPath:'/peerjs/myapp', secure:true };
+const BACKEND_URL = 'https://' + BACKEND.host;
+const MAX_PLAYERS = 5;
+const DEATH_RESPAWN_DELAY = 1.5;
 const buzz = ms => { if (navigator.vibrate) try{ navigator.vibrate(ms||6); }catch(e){} };
 const isTouchDevice = matchMedia('(pointer:coarse)').matches ||
   ('ontouchstart' in window && !matchMedia('(pointer:fine)').matches);
@@ -773,7 +847,8 @@ const player = {
   facing: 1, selected: 0,
   animT: 0, currentAnim: 'idle', animTime: 0,
   _stepAcc: 0, attackT: 0, hurtT: 0, jumpT: 0, jumpY: 0,
-  sitting: false
+  sitting: false,
+  deathT: 0
 };
 
 const cam = { x: 0, y: 0 };
@@ -959,6 +1034,7 @@ bindBtn('btnSit', () => trySit(), null);
    ============================================================ */
 function tryJump(){
   if (!gameStarted || paused) return;
+  if (player.hp <= 0) return;
   if (player.jumpT > 0) return;
   player.sitting = false;
   player.jumpT = JUMP_DURATION;
@@ -967,6 +1043,7 @@ function tryJump(){
 }
 function trySit(){
   if (!gameStarted || paused) return;
+  if (player.hp <= 0) return;
   if (player.jumpT > 0) return;
   if (player.attackT > 0) return;
   player.sitting = !player.sitting;
@@ -976,6 +1053,7 @@ function trySit(){
 let lastAttackT = 0;
 function tryAttack(){
   if (!gameStarted || paused) return;
+  if (player.hp <= 0) return;
   if (player.sitting) player.sitting = false;
   const now = performance.now();
   if (now - lastAttackT < ATTACK_DURATION * 1000) return;
@@ -1020,6 +1098,24 @@ function burstHitVisual(x, y){
    UPDATE PLAYER
    ============================================================ */
 function updatePlayer(dt){
+  /* 🆕 DEATH STATE — không cho di chuyển, đếm ngược hồi sinh */
+  if (player.hp <= 0){
+    player.deathT += dt;
+    player.animTime += dt;
+
+    /* Clamp animTime để giữ frame cuối */
+    const deathSprite = getPlayerSprite('death');
+    if (deathSprite && !deathSprite.loop){
+      const maxTime = deathSprite.frames / deathSprite.fps;
+      if (player.animTime > maxTime) player.animTime = maxTime;
+    }
+
+    if (player.deathT >= DEATH_RESPAWN_DELAY){
+      respawnPlayer();
+    }
+    return;
+  }
+
   let dx = 0, dy = 0;
   if (joy.id !== null && Math.hypot(joy.x, joy.y) > 0.15){ dx = joy.x; dy = joy.y; }
   else {
@@ -1035,7 +1131,6 @@ function updatePlayer(dt){
 
   /* ---------- AIM ---------- */
   if (aim.joyId !== null){
-    /* MOBILE: joystick điều khiển, xoay trực tiếp (đã set trong updateAimJoystick) */
     mobileAimUsed = true;
   } else if (!mobileAimUsed && !isTouchDevice){
     /* PC: xoay mượt (lerp) theo chuột — KHÔNG auto-attack */
@@ -1043,7 +1138,6 @@ function updatePlayer(dt){
     const wy = mouse.y + cam.y;
     const targetA = Math.atan2(wy - player.y, wx - player.x);
 
-    /* Lerp có xử lý wrap ±π để không quay vòng dài */
     let diff = targetA - aim.angle;
     while (diff >  Math.PI) diff -= Math.PI * 2;
     while (diff < -Math.PI) diff += Math.PI * 2;
@@ -1051,7 +1145,6 @@ function updatePlayer(dt){
     while (aim.angle >  Math.PI) aim.angle -= Math.PI * 2;
     while (aim.angle < -Math.PI) aim.angle += Math.PI * 2;
 
-    /* PC tuyệt đối KHÔNG auto-attack */
     aim.autoAttack = false;
   }
 
@@ -1098,8 +1191,10 @@ function respawnPlayer(){
   player.x = WORLD_W*TILE/2; player.y = WORLD_H*TILE/2;
   player.jumpT = 0; player.jumpY = 0;
   player.attackT = 0; player.hurtT = 0;
+  player.deathT = 0;
   player.sitting = false;
   player.currentAnim = 'idle';
+  player.animTime = 0;
   cam.x = player.x - VW/2; cam.y = player.y - VH/2;
   if (net.active) net.broadcastPos();
   updateHpBar();
@@ -1148,7 +1243,15 @@ const net = {
         const conn = this.peer.connect('dragonhunter-' + code, { reliable: true });
         this.hostConn = conn;
         conn.on('open', () => { clearTimeout(timer); this.active = true; resolve(); });
-        conn.on('data', d => this._onData(d, conn));
+        conn.on('data', d => {
+          if (d && d.t === 'full'){
+            toast('❌ Phòng đã đầy (' + (d.max || MAX_PLAYERS) + '/' + MAX_PLAYERS + ')');
+            this.disconnect();
+            if (gameStarted) backToMenu();
+            return;
+          }
+          this._onData(d, conn);
+        });
         conn.on('close', () => { toast('❌ Mất kết nối'); this.disconnect(); if (gameStarted) backToMenu(); });
         conn.on('error', e => { clearTimeout(timer); reject(e); });
       });
@@ -1161,6 +1264,12 @@ const net = {
   },
   _acceptClient(conn){
     conn.on('open', () => {
+      /* 🆕 Reject nếu phòng đầy */
+      if (this.clients.size >= MAX_PLAYERS - 1){
+        try { conn.send({ t:'full', max: MAX_PLAYERS }); } catch(e){}
+        setTimeout(() => { try { conn.close(); } catch(e){} }, 200);
+        return;
+      }
       this.clients.set(conn.peer, conn);
       try {
         conn.send({ t:'world', seed: SEED, data: u8ToB64(world) });
@@ -1172,13 +1281,16 @@ const net = {
                     x: player.x, y: player.y, facing: player.facing,
                     hp: player.hp, sitting: player.sitting });
       } catch(e){}
-      toast('⚔️ Đối thủ mới!');
+      toast('⚔️ Đối thủ mới! (' + (1 + this.clients.size) + '/' + MAX_PLAYERS + ')');
       updateNetHud();
+      updateRoomHeartbeat();
     });
     conn.on('data', d => this._onData(d, conn));
     conn.on('close', () => {
       this.clients.delete(conn.peer); this.players.delete(conn.peer);
-      toast('👋 Đối thủ rời'); updateNetHud();
+      toast('👋 Đối thủ rời');
+      updateNetHud();
+      updateRoomHeartbeat();
     });
   },
   _onData(d, conn){
@@ -1207,7 +1319,15 @@ const net = {
         player.hurtT = DEATH_DURATION;
         flashDamage(); Audio2D.sfx.hurt(); updateHpBar();
         toast(`⚔️ ${d.fromName} gây ${d.dmg}!`);
-        if (player.hp <= 0){ Audio2D.sfx.kill(); respawnPlayer(); }
+        if (player.hp <= 0){
+          /* 🆕 Chết: chạy animation death, sau 1.5s hồi sinh */
+          Audio2D.sfx.kill();
+          player.deathT = 0;
+          player.currentAnim = 'death';
+          player.animTime = 0;
+          player.sitting = false;
+          this.broadcastPos();
+        }
         else this.broadcastPos();
       }
       if (this.mode === 'host' && conn){
@@ -1232,11 +1352,21 @@ const net = {
     } catch(e){}
   },
   disconnect(){
+    const wasRoom = this.roomCode;
+    const wasMode = this.mode;
     this.active = false;
     this.players.clear(); this.clients.clear();
     this.hostConn = null;
     if (this.peer){ try { this.peer.destroy(); } catch(e){} }
     this.peer = null; this.myId = null;
+
+    /* 🆕 Xoá phòng nếu mình là host */
+    if (wasRoom && wasMode === 'host'){
+      apiDeleteRoom(wasRoom);
+    }
+    this.roomCode = null;
+    this.mode = null;
+    stopRoomHeartbeat();
     updateNetHud();
   }
 };
@@ -1273,6 +1403,106 @@ function updateNetHud(){
   el.classList.add('show');
   $('netCode').textContent = net.roomCode || '-----';
   $('netCount').textContent = 1 + net.players.size;
+}
+
+/* ============================================================
+   🆕 ROOM LIST API
+   ============================================================ */
+let roomPollingTimer = null;
+let roomHeartbeatTimer = null;
+
+async function apiRegisterRoom(code, name){
+  try {
+    await fetch(BACKEND_URL + '/rooms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, name })
+    });
+  } catch(e){ console.warn('Register room fail:', e); }
+}
+async function apiUpdateRoomCount(code, count){
+  try {
+    await fetch(BACKEND_URL + '/rooms/' + code + '/count', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ count })
+    });
+  } catch(e){}
+}
+async function apiDeleteRoom(code){
+  try {
+    await fetch(BACKEND_URL + '/rooms/' + code, { method: 'DELETE' });
+  } catch(e){}
+}
+async function apiListRooms(){
+  try {
+    const res = await fetch(BACKEND_URL + '/rooms', { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.rooms || [];
+  } catch(e){ return []; }
+}
+
+function startRoomHeartbeat(){
+  if (roomHeartbeatTimer) return;
+  updateRoomHeartbeat();
+  roomHeartbeatTimer = setInterval(updateRoomHeartbeat, 5000);
+}
+function stopRoomHeartbeat(){
+  if (roomHeartbeatTimer){ clearInterval(roomHeartbeatTimer); roomHeartbeatTimer = null; }
+}
+function updateRoomHeartbeat(){
+  if (!net.active || !net.roomCode) return;
+  apiUpdateRoomCount(net.roomCode, 1 + net.clients.size);
+}
+
+function startRoomPolling(){
+  if (roomPollingTimer) return;
+  fetchAndRenderRooms();
+  roomPollingTimer = setInterval(fetchAndRenderRooms, 3000);
+}
+function stopRoomPolling(){
+  if (roomPollingTimer){ clearInterval(roomPollingTimer); roomPollingTimer = null; }
+}
+async function fetchAndRenderRooms(){
+  const list = await apiListRooms();
+  renderRoomList(list);
+}
+function renderRoomList(rooms){
+  const el = $('roomList');
+  const cnt = $('roomListCount');
+  if (!el) return;
+  cnt.textContent = rooms.length;
+  if (!rooms.length){
+    el.innerHTML = '<div class="room-empty">Chưa có phòng nào — hãy tạo phòng!</div>';
+    return;
+  }
+  const now = Date.now();
+  el.innerHTML = '';
+  for (const r of rooms){
+    const isFull = r.count >= (r.max || MAX_PLAYERS);
+    const item = document.createElement('div');
+    item.className = 'room-item' + (isFull ? ' full' : '');
+    const countClass = isFull ? 'full' : (r.count <= 1 ? 'low' : '');
+    item.innerHTML =
+      '<span class="code">' + r.code + '</span>' +
+      '<span class="host">' + (r.name || 'Host') + '</span>' +
+      '<span class="count ' + countClass + '">' + r.count + '/' + (r.max || MAX_PLAYERS) + '</span>' +
+      '<span class="age">' + formatAge(now - r.ts) + '</span>';
+    if (!isFull){
+      item.addEventListener('click', () => Game.joinFromList(r.code));
+    } else {
+      item.title = 'Phòng đã đầy';
+    }
+    el.appendChild(item);
+  }
+}
+function formatAge(ms){
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return s + 's';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + 'm';
+  return Math.floor(m / 60) + 'h';
 }
 
 /* ============================================================
@@ -1368,8 +1598,14 @@ function drawPlayer(){
   const rawIdx = Math.floor(player.animTime * sprite.fps);
   const total = sprite.frames || (sprite.vLines ? sprite.vLines.length - 1 : 8);
   let idx;
-  if (sprite.loop) idx = ((rawIdx % total) + total) % total;
-  else idx = Math.max(0, Math.min(total - 1, rawIdx));
+  if (player.hp <= 0 && !sprite.loop){
+    /* 🆕 Đang chết — giữ frame cuối */
+    idx = total - 1;
+  } else if (sprite.loop){
+    idx = ((rawIdx % total) + total) % total;
+  } else {
+    idx = Math.max(0, Math.min(total - 1, rawIdx));
+  }
   drawSpriteAt(sprite, idx, sx, sySprite, player.facing);
 }
 
@@ -1392,21 +1628,22 @@ function drawRemotePlayer(p){
   if (sx < -80 || sx > VW+80 || sy < -80 || sy > VH+80) return;
   const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name)) % REMOTE_PALETTE.length];
 
-  const animName = p.sitting ? 'sit' : 'idle';
+  const animName = (p.hp <= 0) ? 'death' : (p.sitting ? 'sit' : 'idle');
   const sprite = getPlayerSprite(animName);
   if (sprite){
     const rawIdx = Math.floor((p.animT || 0) * sprite.fps);
     const total = sprite.frames || 1;
-    const idx = sprite.loop
-      ? ((rawIdx % total) + total) % total
-      : Math.max(0, Math.min(total-1, rawIdx));
+    let idx;
+    if (p.hp <= 0 && !sprite.loop) idx = total - 1;
+    else if (sprite.loop) idx = ((rawIdx % total) + total) % total;
+    else idx = Math.max(0, Math.min(total-1, rawIdx));
     drawSpriteAt(sprite, idx, sx, sy + FOOT_OFFSET, p.facing);
   } else {
     ctx.fillStyle = pal.body; ctx.fillRect(sx-6, sy-10, 12, 13);
     ctx.fillStyle = '#f0c8a0'; ctx.fillRect(sx-5, sy-18, 10, 8);
   }
 
-  if (p.sitting){
+  if (p.sitting && p.hp > 0){
     ctx.font = 'bold 12px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('🪑', sx, sy - 40);
@@ -1433,6 +1670,7 @@ function drawRemotePlayer(p){
    ============================================================ */
 function drawAimArrow(){
   if (!gameStarted || paused) return;
+  if (player.hp <= 0) return;   /* 🆕 Không vẽ mũi tên khi chết */
 
   const sx = Math.round(player.x - cam.x);
   const syBelly = Math.round(player.y - cam.y - 14);
@@ -1767,6 +2005,20 @@ window.Game = {
     backToMenu(); showMenuPage('settings');
   },
   quitToMenu: () => backToMenu(),
+  joinFromList: (code) => {
+    showJoin();
+    setTimeout(() => {
+      $('joinCode').value = code;
+      $('joinName').focus();
+    }, 100);
+  },
+  refreshRooms: () => {
+    const btn = $('roomRefreshBtn');
+    if (btn) btn.classList.add('spinning');
+    fetchAndRenderRooms().finally(() => {
+      if (btn) setTimeout(() => btn.classList.remove('spinning'), 300);
+    });
+  },
 };
 const menuPages = {
   main: $('menuMain'),
@@ -1776,6 +2028,8 @@ const menuPages = {
 function showMenuPage(name){
   if (!menuPages[name]) return;
   for (const k in menuPages) menuPages[k].classList.toggle('hidden', k !== name);
+  if (name === 'mp') startRoomPolling();
+  else stopRoomPolling();
 }
 async function hostRoom(){
   $('hostPanel').classList.remove('hidden');
@@ -1788,10 +2042,15 @@ async function hostRoom(){
     const code = await net.startHost(name);
     codeEl.textContent = code;
     codeEl.classList.remove('hidden');
-    status.textContent = '✓ Chờ đối thủ...';
+    status.textContent = '✓ Chờ đối thủ... (tối đa 5)';
     initRNG(Date.now() & 0x7fffffff);
     world.fill(0); generateWorld();
     resetPlayerPosition(); initInv();
+
+    /* 🆕 Đăng ký phòng + heartbeat */
+    await apiRegisterRoom(code, name);
+    startRoomHeartbeat();
+
     setTimeout(() => startGame('host'), 800);
   } catch(e){ status.textContent = '❌ Lỗi: ' + (e.message || e); }
 }
@@ -1805,6 +2064,15 @@ async function joinRoom(){
   const name = $('joinName').value.trim() || 'Hunter';
   const status = $('joinStatus');
   if (code.length < 4){ status.textContent = '❌ Mã không hợp lệ'; return; }
+
+  /* 🆕 Pre-check: phòng đầy không? */
+  const list = await apiListRooms();
+  const room = list.find(r => r.code === code);
+  if (room && room.count >= (room.max || MAX_PLAYERS)){
+    status.textContent = '❌ Phòng đã đầy (' + room.count + '/' + MAX_PLAYERS + ')';
+    return;
+  }
+
   status.textContent = 'Đang kết nối...';
   try {
     net.onWorldReady = () => { initInv(); startGame('client'); };
@@ -1861,6 +2129,8 @@ function backToMenu(){
   gameStarted = false; paused = false;
   $('pause').classList.add('hidden');
   $('settingsBtn').classList.remove('show');
+  stopRoomHeartbeat();
+  stopRoomPolling();
   net.disconnect();
   $('menu').classList.remove('hidden');
   showMenuPage('main');
@@ -1871,6 +2141,7 @@ function resetPlayerPosition(){
   player.x = WORLD_W*TILE/2; player.y = WORLD_H*TILE/2;
   player.jumpT = 0; player.jumpY = 0;
   player.attackT = 0; player.hurtT = 0;
+  player.deathT = 0;
   player.sitting = false;
   player.currentAnim = 'idle'; player.animTime = 0;
   cam.x = player.x - VW/2; cam.y = player.y - VH/2;
@@ -1906,6 +2177,7 @@ function loop(now){
 mouse.x = VW/2; mouse.y = VH/2;
 
 ButtonSettings.init();
+$('roomRefreshBtn').addEventListener('click', () => Game.refreshRooms());
 
 loadProject().then(() => {
   showMenuPage('main');
