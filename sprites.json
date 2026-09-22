@@ -1,7 +1,7 @@
 {
   "format": "dh-studio-project",
   "version": 3,
-  "exportedAt": "2026-09-22T02:06:02.982Z",
+  "exportedAt": "2026-09-22T14:10:23.374Z",
   "models": {
     "player": {
       "animations": {
@@ -415,6 +415,221 @@
           "anchorMode": "stable-x",
           "fps": 8,
           "loop": false
+        }
+      }
+    },
+    "weapon": {
+      "animations": {
+        "attack": {
+          "fileName": "weapon_attack",
+          "frames": 3,
+          "spriteH": 237,
+          "vLines": [
+            0,
+            183,
+            366,
+            543
+          ],
+          "hLines": [
+            0,
+            237
+          ],
+          "anchors": [
+            [
+              88,
+              225
+            ],
+            [
+              271,
+              225
+            ],
+            [
+              454,
+              225
+            ]
+          ],
+          "stableAnchor": [
+            88,
+            225
+          ],
+          "anchorMode": "stable-x",
+          "fps": 16,
+          "loop": true
+        },
+        "death": {
+          "fileName": "weapon_death",
+          "frames": 3,
+          "spriteH": 182,
+          "vLines": [
+            0,
+            221,
+            442,
+            657
+          ],
+          "hLines": [
+            0,
+            182
+          ],
+          "anchors": [
+            [
+              107,
+              170
+            ],
+            [
+              328,
+              170
+            ],
+            [
+              549,
+              170
+            ]
+          ],
+          "stableAnchor": [
+            107,
+            170
+          ],
+          "anchorMode": "stable-x",
+          "fps": 10,
+          "loop": false
+        },
+        "idle": {
+          "fileName": "weapon_idle",
+          "frames": 2,
+          "spriteH": 219,
+          "vLines": [
+            0,
+            71,
+            136
+          ],
+          "hLines": [
+            0,
+            219
+          ],
+          "anchors": [
+            [
+              32,
+              207
+            ],
+            [
+              103,
+              207
+            ]
+          ],
+          "stableAnchor": [
+            32,
+            207
+          ],
+          "anchorMode": "stable-x",
+          "fps": 5,
+          "loop": true
+        },
+        "jump": {
+          "fileName": "weapon_jump",
+          "frames": 4,
+          "spriteH": 213,
+          "vLines": [
+            0,
+            186,
+            372,
+            558,
+            738
+          ],
+          "hLines": [
+            0,
+            213
+          ],
+          "anchors": [
+            [
+              90,
+              201
+            ],
+            [
+              276,
+              201
+            ],
+            [
+              462,
+              201
+            ],
+            [
+              648,
+              201
+            ]
+          ],
+          "stableAnchor": [
+            90,
+            201
+          ],
+          "anchorMode": "stable-x",
+          "fps": 12,
+          "loop": false
+        },
+        "sit": {
+          "fileName": "weapon_sit",
+          "frames": 2,
+          "spriteH": 195,
+          "vLines": [
+            0,
+            142,
+            278
+          ],
+          "hLines": [
+            0,
+            195
+          ],
+          "anchors": [
+            [
+              68,
+              183
+            ],
+            [
+              210,
+              183
+            ]
+          ],
+          "stableAnchor": [
+            68,
+            183
+          ],
+          "anchorMode": "stable-x",
+          "fps": 1,
+          "loop": true
+        },
+        "run": {
+          "fileName": "weapon_run",
+          "frames": 3,
+          "spriteH": 198,
+          "vLines": [
+            0,
+            117,
+            234,
+            345
+          ],
+          "hLines": [
+            0,
+            198
+          ],
+          "anchors": [
+            [
+              55,
+              186
+            ],
+            [
+              172,
+              186
+            ],
+            [
+              289,
+              186
+            ]
+          ],
+          "stableAnchor": [
+            55,
+            186
+          ],
+          "anchorMode": "stable-x",
+          "fps": 10,
+          "loop": true
         }
       }
     }
