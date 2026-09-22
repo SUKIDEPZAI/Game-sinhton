@@ -3,387 +3,1067 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DH Studio — Sprite Editor v4</title>
+<title>DH Studio · Sprite Editor</title>
 <style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
 :root{
-  --bg:#0a0e08;--bg2:#131a12;--panel:#1a2218;--panel2:#232e20;
-  --border:#0a0d08;--border2:#2f3a2a;
-  --accent:#6fbf4a;--accent2:#88ff60;--accent3:#4a8a30;
-  --text:#e8f0d8;--dim:#889878;--dim2:#586850;
-  --danger:#e8503a;--warning:#ffcc40;--info:#88d8ff;
-  --weapon:#ff8060;--skill:#b880ff;--handle:#00d0ff;
+  /* Layout */
+  --header-h: 52px;
+  --status-h: 28px;
+  --lib-w: 260px;
+  --inspector-w: 340px;
+  --stage-bar-h: 44px;
+
+  /* Colors — GitHub Dark inspired */
+  --bg-base: #0d1117;
+  --bg-panel: #161b22;
+  --bg-elevated: #1c2128;
+  --bg-hover: #21262d;
+  --bg-active: #262c36;
+  --bg-input: #010409;
+
+  --border: #30363d;
+  --border-muted: #21262d;
+
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+
+  --accent: #3fb950;
+  --accent-bright: #56d364;
+  --accent-dim: #238636;
+  --accent-glow: rgba(63,185,80,.2);
+
+  --info: #58a6ff;
+  --warning: #d29922;
+  --danger: #f85149;
+  --danger-dim: #da3633;
+
+  --weapon: #ff8a65;
+  --weapon-dim: #5a2a20;
+  --skill: #a371f7;
+  --skill-dim: #2a1a4a;
+
+  --handle: #58a6ff;
+  --handle-active: #56d364;
+
+  /* Typography */
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+  --font-mono: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.5);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.5);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.7);
+
+  /* Radius */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
 }
+
+/* ============================================================
+   RESET
+   ============================================================ */
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
-  font-family:'Segoe UI',Arial,sans-serif;font-size:12px;user-select:none}
-button{cursor:pointer;font-family:inherit;color:inherit}
-input,select{font-family:inherit;color:inherit}
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  background:var(--bg-base);color:var(--text-primary);
+  font-family:var(--font-ui);font-size:13px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  user-select:none;
+}
+button{font-family:inherit;cursor:pointer;color:inherit;border:none;background:none}
+input,select{font-family:inherit;color:inherit;outline:none}
+input[type=file]{display:none}
+
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;border:2px solid var(--bg-base)}
+::-webkit-scrollbar-thumb:hover{background:var(--text-tertiary)}
+
+/* ============================================================
+   APP LAYOUT
+   ============================================================ */
 .app{display:flex;flex-direction:column;height:100%}
 
-/* ================= HEADER ================= */
-.header{height:48px;background:linear-gradient(180deg,#1f2a1a,#0f1409);
-  border-bottom:2px solid var(--border);display:flex;align-items:center;
-  padding:0 16px;gap:12px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:10}
-.brand{font-family:Consolas,monospace;font-size:15px;font-weight:900;
-  color:var(--accent2);letter-spacing:2px;text-shadow:0 0 14px rgba(136,255,96,.5)}
-.brand .ver{font-size:9px;color:var(--dim2);margin-left:6px;letter-spacing:1px}
-.header-tools{display:flex;gap:6px;margin-left:auto;align-items:center}
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header{
+  height:var(--header-h);
+  background:var(--bg-panel);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 16px;gap:12px;
+  flex-shrink:0;
+  z-index:100;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  padding-right:16px;border-right:1px solid var(--border-muted);
+  margin-right:4px;
+}
+.brand-icon{
+  width:28px;height:28px;border-radius:var(--r-md);
+  background:linear-gradient(135deg,var(--accent),var(--accent-dim));
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;
+  box-shadow:0 0 12px var(--accent-glow);
+}
+.brand-name{
+  font-family:var(--font-mono);font-size:13px;font-weight:700;
+  color:var(--text-primary);letter-spacing:.5px;
+}
+.brand-ver{
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--text-tertiary);font-weight:400;
+  padding:1px 6px;background:var(--bg-elevated);border-radius:10px;
+}
 
-.btn{background:linear-gradient(180deg,var(--panel2),var(--panel));
-  border:1px solid var(--border);border-radius:4px;padding:7px 12px;
-  font-size:11px;font-weight:600;transition:all .15s;
-  box-shadow:0 1px 0 rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);
-  display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.btn:hover{background:linear-gradient(180deg,#2f3a2a,#232e20);transform:translateY(-1px);
-  box-shadow:0 2px 6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
-.btn:active{transform:translateY(0);box-shadow:0 1px 0 rgba(0,0,0,.5)}
-.btn.primary{background:linear-gradient(180deg,#88d858,var(--accent3));color:#0a1a06;
-  box-shadow:0 2px 0 #1a3a10,inset 0 1px 0 #b8ff88}
-.btn.primary:hover{background:linear-gradient(180deg,#98e868,#5a9a40)}
-.btn.danger{background:linear-gradient(180deg,#d05848,#8a2a20);color:#fff}
-.btn.on{background:linear-gradient(180deg,#ffd060,#d09020);color:#1a0a00;
-  box-shadow:0 2px 0 #8a5a10,inset 0 1px 0 #ffe888}
-.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important}
-.btn.icon{padding:7px 9px;font-size:14px}
-.btn.small{padding:5px 9px;font-size:10px}
+.header-tools{display:flex;align-items:center;gap:6px;flex:1}
+.header-right{display:flex;align-items:center;gap:6px}
 
-.upload-group{display:flex;gap:0}
-.upload-group select{
-  background:#000;color:var(--accent2);border:1px solid var(--border);border-right:none;
-  border-radius:4px 0 0 4px;padding:7px 10px;font-size:11px;font-weight:600;
-  font-family:Consolas,monospace;cursor:pointer}
-.upload-group select:focus{outline:none;border-color:var(--accent)}
-.upload-group .btn{border-radius:0 4px 4px 0}
+/* Buttons */
+.btn{
+  height:32px;padding:0 12px;
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  font-size:12px;font-weight:500;
+  color:var(--text-primary);
+  display:inline-flex;align-items:center;gap:6px;
+  transition:all .12s ease;
+  white-space:nowrap;
+  box-shadow:var(--shadow-sm);
+}
+.btn:hover:not(:disabled){
+  background:var(--bg-hover);
+  border-color:var(--text-tertiary);
+}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.primary{
+  background:var(--accent-dim);
+  border-color:var(--accent);
+  color:#fff;
+}
+.btn.primary:hover:not(:disabled){
+  background:var(--accent);
+  border-color:var(--accent-bright);
+}
+.btn.danger{
+  background:var(--danger-dim);
+  border-color:var(--danger);
+  color:#fff;
+}
+.btn.danger:hover:not(:disabled){background:var(--danger)}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover:not(:disabled){background:var(--bg-hover)}
+.btn.icon{width:32px;padding:0;justify-content:center}
+.btn.sm{height:26px;font-size:11px;padding:0 9px}
+.btn.xs{height:22px;font-size:10px;padding:0 8px;border-radius:var(--r-sm)}
+.btn-group{display:flex}
+.btn-group .btn{border-radius:0;border-right-width:0}
+.btn-group .btn:first-child{border-radius:var(--r-md) 0 0 var(--r-md)}
+.btn-group .btn:last-child{border-radius:0 var(--r-md) var(--r-md) 0;border-right-width:1px}
 
-/* ================= MAIN ================= */
-.main{display:flex;flex:1;overflow:hidden}
+/* Model preset dropdown */
+.model-preset{
+  height:32px;padding:0 28px 0 10px;
+  background:var(--bg-input);color:var(--accent);
+  border:1px solid var(--border);border-radius:var(--r-md) 0 0 var(--r-md);
+  border-right:none;
+  font-family:var(--font-mono);font-size:11px;font-weight:600;
+  cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%238b949e' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;background-size:10px;
+  transition:all .12s;
+}
+.model-preset:hover{border-color:var(--text-tertiary)}
+.model-preset:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
 
-/* ================= LIBRARY ================= */
-.library{width:240px;background:var(--panel);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;flex-shrink:0}
-.panel-h{height:36px;background:linear-gradient(180deg,#1f2a1a,#131a12);
-  border-bottom:1px solid var(--border);display:flex;align-items:center;
-  padding:0 12px;font-family:Consolas,monospace;font-size:10px;font-weight:bold;
-  letter-spacing:1.5px;color:var(--accent2);flex-shrink:0}
-.panel-h .cnt{margin-left:auto;background:var(--accent3);color:var(--accent2);
-  padding:1px 7px;border-radius:10px;font-weight:bold;font-size:10px}
+/* ============================================================
+   MAIN
+   ============================================================ */
+.main{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* ============================================================
+   LIBRARY (Left sidebar)
+   ============================================================ */
+.library{
+  width:var(--lib-w);background:var(--bg-panel);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;
+}
+.panel-h{
+  height:40px;padding:0 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:600;
+  color:var(--text-secondary);
+  text-transform:uppercase;letter-spacing:.8px;
+  flex-shrink:0;
+}
+.panel-h .icon{font-size:14px;filter:grayscale(.3)}
+.panel-h .count{
+  margin-left:auto;
+  padding:2px 8px;border-radius:10px;
+  background:var(--bg-elevated);color:var(--text-primary);
+  font-family:var(--font-mono);font-size:10px;font-weight:600;
+}
 .library-body{flex:1;overflow-y:auto;padding:8px}
 
-.model-group{margin-bottom:10px}
-.model-header{display:flex;align-items:center;gap:8px;padding:7px 10px;
-  background:linear-gradient(180deg,var(--panel2),#1a2218);
-  border-radius:5px;cursor:pointer;transition:all .15s;
-  font-family:Consolas,monospace;font-size:11px;font-weight:bold;color:var(--accent2);
-  border:1px solid transparent}
-.model-header:hover{background:linear-gradient(180deg,#2f3a2a,#232e20);border-color:var(--border2)}
-.model-header.weapon{color:var(--weapon);border-color:rgba(255,128,96,.3)}
-.model-header.skill{color:var(--skill);border-color:rgba(184,128,255,.3)}
-.model-header .arrow{font-size:10px;transition:transform .2s}
+.model-group{margin-bottom:6px}
+.model-header{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-radius:var(--r-md);
+  cursor:pointer;transition:background .12s;
+  font-size:12px;font-weight:600;
+  color:var(--text-primary);
+  background:var(--bg-elevated);
+  border-left:3px solid transparent;
+}
+.model-header:hover{background:var(--bg-hover)}
+.model-header[data-model="player"]{border-left-color:var(--accent)}
+.model-header[data-model="weapon"]{border-left-color:var(--weapon)}
+.model-header[data-model="skill"]{border-left-color:var(--skill)}
+.model-header[data-model="enemy"]{border-left-color:var(--danger)}
+.model-header[data-model="boss"]{border-left-color:var(--warning)}
+.model-header .arrow{
+  font-size:9px;color:var(--text-tertiary);
+  transition:transform .2s;width:10px;
+}
 .model-header.collapsed .arrow{transform:rotate(-90deg)}
-.model-header .count{margin-left:auto;color:var(--dim);font-weight:normal;font-size:10px}
-.model-body{padding-left:8px;margin-top:4px}
+.model-header .count{
+  margin-left:auto;
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--text-tertiary);font-weight:400;
+}
+.model-body{padding-left:8px;margin-top:4px;overflow:hidden}
 .model-body.hidden{display:none}
 
-.anim-item{display:flex;align-items:center;gap:6px;padding:6px 8px;margin-top:3px;
-  border-radius:4px;cursor:pointer;font-size:11px;
-  border-left:3px solid transparent;transition:all .12s;position:relative}
-.anim-item:hover{background:var(--panel2);border-left-color:var(--dim2)}
-.anim-item.active{background:linear-gradient(90deg,var(--accent3),#3a6a25);
-  border-left-color:var(--accent2);color:#fff;
-  box-shadow:inset 0 0 20px rgba(136,255,96,.15)}
-.anim-item .dot{width:7px;height:7px;border-radius:50%;background:var(--dim2);flex-shrink:0;
-  transition:all .15s}
-.anim-item.active .dot{background:var(--accent2);box-shadow:0 0 8px var(--accent2)}
-.anim-item .name{flex:1;font-family:Consolas,monospace;overflow:hidden;
-  text-overflow:ellipsis;white-space:nowrap;font-weight:600}
-.anim-item .meta{font-size:9px;color:var(--dim);font-family:Consolas,monospace}
-.anim-item.active .meta{color:#c8ffb8}
-.anim-item.dup-warn{background:rgba(232,80,58,.15)}
-.anim-item.dup-warn::after{
-  content:'⚠';position:absolute;right:4px;top:2px;
-  color:#ff9898;font-size:13px;font-weight:bold;
+.anim-item{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 10px;margin-top:2px;
+  border-radius:var(--r-sm);
+  cursor:pointer;transition:all .12s;
+  border-left:2px solid transparent;
+  font-size:12px;
 }
-.lib-empty{text-align:center;padding:40px 12px;color:var(--dim2);
-  font-family:Consolas,monospace;font-size:11px;line-height:1.8}
-.lib-empty kbd{background:var(--panel2);border:1px solid var(--border);border-radius:3px;
-  padding:2px 6px;color:var(--accent2);font-family:Consolas,monospace}
+.anim-item:hover{background:var(--bg-hover)}
+.anim-item.active{
+  background:var(--bg-active);
+  border-left-color:var(--accent);
+}
+.anim-item .dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--text-tertiary);flex-shrink:0;
+}
+.anim-item.active .dot{
+  background:var(--accent);
+  box-shadow:0 0 8px var(--accent);
+}
+.anim-item .name{
+  flex:1;font-family:var(--font-mono);
+  font-size:11px;font-weight:500;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.anim-item.active .name{color:#fff;font-weight:600}
+.anim-item .meta{
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--text-tertiary);
+}
+.anim-item.dup-warn::after{
+  content:'⚠';color:var(--warning);font-size:12px;margin-left:4px;
+}
 
-/* ================= STAGE ================= */
-.stage{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0d1109;position:relative}
-.stage-bar{height:40px;background:linear-gradient(180deg,#1a2218,#131a12);
-  border-bottom:1px solid var(--border);display:flex;align-items:center;
-  padding:0 10px;gap:5px;flex-shrink:0;overflow-x:auto}
-.stage-bar::-webkit-scrollbar{height:3px}
-.stage-bar .sep{width:1px;height:22px;background:var(--border2);margin:0 6px;flex-shrink:0}
-.stage-bar .btn{padding:5px 10px;font-size:10px}
-.stage-bar .zoom{font-family:Consolas,monospace;color:var(--accent2);
-  margin-left:auto;padding:0 12px;font-size:12px;font-weight:bold;flex-shrink:0}
+.lib-empty{
+  padding:40px 20px;text-align:center;
+  color:var(--text-tertiary);
+  font-size:12px;line-height:1.8;
+}
+.lib-empty kbd{
+  display:inline-block;padding:2px 6px;margin:0 2px;
+  background:var(--bg-elevated);border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--accent);
+}
 
-.stage-canvas{flex:1;position:relative;overflow:auto;
+/* ============================================================
+   STAGE (Center)
+   ============================================================ */
+.stage{
+  flex:1;display:flex;flex-direction:column;
+  overflow:hidden;background:var(--bg-base);
+  position:relative;
+}
+.stage-bar{
+  height:var(--stage-bar-h);
+  background:var(--bg-panel);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 12px;gap:4px;
+  flex-shrink:0;overflow-x:auto;
+}
+.stage-bar::-webkit-scrollbar{height:2px}
+.stage-bar .divider{
+  width:1px;height:22px;background:var(--border);
+  margin:0 8px;flex-shrink:0;
+}
+.stage-bar .zoom-display{
+  margin-left:auto;padding:0 12px;
+  font-family:var(--font-mono);font-size:12px;font-weight:600;
+  color:var(--accent);
+}
+
+/* Tool buttons */
+.tool-btn{
+  height:32px;min-width:36px;padding:0 10px;
+  background:transparent;
+  border:1px solid transparent;
+  border-radius:var(--r-md);
+  color:var(--text-secondary);
+  font-size:12px;font-weight:500;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .12s;
+}
+.tool-btn:hover{background:var(--bg-hover);color:var(--text-primary)}
+.tool-btn.active{
+  background:var(--accent-dim);color:#fff;
+  border-color:var(--accent);
+  box-shadow:0 0 12px var(--accent-glow);
+}
+.tool-btn .icon{font-size:14px}
+
+/* Checkbox pills */
+.toggle-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:var(--r-md);
+  font-size:11px;color:var(--text-secondary);
+  cursor:pointer;transition:all .12s;
+  user-select:none;
+}
+.toggle-pill:hover{background:var(--bg-hover);color:var(--text-primary)}
+.toggle-pill input{display:none}
+.toggle-pill .box{
+  width:14px;height:14px;
+  border:1.5px solid var(--border);
+  border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.toggle-pill input:checked + .box{
+  background:var(--accent);border-color:var(--accent);
+}
+.toggle-pill input:checked + .box::after{
+  content:'✓';color:#fff;font-size:10px;font-weight:bold;line-height:1;
+}
+
+/* Canvas area */
+.stage-canvas{
+  flex:1;position:relative;overflow:auto;
+  background-color:var(--bg-base);
   background-image:
-    linear-gradient(45deg,#151c11 25%,transparent 25%),
-    linear-gradient(-45deg,#151c11 25%,transparent 25%),
-    linear-gradient(45deg,transparent 75%,#151c11 75%),
-    linear-gradient(-45deg,transparent 75%,#151c11 75%);
-  background-size:24px 24px;
-  background-position:0 0,0 12px,12px -12px,-12px 0px}
-.canvas-holder{position:relative;display:inline-block;margin:32px}
-#mainCanvas,#overlayCanvas{display:block;image-rendering:pixelated;
-  box-shadow:0 0 0 2px #000,0 0 60px rgba(0,0,0,.95),0 0 100px rgba(136,255,96,.05)}
-#overlayCanvas{position:absolute;top:0;left:0;pointer-events:auto}
-#overlayCanvas.grab{cursor:grab}
-#overlayCanvas.grabbing{cursor:grabbing}
-#overlayCanvas.crosshair{cursor:crosshair}
-#overlayCanvas.move{cursor:move}
+    linear-gradient(45deg, #0f141a 25%, transparent 25%),
+    linear-gradient(-45deg, #0f141a 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #0f141a 75%),
+    linear-gradient(-45deg, transparent 75%, #0f141a 75%);
+  background-size:20px 20px;
+  background-position:0 0, 0 10px, 10px -10px, -10px 0;
+}
+.canvas-holder{
+  position:relative;display:inline-block;
+  margin:40px;
+}
+#mainCanvas,#overlayCanvas{
+  display:block;image-rendering:pixelated;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 0 0 4px var(--bg-base),
+    0 0 40px rgba(0,0,0,.8);
+}
+#overlayCanvas{
+  position:absolute;top:0;left:0;
+  pointer-events:auto;
+}
 
-.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:18px;pointer-events:none;text-align:center}
-.empty-state .ic{font-size:64px;opacity:.4;filter:drop-shadow(0 0 20px rgba(136,255,96,.3))}
-.empty-state .title{font-family:Consolas,monospace;font-size:18px;color:var(--accent2);
-  letter-spacing:4px;font-weight:bold;text-shadow:0 0 20px rgba(136,255,96,.4)}
-.empty-state .hint{font-size:12px;color:var(--dim);max-width:400px;line-height:1.9}
-.empty-state kbd{background:var(--panel2);border:1px solid var(--border);border-radius:4px;
-  padding:3px 8px;font-family:Consolas,monospace;color:var(--accent2);font-size:11px}
+/* Empty state */
+.empty-state{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:16px;pointer-events:none;text-align:center;
+  padding:40px;
+}
+.empty-state .icon{
+  font-size:64px;opacity:.25;
+  filter:grayscale(.5);
+}
+.empty-state .title{
+  font-family:var(--font-mono);
+  font-size:16px;font-weight:700;
+  color:var(--text-primary);letter-spacing:2px;
+}
+.empty-state .hint{
+  font-size:12px;color:var(--text-secondary);
+  max-width:440px;line-height:1.9;
+}
+.empty-state kbd{
+  display:inline-block;padding:3px 8px;margin:0 3px;
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--accent);
+}
 
-/* 🆕 Floating zoom controls */
-.zoom-controls{position:absolute;bottom:16px;right:16px;display:flex;flex-direction:column;
-  gap:4px;background:rgba(20,24,16,.95);border:1px solid var(--border2);
-  border-radius:6px;padding:4px;z-index:5;box-shadow:0 4px 16px rgba(0,0,0,.6)}
-.zoom-controls button{width:32px;height:32px;border:none;border-radius:4px;
-  background:var(--panel2);color:var(--text);font-size:16px;font-weight:bold;
-  cursor:pointer;transition:all .15s}
-.zoom-controls button:hover{background:var(--accent3);color:#fff}
-.zoom-controls .zoom-val{width:40px;height:32px;display:flex;align-items:center;
-  justify-content:center;font-family:Consolas,monospace;font-size:10px;
-  color:var(--accent2);font-weight:bold;background:#000;border-radius:4px}
+/* Floating controls */
+.float-panel{
+  position:absolute;
+  background:rgba(22,27,34,.95);
+  backdrop-filter:blur(12px);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:6px;
+  box-shadow:var(--shadow-lg);
+  z-index:10;
+  display:flex;gap:4px;
+}
+.zoom-panel{bottom:20px;right:20px;flex-direction:column}
+.zoom-panel button{
+  width:34px;height:34px;
+  background:transparent;
+  color:var(--text-secondary);
+  border-radius:var(--r-sm);
+  font-size:16px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.zoom-panel button:hover{
+  background:var(--bg-hover);color:var(--text-primary);
+}
+.zoom-panel .val{
+  width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:9px;
+  color:var(--accent);font-weight:700;
+}
 
-/* ================= INSPECTOR ================= */
-.inspector{width:320px;background:var(--panel);border-left:1px solid var(--border);
-  display:flex;flex-direction:column;flex-shrink:0}
-.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
-.tab{flex:1;padding:11px 4px;text-align:center;font-family:Consolas,monospace;
-  font-size:10px;font-weight:bold;color:var(--dim);
-  cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;
-  position:relative}
-.tab:hover{color:var(--text);background:rgba(255,255,255,.03)}
-.tab.active{color:var(--accent2);border-bottom-color:var(--accent2);
-  background:rgba(136,255,96,.05)}
+.hint-panel{
+  bottom:20px;left:20px;
+  padding:10px 14px;
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--text-tertiary);line-height:1.9;
+  opacity:.6;transition:opacity .2s;
+  flex-direction:column;gap:2px;
+}
+.hint-panel:hover{opacity:1}
+.hint-panel b{color:var(--accent);font-weight:700}
+.hint-panel span{display:block}
+
+/* ============================================================
+   INSPECTOR (Right)
+   ============================================================ */
+.inspector{
+  width:var(--inspector-w);
+  background:var(--bg-panel);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  flex-shrink:0;
+}
+
+/* Tabs */
+.tabs{
+  display:flex;background:var(--bg-panel);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;padding:0 4px;
+}
+.tab{
+  flex:1;padding:12px 4px;
+  font-family:var(--font-mono);
+  font-size:10px;font-weight:600;
+  color:var(--text-secondary);
+  letter-spacing:.5px;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all .15s;
+  text-align:center;
+  position:relative;
+}
+.tab:hover{color:var(--text-primary);background:var(--bg-hover)}
+.tab.active{
+  color:var(--accent);border-bottom-color:var(--accent);
+}
 .tab-panels{flex:1;overflow-y:auto}
-.panel{padding:14px;display:none}
-.panel.active{display:block;animation:fadeIn .2s}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-.sec{margin-bottom:16px}
-.sec-title{font-family:Consolas,monospace;font-size:10px;font-weight:bold;
-  color:var(--accent2);letter-spacing:1.5px;margin-bottom:10px;
-  display:flex;align-items:center;justify-content:space-between;
-  padding-bottom:6px;border-bottom:1px solid var(--border2)}
-.sec-title .badge{background:var(--accent3);color:var(--accent2);
-  padding:2px 8px;border-radius:10px;font-size:9px;font-weight:bold}
-.sec-title .badge.weapon{background:#4a2010;color:var(--weapon)}
-.sec-title .badge.skill{background:#2a1a40;color:var(--skill)}
+.panel{padding:16px;display:none}
+.panel.active{display:block;animation:fadeIn .18s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
 
-.field{display:flex;align-items:center;gap:10px;margin:8px 0}
-.field label{flex:0 0 82px;font-size:10px;color:var(--dim);
-  font-family:Consolas,monospace;letter-spacing:.5px}
-.field input[type=number],.field input[type=text],
-.field select{flex:1;background:#000;color:var(--accent2);
-  border:1px solid var(--border2);border-radius:4px;padding:6px 10px;
-  font-size:11px;font-family:Consolas,monospace;text-align:center;
-  transition:all .15s}
-.field input:focus,.field select:focus{outline:none;
-  border-color:var(--accent);box-shadow:0 0 0 2px rgba(111,191,74,.2)}
-.field input[type=range]{flex:1;accent-color:var(--accent);height:18px}
-.field .val{flex:0 0 44px;text-align:right;color:var(--accent2);
-  font-family:Consolas,monospace;font-size:11px;font-weight:bold}
-.field .mini{flex:0 0 auto;background:var(--panel2);border:1px solid var(--border);
-  border-radius:4px;padding:5px 10px;font-size:10px;font-weight:600;cursor:pointer;
-  transition:all .12s}
-.field .mini:hover{background:var(--accent3);border-color:var(--accent)}
+/* Sections */
+.section{margin-bottom:20px}
+.section-head{
+  display:flex;align-items:center;gap:6px;
+  margin-bottom:10px;padding-bottom:8px;
+  border-bottom:1px solid var(--border-muted);
+  font-family:var(--font-mono);
+  font-size:10px;font-weight:700;
+  color:var(--text-secondary);
+  text-transform:uppercase;letter-spacing:1px;
+}
+.section-head .badge{
+  margin-left:auto;
+  padding:2px 8px;border-radius:10px;
+  background:var(--bg-elevated);
+  color:var(--text-primary);
+  font-size:9px;font-weight:600;
+  text-transform:none;letter-spacing:0;
+}
+.section-head .badge.weapon{background:var(--weapon-dim);color:var(--weapon)}
+.section-head .badge.skill{background:var(--skill-dim);color:var(--skill)}
 
-/* 🆕 Lines list với drag handle */
-.lines-list{max-height:140px;overflow-y:auto;background:#000;
-  border:1px solid var(--border2);border-radius:5px;padding:5px;margin-top:8px}
-.lines-list::-webkit-scrollbar{width:5px}
-.line-row{display:flex;align-items:center;gap:6px;padding:4px 5px;border-radius:3px;
-  font-family:Consolas,monospace;font-size:10px;transition:background .1s}
-.line-row:hover{background:var(--panel2)}
-.line-row.cur{background:rgba(136,255,96,.12);border-left:2px solid var(--accent2)}
-.line-row .idx{color:var(--dim2);width:24px;font-weight:bold}
-.line-row .handle-ic{width:12px;height:12px;color:var(--handle);font-size:10px;
-  display:flex;align-items:center;justify-content:center;cursor:grab}
-.line-row input{width:60px;background:#0a0d08;color:var(--accent2);
-  border:1px solid var(--border2);border-radius:3px;padding:3px 5px;
-  font-size:10px;font-family:Consolas,monospace;text-align:center}
-.line-row input:focus{outline:none;border-color:var(--accent)}
-.line-row .del{margin-left:auto;background:none;border:none;
-  color:var(--danger);font-size:13px;padding:2px 5px;opacity:.5;cursor:pointer;
-  border-radius:3px;transition:all .12s}
-.line-row .del:hover{opacity:1;background:rgba(232,80,58,.2)}
+/* Fields */
+.field{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:8px;
+}
+.field label{
+  flex:0 0 76px;
+  font-size:11px;color:var(--text-secondary);
+  font-weight:500;
+}
+.field input[type=number],
+.field input[type=text],
+.field select{
+  flex:1;height:30px;padding:0 10px;
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--accent);
+  transition:all .12s;
+}
+.field input:focus,
+.field select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+.field input[type=number]{text-align:center}
+.field input[type=range]{
+  flex:1;height:20px;
+  -webkit-appearance:none;
+  background:transparent;
+}
+.field input[type=range]::-webkit-slider-runnable-track{
+  height:4px;background:var(--bg-elevated);border-radius:2px;
+}
+.field input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:14px;height:14px;margin-top:-5px;
+  background:var(--accent);border-radius:50%;
+  cursor:pointer;box-shadow:0 0 8px var(--accent-glow);
+}
+.field .val{
+  flex:0 0 42px;text-align:right;
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--accent);font-weight:600;
+}
+.field .mini-btn{
+  height:26px;padding:0 10px;
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  font-size:10px;font-weight:600;
+  color:var(--text-primary);
+  transition:all .12s;
+}
+.field .mini-btn:hover{background:var(--bg-hover);border-color:var(--text-tertiary)}
+.field .mini-btn.warn{background:var(--weapon-dim);border-color:var(--weapon);color:var(--weapon)}
+.field .mini-btn.good{background:var(--accent-dim);border-color:var(--accent);color:#fff}
+.field .mini-btn.good:hover{background:var(--accent)}
+.field .mini-btn:disabled{opacity:.35;cursor:not-allowed}
 
-.anchor-grid{display:grid;grid-template-columns:repeat(3,36px);
-  grid-template-rows:repeat(3,36px);gap:4px;justify-content:center;margin:10px 0}
-.anchor-btn{background:var(--panel2);border:1px solid var(--border);
-  border-radius:5px;color:var(--dim);font-size:16px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .12s}
-.anchor-btn:hover{background:var(--accent3);color:#fff}
-.anchor-btn.on{background:var(--accent);color:#0a1a06;border-color:var(--accent2);
-  box-shadow:0 0 12px rgba(136,255,96,.4)}
+/* Lines list */
+.lines-box{
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:4px;
+  max-height:150px;overflow-y:auto;
+  margin-top:6px;
+}
+.line-row{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 6px;border-radius:var(--r-sm);
+  font-family:var(--font-mono);font-size:11px;
+  transition:background .12s;
+}
+.line-row:hover{background:var(--bg-hover)}
+.line-row.cur{
+  background:var(--bg-active);
+  box-shadow:inset 2px 0 0 var(--accent);
+}
+.line-row .handle{
+  width:12px;height:12px;
+  color:var(--handle);font-size:9px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:grab;
+}
+.line-row .idx{
+  color:var(--text-tertiary);width:26px;
+  font-size:10px;
+}
+.line-row input{
+  width:64px;height:22px;
+  background:var(--bg-base);
+  border:1px solid var(--border-muted);
+  border-radius:3px;
+  padding:0 6px;
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--accent);text-align:center;
+}
+.line-row input:focus{border-color:var(--accent)}
+.line-row input:disabled{opacity:.4}
+.line-row .del{
+  margin-left:auto;width:22px;height:22px;
+  color:var(--danger);font-size:12px;
+  border-radius:3px;opacity:.5;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.line-row .del:hover:not(:disabled){opacity:1;background:rgba(248,81,73,.15)}
+.line-row .del:disabled{opacity:.15;cursor:not-allowed}
 
-.swatch{width:36px;height:36px;border:2px solid var(--border);border-radius:6px;
-  position:relative;overflow:hidden;flex-shrink:0}
+/* Anchor grid */
+.anchor-grid{
+  display:grid;
+  grid-template-columns:repeat(3,40px);
+  grid-template-rows:repeat(3,40px);
+  gap:4px;justify-content:center;
+  margin:10px 0;
+}
+.anchor-btn{
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  color:var(--text-secondary);
+  font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.anchor-btn:hover{background:var(--bg-hover);color:var(--text-primary)}
+.anchor-btn.on{
+  background:var(--accent-dim);
+  border-color:var(--accent);
+  color:#fff;
+  box-shadow:0 0 12px var(--accent-glow);
+}
+
+/* Swatch */
+.swatch{
+  width:36px;height:36px;
+  border:2px solid var(--border);
+  border-radius:var(--r-sm);
+  position:relative;overflow:hidden;
+  flex-shrink:0;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.3);
+}
 .swatch-fill{position:absolute;inset:0}
 
-.anim-preview{width:100%;height:160px;background:#000;
-  border:1px solid var(--border2);border-radius:6px;image-rendering:pixelated;display:block}
+/* Preview canvas */
+.preview-canvas{
+  width:100%;height:180px;
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  image-rendering:pixelated;
+  display:block;
+}
 
-.help-box{background:#0a0d08;border-left:3px solid var(--accent3);
-  padding:10px 12px;border-radius:4px;font-size:10px;color:var(--dim);
-  font-family:Consolas,monospace;line-height:1.8;margin-top:10px}
-.help-box b{color:var(--accent2)}
-.help-box.weapon{border-left-color:var(--weapon)}
-.help-box.skill{border-left-color:var(--skill)}
-.help-box.warn{border-left-color:var(--warning);color:var(--warning)}
-.help-box kbd{background:var(--panel2);border:1px solid var(--border);
-  border-radius:3px;padding:1px 5px;color:var(--accent2);font-size:9px}
+/* Info box */
+.info-box{
+  background:var(--bg-input);
+  border-left:3px solid var(--accent);
+  border-radius:var(--r-sm);
+  padding:10px 12px;
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--text-secondary);
+  line-height:1.8;
+}
+.info-box b{color:var(--accent);font-weight:600}
+.info-box.weapon{border-left-color:var(--weapon)}
+.info-box.skill{border-left-color:var(--skill)}
+.info-box.warn{
+  border-left-color:var(--warning);
+  color:var(--warning);
+  background:rgba(210,153,34,.08);
+}
+.info-box kbd{
+  padding:1px 5px;
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:3px;
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--accent);
+}
 
-/* ================= STATUS BAR ================= */
-.status-bar{height:26px;background:linear-gradient(180deg,#1a2218,#0f1409);
-  border-top:1px solid var(--border);display:flex;align-items:center;
-  padding:0 16px;gap:20px;font-family:Consolas,monospace;font-size:10px;
-  color:var(--dim);flex-shrink:0}
-.status-bar .ok{color:var(--accent2);font-weight:bold}
-.status-bar .err{color:#ff9898}
-.status-bar .weapon{color:var(--weapon);font-weight:bold}
-.status-bar .skill{color:var(--skill);font-weight:bold}
-.status-bar .info{color:var(--info)}
-.status-bar .item{display:flex;gap:6px;align-items:center}
-.status-bar .item .lbl{color:var(--dim2)}
+/* ============================================================
+   STATUS BAR
+   ============================================================ */
+.status-bar{
+  height:var(--status-h);
+  background:var(--bg-panel);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 16px;gap:20px;
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--text-secondary);
+  flex-shrink:0;
+}
+.status-bar .item{display:flex;gap:5px;align-items:center}
+.status-bar .item .lbl{color:var(--text-tertiary)}
+.status-bar .val{color:var(--text-primary);font-weight:600}
+.status-bar .val.ok{color:var(--accent)}
+.status-bar .val.weapon{color:var(--weapon)}
+.status-bar .val.skill{color:var(--skill)}
+.status-bar .val.err{color:var(--danger)}
+.status-bar .msg{margin-left:auto;color:var(--text-tertiary)}
+.status-bar .msg.err{color:var(--danger)}
 
-#toast{position:fixed;bottom:48px;left:50%;transform:translateX(-50%) translateY(10px);
-  background:rgba(20,28,18,.98);border:1px solid var(--accent3);
-  border-radius:6px;padding:12px 24px;font-family:Consolas,monospace;
-  font-size:11px;color:var(--accent2);z-index:300;opacity:0;
-  transition:all .25s;pointer-events:none;max-width:90vw;text-align:center;
-  box-shadow:0 8px 32px rgba(0,0,0,.7)}
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast{
+  position:fixed;
+  bottom:60px;left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-left:3px solid var(--accent);
+  border-radius:var(--r-md);
+  padding:12px 20px;
+  font-size:12px;font-weight:500;
+  color:var(--text-primary);
+  box-shadow:var(--shadow-lg);
+  opacity:0;pointer-events:none;
+  transition:all .25s ease;
+  z-index:1000;
+  max-width:80vw;
+  text-align:center;
+}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-#toast.err{border-color:var(--danger);color:#ff9898}
-#toast.warn{border-color:var(--warning);color:var(--warning)}
+#toast.err{border-left-color:var(--danger)}
+#toast.warn{border-left-color:var(--warning)}
+#toast.ok{border-left-color:var(--accent)}
 
-/* 🆕 Modal */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;
-  display:none;align-items:center;justify-content:center;padding:20px;
-  backdrop-filter:blur(4px)}
+/* ============================================================
+   MODALS
+   ============================================================ */
+.modal-bg{
+  position:fixed;inset:0;
+  background:rgba(1,4,9,.8);
+  backdrop-filter:blur(8px);
+  z-index:500;
+  display:none;align-items:center;justify-content:center;
+  padding:24px;
+}
 .modal-bg.show{display:flex;animation:fadeIn .15s}
-.modal{background:linear-gradient(180deg,#232e20,#1a2218);
-  border:2px solid var(--accent3);border-radius:10px;
-  padding:24px 28px;max-width:560px;width:100%;
-  box-shadow:0 12px 60px rgba(0,0,0,.9)}
-.modal h3{font-family:Consolas,monospace;color:var(--accent2);font-size:14px;
-  letter-spacing:2px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.modal input[type=text]{width:100%;background:#000;color:var(--accent2);
-  border:1px solid var(--border2);border-radius:4px;padding:10px 12px;
-  font-size:12px;font-family:Consolas,monospace;margin:8px 0}
-.modal input:focus{outline:none;border-color:var(--accent);
-  box-shadow:0 0 0 2px rgba(111,191,74,.2)}
-.modal .actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
-.export-list{background:#0a0d08;border:1px solid var(--border2);
-  border-radius:5px;padding:12px;margin:12px 0;max-height:260px;overflow-y:auto;
-  font-family:Consolas,monospace;font-size:11px;line-height:1.8}
-.export-list .mdl{color:var(--accent2);font-weight:bold;margin-top:8px;
-  display:flex;align-items:center;gap:6px}
-.export-list .mdl:first-child{margin-top:0}
-.export-list .anim{color:var(--dim);padding-left:20px}
-.export-list .anim .fn{color:#88d8ff}
+.modal{
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:24px 28px;
+  max-width:560px;width:100%;
+  box-shadow:var(--shadow-lg);
+  max-height:90vh;overflow-y:auto;
+}
+.modal h3{
+  font-family:var(--font-mono);
+  font-size:14px;font-weight:700;
+  color:var(--text-primary);
+  margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+  letter-spacing:.5px;
+}
+.modal p{
+  font-size:12px;color:var(--text-secondary);
+  line-height:1.8;margin-bottom:14px;
+}
+.modal input[type=text]{
+  width:100%;height:38px;
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:0 14px;
+  font-family:var(--font-mono);font-size:12px;
+  color:var(--text-primary);
+  margin-bottom:14px;
+  transition:all .12s;
+}
+.modal input[type=text]:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+.modal .actions{
+  display:flex;gap:8px;justify-content:flex-end;
+  margin-top:20px;padding-top:16px;
+  border-top:1px solid var(--border-muted);
+}
 
-/* 🆕 Keyboard hint overlay */
-.kbd-hint{position:absolute;bottom:16px;left:16px;
-  background:rgba(20,24,16,.95);border:1px solid var(--border2);
-  border-radius:6px;padding:8px 12px;font-family:Consolas,monospace;
-  font-size:10px;color:var(--dim);line-height:1.7;z-index:5;
-  box-shadow:0 4px 16px rgba(0,0,0,.6);opacity:.7;
-  transition:opacity .2s}
-.kbd-hint:hover{opacity:1}
-.kbd-hint b{color:var(--accent2);font-weight:bold}
+/* Load tabs */
+.load-tabs{
+  display:flex;gap:4px;margin-bottom:18px;
+  padding:4px;background:var(--bg-elevated);
+  border-radius:var(--r-md);
+}
+.load-tab{
+  flex:1;height:34px;
+  background:transparent;border:none;
+  border-radius:var(--r-sm);
+  font-family:var(--font-mono);
+  font-size:11px;font-weight:600;
+  color:var(--text-secondary);
+  transition:all .15s;
+  letter-spacing:.3px;
+}
+.load-tab:hover{color:var(--text-primary);background:var(--bg-hover)}
+.load-tab.active{
+  background:var(--bg-panel);
+  color:var(--accent);
+  box-shadow:var(--shadow-sm);
+}
 
-::-webkit-scrollbar{width:8px;height:8px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
-::-webkit-scrollbar-thumb:hover{background:var(--accent3)}
+/* Drop zone */
+.drop-zone{
+  border:2px dashed var(--border);
+  border-radius:var(--r-lg);
+  padding:40px 24px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+  background:var(--bg-input);
+}
+.drop-zone:hover{
+  border-color:var(--accent);
+  background:rgba(63,185,80,.04);
+}
+.drop-zone.dragover{
+  border-color:var(--accent);
+  background:rgba(63,185,80,.1);
+  transform:scale(1.01);
+}
+.drop-zone .icon{font-size:44px;opacity:.4;margin-bottom:12px}
+.drop-zone .title{
+  font-family:var(--font-mono);font-size:12px;
+  color:var(--accent);font-weight:600;
+  margin-bottom:6px;
+}
+.drop-zone .subtitle{
+  font-size:10px;color:var(--text-tertiary);
+}
 
-input[type=file]{display:none}
+/* File info */
+.file-info{
+  margin-top:14px;padding:12px;
+  background:var(--bg-input);
+  border-left:3px solid var(--accent);
+  border-radius:var(--r-sm);
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--text-secondary);line-height:1.8;
+}
+.file-info b{color:var(--accent)}
+
+/* Export list */
+.export-list{
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:12px;
+  max-height:280px;overflow-y:auto;
+  font-family:var(--font-mono);font-size:11px;
+  line-height:1.8;
+}
+.export-list .model-group{
+  color:var(--accent);font-weight:700;
+  margin-top:10px;padding-bottom:4px;
+  border-bottom:1px solid var(--border-muted);
+}
+.export-list .model-group:first-child{margin-top:0}
+.export-list .anim-item{
+  padding-left:16px;color:var(--text-secondary);
+  display:flex;gap:8px;align-items:center;
+  margin:2px 0;
+}
+.export-list .anim-item .fn{
+  color:var(--info);margin-left:auto;
+  font-size:10px;
+}
+
+/* ============================================================
+   LOADING SPINNER
+   ============================================================ */
+.spinner{
+  display:inline-block;
+  width:14px;height:14px;
+  border:2px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:1200px){
+  :root{--inspector-w:300px;--lib-w:220px}
+}
+@media (max-width:900px){
+  .library{display:none}
+  :root{--inspector-w:280px}
+}
 </style>
 </head>
 <body>
 <div class="app">
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
 <header class="header">
-  <div class="brand">🐉 DH STUDIO<span class="ver">v4.0</span></div>
-  <div class="header-tools">
-    <button class="btn icon" id="undoBtn" title="Undo (Ctrl+Z)" disabled>↶</button>
-    <button class="btn icon" id="redoBtn" title="Redo (Ctrl+Y)" disabled>↷</button>
-    <div style="width:1px;height:24px;background:var(--border2)"></div>
-    <div class="upload-group">
-      <select id="uploadModelPreset" title="Chọn model trước khi upload">
-        <option value="auto">🤖 Auto</option>
-        <option value="player">🎮 Player</option>
-        <option value="weapon">⚔️ Weapon</option>
-        <option value="skill">✨ Skill</option>
-        <option value="effect">💥 Effect</option>
-        <option value="enemy">👹 Enemy</option>
-        <option value="npc">🧑 NPC</option>
-        <option value="boss">🐉 Boss</option>
-        <option value="item">💎 Item</option>
-      </select>
-      <button class="btn" id="uploadBtn">📁 Upload</button>
+  <div class="brand">
+    <div class="brand-icon">🐉</div>
+    <div>
+      <div class="brand-name">DH STUDIO</div>
+      <div style="font-size:9px;color:var(--text-tertiary);font-family:var(--font-mono)">
+        Sprite Editor v5.0
+      </div>
     </div>
-    <button class="btn" id="loadProjectBtn" title="Load sprites.json">📂 Load</button>
-    <button class="btn primary" id="exportAllBtn">📦 Export All</button>
-    <button class="btn" id="exportBtn" disabled>💾 Save</button>
-    <button class="btn icon" id="helpBtn" title="Hướng dẫn (?)">❓</button>
+  </div>
+
+  <div class="header-tools">
+    <button class="btn icon" id="undoBtn" title="Undo (Ctrl+Z)" disabled>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+    </button>
+    <button class="btn icon" id="redoBtn" title="Redo (Ctrl+Y)" disabled>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/></svg>
+    </button>
+
+    <div class="divider" style="width:1px;height:24px;background:var(--border);margin:0 6px"></div>
+
+    <select class="model-preset" id="uploadModelPreset" title="Model preset khi upload">
+      <option value="auto">🤖 Auto</option>
+      <option value="player">🎮 Player</option>
+      <option value="weapon">⚔️ Weapon</option>
+      <option value="skill">✨ Skill</option>
+      <option value="effect">💥 Effect</option>
+      <option value="enemy">👹 Enemy</option>
+      <option value="npc">🧑 NPC</option>
+      <option value="boss">🐉 Boss</option>
+      <option value="item">💎 Item</option>
+    </select>
+    <button class="btn" id="uploadBtn" style="border-radius:0 var(--r-md) var(--r-md) 0;border-left:none">
+      📁 Upload
+    </button>
+
+    <button class="btn" id="loadProjectBtn" title="Load project từ file hoặc URL">
+      📂 Load
+    </button>
+  </div>
+
+  <div class="header-right">
+    <button class="btn primary" id="exportAllBtn">
+      📦 Export All
+    </button>
+    <button class="btn" id="exportBtn" disabled>
+      💾 Save
+    </button>
+    <button class="btn icon ghost" id="helpBtn" title="Trợ giúp (?)">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM1.5 8a6.5 6.5 0 1 1 13 0 6.5 6.5 0 0 1-13 0z"/><path d="M5.5 5.5a2.5 2.5 0 1 1 3.86 2.14c-.67.42-.86.63-.86 1.11v.5a.75.75 0 0 1-1.5 0v-.5c0-1.08.53-1.66 1.24-2.1a1 1 0 1 0-1.24-1.6.75.75 0 0 1-1.5-.05zM8 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+    </button>
   </div>
 </header>
 
+<!-- ============================================================
+     MAIN
+     ============================================================ -->
 <main class="main">
+
+  <!-- Library -->
   <aside class="library">
-    <div class="panel-h">📚 LIBRARY<span class="cnt" id="libCount">0</span></div>
+    <div class="panel-h">
+      <span class="icon">📚</span>
+      <span>Library</span>
+      <span class="count" id="libCount">0</span>
+    </div>
     <div class="library-body" id="libraryBody">
       <div class="lib-empty">
-        Chưa có sprite.<br><br>
-        <kbd>📂 Load</kbd> sprites.json<br>
-        hoặc <kbd>📁 Upload</kbd> PNG
+        <div style="font-size:36px;opacity:.3;margin-bottom:12px">📁</div>
+        Chưa có sprite<br><br>
+        <kbd>📂 Load</kbd> hoặc <kbd>📁 Upload</kbd>
       </div>
     </div>
   </aside>
 
+  <!-- Stage -->
   <section class="stage">
     <div class="stage-bar">
-      <button class="btn on" id="toolSelect" title="Chọn / kéo line">🖱 Select</button>
-      <button class="btn" id="toolAddV" title="Thêm line dọc">┃ +V</button>
-      <button class="btn" id="toolAddH" title="Thêm line ngang">━ +H</button>
-      <button class="btn" id="toolPick" title="Pick màu">💧 Pick</button>
-      <button class="btn" id="toolPan" title="Kéo canvas">✋ Pan</button>
-      <div class="sep"></div>
-      <button class="btn" id="autoDetect" title="Tự tách frame">🤖 Auto</button>
-      <button class="btn" id="computeAnchors" title="Tính anchor">🎯 Anchors</button>
-      <button class="btn" id="mirrorBtn" title="Lật ngang ảnh">↔️ Mirror</button>
-      <div class="sep"></div>
-      <label style="display:flex;align-items:center;gap:6px;font-size:10px;
-        color:var(--dim);cursor:pointer;padding:0 6px">
-        <input type="checkbox" id="snapChk" checked style="accent-color:var(--accent)">Snap
+      <button class="tool-btn active" id="toolSelect" title="Select / Kéo line">
+        <span class="icon">🖱</span> Select
+      </button>
+      <button class="tool-btn" id="toolAddV" title="Thêm line dọc">
+        <span class="icon">┃</span> +V
+      </button>
+      <button class="tool-btn" id="toolAddH" title="Thêm line ngang">
+        <span class="icon">━</span> +H
+      </button>
+      <button class="tool-btn" id="toolPick" title="Pick màu">
+        <span class="icon">💧</span> Pick
+      </button>
+      <button class="tool-btn" id="toolPan" title="Pan canvas">
+        <span class="icon">✋</span> Pan
+      </button>
+
+      <div class="divider"></div>
+
+      <button class="tool-btn" id="autoDetect" title="Auto detect frames">
+        <span class="icon">🤖</span> Auto
+      </button>
+      <button class="tool-btn" id="computeAnchors" title="Recompute anchors">
+        <span class="icon">🎯</span> Anchors
+      </button>
+      <button class="tool-btn" id="mirrorBtn" title="Lật ngang">
+        <span class="icon">↔</span> Mirror
+      </button>
+
+      <div class="divider"></div>
+
+      <label class="toggle-pill">
+        <input type="checkbox" id="snapChk" checked>
+        <span class="box"></span>
+        Snap
       </label>
-      <label style="display:flex;align-items:center;gap:6px;font-size:10px;
-        color:var(--dim);cursor:pointer;padding:0 6px">
-        <input type="checkbox" id="gridChk" style="accent-color:var(--accent)">Grid
+      <label class="toggle-pill">
+        <input type="checkbox" id="gridChk">
+        <span class="box"></span>
+        Grid
       </label>
-      <span class="zoom" id="zoomLabel">100%</span>
+
+      <span class="zoom-display" id="zoomLabel">100%</span>
     </div>
+
     <div class="stage-canvas" id="stageCanvas">
       <div class="empty-state" id="emptyState">
-        <div class="ic">📁</div>
-        <div class="title">SPRITE STUDIO v4</div>
+        <div class="icon">🎨</div>
+        <div class="title">SPRITE EDITOR</div>
         <div class="hint">
-          <b>📂 Load</b> để load sprites.json cũ<br>
-          hoặc <b>📁 Upload</b> để bắt đầu.<br><br>
+          <b>📂 Load</b> để load sprites.json có sẵn<br>
+          hoặc <b>📁 Upload</b> PNG để bắt đầu<br><br>
           <kbd>Click</kbd> chọn line · <kbd>Kéo</kbd> di chuyển · <kbd>Right-click</kbd> xóa
         </div>
       </div>
@@ -392,59 +1072,69 @@ input[type=file]{display:none}
         <canvas id="overlayCanvas"></canvas>
       </div>
 
-      <div class="zoom-controls">
-        <button id="zoomInBtn" title="Phóng to">+</button>
-        <div class="zoom-val" id="zoomVal">100%</div>
-        <button id="zoomOutBtn" title="Thu nhỏ">−</button>
-        <button id="zoomFitBtn" title="Fit" style="font-size:11px">⛶</button>
+      <div class="float-panel zoom-panel">
+        <button id="zoomInBtn" title="Zoom in (Ctrl+=)">+</button>
+        <div class="val" id="zoomVal">100%</div>
+        <button id="zoomOutBtn" title="Zoom out (Ctrl+-)">−</button>
+        <button id="zoomFitBtn" title="Fit to view (Ctrl+0)" style="font-size:11px">⛶</button>
       </div>
 
-      <div class="kbd-hint" id="kbdHint">
-        <b>Space</b> pan · <b>Ctrl+Z</b> undo · <b>Ctrl+0</b> reset zoom · <b>Alt+Click</b> pick
+      <div class="float-panel hint-panel">
+        <span><b>Space</b> + drag · pan</span>
+        <span><b>Ctrl+Z</b> · undo</span>
+        <span><b>Alt+Click</b> · pick màu</span>
       </div>
     </div>
   </section>
 
+  <!-- Inspector -->
   <aside class="inspector">
     <div class="tabs">
       <div class="tab active" data-tab="frame">FRAME</div>
       <div class="tab" data-tab="anchor">ANCHOR</div>
-      <div class="tab" data-tab="bg">NỀN</div>
+      <div class="tab" data-tab="bg">BG</div>
       <div class="tab" data-tab="meta">META</div>
       <div class="tab" data-tab="preview">PREVIEW</div>
     </div>
     <div class="tab-panels">
 
+      <!-- FRAME -->
       <div class="panel active" data-panel="frame">
-        <div class="sec">
-          <div class="sec-title"><span>📏 LƯỚI FRAME</span>
-            <span class="badge" id="gridBadge">0×0</span></div>
-          <div class="field">
-            <label>Cột ngang</label>
-            <button class="mini" id="autoVBtn">Auto</button>
-            <button class="mini" id="addVBtn">+1</button>
-            <button class="mini" id="clearVBtn">Xóa</button>
+        <div class="section">
+          <div class="section-head">
+            <span>📏 Frame Grid</span>
+            <span class="badge" id="gridBadge">0×0</span>
           </div>
-          <div class="lines-list" id="vList"></div>
-        </div>
-        <div class="sec">
           <div class="field">
-            <label>Hàng dọc</label>
-            <button class="mini" id="autoHBtn">Auto</button>
-            <button class="mini" id="addHBtn">+1</button>
-            <button class="mini" id="clearHBtn">Xóa</button>
+            <label>Vertical</label>
+            <button class="mini-btn" id="autoVBtn">Auto N</button>
+            <button class="mini-btn" id="addVBtn">+1</button>
+            <button class="mini-btn" id="clearVBtn">Reset</button>
           </div>
-          <div class="lines-list" id="hList"></div>
+          <div class="lines-box" id="vList"></div>
         </div>
-        <div class="sec">
-          <div class="sec-title">📐 KÍCH THƯỚC</div>
+
+        <div class="section">
           <div class="field">
-            <label>Rộng</label>
+            <label>Horizontal</label>
+            <button class="mini-btn" id="autoHBtn">Auto N</button>
+            <button class="mini-btn" id="addHBtn">+1</button>
+            <button class="mini-btn" id="clearHBtn">Reset</button>
+          </div>
+          <div class="lines-box" id="hList"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <span>📐 Canvas Size</span>
+          </div>
+          <div class="field">
+            <label>Width</label>
             <input type="number" id="canvasW" min="1" max="4096">
-            <label style="flex:0 0 auto">Cao</label>
+            <label style="flex:0 0 auto;color:var(--text-secondary)">Height</label>
             <input type="number" id="canvasH" min="1" max="4096">
           </div>
-          <div class="anchor-grid" id="resizeAnchorGrid">
+          <div class="anchor-grid" id="resizeAnchorGrid" style="grid-template-columns:repeat(3,36px);grid-template-rows:repeat(3,36px)">
             <button class="anchor-btn" data-a="tl">↖</button>
             <button class="anchor-btn" data-a="tc">↑</button>
             <button class="anchor-btn" data-a="tr">↗</button>
@@ -455,65 +1145,79 @@ input[type=file]{display:none}
             <button class="anchor-btn" data-a="bc">↓</button>
             <button class="anchor-btn" data-a="br">↘</button>
           </div>
-          <div class="field"><label></label>
-            <button class="mini" id="resizeBtn" style="flex:1;padding:7px">Áp dụng</button></div>
-          <div class="field"><label></label>
-            <button class="mini" id="cropBtn" style="flex:1;padding:7px">✂ Cắt sát</button></div>
+          <div class="field">
+            <label></label>
+            <button class="mini-btn good" id="resizeBtn" style="flex:1;height:30px">Apply Resize</button>
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini-btn" id="cropBtn" style="flex:1;height:30px">✂ Crop to Content</button>
+          </div>
         </div>
       </div>
 
+      <!-- ANCHOR -->
       <div class="panel" data-panel="anchor">
-        <div class="sec">
-          <div class="sec-title"><span>🎯 ANCHOR</span>
-            <span class="badge" id="anchorBadge">0/0</span></div>
+        <div class="section">
+          <div class="section-head">
+            <span>🎯 Anchor</span>
+            <span class="badge" id="anchorBadge">0/0</span>
+          </div>
           <div class="field">
             <label>Mode</label>
             <select id="anchorMode">
-              <option value="stable-x">Ổn định X + chân Y ✓</option>
-              <option value="stable">Ổn định cả X và Y</option>
-              <option value="per-frame">Riêng từng frame</option>
-              <option value="bottom-center">Đáy-giữa</option>
-              <option value="center">Tâm</option>
-              <option value="manual">Chỉnh tay</option>
+              <option value="stable-x">Stable X + Foot Y ✓</option>
+              <option value="stable">Stable Both</option>
+              <option value="per-frame">Per Frame</option>
+              <option value="bottom-center">Bottom Center</option>
+              <option value="center">Center</option>
+              <option value="manual">Manual</option>
             </select>
           </div>
-          <div class="field"><label></label>
-            <button class="mini" id="anchorRecompute" style="flex:1;padding:7px">🔄 Tính lại</button>
-            <button class="mini" id="anchorClear">🗑</button></div>
+          <div class="field">
+            <label></label>
+            <button class="mini-btn" id="anchorRecompute" style="flex:1;height:30px">🔄 Recompute</button>
+            <button class="mini-btn" id="anchorClear">🗑</button>
+          </div>
 
           <div class="field">
             <label>Padding</label>
-            <input type="number" id="padXInput" value="12" min="0" max="64"
-              style="flex:0 0 50px;width:50px">
-            <label style="flex:0 0 auto">Gap</label>
-            <input type="number" id="gapXInput" value="6" min="0" max="64"
-              style="flex:0 0 50px;width:50px">
+            <input type="number" id="padXInput" value="12" min="0" max="64">
+            <label style="flex:0 0 auto;color:var(--text-secondary)">Gap</label>
+            <input type="number" id="gapXInput" value="6" min="0" max="64">
           </div>
-          <div class="field"><label></label>
-            <button class="mini" id="alignFramesBtn" style="flex:1;padding:10px;
-              background:linear-gradient(180deg,#88d858,#4a8a30);color:#0a1a06;
-              font-weight:bold;font-size:11px">
-              🎯 MỞ RỘNG + CĂN CHỈNH
+          <div class="field">
+            <label></label>
+            <button class="mini-btn good" id="alignFramesBtn" style="flex:1;height:34px;font-size:11px">
+              🎯 Expand & Align Frames
             </button>
           </div>
-          <div class="help-box">
-            <b>Anchor mode:</b> ổn định X + chân Y = không trôi.<br>
-            <b>🎯 Mở rộng:</b> thêm padding + gap, cắt bbox, đặt anchor cố định.
+          <div class="info-box">
+            <b>Stable X + Foot Y:</b> không trôi ngang<br>
+            <b>Expand & Align:</b> thêm padding, cắt bbox, đặt anchor cố định cho mọi frame
           </div>
         </div>
-        <div class="sec">
-          <div class="sec-title">📋 ANCHOR LIST</div>
-          <div class="lines-list" id="anchorList" style="max-height:220px"></div>
+
+        <div class="section">
+          <div class="section-head">
+            <span>📋 Anchor List</span>
+          </div>
+          <div class="lines-box" id="anchorList" style="max-height:240px"></div>
         </div>
       </div>
 
+      <!-- BG -->
       <div class="panel" data-panel="bg">
-        <div class="sec">
-          <div class="sec-title">🎨 XÓA NỀN</div>
+        <div class="section">
+          <div class="section-head">
+            <span>🎨 Background Removal</span>
+          </div>
           <div class="field">
-            <label>Màu nền</label>
-            <div class="swatch" id="bgSwatch"><div class="swatch-fill" id="bgFill"></div></div>
-            <button class="mini" id="pickBtn">💧</button>
+            <label>BG Color</label>
+            <div class="swatch" id="bgSwatch">
+              <div class="swatch-fill" id="bgFill"></div>
+            </div>
+            <button class="mini-btn" id="pickBtn">💧 Pick</button>
           </div>
           <div class="field">
             <label>Tolerance</label>
@@ -521,30 +1225,35 @@ input[type=file]{display:none}
             <span class="val" id="bgTolVal">30</span>
           </div>
           <div class="field">
-            <label>Chế độ</label>
+            <label>Mode</label>
             <select id="bgMode">
-              <option value="alpha">Trong suốt</option>
-              <option value="color">Đổi màu</option>
-              <option value="white">Trắng</option>
-              <option value="black">Đen</option>
+              <option value="alpha">Transparent</option>
+              <option value="color">Recolor</option>
+              <option value="white">White</option>
+              <option value="black">Black</option>
             </select>
           </div>
           <div class="field" id="bgColorRow" style="display:none">
-            <label>Màu mới</label>
+            <label>New Color</label>
             <input type="color" id="bgNewColor" value="#ffffff"
-              style="width:52px;height:32px;background:#000;border:1px solid var(--border2);
-              border-radius:4px;cursor:pointer">
+              style="width:50px;height:32px;background:var(--bg-input);
+              border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer">
           </div>
-          <div class="field"><label></label>
-            <button class="mini" id="bgApplyAll" style="flex:1;padding:7px">🌐 Toàn ảnh</button>
-            <button class="mini" id="bgApplyCell" style="flex:1;padding:7px" disabled>▣ Cell</button></div>
+          <div class="field">
+            <label></label>
+            <button class="mini-btn good" id="bgApplyAll" style="flex:1;height:30px">🌐 Apply to All</button>
+            <button class="mini-btn" id="bgApplyCell" style="flex:1;height:30px" disabled>▣ Apply to Cell</button>
+          </div>
         </div>
       </div>
 
+      <!-- META -->
       <div class="panel" data-panel="meta">
-        <div class="sec">
-          <div class="sec-title"><span>📝 METADATA</span>
-            <span class="badge" id="modelBadge">—</span></div>
+        <div class="section">
+          <div class="section-head">
+            <span>📝 Metadata</span>
+            <span class="badge" id="modelBadge">—</span>
+          </div>
           <div class="field">
             <label>Model</label>
             <select id="metaModel">
@@ -560,8 +1269,8 @@ input[type=file]{display:none}
             </select>
           </div>
           <div class="field" id="customModelRow" style="display:none">
-            <label>Tên model</label>
-            <input type="text" id="metaModelCustom" placeholder="tên_model">
+            <label>Custom</label>
+            <input type="text" id="metaModelCustom" placeholder="model_name">
           </div>
           <div class="field">
             <label>Animation</label>
@@ -581,41 +1290,48 @@ input[type=file]{display:none}
             </select>
           </div>
           <div class="field" id="customAnimRow" style="display:none">
-            <label>Tên riêng</label>
-            <input type="text" id="metaAnimCustom" placeholder="skill_1">
+            <label>Custom</label>
+            <input type="text" id="metaAnimCustom" placeholder="anim_name">
           </div>
-          <div class="field"><label>FPS</label>
+          <div class="field">
+            <label>FPS</label>
             <input type="number" id="metaFps" value="10" min="1" max="60">
-            <button class="mini" id="autoFpsBtn" title="Auto FPS">⚡</button>
+            <button class="mini-btn" id="autoFpsBtn" title="Auto FPS">⚡</button>
           </div>
-          <div class="field"><label>Loop</label>
+          <div class="field">
+            <label>Loop</label>
             <select id="metaLoop">
-              <option value="1">Có</option>
-              <option value="0">Không</option>
+              <option value="1">Yes</option>
+              <option value="0">No</option>
             </select>
           </div>
-          <div class="field"><label>File name</label>
-            <input type="text" id="metaFile" placeholder="player_idle"></div>
-          <div class="field"><label></label>
-            <button class="mini" id="renameFileBtn" style="flex:1;padding:7px;
-              background:linear-gradient(180deg,#e8c060,#a08030);color:#1a0a00">
-              ✏️ Đổi tên theo model
+          <div class="field">
+            <label>File Name</label>
+            <input type="text" id="metaFile" placeholder="player_idle">
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini-btn warn" id="renameFileBtn" style="flex:1;height:30px">
+              ✏️ Rename with Model Prefix
             </button>
           </div>
-          <div class="help-box" id="metaHint">
-            <b>Auto-detect:</b> filename chứa <b>weapon</b>/<b>skill</b> tự chọn model.
+          <div class="info-box" id="metaHint">
+            <b>Auto-detect:</b> filename chứa <kbd>weapon</kbd>/<kbd>skill</kbd> sẽ tự chọn model.
           </div>
         </div>
       </div>
 
+      <!-- PREVIEW -->
       <div class="panel" data-panel="preview">
-        <div class="sec">
-          <div class="sec-title">▶ PREVIEW</div>
-          <canvas id="previewCanvas" class="anim-preview" width="280" height="160"></canvas>
-          <div class="field" style="margin-top:10px">
+        <div class="section">
+          <div class="section-head">
+            <span>▶ Animation Preview</span>
+          </div>
+          <canvas id="previewCanvas" class="preview-canvas" width="280" height="180"></canvas>
+          <div class="field" style="margin-top:12px">
             <label></label>
-            <button class="mini" id="previewPlayBtn" style="flex:1;padding:7px">▶ Play</button>
-            <button class="mini" id="previewStopBtn">⏸</button>
+            <button class="mini-btn good" id="previewPlayBtn" style="flex:1;height:30px">▶ Play</button>
+            <button class="mini-btn" id="previewStopBtn">⏸</button>
           </div>
           <div class="field">
             <label>Frame</label>
@@ -623,9 +1339,12 @@ input[type=file]{display:none}
             <span class="val" id="previewFrameVal">0</span>
           </div>
         </div>
-        <div class="sec">
-          <div class="sec-title">📊 INFO</div>
-          <div class="help-box" id="previewInfo">Chọn sprite để xem.</div>
+
+        <div class="section">
+          <div class="section-head">
+            <span>📊 Info</span>
+          </div>
+          <div class="info-box" id="previewInfo">Chọn sprite để xem info.</div>
         </div>
       </div>
 
@@ -633,16 +1352,35 @@ input[type=file]{display:none}
   </aside>
 </main>
 
+<!-- ============================================================
+     STATUS BAR
+     ============================================================ -->
 <footer class="status-bar">
-  <div class="item"><span class="lbl">Sprites:</span><span id="statSprites" class="ok">0</span></div>
-  <div class="item" id="projItem" style="display:none">
-    <span class="lbl">📂 JSON:</span><span id="statProj" class="info">0</span>
+  <div class="item">
+    <span class="lbl">Sprites</span>
+    <span class="val ok" id="statSprites">0</span>
   </div>
-  <div class="item"><span class="lbl">Current:</span><span id="statCurrent">—</span></div>
-  <div class="item"><span class="lbl">Size:</span><span id="statSize">—</span></div>
-  <div class="item"><span class="lbl">Lines:</span><span id="statLines">0</span></div>
-  <div class="item"><span class="lbl">Zoom:</span><span id="statZoom">100%</span></div>
-  <div class="item" style="margin-left:auto"><span id="statMsg">Sẵn sàng.</span></div>
+  <div class="item" id="projItem" style="display:none">
+    <span class="lbl">📂 JSON</span>
+    <span class="val" id="statProj" style="color:var(--info)">0</span>
+  </div>
+  <div class="item">
+    <span class="lbl">Current</span>
+    <span class="val" id="statCurrent">—</span>
+  </div>
+  <div class="item">
+    <span class="lbl">Size</span>
+    <span class="val" id="statSize">—</span>
+  </div>
+  <div class="item">
+    <span class="lbl">Lines</span>
+    <span class="val" id="statLines">0</span>
+  </div>
+  <div class="item">
+    <span class="lbl">Zoom</span>
+    <span class="val" id="statZoom">100%</span>
+  </div>
+  <div class="msg" id="statMsg">Ready</div>
 </footer>
 </div>
 
@@ -650,35 +1388,59 @@ input[type=file]{display:none}
 <input type="file" id="jsonInput" accept=".json,application/json">
 <div id="toast"></div>
 
-<!-- Load project modal -->
+<!-- ============================================================
+     MODAL: LOAD PROJECT
+     ============================================================ -->
 <div id="loadModal" class="modal-bg">
   <div class="modal">
-    <h3>📂 LOAD PROJECT</h3>
-    <div style="font-size:11px;color:var(--dim);font-family:Consolas,monospace;line-height:1.7;margin-bottom:8px">
-      Nhập URL tới file <b style="color:var(--info)">sprites.json</b> có sẵn.
-      Editor sẽ giữ nguyên toàn bộ model cũ và chỉ merge thêm sprite mới khi export.
+    <h3>📂 Load Project</h3>
+
+    <div class="load-tabs">
+      <button class="load-tab active" data-load-tab="file">📁 Upload File</button>
+      <button class="load-tab" data-load-tab="url">🌐 From URL</button>
     </div>
-    <input type="text" id="loadUrlInput" placeholder="./sprites.json" value="./sprites.json">
-    <div class="actions">
-      <button class="btn" id="loadCancelBtn">✕ Hủy</button>
-      <button class="btn primary" id="loadConfirmBtn">📂 Load</button>
+
+    <!-- Tab File -->
+    <div id="loadTabFile">
+      <p>Chọn file <b style="color:var(--accent)">sprites.json</b> từ máy. Editor sẽ merge vào data hiện tại — <b>KHÔNG mất model cũ</b>.</p>
+      <div class="drop-zone" id="loadFileDrop">
+        <div class="icon">📄</div>
+        <div class="title">Click hoặc kéo file sprites.json vào đây</div>
+        <div class="subtitle">.json · dh-studio-project</div>
+        <input type="file" id="loadFileInput" accept=".json,application/json" style="display:none">
+      </div>
+      <div class="file-info" id="loadFileInfo" style="display:none"></div>
+      <div class="actions">
+        <button class="btn ghost" id="loadFileCancelBtn">✕ Hủy</button>
+        <button class="btn primary" id="loadFileConfirmBtn" disabled>📂 Merge File</button>
+      </div>
+    </div>
+
+    <!-- Tab URL -->
+    <div id="loadTabUrl" style="display:none">
+      <p>Nhập URL tới file <b style="color:var(--accent)">sprites.json</b>. Editor sẽ fetch và merge vào data hiện tại.</p>
+      <input type="text" id="loadUrlInput" placeholder="./sprites.json" value="./sprites.json">
+      <div class="actions">
+        <button class="btn ghost" id="loadCancelBtn">✕ Hủy</button>
+        <button class="btn primary" id="loadConfirmBtn">📂 Load URL</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Export modal -->
+<!-- ============================================================
+     MODAL: EXPORT PREVIEW
+     ============================================================ -->
 <div id="exportModal" class="modal-bg">
   <div class="modal">
-    <h3>📦 EXPORT PREVIEW</h3>
-    <div style="font-size:11px;color:var(--dim);font-family:Consolas,monospace;line-height:1.7;margin-bottom:8px">
-      Bạn sẽ export <b id="exportCount">0</b> sprite. Kiểm tra kỹ trước khi tải:
-    </div>
+    <h3>📦 Export Preview</h3>
+    <p>Bạn sẽ export <b id="exportCount" style="color:var(--accent)">0</b> sprites. Kiểm tra kỹ trước khi tải:</p>
     <div class="export-list" id="exportList"></div>
-    <div class="help-box warn" id="exportWarn" style="display:none"></div>
+    <div class="info-box warn" id="exportWarn" style="display:none;margin-top:14px"></div>
     <div class="actions">
-      <button class="btn" id="exportCancelBtn">✕ Hủy</button>
-      <button class="btn" style="background:linear-gradient(180deg,#e8c060,#a08030);color:#1a0a00"
-        id="exportConfirmBtn">📦 Tải xuống</button>
+      <button class="btn ghost" id="exportCancelBtn">✕ Hủy</button>
+      <button class="btn" style="background:var(--warning);border-color:var(--warning);color:#000"
+        id="exportConfirmBtn">📦 Download All</button>
     </div>
   </div>
 </div>
@@ -686,6 +1448,9 @@ input[type=file]{display:none}
 <script>
 "use strict";
 
+/* ============================================================
+   STATE
+   ============================================================ */
 const state = {
   sprites: new Map(),
   currentId: null,
@@ -706,14 +1471,12 @@ const state = {
   previewRAF: null,
   loadedProjectModels: new Set(),
   projectJson: null,
-  /* 🆕 Undo/Redo */
   history: [],
   historyIdx: -1,
   maxHistory: 40,
-  /* 🆕 Pan */
-  pan: { x: 0, y: 0, active: false, startX: 0, startY: 0 },
-  /* 🆕 Hover line */
-  hoverLine: null
+  pan: { active: false, startX: 0, startY: 0, scrollL: 0, scrollT: 0, mouseActive: false },
+  hoverLine: null,
+  _pendingLoadFile: null
 };
 
 const $ = id => document.getElementById(id);
@@ -726,21 +1489,24 @@ const stageCanvas = $('stageCanvas');
 const emptyState = $('emptyState');
 const currentSprite = () => state.currentId ? state.sprites.get(state.currentId) : null;
 
-function toast(msg, isErr, isWarn){
+/* ============================================================
+   UI HELPERS
+   ============================================================ */
+function toast(msg, type){
   const el = $('toast');
   el.textContent = msg;
-  el.className = 'show' + (isErr ? ' err' : (isWarn ? ' warn' : ''));
+  el.className = 'show ' + (type || 'ok');
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2800);
+  el._t = setTimeout(() => el.classList.remove('show'), 2600);
 }
 function setStatus(msg, isErr){
   const el = $('statMsg');
   el.textContent = msg;
-  el.className = isErr ? 'err' : '';
+  el.className = 'msg' + (isErr ? ' err' : '');
 }
 
 /* ============================================================
-   🆕 UNDO / REDO
+   UNDO / REDO
    ============================================================ */
 function pushHistory(label){
   const s = currentSprite();
@@ -751,10 +1517,8 @@ function pushHistory(label){
     hLines: [...s.hLines],
     anchors: JSON.parse(JSON.stringify(s.anchors)),
     stableAnchor: s.stableAnchor ? { ...s.stableAnchor } : null,
-    label: label || 'action',
-    ts: Date.now()
+    label: label || 'action'
   };
-  /* Cắt future nếu có */
   state.history = state.history.slice(0, state.historyIdx + 1);
   state.history.push(snap);
   if (state.history.length > state.maxHistory) state.history.shift();
@@ -782,7 +1546,7 @@ function applyHistorySnap(){
   s.stableAnchor = snap.stableAnchor ? { ...snap.stableAnchor } : null;
   if (state.currentId !== snap.spriteId) selectSprite(snap.spriteId, true);
   else renderAll();
-  toast('↶ ' + snap.label, false, false);
+  toast('↶ ' + snap.label, 'ok');
 }
 function updateHistoryButtons(){
   $('undoBtn').disabled = state.historyIdx <= 0;
@@ -853,7 +1617,7 @@ function writeMetaRow(canvas, y, bytes){
 }
 
 /* ============================================================
-   DETECT
+   AUTO DETECT
    ============================================================ */
 function autoDetectFrameLines(canvas, expectedFrames){
   const W = canvas.width, H = canvas.height;
@@ -971,7 +1735,6 @@ function getFpsForAnim(anim, model){
   }
   return 10;
 }
-
 function detectModelFromFilename(fn){
   const lower = fn.toLowerCase();
   const priority = ['weapon', 'skill', 'effect', 'item', 'boss', 'enemy', 'npc', 'player'];
@@ -1120,16 +1883,16 @@ function computeAnchorsForSprite(sprite, verbose){
   } else {
     s.stableAnchor = null;
   }
-  if (verbose) toast('🎯 ' + anchors.filter(a=>a).length + ' anchors');
+  if (verbose) toast('🎯 ' + anchors.filter(a=>a).length + ' anchors', 'ok');
 }
 
 /* ============================================================
-   MỞ RỘNG + CĂN CHỈNH FRAME
+   EXPAND & ALIGN
    ============================================================ */
-function expandAndAlignFrames(sprite, padding = 12, gap = 6){
+function expandAndAlignFrames(sprite, padding, gap){
   const s = sprite;
   if (!s || !s.vLines || s.vLines.length < 2){
-    return { ok: false, msg: 'Chưa có frame' };
+    return { ok: false, msg: 'No frames' };
   }
   const frames = s.vLines.length - 1;
   const bboxes = [];
@@ -1143,7 +1906,7 @@ function expandAndAlignFrames(sprite, padding = 12, gap = 6){
     }
   }
   if (maxW === 0 || maxH === 0){
-    return { ok: false, msg: 'Không detect được nội dung' };
+    return { ok: false, msg: 'No content detected' };
   }
   const contentW = maxW;
   const contentH = maxH;
@@ -1168,28 +1931,15 @@ function expandAndAlignFrames(sprite, padding = 12, gap = 6){
   for (let i = 0; i < frames; i++){
     const cellX = i * (newFrameW + gap);
     newVLines.push(cellX);
-
     const bb = bboxes[i];
-    if (!bb){
-      newAnchors.push(null);
-      continue;
-    }
+    if (!bb){ newAnchors.push(null); continue; }
 
     const bbCenterOffset = Math.floor(bb.w / 2);
     const destBBoxX = cellX + targetAnchorLocalX - bbCenterOffset;
     const destBBoxY = targetAnchorLocalY - bb.h;
 
-    nctx.drawImage(
-      s.canvas,
-      bb.x, bb.y, bb.w, bb.h,
-      destBBoxX, destBBoxY, bb.w, bb.h
-    );
-
-    newAnchors.push({
-      x: cellX + targetAnchorLocalX,
-      y: targetAnchorLocalY
-    });
-
+    nctx.drawImage(s.canvas, bb.x, bb.y, bb.w, bb.h, destBBoxX, destBBoxY, bb.w, bb.h);
+    newAnchors.push({ x: cellX + targetAnchorLocalX, y: targetAnchorLocalY });
     if (bb.x !== destBBoxX - cellX || bb.y !== destBBoxY) movedCount++;
   }
   newVLines.push(newCanvasW);
@@ -1203,26 +1953,13 @@ function expandAndAlignFrames(sprite, padding = 12, gap = 6){
   s.vLines = newVLines;
   s.hLines = [0, newCanvasH];
   s.anchors = newAnchors;
+  s.stableAnchor = { x: targetAnchorLocalX, y: targetAnchorLocalY };
 
-  s.stableAnchor = {
-    x: targetAnchorLocalX,
-    y: targetAnchorLocalY
-  };
-
-  return {
-    ok: true,
-    movedCount,
-    frames,
-    padding, gap,
-    newW: newCanvasW,
-    newH: newCanvasH,
-    newFrameW,
-    newFrameH
-  };
+  return { ok: true, movedCount, frames, padding, gap, newW: newCanvasW, newH: newCanvasH };
 }
 
 /* ============================================================
-   LIBRARY
+   LIBRARY RENDER
    ============================================================ */
 function renderLibrary(){
   const body = $('libraryBody');
@@ -1231,7 +1968,11 @@ function renderLibrary(){
   $('statSprites').textContent = sprites.length;
 
   if (sprites.length === 0){
-    body.innerHTML = `<div class="lib-empty">Chưa có sprite.<br><br><kbd>📂 Load</kbd> hoặc <kbd>📁 Upload</kbd></div>`;
+    body.innerHTML = `<div class="lib-empty">
+      <div style="font-size:36px;opacity:.3;margin-bottom:12px">📁</div>
+      Chưa có sprite<br><br>
+      <kbd>📂 Load</kbd> hoặc <kbd>📁 Upload</kbd>
+    </div>`;
     updateProjDisplay();
     return;
   }
@@ -1262,8 +2003,8 @@ function renderLibrary(){
     const icon = modelIcons[model] || '📦';
 
     const header = document.createElement('div');
-    header.className = 'model-header' + (model === 'weapon' ? ' weapon' : '') +
-                                      (model === 'skill' ? ' skill' : '');
+    header.className = 'model-header';
+    header.dataset.model = model;
     header.innerHTML = `<span class="arrow">▼</span><span>${icon} ${model}</span><span class="count">${items.length}</span>`;
     header.addEventListener('click', () => {
       header.classList.toggle('collapsed');
@@ -1277,7 +2018,7 @@ function renderLibrary(){
       const item = document.createElement('div');
       item.className = 'anim-item' + (s.id === state.currentId ? ' active' : '');
       if (dupIds.has(s.id)) item.classList.add('dup-warn');
-      item.innerHTML = `<span class="dot"></span><span class="name">${s.anim}</span><span class="meta">${s.vLines.length - 1}f · ${s.fps}fps</span>`;
+      item.innerHTML = `<span class="dot"></span><span class="name">${s.anim}</span><span class="meta">${s.vLines.length - 1}f · ${s.fps}</span>`;
       item.title = s.fileName + '.png' + (dupIds.has(s.id) ? ' (TRÙNG model+anim!)' : '');
       item.addEventListener('click', () => selectSprite(s.id));
       bodyEl.appendChild(item);
@@ -1305,7 +2046,7 @@ function updateProjDisplay(){
 }
 
 /* ============================================================
-   SELECT
+   SELECT SPRITE
    ============================================================ */
 function selectSprite(id, noHistory){
   state.currentId = id;
@@ -1354,13 +2095,11 @@ function selectSprite(id, noHistory){
   state.manualAnchor = s.anchorMode === 'manual';
 
   updateMetaHint(s.model);
-
   renderAll();
   renderLibrary();
   $('exportBtn').disabled = false;
-  setStatus('Đang edit: ' + s.model + '/' + s.anim);
+  setStatus('Editing: ' + s.model + '/' + s.anim);
 
-  /* 🆕 Push history khi đổi sprite */
   if (!noHistory){
     state.history = [];
     state.historyIdx = -1;
@@ -1378,23 +2117,23 @@ function updateModelBadge(model){
 
 function updateMetaHint(model){
   const el = $('metaHint');
-  el.className = 'help-box';
+  el.className = 'info-box';
   if (model === 'weapon'){
     el.classList.add('weapon');
     el.innerHTML = '<b>⚔️ Weapon:</b> sprite gắn vào tay nhân vật. FPS khớp player.';
   } else if (model === 'skill'){
     el.classList.add('skill');
-    el.innerHTML = '<b>✨ Skill:</b> effect phép thuật. FPS 16-24, Loop = Không.';
+    el.innerHTML = '<b>✨ Skill:</b> effect phép thuật. FPS 16-24, Loop = No.';
   } else if (model === 'effect'){
     el.classList.add('skill');
-    el.innerHTML = '<b>💥 Effect:</b> slash/impact/explosion. FPS 20-30, Loop = Không.';
+    el.innerHTML = '<b>💥 Effect:</b> slash/impact/explosion. FPS 20-30, Loop = No.';
   } else {
-    el.innerHTML = '<b>Auto-detect:</b> filename chứa <b>weapon</b>/<b>skill</b> tự chọn model.';
+    el.innerHTML = '<b>Auto-detect:</b> filename có <kbd>weapon</kbd>/<kbd>skill</kbd> tự chọn model.';
   }
 }
 
 /* ============================================================
-   🆕 RENDER OVERLAY — với handle dots
+   RENDER OVERLAY
    ============================================================ */
 function renderOverlay(){
   const s = currentSprite();
@@ -1402,9 +2141,8 @@ function renderOverlay(){
   const oc = overlayCanvas.getContext('2d');
   oc.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-  /* Grid nếu bật */
   if (state.showGrid){
-    oc.strokeStyle = 'rgba(136,255,96,.08)';
+    oc.strokeStyle = 'rgba(63,185,80,.08)';
     oc.lineWidth = 1;
     const step = 16;
     for (let x = 0; x < overlayCanvas.width; x += step){
@@ -1415,42 +2153,40 @@ function renderOverlay(){
     }
   }
 
-  /* Line dọc */
-  oc.lineWidth = 1;
+  /* Vertical lines */
   s.vLines.forEach((x, i) => {
     const isEdge = (i === 0 || i === s.vLines.length - 1);
     const isHover = state.hoverLine && state.hoverLine.type === 'v' && state.hoverLine.idx === i;
     const isDrag = state.drag && state.drag.type === 'v' && state.drag.idx === i;
-    oc.strokeStyle = isEdge ? 'rgba(255,80,80,.9)' :
-                     isDrag ? '#88ff60' :
-                     isHover ? '#ffff40' : 'rgba(255,80,80,.7)';
+    oc.strokeStyle = isEdge ? 'rgba(248,81,73,.8)' :
+                     isDrag ? '#56d364' :
+                     isHover ? '#d29922' : 'rgba(248,81,73,.55)';
     oc.lineWidth = (isDrag || isHover) ? 2 : 1;
     oc.beginPath();
     oc.moveTo(Math.round(x)+0.5, 0);
     oc.lineTo(Math.round(x)+0.5, overlayCanvas.height);
     oc.stroke();
 
-    /* Handle dot top */
     if (!isEdge){
       const hSize = isDrag ? 7 : (isHover ? 6 : 5);
-      oc.fillStyle = isDrag ? '#88ff60' : (isHover ? '#ffff40' : '#00d0ff');
+      oc.fillStyle = isDrag ? '#56d364' : (isHover ? '#d29922' : '#58a6ff');
       oc.beginPath();
-      oc.arc(Math.round(x)+0.5, 6, hSize, 0, Math.PI*2);
+      oc.arc(Math.round(x)+0.5, 8, hSize, 0, Math.PI*2);
       oc.fill();
-      oc.strokeStyle = '#000';
+      oc.strokeStyle = 'rgba(0,0,0,.8)';
       oc.lineWidth = 1;
       oc.stroke();
     }
   });
 
-  /* Line ngang */
+  /* Horizontal lines */
   s.hLines.forEach((y, i) => {
     const isEdge = (i === 0 || i === s.hLines.length - 1);
     const isHover = state.hoverLine && state.hoverLine.type === 'h' && state.hoverLine.idx === i;
     const isDrag = state.drag && state.drag.type === 'h' && state.drag.idx === i;
-    oc.strokeStyle = isEdge ? 'rgba(255,80,80,.9)' :
-                     isDrag ? '#88ff60' :
-                     isHover ? '#ffff40' : 'rgba(255,80,80,.7)';
+    oc.strokeStyle = isEdge ? 'rgba(248,81,73,.8)' :
+                     isDrag ? '#56d364' :
+                     isHover ? '#d29922' : 'rgba(248,81,73,.55)';
     oc.lineWidth = (isDrag || isHover) ? 2 : 1;
     oc.beginPath();
     oc.moveTo(0, Math.round(y)+0.5);
@@ -1459,19 +2195,19 @@ function renderOverlay(){
 
     if (!isEdge){
       const hSize = isDrag ? 7 : (isHover ? 6 : 5);
-      oc.fillStyle = isDrag ? '#88ff60' : (isHover ? '#ffff40' : '#00d0ff');
+      oc.fillStyle = isDrag ? '#56d364' : (isHover ? '#d29922' : '#58a6ff');
       oc.beginPath();
-      oc.arc(6, Math.round(y)+0.5, hSize, 0, Math.PI*2);
+      oc.arc(8, Math.round(y)+0.5, hSize, 0, Math.PI*2);
       oc.fill();
-      oc.strokeStyle = '#000';
+      oc.strokeStyle = 'rgba(0,0,0,.8)';
       oc.lineWidth = 1;
       oc.stroke();
     }
   });
 
-  /* Frame index */
-  oc.font = 'bold 11px Consolas, monospace';
-  oc.fillStyle = '#88ff60';
+  /* Frame numbers */
+  oc.font = 'bold 11px ' + getComputedStyle(document.documentElement).getPropertyValue('--font-mono');
+  oc.fillStyle = '#56d364';
   oc.strokeStyle = 'rgba(0,0,0,.9)';
   oc.lineWidth = 3;
   let idx = 0;
@@ -1493,7 +2229,7 @@ function renderOverlay(){
     oc.strokeStyle = 'rgba(0,0,0,.9)';
     oc.lineWidth = 3;
     oc.beginPath(); oc.arc(ax, ay, 5, 0, Math.PI*2); oc.stroke();
-    oc.fillStyle = '#ff3050';
+    oc.fillStyle = '#f85149';
     oc.strokeStyle = '#fff';
     oc.lineWidth = 2;
     oc.beginPath(); oc.arc(ax, ay, 4, 0, Math.PI*2); oc.fill(); oc.stroke();
@@ -1502,8 +2238,8 @@ function renderOverlay(){
   /* Stable anchor */
   if (s.stableAnchor && s.anchorMode !== 'per-frame'){
     const sa = s.stableAnchor;
-    oc.strokeStyle = '#00d0ff';
-    oc.lineWidth = 2;
+    oc.strokeStyle = '#58a6ff';
+    oc.lineWidth = 1.5;
     oc.setLineDash([5, 4]);
     for (let i = 0; i < s.vLines.length - 1; i++){
       const x = s.vLines[i] + sa.x;
@@ -1519,7 +2255,7 @@ function renderOverlay(){
     for (let i = 0; i < s.vLines.length - 1; i++){
       const cx = s.vLines[i] + sa.x;
       const cy = sa.y;
-      oc.fillStyle = '#00d0ff';
+      oc.fillStyle = '#58a6ff';
       oc.strokeStyle = '#fff';
       oc.lineWidth = 2;
       oc.beginPath(); oc.arc(cx, cy, 4, 0, Math.PI*2); oc.fill(); oc.stroke();
@@ -1528,8 +2264,8 @@ function renderOverlay(){
 
   /* Selected cell */
   if (state.cell){
-    oc.strokeStyle = 'rgba(136,255,96,.95)';
-    oc.lineWidth = 3;
+    oc.strokeStyle = 'rgba(63,185,80,.95)';
+    oc.lineWidth = 2;
     oc.setLineDash([6,4]);
     oc.strokeRect(state.cell.x1+1, state.cell.y1+1,
       state.cell.x2-state.cell.x1-2, state.cell.y2-state.cell.y1-2);
@@ -1537,7 +2273,9 @@ function renderOverlay(){
   }
 }
 
-/* 🆕 Render line list với handle icon + highlight */
+/* ============================================================
+   RENDER LINE LISTS
+   ============================================================ */
 function renderLineLists(){
   const s = currentSprite();
   if (!s) return;
@@ -1547,7 +2285,7 @@ function renderLineLists(){
     const row = document.createElement('div');
     row.className = 'line-row' +
       (state.hoverLine && state.hoverLine.type === 'v' && state.hoverLine.idx === i ? ' cur' : '');
-    row.innerHTML = `<span class="handle-ic">${isEdge ? '▣' : '⋮'}</span><span class="idx">#${i}</span>`;
+    row.innerHTML = `<span class="handle">${isEdge ? '▣' : '⋮'}</span><span class="idx">#${i}</span>`;
     const inp = document.createElement('input');
     inp.type = 'number'; inp.value = Math.round(x);
     inp.disabled = isEdge;
@@ -1592,7 +2330,7 @@ function renderLineLists(){
     const row = document.createElement('div');
     row.className = 'line-row' +
       (state.hoverLine && state.hoverLine.type === 'h' && state.hoverLine.idx === i ? ' cur' : '');
-    row.innerHTML = `<span class="handle-ic">${isEdge ? '▣' : '⋮'}</span><span class="idx">#${i}</span>`;
+    row.innerHTML = `<span class="handle">${isEdge ? '▣' : '⋮'}</span><span class="idx">#${i}</span>`;
     const inp = document.createElement('input');
     inp.type = 'number'; inp.value = Math.round(y);
     inp.disabled = isEdge;
@@ -1643,9 +2381,9 @@ function renderAnchorList(){
     row.className = 'line-row';
     row.innerHTML = `<span class="idx">#${i}</span>`;
     const txt = document.createElement('span');
-    txt.style.cssText = 'flex:1;color:var(--accent2);font-family:Consolas,monospace;font-size:10px';
+    txt.style.cssText = 'flex:1;color:var(--accent);font-family:var(--font-mono);font-size:10px';
     if (a) txt.textContent = `x=${a.x} y=${a.y}`;
-    else { txt.textContent = 'trống'; txt.style.color = '#ffcc40'; }
+    else { txt.textContent = 'empty'; txt.style.color = 'var(--warning)'; }
     row.appendChild(txt);
     el.appendChild(row);
   });
@@ -1658,6 +2396,7 @@ function renderAll(){
   updateBadges();
   renderPreviewInfo();
 }
+
 function updateBadges(){
   const s = currentSprite();
   if (!s) return;
@@ -1667,58 +2406,203 @@ function updateBadges(){
   $('statSize').textContent = s.canvas.width + '×' + s.canvas.height;
 
   const el = $('statCurrent');
-  el.className = '';
-  if (s.model === 'weapon') el.className = 'weapon';
-  else if (s.model === 'skill' || s.model === 'effect') el.className = 'skill';
-  else el.className = 'ok';
+  el.className = 'val';
+  if (s.model === 'weapon') el.classList.add('weapon');
+  else if (s.model === 'skill' || s.model === 'effect') el.classList.add('skill');
+  else el.classList.add('ok');
 }
 
 /* ============================================================
-   🆕 LOAD PROJECT
+   MERGE PROJECT JSON
+   ============================================================ */
+function mergeProjectJson(newJson){
+  const report = {
+    newAnims: [],
+    updatedAnims: [],
+    keptAnims: [],
+    totalNew: 0,
+    totalUpdated: 0,
+    totalKept: 0
+  };
+
+  if (!state.projectJson){
+    state.projectJson = JSON.parse(JSON.stringify(newJson));
+    for (const m in newJson.models){
+      for (const a in newJson.models[m].animations){
+        report.newAnims.push(m + '/' + a);
+        report.totalNew++;
+      }
+    }
+    return report;
+  }
+
+  for (const modelName in newJson.models){
+    const srcModel = newJson.models[modelName];
+    const srcAnims = srcModel.animations;
+
+    if (!state.projectJson.models[modelName]){
+      state.projectJson.models[modelName] = JSON.parse(JSON.stringify(srcModel));
+      for (const a in srcAnims){
+        report.newAnims.push(modelName + '/' + a);
+        report.totalNew++;
+      }
+      state.loadedProjectModels.add(modelName);
+    } else {
+      const dstModel = state.projectJson.models[modelName];
+      for (const animName in srcAnims){
+        const key = modelName + '/' + animName;
+        if (dstModel.animations[animName]){
+          dstModel.animations[animName] = JSON.parse(JSON.stringify(srcAnims[animName]));
+          report.updatedAnims.push(key);
+          report.totalUpdated++;
+        } else {
+          dstModel.animations[animName] = JSON.parse(JSON.stringify(srcAnims[animName]));
+          report.newAnims.push(key);
+          report.totalNew++;
+        }
+      }
+    }
+  }
+
+  for (const modelName in state.projectJson.models){
+    const dstModel = state.projectJson.models[modelName];
+    for (const animName in dstModel.animations){
+      const key = modelName + '/' + animName;
+      if (!report.updatedAnims.includes(key) && !report.newAnims.includes(key)){
+        report.keptAnims.push(key);
+        report.totalKept++;
+      }
+    }
+  }
+  return report;
+}
+
+/* ============================================================
+   LOAD PROJECT — Modal + Tabs
    ============================================================ */
 $('loadProjectBtn').addEventListener('click', () => {
-  const savedUrl = localStorage.getItem('dh_editor_load_url') || './sprites.json';
-  $('loadUrlInput').value = savedUrl;
   $('loadModal').classList.add('show');
   setTimeout(() => $('loadUrlInput').select(), 100);
 });
-$('loadCancelBtn').addEventListener('click', () => $('loadModal').classList.remove('show'));
-$('loadUrlInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter'){ e.preventDefault(); doLoadProject(); }
-  if (e.key === 'Escape') $('loadModal').classList.remove('show');
-});
-$('loadConfirmBtn').addEventListener('click', doLoadProject);
 
-async function doLoadProject(){
+document.querySelectorAll('.load-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.load-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const target = tab.dataset.loadTab;
+    $('loadTabUrl').style.display = target === 'url' ? 'block' : 'none';
+    $('loadTabFile').style.display = target === 'file' ? 'block' : 'none';
+    if (target === 'file'){
+      $('loadFileInfo').style.display = 'none';
+      $('loadFileConfirmBtn').disabled = true;
+      state._pendingLoadFile = null;
+    }
+  });
+});
+
+$('loadCancelBtn').addEventListener('click', () => $('loadModal').classList.remove('show'));
+$('loadFileCancelBtn').addEventListener('click', () => $('loadModal').classList.remove('show'));
+$('loadUrlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter'){ e.preventDefault(); doLoadProjectUrl(); }
+});
+
+$('loadConfirmBtn').addEventListener('click', doLoadProjectUrl);
+$('loadFileDrop').addEventListener('click', () => $('loadFileInput').click());
+$('loadFileConfirmBtn').addEventListener('click', doMergeFileJson);
+
+$('loadFileDrop').addEventListener('dragover', e => {
+  e.preventDefault();
+  $('loadFileDrop').classList.add('dragover');
+});
+$('loadFileDrop').addEventListener('dragleave', () => {
+  $('loadFileDrop').classList.remove('dragover');
+});
+$('loadFileDrop').addEventListener('drop', e => {
+  e.preventDefault();
+  $('loadFileDrop').classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f) previewLoadFile(f);
+});
+$('loadFileInput').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) previewLoadFile(f);
+  e.target.value = '';
+});
+
+async function previewLoadFile(file){
+  if (!file.name.endsWith('.json')){
+    toast('❌ Chỉ nhận file .json', 'err');
+    return;
+  }
+  try {
+    const text = await file.text();
+    const json = JSON.parse(text);
+    if (json.format !== 'dh-studio-project' || !json.models){
+      toast('❌ File sai định dạng', 'err');
+      return;
+    }
+    state._pendingLoadFile = { file, json };
+
+    let total = 0;
+    const info = [];
+    for (const m in json.models){
+      const n = Object.keys(json.models[m].animations).length;
+      total += n;
+      info.push(`${m}(${n})`);
+    }
+
+    const merged = state.projectJson ? 'sẽ merge' : 'khởi tạo mới';
+    $('loadFileInfo').innerHTML =
+      `📄 <b>${file.name}</b> · ${(file.size/1024).toFixed(1)} KB<br>` +
+      `📦 Models: <b>${info.join(', ')}</b><br>` +
+      `🎞️ Tổng anim: <b>${total}</b><br>` +
+      `🔄 ${merged}`;
+    $('loadFileInfo').style.display = 'block';
+    $('loadFileConfirmBtn').disabled = false;
+    toast('✓ Đã đọc ' + file.name, 'ok');
+  } catch(e){
+    toast('❌ Parse fail: ' + e.message, 'err');
+    $('loadFileInfo').style.display = 'none';
+    $('loadFileConfirmBtn').disabled = true;
+    state._pendingLoadFile = null;
+  }
+}
+
+function doMergeFileJson(){
+  const pending = state._pendingLoadFile;
+  if (!pending){ toast('❌ Chưa có file', 'err'); return; }
+
+  const report = mergeProjectJson(pending.json);
+  $('loadModal').classList.remove('show');
+  state._pendingLoadFile = null;
+  renderLibrary();
+
+  const parts = [];
+  if (report.totalNew) parts.push('➕' + report.totalNew);
+  if (report.totalUpdated) parts.push('🔄' + report.totalUpdated);
+  if (report.totalKept) parts.push('✓' + report.totalKept);
+  toast('📂 Merge ' + pending.file.name + ': ' + parts.join(' · '), 'ok');
+  console.log('📂 Merge report:', report);
+  setStatus('Merged ' + pending.file.name + ' · Models: ' + Object.keys(state.projectJson.models).join(', '), false);
+}
+
+async function doLoadProjectUrl(){
   const url = $('loadUrlInput').value.trim();
-  if (!url){ toast('URL trống', true); return; }
+  if (!url){ toast('URL trống', 'err'); return; }
   localStorage.setItem('dh_editor_load_url', url);
 
-  toast('📂 Đang tải ' + url + '...');
-  setStatus('Loading project...');
+  $('loadConfirmBtn').innerHTML = '<span class="spinner"></span> Loading...';
+  $('loadConfirmBtn').disabled = true;
 
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const project = await res.json();
     if (project.format !== 'dh-studio-project' || !project.models){
-      throw new Error('File JSON sai định dạng');
+      throw new Error('Invalid JSON format');
     }
 
-    /* Merge vào projectJson */
-    if (!state.projectJson){
-      state.projectJson = project;
-    } else {
-      for (const modelName in project.models){
-        if (!state.projectJson.models[modelName]){
-          state.projectJson.models[modelName] = { animations: {} };
-        }
-        const srcAnims = project.models[modelName].animations;
-        for (const animName in srcAnims){
-          state.projectJson.models[modelName].animations[animName] = srcAnims[animName];
-        }
-      }
-    }
+    const report = mergeProjectJson(project);
 
     const baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
     const assetsPath = baseUrl + 'assets/';
@@ -1738,18 +2622,15 @@ async function doLoadProject(){
 
     $('loadModal').classList.remove('show');
     renderLibrary();
-    toast('✓ Đã load ' + loaded + ' sprite từ project');
-    setStatus('Đã load ' + loaded + ' sprite', false);
-
-    const byModel = {};
-    for (const s of state.sprites.values()){
-      byModel[s.model] = (byModel[s.model] || 0) + 1;
-    }
-    console.log('📂 Loaded models:', byModel);
+    toast('✓ Loaded ' + loaded + ' sprites', 'ok');
+    setStatus('Loaded ' + loaded + ' sprites', false);
   } catch(e){
     console.error(e);
-    toast('❌ Load fail: ' + e.message, true);
+    toast('❌ Load fail: ' + e.message, 'err');
     setStatus('Load fail: ' + e.message, true);
+  } finally {
+    $('loadConfirmBtn').innerHTML = '📂 Load URL';
+    $('loadConfirmBtn').disabled = false;
   }
 }
 
@@ -1758,7 +2639,6 @@ function loadSpriteFromProject(assetsPath, fileName, modelName, animName, cfg){
     for (const s of state.sprites.values()){
       if (s.model === modelName && s.anim === animName){ resolve(false); return; }
     }
-
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
@@ -1809,21 +2689,16 @@ function loadSpriteFromProject(assetsPath, fileName, modelName, animName, cfg){
       if (!sprite.anchors.length || sprite.anchors.every(a => !a) || !sprite.stableAnchor){
         computeAnchorsForSprite(sprite, false);
       }
-
       state.sprites.set(sprite.id, sprite);
-      console.log('  ✓ ' + modelName + '/' + animName + ' ← ' + fileName + '.png');
       resolve(true);
     };
-    img.onerror = () => {
-      console.warn('  ✗ Load fail: ' + assetsPath + fileName + '.png');
-      resolve(false);
-    };
+    img.onerror = () => resolve(false);
     img.src = assetsPath + fileName + '.png';
   });
 }
 
 /* ============================================================
-   UPLOAD
+   UPLOAD FILES
    ============================================================ */
 $('uploadBtn').addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', e => {
@@ -1849,53 +2724,30 @@ async function handleFiles(files){
   const jsonFiles = files.filter(f => f.name.endsWith('.json') || f.type === 'application/json');
   const imageFiles = files.filter(f => f.type.startsWith('image/'));
 
-  /* JSON */
   if (jsonFiles.length > 0){
     for (const jf of jsonFiles){
       try {
         const text = await jf.text();
         const json = JSON.parse(text);
         if (json.format !== 'dh-studio-project' || !json.models){
-          toast('❌ ' + jf.name + ' sai định dạng', true);
+          toast('❌ ' + jf.name + ' sai định dạng', 'err');
           continue;
         }
-        if (!state.projectJson) state.projectJson = json;
-        else {
-          for (const modelName in json.models){
-            if (!state.projectJson.models[modelName]) state.projectJson.models[modelName] = { animations: {} };
-            const srcAnims = json.models[modelName].animations;
-            for (const animName in srcAnims){
-              state.projectJson.models[modelName].animations[animName] = srcAnims[animName];
-            }
-          }
-        }
-        let count = 0;
-        for (const modelName in json.models){
-          state.loadedProjectModels.add(modelName);
-          count += Object.keys(json.models[modelName].animations).length;
-        }
-        const modelList = Object.keys(json.models).join(', ');
-        toast('📂 ' + jf.name + ': ' + count + ' anim · ' + modelList, false, true);
-        console.log('📂 Loaded project:', json.models);
-      } catch(e){ toast('❌ Parse ' + jf.name + ' fail: ' + e.message, true); }
+        const report = mergeProjectJson(json);
+        toast('📂 ' + jf.name + ': ➕' + report.totalNew + ' 🔄' + report.totalUpdated, 'ok');
+        console.log('📂 Merge report:', report);
+      } catch(e){ toast('❌ Parse fail: ' + e.message, 'err'); }
     }
   }
 
-  /* Images */
   if (imageFiles.length > 0){
-    setStatus('Đang load ' + imageFiles.length + ' ảnh' + (preset !== 'auto' ? ' (as ' + preset + ')' : '') + '...');
+    setStatus('Loading ' + imageFiles.length + ' images...');
     let loaded = 0;
-    const renames = [];
-
     for (const f of imageFiles){
       try {
         const sprite = await addSpriteFromFile(f, preset);
         state.sprites.set(sprite.id, sprite);
         loaded++;
-        if (sprite.autoDetected && sprite.autoDetected.renamedFrom){
-          renames.push(sprite.autoDetected.renamedFrom + '.png → ' + sprite.fileName + '.png');
-        }
-        console.log(`✓ ${sprite.model}/${sprite.anim} @${sprite.fps}fps — ${sprite.fileName}.png`);
       } catch(e){ console.error(e); }
     }
     renderLibrary();
@@ -1904,16 +2756,14 @@ async function handleFiles(files){
         const first = [...state.sprites.values()][0];
         selectSprite(first.id);
       }
-      toast('✓ Loaded ' + loaded + ' ảnh');
-      if (renames.length > 0) console.log('📝 Auto-renamed:\n' + renames.join('\n'));
-      setStatus('Đã load ' + loaded + ' ảnh', false);
+      toast('✓ Loaded ' + loaded + ' images', 'ok');
+      setStatus('Loaded ' + loaded + ' images', false);
     }
   } else if (jsonFiles.length > 0){
-    setStatus('Đã load project JSON. Giờ upload PNG mới.', false);
+    setStatus('Merged JSON. Upload PNG next.', false);
+    renderLibrary();
   }
 }
-
-$('importBtn') && $('importBtn').addEventListener('click', () => jsonInput.click());
 
 /* ============================================================
    EXPORT
@@ -1924,7 +2774,6 @@ function buildProjectJson(){
     project = JSON.parse(JSON.stringify(state.projectJson));
     project.version = 3;
     project.exportedAt = new Date().toISOString();
-    console.log('📦 Merge base:', Object.keys(project.models).join(', '));
   } else {
     project = {
       format: 'dh-studio-project',
@@ -1949,10 +2798,6 @@ function buildProjectJson(){
       loop: s.loop
     };
   }
-
-  const summary = {};
-  for (const m in project.models) summary[m] = Object.keys(project.models[m].animations).length;
-  console.log('📦 Export summary:', summary);
   return project;
 }
 
@@ -1994,7 +2839,7 @@ $('exportBtn').addEventListener('click', async () => {
   const s = currentSprite();
   if (!s) return;
   await exportSpritePNG(s, true);
-  toast('💾 ' + s.fileName + '.png');
+  toast('💾 Saved ' + s.fileName + '.png', 'ok');
 });
 
 $('exportAllBtn').addEventListener('click', showExportPreview);
@@ -2003,7 +2848,7 @@ $('exportConfirmBtn').addEventListener('click', doExportAll);
 
 function showExportPreview(){
   const sprites = [...state.sprites.values()];
-  if (!sprites.length){ toast('Chưa có sprite', true); return; }
+  if (!sprites.length){ toast('Chưa có sprite', 'warn'); return; }
 
   const byModel = {};
   for (const s of sprites){
@@ -2013,9 +2858,9 @@ function showExportPreview(){
 
   let html = '';
   for (const model in byModel){
-    html += `<div class="mdl">📦 ${model} (${byModel[model].length})</div>`;
+    html += `<div class="model-group">📦 ${model} (${byModel[model].length})</div>`;
     for (const s of byModel[model]){
-      html += `<div class="anim">· ${s.anim} <span class="fn">→ ${s.fileName}.png</span></div>`;
+      html += `<div class="anim-item">· ${s.anim}<span class="fn">→ ${s.fileName}.png</span></div>`;
     }
   }
   $('exportList').innerHTML = html;
@@ -2028,20 +2873,19 @@ function showExportPreview(){
   }
   if (missing.length > 0){
     $('exportWarn').style.display = 'block';
-    $('exportWarn').innerHTML = '⚠️ <b>CẢNH BÁO:</b> Bạn đang export THIẾU model: <b>' + missing.join(', ') + '</b>.<br>' +
-      'Nếu upload đè sprites.json cũ, các model này sẽ bị MẤT!<br><br>' +
-      '<b>Khuyến nghị:</b> Bấm 📂 Load project để load lại file cũ trước khi export.';
+    $('exportWarn').innerHTML = '⚠️ <b>CẢNH BÁO:</b> Đang thiếu model: <b>' + missing.join(', ') + '</b>.<br>' +
+      'Upload đè sprites.json cũ có thể MẤT các model này!<br><br>' +
+      '<b>Khuyến nghị:</b> Bấm 📂 Load để load lại file cũ trước.';
   } else {
     $('exportWarn').style.display = 'none';
   }
-
   $('exportModal').classList.add('show');
 }
 
 async function doExportAll(){
   $('exportModal').classList.remove('show');
   const sprites = [...state.sprites.values()];
-  toast('📦 Đang tải ' + sprites.length + ' file...');
+  toast('📦 Downloading ' + sprites.length + ' files...', 'ok');
   for (let i = 0; i < sprites.length; i++){
     await exportSpritePNG(sprites[i], true);
     await new Promise(r => setTimeout(r, 250));
@@ -2053,7 +2897,7 @@ async function doExportAll(){
   a.href = url; a.download = 'sprites.json';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  toast('📦 Đã tải ' + sprites.length + ' PNG + sprites.json');
+  toast('📦 Exported ' + sprites.length + ' PNG + sprites.json', 'ok');
 }
 
 /* ============================================================
@@ -2074,17 +2918,11 @@ document.querySelectorAll('.tab').forEach(tab => {
    ============================================================ */
 function setTool(tool){
   state.tool = tool;
-  ['toolSelect','toolAddV','toolAddH','toolPick','toolPan'].forEach(id => {
-    const el = $(id); if (el) el.classList.remove('on');
-  });
+  document.querySelectorAll('.tool-btn').forEach(el => el.classList.remove('active'));
   const map = { select:'toolSelect', addv:'toolAddV', addh:'toolAddH', pick:'toolPick', pan:'toolPan' };
-  if (map[tool]) $(map[tool]).classList.add('on');
-
-  /* Cursor */
-  overlayCanvas.classList.remove('grab', 'grabbing', 'crosshair', 'move');
-  if (tool === 'pick') overlayCanvas.classList.add('crosshair');
-  else if (tool === 'pan') overlayCanvas.classList.add('grab');
-  else overlayCanvas.classList.add('move');
+  if (map[tool]) $(map[tool]).classList.add('active');
+  overlayCanvas.style.cursor = tool === 'pick' ? 'crosshair' :
+    tool === 'pan' ? 'grab' : 'default';
 }
 $('toolSelect').addEventListener('click', () => setTool('select'));
 $('toolAddV').addEventListener('click', () => setTool('addv'));
@@ -2103,17 +2941,17 @@ $('autoDetect').addEventListener('click', () => {
   let lines = autoDetectFrameLines(s.canvas, null);
   if (!lines || lines.length < 4){
     const userFrames = parseInt(prompt(
-      'Detect được ' + (lines ? lines.length - 1 : 0) + ' frame.\nNhập số frame đúng:', '10'));
+      'Detected ' + (lines ? lines.length - 1 : 0) + ' frames.\nEnter correct count:', '10'));
     if (userFrames && userFrames > 1){
       lines = autoDetectFrameLines(s.canvas, userFrames);
     }
   }
-  if (!lines || lines.length < 3){ toast('Không tách được frame', true); return; }
+  if (!lines || lines.length < 3){ toast('Không tách được frame', 'err'); return; }
   s.vLines = lines;
   s.hLines = [0, s.canvas.height];
   computeAnchorsForSprite(s, false);
   renderAll();
-  toast('🤖 ' + (lines.length - 1) + ' frame');
+  toast('🤖 ' + (lines.length - 1) + ' frames detected', 'ok');
 });
 
 $('computeAnchors').addEventListener('click', () => {
@@ -2124,7 +2962,6 @@ $('computeAnchors').addEventListener('click', () => {
   renderAll();
 });
 
-/* 🆕 Mirror */
 $('mirrorBtn').addEventListener('click', () => {
   const s = currentSprite();
   if (!s) return;
@@ -2143,26 +2980,26 @@ $('mirrorBtn').addEventListener('click', () => {
   mc.drawImage(s.canvas, 0, 0);
   computeAnchorsForSprite(s, false);
   renderAll();
-  toast('↔️ Đã lật ngang');
+  toast('↔ Mirrored', 'ok');
 });
 
 $('alignFramesBtn').addEventListener('click', () => {
   const s = currentSprite();
   if (!s) return;
-  if (s.vLines.length < 3){ toast('Chưa có frame nào để căn', true); return; }
+  if (s.vLines.length < 3){ toast('Chưa có frame', 'warn'); return; }
   pushHistory('align frames');
   const padding = Math.max(0, Math.min(64, parseInt($('padXInput').value) || 12));
   const gap     = Math.max(0, Math.min(64, parseInt($('gapXInput').value) || 6));
   $('padXInput').value = padding;
   $('gapXInput').value = gap;
   const res = expandAndAlignFrames(s, padding, gap);
-  if (!res.ok){ toast('❌ ' + res.msg, true); return; }
+  if (!res.ok){ toast('❌ ' + res.msg, 'err'); return; }
   selectSprite(s.id, true);
-  toast(`🎯 Mở rộng + căn ${res.frames} frame`);
+  toast(`🎯 Expanded + aligned ${res.frames} frames`, 'ok');
 });
 
 /* ============================================================
-   🆕 CANVAS INTERACTION — drag line trực tiếp
+   CANVAS INTERACTION
    ============================================================ */
 function getCanvasCoords(e){
   const rect = mainCanvas.getBoundingClientRect();
@@ -2171,22 +3008,18 @@ function getCanvasCoords(e){
     y: (e.clientY - rect.top) / state.zoom
   };
 }
-
 function findLineAt(x, y){
   const s = currentSprite();
   if (!s) return null;
   const tol = 8 / state.zoom;
-  /* Dọc */
   for (let i = 1; i < s.vLines.length - 1; i++){
-    if (Math.abs(s.vLines[i] - x) < tol) return { type: 'v', idx: i, dist: Math.abs(s.vLines[i] - x) };
+    if (Math.abs(s.vLines[i] - x) < tol) return { type: 'v', idx: i };
   }
-  /* Ngang */
   for (let i = 1; i < s.hLines.length - 1; i++){
-    if (Math.abs(s.hLines[i] - y) < tol) return { type: 'h', idx: i, dist: Math.abs(s.hLines[i] - y) };
+    if (Math.abs(s.hLines[i] - y) < tol) return { type: 'h', idx: i };
   }
   return null;
 }
-
 function findCellAt(x, y){
   const s = currentSprite();
   if (!s) return null;
@@ -2204,7 +3037,6 @@ function findCellAt(x, y){
     _idx: ri * (s.vLines.length - 1) + ci
   };
 }
-
 function pickColorAt(x, y){
   const s = currentSprite();
   if (!s) return;
@@ -2212,11 +3044,10 @@ function pickColorAt(x, y){
   const d = s.ctx.getImageData(x, y, 1, 1).data;
   state.bgColor = { r: d[0], g: d[1], b: d[2] };
   $('bgFill').style.background = `rgb(${d[0]},${d[1]},${d[2]})`;
-  toast('💧 RGB(' + d[0] + ',' + d[1] + ',' + d[2] + ')');
+  toast('💧 RGB(' + d[0] + ',' + d[1] + ',' + d[2] + ')', 'ok');
   setTool('select');
 }
 
-/* 🆕 Hover detection */
 overlayCanvas.addEventListener('mousemove', e => {
   const s = currentSprite();
   if (!s) return;
@@ -2238,33 +3069,32 @@ overlayCanvas.addEventListener('mousedown', e => {
   if (!s) return;
   const { x, y } = getCanvasCoords(e);
 
-  /* Alt+click hoặc tool=pick → pick màu */
   if (e.altKey || state.tool === 'pick'){ pickColorAt(Math.floor(x), Math.floor(y)); return; }
 
-  /* Pan tool hoặc middle mouse */
   if (state.tool === 'pan' || e.button === 1){
-    state.pan = { active: true, startX: e.clientX, startY: e.clientY,
-                  scrollL: stageCanvas.scrollLeft, scrollT: stageCanvas.scrollTop };
-    overlayCanvas.classList.add('grabbing');
+    state.pan.active = true;
+    state.pan.startX = e.clientX;
+    state.pan.startY = e.clientY;
+    state.pan.scrollL = stageCanvas.scrollLeft;
+    state.pan.scrollT = stageCanvas.scrollTop;
+    overlayCanvas.style.cursor = 'grabbing';
     e.preventDefault();
     return;
   }
 
-  /* Right click → xóa line */
   if (e.button === 2){
     const line = findLineAt(x, y);
     if (line){
-      pushHistory('del line');
+      pushHistory('delete line');
       if (line.type === 'v' && s.vLines.length > 2) s.vLines.splice(line.idx, 1);
       else if (line.type === 'h' && s.hLines.length > 2) s.hLines.splice(line.idx, 1);
       computeAnchorsForSprite(s, false);
       renderAll();
-      toast('🗑 Đã xóa line');
+      toast('🗑 Line deleted', 'ok');
     }
     return;
   }
 
-  /* Add tool */
   if (state.tool === 'addv'){
     pushHistory('add vLine');
     s.vLines.push(Math.round(x));
@@ -2282,28 +3112,23 @@ overlayCanvas.addEventListener('mousedown', e => {
     return;
   }
 
-  /* Manual anchor */
   if (state.manualAnchor && state.cell && e.button === 0){
-    pushHistory('set anchor #' + state.cell._idx);
+    pushHistory('set anchor');
     s.anchors[state.cell._idx] = { x: Math.round(x), y: Math.round(y) };
     renderOverlay();
     renderAnchorList();
-    toast('🎯 Anchor #' + state.cell._idx);
+    toast('🎯 Anchor set', 'ok');
     return;
   }
 
-  /* Drag line */
   const line = findLineAt(x, y);
   if (line){
     pushHistory('drag ' + line.type);
-    state.drag = { type: line.type, idx: line.idx,
-                   startX: line.type === 'v' ? s.vLines[line.idx] : 0,
-                   startY: line.type === 'h' ? s.hLines[line.idx] : 0 };
+    state.drag = { type: line.type, idx: line.idx };
     renderOverlay();
     return;
   }
 
-  /* Select cell */
   const cell = findCellAt(x, y);
   if (cell){
     state.cell = cell;
@@ -2319,9 +3144,7 @@ overlayCanvas.addEventListener('mousedown', e => {
 });
 overlayCanvas.addEventListener('contextmenu', e => e.preventDefault());
 
-/* Global move */
 document.addEventListener('mousemove', e => {
-  /* Pan */
   if (state.pan.active){
     const dx = e.clientX - state.pan.startX;
     const dy = e.clientY - state.pan.startY;
@@ -2329,7 +3152,6 @@ document.addEventListener('mousemove', e => {
     stageCanvas.scrollTop = state.pan.scrollT - dy;
     return;
   }
-
   const s = currentSprite();
   if (!s || !state.drag) return;
   const { x, y } = getCanvasCoords(e);
@@ -2361,7 +3183,7 @@ document.addEventListener('mousemove', e => {
 document.addEventListener('mouseup', () => {
   if (state.pan.active){
     state.pan.active = false;
-    overlayCanvas.classList.remove('grabbing');
+    overlayCanvas.style.cursor = state.tool === 'pan' ? 'grab' : 'default';
     return;
   }
   const s = currentSprite();
@@ -2405,7 +3227,6 @@ function previewCellMove(){
   mc.drawImage(s.canvas, 0, 0);
 }
 
-/* 🆕 Wheel zoom */
 stageCanvas.addEventListener('wheel', e => {
   if (!currentSprite()) return;
   e.preventDefault();
@@ -2425,16 +3246,14 @@ function applyZoom(){
   $('zoomVal').textContent = pct;
 }
 
-/* 🆕 Zoom buttons */
 $('zoomInBtn').addEventListener('click', () => { state.zoom = Math.min(8, state.zoom * 1.25); applyZoom(); });
 $('zoomOutBtn').addEventListener('click', () => { state.zoom = Math.max(0.1, state.zoom / 1.25); applyZoom(); });
 $('zoomFitBtn').addEventListener('click', () => {
   const s = currentSprite();
   if (!s){ state.zoom = 1; applyZoom(); return; }
-  const cw = stageCanvas.clientWidth - 80;
-  const ch = stageCanvas.clientHeight - 80;
-  state.zoom = Math.min(cw / s.canvas.width, ch / s.canvas.height, 8);
-  state.zoom = Math.max(0.1, state.zoom);
+  const cw = stageCanvas.clientWidth - 100;
+  const ch = stageCanvas.clientHeight - 100;
+  state.zoom = Math.max(0.1, Math.min(cw / s.canvas.width, ch / s.canvas.height, 8));
   applyZoom();
 });
 
@@ -2443,7 +3262,7 @@ $('zoomFitBtn').addEventListener('click', () => {
    ============================================================ */
 $('autoVBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
-  const n = parseInt(prompt('Số cột:', s.vLines.length - 1 || 10)) || 10;
+  const n = parseInt(prompt('Number of columns:', s.vLines.length - 1 || 10)) || 10;
   pushHistory('auto V');
   s.vLines = [0];
   for (let i = 1; i < n; i++) s.vLines.push(Math.round(i * s.canvas.width / n));
@@ -2453,7 +3272,7 @@ $('autoVBtn').addEventListener('click', () => {
 });
 $('autoHBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
-  const n = parseInt(prompt('Số hàng:', s.hLines.length - 1 || 1)) || 1;
+  const n = parseInt(prompt('Number of rows:', s.hLines.length - 1 || 1)) || 1;
   pushHistory('auto H');
   s.hLines = [0];
   for (let i = 1; i < n; i++) s.hLines.push(Math.round(i * s.canvas.height / n));
@@ -2481,14 +3300,14 @@ $('addHBtn').addEventListener('click', () => {
 });
 $('clearVBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
-  pushHistory('clear V');
+  pushHistory('reset V');
   s.vLines = [0, s.canvas.width];
   computeAnchorsForSprite(s, false);
   renderAll();
 });
 $('clearHBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
-  pushHistory('clear H');
+  pushHistory('reset H');
   s.hLines = [0, s.canvas.height];
   computeAnchorsForSprite(s, false);
   renderAll();
@@ -2524,11 +3343,10 @@ $('resizeBtn').addEventListener('click', () => {
   computeAnchorsForSprite(s, false);
   selectSprite(s.id, true);
 });
-
 $('cropBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
   const bbox = detectBBox(s.canvas, 0, 0, s.canvas.width, s.canvas.height);
-  if (!bbox){ toast('Ảnh trống', true); return; }
+  if (!bbox){ toast('Empty image', 'warn'); return; }
   pushHistory('crop');
   const tmp = document.createElement('canvas');
   tmp.width = bbox.w; tmp.height = bbox.h;
@@ -2541,7 +3359,7 @@ $('cropBtn').addEventListener('click', () => {
   s.hLines = [0, bbox.h];
   computeAnchorsForSprite(s, false);
   selectSprite(s.id, true);
-  toast('✂ ' + bbox.w + '×' + bbox.h);
+  toast('✂ ' + bbox.w + '×' + bbox.h, 'ok');
 });
 
 $('anchorMode').addEventListener('change', e => {
@@ -2553,13 +3371,13 @@ $('anchorMode').addEventListener('change', e => {
 });
 $('anchorRecompute').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
-  pushHistory('recompute anchor');
+  pushHistory('recompute anchors');
   computeAnchorsForSprite(s, true);
   renderAll();
 });
 $('anchorClear').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
-  pushHistory('clear anchor');
+  pushHistory('clear anchors');
   s.anchors = [];
   s.stableAnchor = null;
   renderAll();
@@ -2609,7 +3427,7 @@ function applyBg(s, x, y, w, h){
   mc.drawImage(s.canvas, 0, 0);
   computeAnchorsForSprite(s, false);
   renderAll();
-  toast('✓ ' + count + ' pixel');
+  toast('✓ ' + count + ' pixels', 'ok');
 }
 
 $('metaModel').addEventListener('change', e => {
@@ -2637,10 +3455,9 @@ $('metaModel').addEventListener('change', e => {
     if (newFileName !== oldFileName){
       s.fileName = newFileName;
       $('metaFile').value = newFileName;
-      toast('📝 ' + oldFileName + '.png → ' + newFileName + '.png', false, true);
+      toast('📝 ' + oldFileName + ' → ' + newFileName, 'warn');
     }
   }
-
   s.model = newModel;
   s.fps = getFpsForAnim(s.anim, s.model);
   $('metaFps').value = s.fps;
@@ -2654,19 +3471,17 @@ $('metaModelCustom').addEventListener('change', e => {
   updateModelBadge(s.model);
   renderLibrary(); updateBadges();
 });
-
 $('renameFileBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
   const oldName = s.fileName;
   let newName = renameWithPrefix(oldName, s.model);
   newName = ensureUniqueFilename(newName);
-  if (newName === oldName){ toast('✓ Tên đã đúng prefix'); return; }
+  if (newName === oldName){ toast('✓ Already correct', 'ok'); return; }
   s.fileName = newName;
   $('metaFile').value = newName;
   renderLibrary();
-  toast('📝 ' + oldName + ' → ' + newName);
+  toast('📝 ' + oldName + ' → ' + newName, 'ok');
 });
-
 $('metaAnim').addEventListener('change', e => {
   const s = currentSprite(); if (!s) return;
   if (e.target.value === 'custom') $('customAnimRow').style.display = 'flex';
@@ -2683,21 +3498,19 @@ $('metaAnimCustom').addEventListener('change', e => {
   s.anim = e.target.value.trim() || 'custom';
   renderLibrary(); updateBadges();
 });
-
 $('autoFpsBtn').addEventListener('click', () => {
   const s = currentSprite(); if (!s) return;
   s.fps = getFpsForAnim(s.anim, s.model);
   $('metaFps').value = s.fps;
-  toast('⚡ Auto FPS: ' + s.fps);
+  toast('⚡ FPS: ' + s.fps, 'ok');
 });
-
 $('metaFile').addEventListener('change', e => {
   const s = currentSprite(); if (!s) return;
   let newName = e.target.value.trim() || s.fileName;
   newName = ensureUniqueFilename(newName);
   if (newName !== e.target.value.trim()){
     e.target.value = newName;
-    toast('📝 Đổi thành: ' + newName, false, true);
+    toast('📝 ' + newName, 'warn');
   }
   s.fileName = newName;
   renderLibrary();
@@ -2719,7 +3532,7 @@ const pctx = previewCanvas.getContext('2d');
 
 function renderPreviewInfo(){
   const s = currentSprite();
-  if (!s){ $('previewInfo').textContent = 'Chọn sprite để xem.'; return; }
+  if (!s){ $('previewInfo').textContent = 'Chọn sprite để xem info.'; return; }
   const frames = s.vLines.length - 1;
   const anchors = s.anchors.filter(a=>a).length;
   let saText = '—';
@@ -2728,10 +3541,10 @@ function renderPreviewInfo(){
     `<b>${s.model}/${s.anim}</b><br>` +
     `File: ${s.fileName}.png<br>` +
     `Size: ${s.canvas.width}×${s.canvas.height}<br>` +
-    `Frames: <span style="color:var(--accent2)">${frames}</span><br>` +
+    `Frames: <b>${frames}</b><br>` +
     `FPS: ${s.fps} · ${s.loop ? 'loop' : 'once'}<br>` +
     `Anchors: ${anchors}/${frames}<br>` +
-    `Mode: <span style="color:var(--info)">${s.anchorMode}</span><br>` +
+    `Mode: ${s.anchorMode}<br>` +
     `Stable: ${saText}`;
   const slider = $('previewFrameSlider');
   slider.max = Math.max(0, frames - 1);
@@ -2748,13 +3561,13 @@ function drawPreview(){
   const frames = s.vLines.length - 1; if (frames < 1) return;
   const idx = Math.max(0, Math.min(frames - 1, state.previewFrame));
   pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-  pctx.fillStyle = '#000';
+  pctx.fillStyle = '#010409';
   pctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
   pctx.imageSmoothingEnabled = false;
   const sx = s.vLines[idx];
   const sw = s.vLines[idx+1] - sx;
   const sh = s.canvas.height;
-  const scale = Math.min((previewCanvas.width - 20) / sw, (previewCanvas.height - 20) / sh, 3);
+  const scale = Math.min((previewCanvas.width - 24) / sw, (previewCanvas.height - 24) / sh, 3);
   const dw = sw * scale, dh = sh * scale;
   const dx = (previewCanvas.width - dw) / 2;
   const dy = (previewCanvas.height - dh) / 2;
@@ -2763,20 +3576,20 @@ function drawPreview(){
   if (a){
     const ax = dx + ((a.x - sx) / sw) * dw;
     const ay = dy + (a.y / sh) * dh;
-    pctx.strokeStyle = '#ff3050';
+    pctx.strokeStyle = '#f85149';
     pctx.lineWidth = 2;
     pctx.beginPath(); pctx.arc(ax, ay, 4, 0, Math.PI*2); pctx.stroke();
-    pctx.fillStyle = '#ff3050';
+    pctx.fillStyle = '#f85149';
     pctx.beginPath(); pctx.arc(ax, ay, 2, 0, Math.PI*2); pctx.fill();
   }
   if (s.stableAnchor && s.anchorMode !== 'per-frame'){
     const sa = s.stableAnchor;
     const ax = dx + (sa.x / sw) * dw;
     const ay = dy + (sa.y / sh) * dh;
-    pctx.strokeStyle = '#00d0ff';
+    pctx.strokeStyle = '#58a6ff';
     pctx.lineWidth = 2;
     pctx.beginPath(); pctx.arc(ax, ay, 5, 0, Math.PI*2); pctx.stroke();
-    pctx.fillStyle = '#00d0ff';
+    pctx.fillStyle = '#58a6ff';
     pctx.beginPath(); pctx.arc(ax, ay, 2, 0, Math.PI*2); pctx.fill();
   }
 }
@@ -2812,60 +3625,70 @@ $('previewStopBtn').addEventListener('click', () => {
    HELP
    ============================================================ */
 $('helpBtn').addEventListener('click', () => {
-  alert('HƯỚNG DẪN v4.0:\n\n' +
-    'KÉO LINE:\n' +
-    '• Click line dọc/ngang → kéo trực tiếp\n' +
+  alert(
+    'HƯỚNG DẪN DH STUDIO v5.0\n\n' +
+    '━━━ DRAG LINE ━━━\n' +
+    '• Click trực tiếp vào line dọc/ngang → kéo\n' +
     '• Handle xanh ở đầu line = điểm kéo\n' +
-    '• Right-click = xóa line\n' +
-    '• Hover line = vàng highlight\n\n' +
-    'TOOLS:\n' +
+    '• Right-click line = xóa\n' +
+    '• Hover line = highlight vàng\n\n' +
+    '━━━ TOOLS ━━━\n' +
     '• 🖱 Select — kéo line, chọn cell\n' +
     '• ┃ +V / ━ +H — thêm line\n' +
     '• 💧 Pick — pick màu nền\n' +
-    '• ✋ Pan — kéo canvas (hoặc Space + drag)\n\n' +
-    'PHÍM TẮT:\n' +
+    '• ✋ Pan — kéo canvas\n\n' +
+    '━━━ KEYBOARD ━━━\n' +
     '• Ctrl+Z / Ctrl+Y = Undo / Redo\n' +
     '• Ctrl+0 = Reset zoom\n' +
-    '• Space + drag = Pan\n' +
+    '• Ctrl+= / Ctrl+- = Zoom in/out\n' +
+    '• Space + drag = Pan canvas\n' +
     '• Alt+Click = Pick màu\n' +
-    '• Ctrl+Scroll = Zoom\n\n' +
-    'NHẬP SỐ:\n' +
-    '• Panel FRAME → list vLines/hLines → sửa số trực tiếp\n' +
-    '• Line edge (đầu/cuối) bị khóa, không sửa được');
+    '• Scroll = Zoom\n' +
+    '• Delete = Xóa cell\n\n' +
+    '━━━ WORKFLOW ━━━\n' +
+    '1. 📂 Load → chọn file sprites.json cũ\n' +
+    '2. Chọn model preset → 📁 Upload PNG mới\n' +
+    '3. Chỉnh line bằng kéo trực tiếp\n' +
+    '4. 🎯 Expand & Align để fix trôi frame\n' +
+    '5. 📦 Export All → tải về\n\n' +
+    'Editor luôn merge — KHÔNG mất model cũ!'
+  );
 });
 
 /* ============================================================
    KEYBOARD
    ============================================================ */
 document.addEventListener('keydown', e => {
-  /* Undo/Redo */
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey){
     e.preventDefault(); undo(); return;
   }
   if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))){
     e.preventDefault(); redo(); return;
   }
-  /* Save */
   if ((e.ctrlKey || e.metaKey) && e.key === 's'){
     e.preventDefault();
     if (currentSprite()) $('exportBtn').click();
     return;
   }
-  /* Reset zoom */
   if ((e.ctrlKey || e.metaKey) && e.key === '0'){
     e.preventDefault(); state.zoom = 1; applyZoom(); return;
   }
-  /* Space = pan temp */
-  if (e.code === 'Space' && !e.repeat && !state.pan.active){
+  if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')){
+    e.preventDefault(); state.zoom = Math.min(8, state.zoom * 1.25); applyZoom(); return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === '-'){
+    e.preventDefault(); state.zoom = Math.max(0.1, state.zoom / 1.25); applyZoom(); return;
+  }
+  if (e.code === 'Space' && !state.pan.active && !e.repeat){
     state.pan.active = true;
     state.pan.startX = 0; state.pan.startY = 0;
     state.pan.scrollL = stageCanvas.scrollLeft;
     state.pan.scrollT = stageCanvas.scrollTop;
-    overlayCanvas.classList.add('grabbing');
+    state.pan.mouseActive = false;
+    overlayCanvas.style.cursor = 'grab';
     e.preventDefault();
     return;
   }
-  /* Escape */
   if (e.key === 'Escape'){
     state.cell = null;
     renderOverlay();
@@ -2873,7 +3696,6 @@ document.addEventListener('keydown', e => {
     $('loadModal').classList.remove('show');
     $('exportModal').classList.remove('show');
   }
-  /* Delete cell */
   if (e.key === 'Delete' && state.cell){
     const s = currentSprite(); if (!s) return;
     pushHistory('delete cell');
@@ -2889,20 +3711,13 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => {
   if (e.code === 'Space' && state.pan.active && !state.pan.mouseActive){
     state.pan.active = false;
-    overlayCanvas.classList.remove('grabbing');
+    overlayCanvas.style.cursor = state.tool === 'pan' ? 'grab' : 'default';
   }
 });
 
-/* Pan bằng Space + mouse down */
-overlayCanvas.addEventListener('mousedown', e => {
-  if (e.code !== 'Space' && !state.pan.active) return;
-  state.pan.mouseActive = true;
-}, true);
-
+/* Init */
 setTool('select');
 applyZoom();
-
-/* Update undo/redo buttons */
 updateHistoryButtons();
 </script>
 </body>
