@@ -117,7 +117,6 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 .pause-panel h2{font-family:Consolas,monospace;font-size:22px;letter-spacing:4px;color:#e8f0d8;
   margin-bottom:10px;text-shadow:0 2px 0 rgba(0,0,0,.5)}
 
-/* ================= MOBILE UI ================= */
 #touchUI{display:none;position:fixed;inset:0;pointer-events:none;z-index:8;touch-action:none}
 @media (pointer:coarse){ #touchUI{display:block} }
 body.is-touch #touchUI{display:block}
@@ -137,7 +136,6 @@ body.is-touch #touchUI{display:block}
   right:var(--aim-offset-right);bottom:var(--aim-offset-bottom);
   transform:translate(var(--ajoy-tx), var(--ajoy-ty));
 }
-
 .joystick-glow{
   position:absolute;inset:0;border-radius:50%;
   background:radial-gradient(circle,
@@ -147,7 +145,6 @@ body.is-touch #touchUI{display:block}
   border:3px solid rgba(255,255,255,.32);
   box-shadow:inset 0 0 18px rgba(0,0,0,.30), 0 5px 15px rgba(0,0,0,.35);
 }
-
 .joystick-knob{
   position:absolute;width:var(--joy-knob);height:var(--joy-knob);left:50%;top:50%;
   transform:translate(-50%,-50%);border-radius:50%;
@@ -155,7 +152,6 @@ body.is-touch #touchUI{display:block}
   border:3px solid rgba(255,255,255,.65);
   box-shadow:0 4px 0 rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.3);
 }
-
 .aim-knob{
   position:absolute;width:var(--aim-knob);height:var(--aim-knob);left:50%;top:50%;
   transform:translate(-50%,-50%);border-radius:50%;
@@ -163,7 +159,6 @@ body.is-touch #touchUI{display:block}
   border:3px solid rgba(255,255,255,.65);
   box-shadow:0 4px 0 rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.3);
 }
-
 .circle-button{
   position:absolute;pointer-events:auto;
   width:72px;height:72px;border-radius:50%;
@@ -178,7 +173,6 @@ body.is-touch #touchUI{display:block}
   transition:transform .08s, opacity .1s;
   touch-action:none;
 }
-
 .action-button{
   right:var(--sit-right);bottom:var(--sit-bottom);
   width:var(--sit-size);height:var(--sit-size);
@@ -187,7 +181,6 @@ body.is-touch #touchUI{display:block}
   transform:translate(var(--sit-tx), var(--sit-ty));
 }
 .action-button:active{transform:translate(var(--sit-tx), var(--sit-ty)) scale(.86)}
-
 .jump-button{
   right:var(--jump-right);bottom:var(--jump-bottom);
   width:var(--jump-size);height:var(--jump-size);
@@ -237,7 +230,6 @@ body.edit-btn-mode #editOverlay{display:flex}
   background:linear-gradient(180deg,#88d858,#4a8a30);
   color:#0a1a06;
 }
-
 #settingsBtn{position:fixed;top:8px;right:8px;z-index:13;width:36px;height:36px;
   background:rgba(20,24,16,.9);border:2px solid #0a0d08;border-radius:6px;color:#e8f0d8;font-size:16px;
   display:none;align-items:center;justify-content:center;cursor:pointer;
@@ -424,6 +416,53 @@ body.edit-btn-mode #editOverlay{display:flex}
         <input type="range" id="setMusic" min="0" max="100" value="35"><span class="val" id="valMusic">35</span></div>
       <div class="setting-row"><label>🔔 SFX</label>
         <input type="range" id="setSfx" min="0" max="100" value="80"><span class="val" id="valSfx">80</span></div>
+
+      <h3 style="margin-top:14px">🌐 KẾT NỐI (PvP)</h3>
+      <div class="setting-row">
+        <label>🔁 TURN Relay</label>
+        <input type="checkbox" id="forceTurnChk"
+          style="accent-color:#6fbf4a;width:20px;height:20px;cursor:pointer">
+        <span class="val" style="color:#889878;font-size:10px">Bật khi 2 máy cùng wifi</span>
+      </div>
+      <div style="font-size:10px;color:#586850;margin-top:4px;
+        font-family:Consolas,monospace;text-align:left;line-height:1.6;padding:6px 10px;
+        background:rgba(0,0,0,.3);border-radius:4px;border-left:2px solid #4a8a30">
+        <b style="color:#88ff60">Khi nào bật:</b><br>
+        • 2 máy cùng wifi / cùng nhà / cùng khu<br>
+        • Kết nối mãi không được dù đã thử nhiều lần<br>
+        • Thấy lỗi "Timeout" hoặc "WebRTC error"<br><br>
+        <b style="color:#ffd060">Lưu ý:</b> TURN đi vòng qua server nên chậm hơn P2P. Bình thường để tắt.
+      </div>
+
+      <h3 style="margin-top:14px">🌐 SERVER BACKEND</h3>
+      <div style="font-size:10px;color:#889878;font-family:Consolas,monospace;
+        padding:8px 10px;background:rgba(0,0,0,.3);border-radius:4px;
+        border-left:2px solid #4a8a30;line-height:1.8;margin-bottom:10px">
+        <b style="color:#88ff60">Hiện tại:</b>
+        <span id="currentBackendLabel" style="color:#ffd060">đang tải...</span><br>
+        <b style="color:#88ff60">Auto-failover:</b> đang bật<br>
+        <b style="color:#88ff60">Health check:</b> 5s timeout · pool 2 server
+      </div>
+      <div class="setting-row">
+        <label>📋 Chọn server</label>
+        <select id="backendSelect" style="flex:1;padding:6px 10px;
+          background:#1a2018;color:#e8f0d8;border:2px solid #0a0d08;border-radius:3px;
+          font-family:Consolas,monospace;font-size:11px"></select>
+      </div>
+      <div class="setting-row">
+        <label></label>
+        <button class="mbtn" onclick="recheckBackend()" style="flex:1;padding:8px;font-size:11px">
+          🔄 Kiểm tra lại tất cả server
+        </button>
+      </div>
+      <div class="setting-row">
+        <label></label>
+        <button class="mbtn" onclick="clearBackendCache()" style="flex:1;padding:8px;font-size:11px;
+          background:linear-gradient(180deg,#d05848,#8a2a20);color:#fff">
+          🗑 Xóa cache server
+        </button>
+      </div>
+
       <h3 style="margin-top:14px">📐 NÚT MOBILE</h3>
       <button class="mbtn primary" onclick="ButtonSettings.openEditor()" style="padding:12px;font-size:13px">
         🎯 Chỉnh vị trí nút
@@ -434,6 +473,7 @@ body.edit-btn-mode #editOverlay{display:flex}
       <div style="font-size:10px;color:#586850;margin-top:8px;font-family:Consolas,monospace;text-align:left;line-height:1.6">
         Bấm "Chỉnh vị trí" → kéo các nút đến vị trí mong muốn → bấm Lưu.
       </div>
+
       <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
     </div>
   </div>
@@ -445,10 +485,141 @@ body.edit-btn-mode #editOverlay{display:flex}
 window.addEventListener('error', e => console.error('[ERROR]', e.error || e.message));
 window.addEventListener('unhandledrejection', e => console.error('[PROMISE]', e.reason));
 
-const BACKEND = { host:'game-sinhton.onrender.com', port:443, peerPath:'/peerjs/myapp', secure:true };
-const BACKEND_URL = 'https://' + BACKEND.host;
+/* ============================================================
+   🆕 BACKEND CONFIG — Multi-host với auto-failover
+   ============================================================ */
+const BACKEND_POOL = [
+  { host:'game-sinhton.onrender.com', port:443, peerPath:'/peerjs/myapp', secure:true, name:'Render · main' },
+  { host:'game-sinhton-1.onrender.com', port:443, peerPath:'/peerjs/myapp', secure:true, name:'Render · backup' }
+];
+
+const urlParams = new URLSearchParams(location.search);
+const backendOverride = urlParams.get('backend');
+
+let cachedBackend = null;
+try {
+  const cached = localStorage.getItem('dh_backend_host');
+  if (cached){
+    const parsed = JSON.parse(cached);
+    if (parsed.ts && (Date.now() - parsed.ts < 24 * 60 * 60 * 1000)){
+      cachedBackend = parsed;
+    } else {
+      localStorage.removeItem('dh_backend_host');
+    }
+  }
+} catch(e){}
+
+let BACKEND = null;
+let BACKEND_URL = '';
+
+function setBackend(b){
+  BACKEND = b;
+  BACKEND_URL = (b.secure ? 'https://' : 'http://') + b.host;
+  console.log('[Backend] ✓ Active:', b.name || b.host, '→', BACKEND_URL);
+}
+
+function saveBackend(b){
+  try {
+    localStorage.setItem('dh_backend_host', JSON.stringify({ ...b, ts: Date.now() }));
+  } catch(e){}
+}
+
+function quickHealthCheck(backend, timeoutMs){
+  return new Promise(resolve => {
+    const proto = backend.secure ? 'https' : 'http';
+    const url = proto + '://' + backend.host + '/health';
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => { ctrl.abort(); resolve(false); }, timeoutMs);
+    fetch(url, { signal: ctrl.signal, cache: 'no-store' })
+      .then(r => { clearTimeout(timer); resolve(r.ok); })
+      .catch(() => { clearTimeout(timer); resolve(false); });
+  });
+}
+
+async function resolveBackend(){
+  if (backendOverride){
+    const b = { host: backendOverride, port: 443, peerPath: '/peerjs/myapp', secure: true, name: 'Override' };
+    console.log('[Backend] 🎯 Dùng URL param:', backendOverride);
+    setBackend(b);
+    return b;
+  }
+  if (cachedBackend){
+    const ok = await quickHealthCheck(cachedBackend, 3000);
+    if (ok){
+      console.log('[Backend] 💾 Cache OK:', cachedBackend.host);
+      setBackend(cachedBackend);
+      return cachedBackend;
+    }
+    console.log('[Backend] ✗ Cache die — thử pool');
+    localStorage.removeItem('dh_backend_host');
+  }
+  console.log('[Backend] 🔍 Health-check ' + BACKEND_POOL.length + ' server...');
+  const results = await Promise.all(BACKEND_POOL.map(b => quickHealthCheck(b, 5000).then(ok => ({ b, ok }))));
+  const alive = results.filter(r => r.ok);
+  if (alive.length === 0){
+    console.warn('[Backend] ⚠ Không server nào phản hồi — dùng server đầu');
+    setBackend(BACKEND_POOL[0]);
+    return BACKEND_POOL[0];
+  }
+  const best = alive[0].b;
+  setBackend(best);
+  saveBackend(best);
+  console.log('[Backend] ✓ ' + alive.length + '/' + BACKEND_POOL.length + ' alive');
+  return best;
+}
+
+/* Init ngay */
+if (backendOverride){
+  setBackend({ host: backendOverride, port: 443, peerPath: '/peerjs/myapp', secure: true, name: 'Override' });
+} else if (cachedBackend){
+  setBackend(cachedBackend);
+} else {
+  setBackend(BACKEND_POOL[0]);
+}
+
+resolveBackend().catch(e => console.warn('[Backend] Resolve fail:', e));
+
+/* ============================================================
+   🆕 WebRTC config
+   ============================================================ */
 const MAX_PLAYERS = 5;
 const DEATH_RESPAWN_DELAY = 0.8;
+let FORCE_TURN = localStorage.getItem('dh_force_turn') === '1';
+
+const PEER_OPTS = {
+  get host(){ return BACKEND.host; },
+  get port(){ return BACKEND.port; },
+  get path(){ return BACKEND.peerPath; },
+  get secure(){ return BACKEND.secure; },
+  debug: 1,
+  pingInterval: 5000,
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun.cloudflare.com:3478' },
+      { urls: 'turn:openrelay.metered.ca:80', username:'openrelayproject', credential:'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username:'openrelayproject', credential:'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username:'openrelayproject', credential:'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:3478?transport=tcp', username:'openrelayproject', credential:'openrelayproject' }
+    ],
+    iceCandidatePoolSize: 10,
+    iceTransportPolicy: FORCE_TURN ? 'relay' : 'all',
+    bundlePolicy: 'max-bundle',
+    rtcpMuxPolicy: 'require'
+  }
+};
+
+window.setForceTURN = (on) => {
+  FORCE_TURN = !!on;
+  localStorage.setItem('dh_force_turn', on ? '1' : '0');
+  PEER_OPTS.config.iceTransportPolicy = on ? 'relay' : 'all';
+  console.log('[WebRTC] Force TURN:', on ? 'ON' : 'OFF', '— cần reload');
+  toast('🔄 Force TURN: ' + (on ? 'ON' : 'OFF') + ' — reload để áp dụng');
+};
+console.log('[WebRTC] Force TURN:', FORCE_TURN ? 'ON' : 'OFF');
+
 const buzz = ms => { if (navigator.vibrate) try{ navigator.vibrate(ms||6); }catch(e){} };
 const isTouchDevice = matchMedia('(pointer:coarse)').matches ||
   ('ontouchstart' in window && !matchMedia('(pointer:fine)').matches);
@@ -471,65 +642,11 @@ const ATTACK_DURATION = 10 / 16;
 const DEATH_DURATION = 0.9;
 const JUMP_DURATION = 0.65;
 
-/* ============================================================
-   WEAPON TYPES — auto-detect
-   ============================================================ */
-const WEAPON_TYPES = {
-  katana: {
-    matchKeywords: ['katana', 'sword', 'blade', 'saber', 'sabre'],
-    orientation: 'vertical', pivotX: 0.5, pivotY: 0.12, scale: 0.85, defaultAngle: 0
-  },
-  dagger: {
-    matchKeywords: ['dagger', 'knife', 'shiv'],
-    orientation: 'vertical', pivotX: 0.5, pivotY: 0.20, scale: 0.55, defaultAngle: 0
-  },
-  greatsword: {
-    matchKeywords: ['greatsword', 'great_sword', 'zweihander', 'claymore', 'broadsword'],
-    orientation: 'vertical', pivotX: 0.5, pivotY: 0.10, scale: 1.30, defaultAngle: 0
-  },
-  bow: {
-    matchKeywords: ['bow', 'longbow', 'shortbow'],
-    orientation: 'horizontal', pivotX: 0.5, pivotY: 0.5, scale: 1.00, defaultAngle: 0
-  },
-  crossbow: {
-    matchKeywords: ['crossbow'],
-    orientation: 'horizontal', pivotX: 0.3, pivotY: 0.5, scale: 0.95, defaultAngle: 0
-  },
-  staff: {
-    matchKeywords: ['staff', 'wand', 'rod', 'scepter'],
-    orientation: 'vertical', pivotX: 0.5, pivotY: 0.25, scale: 1.20, defaultAngle: 0
-  },
-  axe: {
-    matchKeywords: ['axe', 'hatchet', 'tomahawk'],
-    orientation: 'vertical', pivotX: 0.5, pivotY: 0.15, scale: 1.00, defaultAngle: 0
-  },
-  spear: {
-    matchKeywords: ['spear', 'lance', 'halberd', 'pike'],
-    orientation: 'vertical', pivotX: 0.5, pivotY: 0.15, scale: 1.40, defaultAngle: 0
-  },
-  shield: {
-    matchKeywords: ['shield', 'buckler'],
-    orientation: 'balanced', pivotX: 0.5, pivotY: 0.5, scale: 0.80, defaultAngle: 0
-  },
-  gun: {
-    matchKeywords: ['gun', 'rifle', 'pistol', 'revolver'],
-    orientation: 'horizontal', pivotX: 0.3, pivotY: 0.5, scale: 1.00, defaultAngle: 0
-  },
-  generic: {
-    matchKeywords: [],
-    orientation: 'vertical', pivotX: 0.5, pivotY: 0.15, scale: 0.85, defaultAngle: 0
-  }
-};
-
-/* ============================================================
-   WEAPON CONFIG — fallback defaults
-   ============================================================ */
+/* Weapon config — fallback khi không có tuning */
 const WEAPON_CONFIG = {
-  handX: 4,
-  handY: -32,
-  scale: 0.9,
-  pivotX: 0.5,
-  pivotY: 0.12,
+  handX: 4, handY: -32,
+  scale: 0.85,
+  pivotX: 0.5, pivotY: 0.12,
   angles: {
     idle:   [0, 0],
     run:    [0.05, 0.10, 0.05],
@@ -542,14 +659,10 @@ const WEAPON_CONFIG = {
   debug: false
 };
 
-/* 🆕 Weapon tuning từ weapon-tuning.json */
 let weaponTuning = null;
 
 function $(id){ return document.getElementById(id); }
 
-/* ============================================================
-   METADATA DECODER
-   ============================================================ */
 function decodeMetadata(img){
   try {
     const c = document.createElement('canvas');
@@ -571,9 +684,6 @@ function decodeMetadata(img){
   } catch(e){ return null; }
 }
 
-/* ============================================================
-   AUTO-DETECT FRAMES
-   ============================================================ */
 function autoDetectFrameLines(canvas, expectedFrames){
   const W = canvas.width, H = canvas.height;
   const cx = canvas.getContext('2d', { willReadFrequently: true });
@@ -627,59 +737,6 @@ function detectBBox(canvas, x1, y1, x2, y2){
   return { x: x1+minX, y: y1+minY, w: maxX-minX+1, h: maxY-minY+1 };
 }
 
-/* ============================================================
-   ANALYZE WEAPON
-   ============================================================ */
-function analyzeWeaponSprite(sprite, fileName){
-  const analysis = {
-    type: 'generic', orientation: 'vertical',
-    avgAspect: 1, contentMaxH: 0, contentMaxW: 0, frameBBoxes: []
-  };
-  let sumW = 0, sumH = 0, count = 0;
-  for (let i = 0; i < sprite.frames; i++){
-    const bb = detectBBox(sprite.canvas, sprite.vLines[i], 0, sprite.vLines[i+1], sprite.spriteH);
-    analysis.frameBBoxes.push(bb);
-    if (bb && bb.w > 0 && bb.h > 0){
-      sumW += bb.w; sumH += bb.h; count++;
-      if (bb.h > analysis.contentMaxH) analysis.contentMaxH = bb.h;
-      if (bb.w > analysis.contentMaxW) analysis.contentMaxW = bb.w;
-    }
-  }
-  if (count > 0){
-    const avgW = sumW / count, avgH = sumH / count;
-    analysis.avgAspect = avgH / Math.max(1, avgW);
-  }
-  if (analysis.avgAspect > 1.5) analysis.orientation = 'vertical';
-  else if (analysis.avgAspect < 0.67) analysis.orientation = 'horizontal';
-  else analysis.orientation = 'balanced';
-
-  const lower = (fileName || '').toLowerCase();
-  for (const type in WEAPON_TYPES){
-    if (type === 'generic') continue;
-    const keywords = WEAPON_TYPES[type].matchKeywords || [];
-    for (const kw of keywords){
-      if (lower.includes(kw)){ analysis.type = type; return analysis; }
-    }
-  }
-  if (analysis.orientation === 'horizontal') analysis.type = 'bow';
-  return analysis;
-}
-
-function getWeaponRenderConfig(weapon){
-  const type = weapon.weaponType || 'generic';
-  const typeCfg = WEAPON_TYPES[type] || WEAPON_TYPES.generic;
-  return {
-    pivotX: typeCfg.pivotX,
-    pivotY: typeCfg.pivotY,
-    scale: typeCfg.scale,
-    defaultAngle: typeCfg.defaultAngle,
-    orientation: typeCfg.orientation
-  };
-}
-
-/* ============================================================
-   MODELS
-   ============================================================ */
 const Models = {
   data: new Map(),
   addSprite(m, a, s){
@@ -709,7 +766,6 @@ async function loadProject(){
     }
     await Promise.all(promises);
     console.log('✓ Loaded ' + Models.data.size + ' models');
-    /* 🆕 Load weapon tuning */
     await loadWeaponTuning();
     updateLoadStatus('ok');
   } catch(e){
@@ -718,36 +774,22 @@ async function loadProject(){
   }
 }
 
-/* ============================================================
-   🆕 LOAD WEAPON TUNING từ weapon-tuning.json
-   ============================================================ */
 async function loadWeaponTuning(){
   try {
     const res = await fetch('weapon-tuning.json', { cache: 'no-store' });
-    if (!res.ok){
-      console.log('[Tuning] No weapon-tuning.json → using defaults');
-      return;
-    }
+    if (!res.ok){ console.log('[Tuning] No weapon-tuning.json'); return; }
     const data = await res.json();
-    if (data.format !== 'dh-weapon-tuning'){
-      console.warn('[Tuning] Sai format');
-      return;
-    }
+    if (data.format !== 'dh-weapon-tuning'){ console.warn('[Tuning] Sai format'); return; }
     weaponTuning = data;
-    const animCount = Object.keys(data.animations || {}).length;
-    console.log('✓ Loaded weapon tuning: ' + animCount + ' anims');
-  } catch(e){
-    console.log('[Tuning] Not loaded:', e.message);
-  }
+    console.log('✓ Weapon tuning: ' + Object.keys(data.animations || {}).length + ' anims');
+  } catch(e){ console.log('[Tuning] Not loaded:', e.message); }
 }
 
 function getFrameTuning(anim, frameIdx){
   if (!weaponTuning || !weaponTuning.animations) return null;
-  const animTuning = weaponTuning.animations[anim] ||
-                     weaponTuning.animations.idle;
+  const animTuning = weaponTuning.animations[anim] || weaponTuning.animations.idle;
   if (!animTuning || !animTuning.length) return null;
-  const t = animTuning[frameIdx % animTuning.length];
-  return t || null;
+  return animTuning[frameIdx % animTuning.length] || null;
 }
 
 function loadSprite(src, m, a, cfg){
@@ -806,21 +848,24 @@ function loadSprite(src, m, a, cfg){
       if (!anchors.length || anchors.every(x => !x) || !stableAnchor) autoComputeAnchors(sprite);
 
       if (m === 'weapon'){
-        const analysis = analyzeWeaponSprite(sprite, sprite.fileName);
-        sprite.weaponType = analysis.type;
-        sprite.weaponOrientation = analysis.orientation;
-        sprite.frameBBoxes = analysis.frameBBoxes;
-        sprite.contentMaxH = analysis.contentMaxH || spriteH;
-        sprite.contentMaxW = analysis.contentMaxW || 100;
-        sprite.avgAspect = analysis.avgAspect;
-        const typeCfg = WEAPON_TYPES[analysis.type] || WEAPON_TYPES.generic;
-        console.log(`  ⚔️ ${m}/${a}: type=${analysis.type} orient=${analysis.orientation} ` +
-          `aspect=${analysis.avgAspect.toFixed(2)} content=${analysis.contentMaxW}×${analysis.contentMaxH} ` +
-          `pivot=(${typeCfg.pivotX},${typeCfg.pivotY}) scale=${typeCfg.scale}`);
+        const frameBBoxes = [];
+        let maxH = 0, maxW = 0;
+        for (let i = 0; i < sprite.frames; i++){
+          const bb = detectBBox(cnv, sprite.vLines[i], 0, sprite.vLines[i+1], spriteH);
+          frameBBoxes.push(bb);
+          if (bb){
+            if (bb.h > maxH) maxH = bb.h;
+            if (bb.w > maxW) maxW = bb.w;
+          }
+        }
+        sprite.frameBBoxes = frameBBoxes;
+        sprite.contentMaxH = maxH || spriteH;
+        sprite.contentMaxW = maxW || 100;
+        console.log(`  ⚔️ ${m}/${a}: content=${sprite.contentMaxW}×${sprite.contentMaxH}`);
       }
 
       Models.addSprite(m, a, sprite);
-      console.log(`  ✓ ${m}/${a}: ${sprite.frames}f @ ${fps}fps [${anchorMode}] ${hasMeta ? '[meta]' : '[auto]'}`);
+      console.log(`  ✓ ${m}/${a}: ${sprite.frames}f @ ${fps}fps`);
       resolve();
     };
     img.onerror = () => { console.warn(`  ✗ ${src} not found`); resolve(); };
@@ -888,9 +933,7 @@ function getPlayerSprite(anim){
   return s;
 }
 
-/* ============================================================
-   AUDIO
-   ============================================================ */
+/* AUDIO */
 const Audio2D = (() => {
   let ctx = null, enabled = true;
   let masterGain, musicGain, sfxGain, noiseBuf = null;
@@ -993,9 +1036,7 @@ const Audio2D = (() => {
   };
 })();
 
-/* ============================================================
-   WORLD / ITEMS
-   ============================================================ */
+/* WORLD */
 const TILE = 32;
 const T = { AIR:0, GRASS:1 };
 const TILES = { 1: { id:1, name:'Cỏ', colors:['#6fbf4a','#5a9a48','#4a7a3a'] } };
@@ -1029,8 +1070,7 @@ const player = {
   facing: 1, selected: 0,
   animT: 0, currentAnim: 'idle', animTime: 0,
   _stepAcc: 0, attackT: 0, hurtT: 0, jumpT: 0, jumpY: 0,
-  sitting: false,
-  deathT: 0
+  sitting: false, deathT: 0
 };
 
 const cam = { x: 0, y: 0 };
@@ -1047,9 +1087,7 @@ addEventListener('resize', resize);
 addEventListener('orientationchange', () => setTimeout(resize, 100));
 resize();
 
-/* ============================================================
-   JOYSTICK DI CHUYỂN
-   ============================================================ */
+/* JOYSTICK MOVE */
 const joy = { id:null, x:0, y:0, cx:0, cy:0 };
 const moveJoystick = $('moveJoystick');
 const moveKnob = $('moveKnob');
@@ -1075,8 +1113,7 @@ function updateMoveJoystick(cx, cy){
 }
 function endMoveJoystick(e){
   if (e.pointerId !== joy.id) return;
-  joy.id = null;
-  joy.x = 0; joy.y = 0;
+  joy.id = null; joy.x = 0; joy.y = 0;
   moveKnob.style.transform = 'translate(-50%,-50%)';
 }
 addEventListener('pointermove', e => {
@@ -1085,9 +1122,7 @@ addEventListener('pointermove', e => {
 addEventListener('pointerup', endMoveJoystick);
 addEventListener('pointercancel', endMoveJoystick);
 
-/* ============================================================
-   JOYSTICK AIM
-   ============================================================ */
+/* JOYSTICK AIM */
 const aim = { angle:0, joyId:null, joyX:0, joyY:0, autoAttack:false, cx:0, cy:0 };
 const aimJoystick = $('aimJoystick');
 const aimKnob = $('aimKnob');
@@ -1107,20 +1142,16 @@ function updateAimJoystick(cx, cy){
   const max = 48;
   const d = Math.hypot(dx, dy);
   if (d > max){ dx = dx/d*max; dy = dy/d*max; }
-  aim.joyX = dx/max;
-  aim.joyY = dy/max;
+  aim.joyX = dx/max; aim.joyY = dy/max;
   aimKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
   if (d > 8){
     aim.angle = Math.atan2(aim.joyY, aim.joyX);
     aim.autoAttack = d > 15;
-  } else {
-    aim.autoAttack = false;
-  }
+  } else aim.autoAttack = false;
 }
 function endAimJoystick(e){
   if (e.pointerId !== aim.joyId) return;
-  aim.joyId = null;
-  aim.autoAttack = false;
+  aim.joyId = null; aim.autoAttack = false;
   aim.joyX = 0; aim.joyY = 0;
   aimKnob.style.transform = 'translate(-50%,-50%)';
 }
@@ -1130,9 +1161,7 @@ addEventListener('pointermove', e => {
 addEventListener('pointerup', endAimJoystick);
 addEventListener('pointercancel', endAimJoystick);
 
-/* ============================================================
-   INPUT
-   ============================================================ */
+/* INPUT */
 const keys = {};
 const mouse = { x: 0, y: 0 };
 let gameStarted = false, paused = false;
@@ -1191,9 +1220,7 @@ function endLook(e){ if (e.pointerId === lookId) lookId = null; }
 addEventListener('pointerup', endLook);
 addEventListener('pointercancel', endLook);
 
-/* ============================================================
-   BUTTONS
-   ============================================================ */
+/* BUTTONS */
 function bindBtn(id, downFn, upFn){
   const el = $(id);
   if (!el) return;
@@ -1211,9 +1238,7 @@ function bindBtn(id, downFn, upFn){
 bindBtn('btnJump', () => tryJump(), null);
 bindBtn('btnSit', () => trySit(), null);
 
-/* ============================================================
-   ACTIONS
-   ============================================================ */
+/* ACTIONS */
 function tryJump(){
   if (!gameStarted || paused) return;
   if (player.hp <= 0) return;
@@ -1276,9 +1301,7 @@ function burstHitVisual(x, y){
   }
 }
 
-/* ============================================================
-   UPDATE PLAYER
-   ============================================================ */
+/* UPDATE PLAYER */
 function updatePlayer(dt){
   if (player.hp <= 0){
     player.deathT += dt;
@@ -1288,9 +1311,7 @@ function updatePlayer(dt){
       const maxTime = deathSprite.frames / deathSprite.fps;
       if (player.animTime > maxTime) player.animTime = maxTime;
     }
-    if (player.deathT >= DEATH_RESPAWN_DELAY){
-      respawnPlayer();
-    }
+    if (player.deathT >= DEATH_RESPAWN_DELAY) respawnPlayer();
     return;
   }
 
@@ -1307,20 +1328,17 @@ function updatePlayer(dt){
   if (player.sitting && mag > 0.15) player.sitting = false;
   if (player.sitting){ dx = 0; dy = 0; }
 
-  if (aim.joyId !== null){
-    mobileAimUsed = true;
-  } else if (!mobileAimUsed && !isTouchDevice){
+  if (aim.joyId !== null) mobileAimUsed = true;
+  else if (!mobileAimUsed && !isTouchDevice){
     const wx = mouse.x + cam.x;
     const wy = mouse.y + cam.y;
     const targetA = Math.atan2(wy - player.y, wx - player.x);
-
     let diff = targetA - aim.angle;
     while (diff >  Math.PI) diff -= Math.PI * 2;
     while (diff < -Math.PI) diff += Math.PI * 2;
     aim.angle += diff * 0.55;
     while (aim.angle >  Math.PI) aim.angle -= Math.PI * 2;
     while (aim.angle < -Math.PI) aim.angle += Math.PI * 2;
-
     aim.autoAttack = false;
   }
 
@@ -1369,54 +1387,66 @@ function respawnPlayer(){
   player.attackT = 0; player.hurtT = 0;
   player.deathT = 0;
   player.sitting = false;
-  player.currentAnim = 'idle';
-  player.animTime = 0;
+  player.currentAnim = 'idle'; player.animTime = 0;
   cam.x = player.x - VW/2; cam.y = player.y - VH/2;
   if (net.active) net.broadcastPos();
   updateHpBar();
 }
 
-/* ============================================================
-   NETWORK
-   ============================================================ */
-const PEER_OPTS = {
-  host: BACKEND.host, port: BACKEND.port, path: BACKEND.peerPath,
-  secure: BACKEND.secure, debug: 0,
-  config: { iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
-  ]}
-};
+/* NETWORK */
 const net = {
   active: false, mode: null, peer: null, hostConn: null,
   clients: new Map(), myId: null, name: 'Hunter', roomCode: null,
-  players: new Map(), onWorldReady: null,
+  players: new Map(), onWorldReady: null, onStage: null, _stage: null,
+
   startHost(name){
-    this.name = name || 'Host'; this.mode = 'host'; this.players.clear();
-    const code = genRoomCode(); this.roomCode = code;
+    this.name = name || 'Host';
+    this.mode = 'host';
+    this.players.clear();
+    const code = genRoomCode();
+    this.roomCode = code;
     const self = this;
+
     return new Promise((resolve, reject) => {
       try { this.peer = new Peer('dragonhunter-' + code, PEER_OPTS); }
       catch(e){ reject(e); return; }
-      const timer = setTimeout(() => reject(new Error('Hết thời gian')), 20000);
+
+      const timer = setTimeout(() => {
+        try { self.peer.destroy(); } catch(e){}
+        reject(new Error('Timeout kết nối signaling (20s)'));
+      }, 20000);
+
       this.peer.on('open', id => {
         clearTimeout(timer);
-        self.myId = id; self.active = true;
+        self.myId = id;
+        self.active = true;
         self.peer.on('connection', conn => self._acceptClient(conn));
-        console.log('[Host] Peer open:', id, 'Room:', code);
+        console.log('[Host] ✓ Peer open:', id, '· Room:', code);
         resolve(code);
       });
+
       this.peer.on('error', e => {
         clearTimeout(timer);
-        console.error('[Host] Peer error:', e);
-        reject(e);
+        console.error('[Host] Error:', e);
+        const msg = String((e && e.type) || (e && e.message) || e);
+        if (msg.includes('is taken')) reject(new Error('Mã phòng trùng — thử lại'));
+        else reject(new Error(msg || 'Không tạo được host'));
+      });
+
+      this.peer.on('disconnected', () => {
+        console.warn('[Host] Signaling disconnected — reconnect...');
+        try { self.peer.reconnect(); } catch(e){}
       });
     });
   },
+
   startClient(name, code){
-    this.name = name || 'Hunter'; this.mode = 'client';
-    this.players.clear(); this.roomCode = code;
+    this.name = name || 'Hunter';
+    this.mode = 'client';
+    this.players.clear();
+    this.roomCode = code;
     const self = this;
+
     return new Promise((resolve, reject) => {
       let settled = false;
       const finish = (fn, val) => {
@@ -1428,20 +1458,59 @@ const net = {
       try { this.peer = new Peer(PEER_OPTS); }
       catch(e){ return finish(reject, e); }
 
+      self._stage = 'signaling';
+      if (self.onStage) self.onStage('signaling');
+      console.log('[Client] ⏳ Stage 1/3: signaling...');
+
       const timer = setTimeout(() => {
-        finish(reject, new Error('Hết thời gian kết nối (20s)'));
-      }, 20000);
+        try { self.peer.destroy(); } catch(e){}
+        finish(reject, new Error('Timeout 45s — không kết nối được host'));
+      }, 45000);
 
       this.peer.on('open', id => {
         self.myId = id;
-        console.log('[Client] Peer open:', id, '→ connecting to dragonhunter-' + code);
-        const conn = self.peer.connect('dragonhunter-' + code, { reliable: true });
+        self._stage = 'ice';
+        if (self.onStage) self.onStage('ice');
+        console.log('[Client] ✓ Stage 1/3 OK. PeerID:', id);
+        console.log('[Client] ⏳ Stage 2/3: ICE negotiation to dragonhunter-' + code);
+
+        const conn = self.peer.connect('dragonhunter-' + code, {
+          reliable: true,
+          serialization: 'json',
+          metadata: { name: self.name },
+          pingInterval: 5000
+        });
         self.hostConn = conn;
+
+        /* ICE debug log */
+        setTimeout(() => {
+          try {
+            const pc = conn.peerConnection;
+            if (!pc) return;
+            const candidates = { host:0, srflx:0, prflx:0, relay:0 };
+            pc.onicecandidate = (e) => {
+              if (e.candidate){
+                const type = e.candidate.type || 'unknown';
+                candidates[type] = (candidates[type] || 0) + 1;
+              } else {
+                console.log('[ICE] ✓ Done. Candidates:', candidates);
+                if (!candidates.relay) console.warn('[ICE] ⚠ Không có RELAY — TURN có thể bị chặn');
+              }
+            };
+            pc.onicegatheringstatechange = () => console.log('[ICE] Gathering:', pc.iceGatheringState);
+            pc.oniceconnectionstatechange = () => {
+              console.log('[ICE] Connection:', pc.iceConnectionState);
+              if (pc.iceConnectionState === 'failed') console.error('[ICE] ❌ FAILED');
+            };
+          } catch(e){}
+        }, 100);
 
         conn.on('open', () => {
           clearTimeout(timer);
           self.active = true;
-          console.log('[Client] Conn opened to host');
+          self._stage = 'connected';
+          if (self.onStage) self.onStage('connected');
+          console.log('[Client] ✓ Stage 3/3 OK — P2P connected!');
           finish(resolve);
         });
 
@@ -1464,7 +1533,7 @@ const net = {
         conn.on('error', e => {
           clearTimeout(timer);
           console.error('[Client] Conn error:', e);
-          finish(reject, new Error('Lỗi kết nối: ' + (e.message || e.type || e)));
+          finish(reject, new Error('WebRTC: ' + ((e && e.message) || (e && e.type) || 'error')));
         });
       });
 
@@ -1474,12 +1543,20 @@ const net = {
         const msg = String((e && e.type) || (e && e.message) || e);
         if (msg.includes('is taken')) finish(reject, new Error('Không tìm thấy phòng'));
         else if (msg.includes('peer-unavailable')) finish(reject, new Error('Host đã rời phòng'));
-        else if (msg.includes('network')) finish(reject, new Error('Lỗi mạng — kiểm tra kết nối'));
+        else if (msg.includes('network')) finish(reject, new Error('Lỗi mạng'));
+        else if (msg.includes('server-error')) finish(reject, new Error('Signaling lỗi'));
         else finish(reject, new Error(msg || 'Không kết nối được host'));
+      });
+
+      this.peer.on('disconnected', () => {
+        console.warn('[Client] Signaling disconnected — reconnect...');
+        try { self.peer.reconnect(); } catch(e){}
       });
     });
   },
+
   _acceptClient(conn){
+    const self = this;
     conn.on('open', () => {
       if (this.clients.size >= MAX_PLAYERS - 1){
         try { conn.send({ t:'full', max: MAX_PLAYERS }); } catch(e){}
@@ -1500,6 +1577,14 @@ const net = {
       toast('⚔️ Đối thủ mới! (' + (1 + this.clients.size) + '/' + MAX_PLAYERS + ')');
       updateNetHud();
       updateRoomHeartbeat();
+      /* Update host status */
+      const statusEl = $('hostStatus');
+      if (statusEl && self.roomCode){
+        const count = 1 + self.clients.size;
+        statusEl.innerHTML =
+          '✓ Phòng đang mở · <span style="color:#ffd060">' + self.roomCode + '</span><br>' +
+          '<small style="color:#88ff60">⚔️ ' + count + '/' + MAX_PLAYERS + ' người chơi</small>';
+      }
     });
     conn.on('data', d => this._onData(d, conn));
     conn.on('close', () => {
@@ -1507,8 +1592,16 @@ const net = {
       toast('👋 Đối thủ rời');
       updateNetHud();
       updateRoomHeartbeat();
+      const statusEl2 = $('hostStatus');
+      if (statusEl2 && self.roomCode){
+        const count = 1 + self.clients.size;
+        statusEl2.innerHTML =
+          '✓ Phòng đang mở · <span style="color:#ffd060">' + self.roomCode + '</span><br>' +
+          '<small style="color:#889878">🎧 ' + count + '/' + MAX_PLAYERS + ' người chơi</small>';
+      }
     });
   },
+
   _onData(d, conn){
     if (d.t === 'world'){
       initRNG(d.seed); world.set(b64ToU8(d.data));
@@ -1542,8 +1635,7 @@ const net = {
           player.animTime = 0;
           player.sitting = false;
           this.broadcastPos();
-        }
-        else this.broadcastPos();
+        } else this.broadcastPos();
       }
       if (this.mode === 'host' && conn){
         for (const [id, c] of this.clients){
@@ -1553,12 +1645,14 @@ const net = {
       }
     }
   },
+
   broadcastPos(){
     if (!this.active) return;
     this.send({ t:'pos', id: this.myId, name: this.name,
                 x: player.x, y: player.y, facing: player.facing,
                 hp: player.hp, sitting: player.sitting });
   },
+
   send(msg){
     if (!this.active) return;
     try {
@@ -1566,6 +1660,7 @@ const net = {
       else if (this.hostConn){ this.hostConn.send(msg); }
     } catch(e){}
   },
+
   disconnect(){
     const wasRoom = this.roomCode;
     const wasMode = this.mode;
@@ -1574,9 +1669,7 @@ const net = {
     this.hostConn = null;
     if (this.peer){ try { this.peer.destroy(); } catch(e){} }
     this.peer = null; this.myId = null;
-    if (wasRoom && wasMode === 'host'){
-      apiDeleteRoom(wasRoom);
-    }
+    if (wasRoom && wasMode === 'host') apiDeleteRoom(wasRoom);
     this.roomCode = null;
     this.mode = null;
     stopRoomHeartbeat();
@@ -1618,9 +1711,7 @@ function updateNetHud(){
   $('netCount').textContent = 1 + net.players.size;
 }
 
-/* ============================================================
-   ROOM LIST API
-   ============================================================ */
+/* ROOM LIST API */
 let roomPollingTimer = null;
 let roomHeartbeatTimer = null;
 let backendAwake = false;
@@ -1628,18 +1719,31 @@ let backendAwake = false;
 async function wakeUpBackend(){
   if (backendAwake) return true;
   try {
-    const res = await fetch(BACKEND_URL + '/health', {
-      cache: 'no-store',
-      signal: AbortSignal.timeout ? AbortSignal.timeout(35000) : undefined
+    const checks = BACKEND_POOL.map(b => {
+      const proto = b.secure ? 'https' : 'http';
+      return fetch(proto + '://' + b.host + '/health', {
+        cache: 'no-store',
+        signal: AbortSignal.timeout ? AbortSignal.timeout(35000) : undefined
+      }).then(r => { if (!r.ok) throw new Error('HTTP'); return b; });
     });
-    backendAwake = res.ok;
-    if (res.ok) console.log('✓ Backend awake');
-    return res.ok;
-  } catch(e){
-    console.warn('Wake-up fail:', e.message);
+    let winner = null;
+    if (typeof Promise.any === 'function'){
+      try { winner = await Promise.any(checks); } catch(e){ winner = null; }
+    } else {
+      const settled = await Promise.allSettled(checks);
+      const ok = settled.find(s => s.status === 'fulfilled');
+      winner = ok ? ok.value : null;
+    }
+    if (winner){
+      if (winner.host !== BACKEND.host){ setBackend(winner); saveBackend(winner); }
+      backendAwake = true;
+      console.log('✓ Backend awake:', winner.host);
+      return true;
+    }
     return false;
-  }
+  } catch(e){ return false; }
 }
+
 async function apiRegisterRoom(code, name){
   try {
     const res = await fetch(BACKEND_URL + '/rooms', {
@@ -1699,7 +1803,6 @@ function updateRoomHeartbeat(){
   if (!net.active || !net.roomCode) return;
   apiUpdateRoomCount(net.roomCode, 1 + net.clients.size);
 }
-
 function startRoomPolling(){
   if (roomPollingTimer) return;
   wakeUpBackend().then(() => fetchAndRenderRooms());
@@ -1742,9 +1845,7 @@ function renderRoomList(rooms){
       '<span class="host">' + (r.name || 'Host') + '</span>' +
       '<span class="count ' + countClass + '">' + r.count + '/' + (r.max || MAX_PLAYERS) + '</span>' +
       '<span class="age">' + formatAge(now - r.ts) + '</span>';
-    if (!isFull){
-      item.addEventListener('click', () => Game.joinFromList(r.code, r.name));
-    }
+    if (!isFull) item.addEventListener('click', () => Game.joinFromList(r.code, r.name));
     el.appendChild(item);
   }
 }
@@ -1756,9 +1857,7 @@ function formatAge(ms){
   return Math.floor(m / 60) + 'h';
 }
 
-/* ============================================================
-   RENDER
-   ============================================================ */
+/* RENDER */
 function drawTile(x, y, id, sx, sy){
   const def = TILES[id];
   if (!def) return;
@@ -1830,9 +1929,7 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
   ctx.restore();
 }
 
-/* ============================================================
-   🆕 VẼ WEAPON — ưu tiên tuning > auto-type > default
-   ============================================================ */
+/* Draw weapon using tuning */
 function drawWeaponFromTuning(weapon, t, sx, syGround, facing){
   const wFrameIdx = t.weaponFrame || 0;
   const bb = weapon.frameBBoxes && weapon.frameBBoxes[wFrameIdx];
@@ -1873,31 +1970,24 @@ function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facin
   if (!weapon) weapon = Models.get('weapon', 'idle');
   if (!weapon) return;
 
-  /* 🆕 Ưu tiên tuning từ weapon-tuning.json */
+  /* Tuning takes priority */
   const tuning = getFrameTuning(anim, playerFrameIdx);
   if (tuning){
     drawWeaponFromTuning(weapon, tuning, sx, syGround, facing);
     return;
   }
 
-  /* Fallback: dùng auto-detect type config */
+  /* Fallback default */
   const frames = weapon.frames || (weapon.vLines.length - 1);
   if (frames < 1) return;
-
-  const renderCfg = getWeaponRenderConfig(weapon);
-  const cfg = WEAPON_CONFIG.angles[anim] ||
-              WEAPON_CONFIG.angles[fallbackAnim] ||
-              WEAPON_CONFIG.angles.idle;
-
-  const wFrameIdx = Math.min(
-    frames - 1,
-    Math.floor((playerFrameIdx / Math.max(1, playerTotalFrames)) * frames)
-  );
-  const angle = (cfg[wFrameIdx] !== undefined ? cfg[wFrameIdx] : 0) + renderCfg.defaultAngle;
+  const cfg = WEAPON_CONFIG.angles[anim] || WEAPON_CONFIG.angles[fallbackAnim] || WEAPON_CONFIG.angles.idle;
+  const wFrameIdx = Math.min(frames - 1,
+    Math.floor((playerFrameIdx / Math.max(1, playerTotalFrames)) * frames));
+  const angle = cfg[wFrameIdx] !== undefined ? cfg[wFrameIdx] : 0;
 
   const bb = weapon.frameBBoxes && weapon.frameBBoxes[wFrameIdx];
   let srcX, srcY, srcW, srcH;
-  if (bb && bb.w > 0 && bb.h > 0){
+  if (bb && bb.w > 0){
     srcX = bb.x; srcY = bb.y; srcW = bb.w; srcH = bb.h;
   } else {
     srcX = weapon.vLines[wFrameIdx]; srcY = 0;
@@ -1905,12 +1995,12 @@ function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facin
   }
 
   const contentH = weapon.contentMaxH || srcH;
-  const scale = (DEST_HEIGHT * renderCfg.scale) / contentH;
+  const scale = (DEST_HEIGHT * WEAPON_CONFIG.scale) / contentH;
   const dw = srcW * scale;
   const dh = srcH * scale;
 
-  const pivotX = -dw * renderCfg.pivotX;
-  const pivotY = -dh * renderCfg.pivotY;
+  const pivotX = -dw * WEAPON_CONFIG.pivotX;
+  const pivotY = -dh * WEAPON_CONFIG.pivotY;
 
   ctx.save();
   ctx.translate(sx, syGround);
@@ -1950,7 +2040,7 @@ function drawPlayer(){
   drawSpriteAt(sprite, idx, sx, sySprite, player.facing);
 
   const weaponAnim = player.hp <= 0 ? 'death' : player.currentAnim;
-  drawWeapon(weaponAnim, idx, total, sx, syGround + player.jumpY, player.facing);
+  drawWeapon(weaponAnim, idx, total, sx, sySprite, player.facing);
 }
 
 const LOCAL_COLORS = { body:'#3a5a9a', skin:'#f0c8a0' };
@@ -2010,9 +2100,6 @@ function drawRemotePlayer(p){
   ctx.textAlign = 'left';
 }
 
-/* ============================================================
-   AIM ARROW
-   ============================================================ */
 function drawAimArrow(){
   if (!gameStarted || paused) return;
   if (player.hp <= 0) return;
@@ -2027,9 +2114,7 @@ function drawAimArrow(){
   const cx = sx + cosA * orbitR;
   const cy = syBelly + sinA * orbitR;
 
-  const headLen = 10;
-  const headW = 6;
-
+  const headLen = 10, headW = 6;
   const tipX = cx + cosA * (headLen * 0.6);
   const tipY = cy + sinA * (headLen * 0.6);
   const b1X = cx - cosA * (headLen * 0.4) + px * headW;
@@ -2040,9 +2125,8 @@ function drawAimArrow(){
   const midY = (tipY + b1Y + b2Y) / 3;
 
   ctx.save();
-
   ctx.globalAlpha = 0.4;
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = '#000';
   ctx.beginPath();
   ctx.moveTo(tipX + 1.5, tipY + 2);
   ctx.lineTo(b1X + 1.5, b1Y + 2);
@@ -2051,41 +2135,33 @@ function drawAimArrow(){
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  ctx.strokeStyle = '#000000';
+  ctx.strokeStyle = '#000';
   ctx.lineWidth = 2.5;
   ctx.lineJoin = 'round';
   ctx.beginPath();
-  ctx.moveTo(tipX, tipY);
-  ctx.lineTo(b1X, b1Y);
-  ctx.lineTo(b2X, b2Y);
+  ctx.moveTo(tipX, tipY); ctx.lineTo(b1X, b1Y); ctx.lineTo(b2X, b2Y);
   ctx.closePath();
   ctx.stroke();
 
   const grad = ctx.createLinearGradient(b2X, b2Y, tipX, tipY);
-  grad.addColorStop(0,   '#c8d8c0');
-  grad.addColorStop(0.5, '#ffffff');
-  grad.addColorStop(1,   '#f0f4e8');
+  grad.addColorStop(0, '#c8d8c0');
+  grad.addColorStop(0.5, '#fff');
+  grad.addColorStop(1, '#f0f4e8');
   ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.moveTo(tipX, tipY);
-  ctx.lineTo(b1X, b1Y);
-  ctx.lineTo(b2X, b2Y);
+  ctx.moveTo(tipX, tipY); ctx.lineTo(b1X, b1Y); ctx.lineTo(b2X, b2Y);
   ctx.closePath();
   ctx.fill();
 
   ctx.fillStyle = 'rgba(255,255,255,.9)';
   ctx.beginPath();
-  ctx.moveTo(tipX, tipY);
-  ctx.lineTo(b1X, b1Y);
-  ctx.lineTo(midX, midY);
+  ctx.moveTo(tipX, tipY); ctx.lineTo(b1X, b1Y); ctx.lineTo(midX, midY);
   ctx.closePath();
   ctx.fill();
 
   ctx.fillStyle = 'rgba(0,0,0,.25)';
   ctx.beginPath();
-  ctx.moveTo(tipX, tipY);
-  ctx.lineTo(b2X, b2Y);
-  ctx.lineTo(midX, midY);
+  ctx.moveTo(tipX, tipY); ctx.lineTo(b2X, b2Y); ctx.lineTo(midX, midY);
   ctx.closePath();
   ctx.fill();
 
@@ -2094,12 +2170,9 @@ function drawAimArrow(){
     const pulse = 1 + Math.sin(t) * 0.2;
     ctx.globalAlpha = 0.35;
     ctx.fillStyle = '#88ff60';
-    ctx.beginPath();
-    ctx.arc(tipX, tipY, 5 * pulse, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(tipX, tipY, 5 * pulse, 0, Math.PI * 2); ctx.fill();
     ctx.globalAlpha = 1;
   }
-
   if (aim.autoAttack){
     ctx.strokeStyle = '#ff5050';
     ctx.lineWidth = 2;
@@ -2109,7 +2182,6 @@ function drawAimArrow(){
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
-
   ctx.restore();
 }
 
@@ -2171,9 +2243,7 @@ function getClockString(){
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
-/* ============================================================
-   HUD
-   ============================================================ */
+/* HUD */
 const hotbarEl = $('hotbar');
 function renderHotbar(){
   hotbarEl.innerHTML = '';
@@ -2211,37 +2281,30 @@ function toast(msg){
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 1600);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
 }
 
-/* ============================================================
-   BUTTON SETTINGS
-   ============================================================ */
+/* BUTTON SETTINGS */
 const ButtonSettings = (() => {
   const KEY = 'dh_btn_position_v2';
   const KEYS = ['moveJoy', 'aimJoy', 'jump', 'sit'];
   let offsets = { moveJoy:{dx:0,dy:0}, aimJoy:{dx:0,dy:0}, jump:{dx:0,dy:0}, sit:{dx:0,dy:0} };
   let backup = null;
   let editMode = false;
-
   const VARS = {
     moveJoy: ['--mjoy-tx', '--mjoy-ty'],
     aimJoy:  ['--ajoy-tx', '--ajoy-ty'],
     jump:    ['--jump-tx', '--jump-ty'],
     sit:     ['--sit-tx', '--sit-ty']
   };
-  const ELEMS = {
-    moveJoy: 'moveJoystick', aimJoy: 'aimJoystick', jump: 'btnJump', sit: 'btnSit'
-  };
+  const ELEMS = { moveJoy: 'moveJoystick', aimJoy: 'aimJoystick', jump: 'btnJump', sit: 'btnSit' };
 
   function load(){
     try {
       const raw = localStorage.getItem(KEY);
       if (raw){
         const data = JSON.parse(raw);
-        for (const k of KEYS){
-          if (data[k]) offsets[k] = { dx: +data[k].dx || 0, dy: +data[k].dy || 0 };
-        }
+        for (const k of KEYS) if (data[k]) offsets[k] = { dx: +data[k].dx || 0, dy: +data[k].dy || 0 };
       }
     } catch(e){}
   }
@@ -2308,7 +2371,6 @@ const ButtonSettings = (() => {
     applyAll();
     toast('↺ Đã reset vị trí');
   }
-
   function init(){
     load(); applyAll();
     for (const k of KEYS) makeDraggable(k);
@@ -2322,9 +2384,7 @@ const ButtonSettings = (() => {
   return { init, openEditor, reset };
 })();
 
-/* ============================================================
-   NAME + JOIN HELPERS
-   ============================================================ */
+/* NAME + JOIN */
 function getPlayerName(){
   const el = $('playerName');
   const name = (el && el.value.trim()) || 'Hunter';
@@ -2335,7 +2395,7 @@ function getPlayerName(){
 async function joinRoomDirect(code, hostName){
   if (net.active){ toast('⚠ Đang trong phòng khác — thoát trước', true); return; }
   try { net.disconnect(); } catch(e){}
-  await new Promise(r => setTimeout(r, 100));
+  await new Promise(r => setTimeout(r, 150));
 
   const name = getPlayerName();
   const list = await apiListRooms();
@@ -2347,57 +2407,150 @@ async function joinRoomDirect(code, hostName){
     }
   }
 
+  /* Overlay với stages */
   const overlay = document.createElement('div');
   overlay.id = 'joinOverlay';
   overlay.style.cssText =
     'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);' +
-    'background:rgba(20,24,16,.98);padding:22px 32px;' +
-    'border:2px solid #4a8a30;border-radius:10px;z-index:99999;' +
-    'color:#88ff60;font-family:Consolas,monospace;text-align:center;' +
-    'box-shadow:0 8px 40px rgba(0,0,0,.8);min-width:260px';
+    'background:rgba(20,24,16,.98);padding:26px 34px;' +
+    'border:2px solid #4a8a30;border-radius:12px;z-index:99999;' +
+    'color:#e8f0d8;font-family:Consolas,monospace;text-align:center;' +
+    'box-shadow:0 12px 60px rgba(0,0,0,.9);min-width:320px;max-width:90vw';
   overlay.innerHTML =
-    '🔗 Đang vào phòng <b>' + code + '</b>...' +
-    '<br><small style="color:#889878;font-size:10px" id="joinOverlayMsg">Đang kết nối tới host</small>' +
-    '<br><button id="joinCancelBtn" style="margin-top:12px;background:#5a5850;border:2px solid #0a0d08;' +
-    'color:#e8f0d8;border-radius:4px;padding:6px 14px;font-size:11px;cursor:pointer;font-family:inherit">✕ Hủy</button>';
+    '<div style="font-size:15px;font-weight:bold;color:#88ff60;margin-bottom:14px">' +
+      '🔗 Đang vào phòng <span style="color:#ffd060">' + code + '</span>' +
+    '</div>' +
+    '<div id="joinStages" style="text-align:left;font-size:11px;line-height:2;color:#889878;margin-bottom:16px">' +
+      '<div data-stage="signaling"><span class="stage-dot" style="color:#586850">○</span> <span>Kết nối signaling server</span></div>' +
+      '<div data-stage="ice"><span class="stage-dot" style="color:#586850">○</span> <span>ICE negotiation (P2P handshake)</span></div>' +
+      '<div data-stage="connected"><span class="stage-dot" style="color:#586850">○</span> <span>Vào game</span></div>' +
+    '</div>' +
+    '<div id="joinElapsed" style="font-size:10px;color:#586850;margin-bottom:12px">Đã chờ: 0.0s</div>' +
+    '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
+      '<button id="joinCancelBtn" style="background:#5a5850;border:2px solid #0a0d08;' +
+        'color:#e8f0d8;border-radius:5px;padding:8px 16px;font-size:11px;' +
+        'cursor:pointer;font-family:inherit;font-weight:bold">✕ Hủy</button>' +
+      '<button id="joinForceTurnBtn" style="background:#7d5a00;border:2px solid #ffd060;' +
+        'color:#ffd060;border-radius:5px;padding:8px 14px;font-size:11px;' +
+        'cursor:pointer;font-family:inherit;font-weight:bold">🔁 Thử TURN Relay</button>' +
+    '</div>';
   document.body.appendChild(overlay);
 
+  function setStage(stage, status){
+    const row = overlay.querySelector(`[data-stage="${stage}"]`);
+    if (!row) return;
+    const dot = row.querySelector('.stage-dot');
+    const text = row.querySelector('span:nth-child(2)');
+    if (status === 'active'){
+      dot.textContent = '◐'; dot.style.color = '#ffd060';
+      text.style.color = '#e8f0d8';
+    } else if (status === 'done'){
+      dot.textContent = '✓'; dot.style.color = '#88ff60';
+      text.style.color = '#88ff60';
+    } else if (status === 'fail'){
+      dot.textContent = '✗'; dot.style.color = '#ff6060';
+      text.style.color = '#ff6060';
+    } else {
+      dot.textContent = '○'; dot.style.color = '#586850';
+      text.style.color = '#889878';
+    }
+  }
+
   let cancelled = false;
-  const cancelBtn = overlay.querySelector('#joinCancelBtn');
-  const msgEl = overlay.querySelector('#joinOverlayMsg');
-  cancelBtn.addEventListener('click', () => {
+  overlay.querySelector('#joinCancelBtn').addEventListener('click', () => {
     cancelled = true;
     overlay.remove();
     try { net.disconnect(); } catch(e){}
     toast('↩ Đã hủy vào phòng');
   });
+  overlay.querySelector('#joinForceTurnBtn').addEventListener('click', () => {
+    console.log('[WebRTC] 🔁 User bật Force TURN');
+    localStorage.setItem('dh_force_turn', '1');
+    PEER_OPTS.config.iceTransportPolicy = 'relay';
+    toast('🔁 Bật TURN Relay — đang thử lại...');
+    cancelled = true;
+    overlay.remove();
+    try { net.disconnect(); } catch(e){}
+    setTimeout(() => joinRoomDirect(code, hostName), 500);
+  });
 
-  const watchdog = setTimeout(() => {
+  const startTime = Date.now();
+  const elapsedTimer = setInterval(() => {
+    if (cancelled || !document.body.contains(overlay)){ clearInterval(elapsedTimer); return; }
+    const el = overlay.querySelector('#joinElapsed');
+    if (el) el.textContent = 'Đã chờ: ' + ((Date.now() - startTime) / 1000).toFixed(1) + 's';
+  }, 100);
+
+  net.onStage = (stage) => {
     if (cancelled) return;
-    if (document.body.contains(overlay)){
-      overlay.remove();
-      toast('❌ Host không phản hồi — thoát', true);
-      try { net.disconnect(); } catch(e){}
-    }
-  }, 15000);
+    if (stage === 'signaling') setStage('signaling', 'active');
+    else if (stage === 'ice'){ setStage('signaling', 'done'); setStage('ice', 'active'); }
+    else if (stage === 'connected'){ setStage('ice', 'done'); setStage('connected', 'active'); }
+  };
 
   try {
     net.onWorldReady = () => {
       if (cancelled) return;
-      clearTimeout(watchdog);
-      if (document.body.contains(overlay)) overlay.remove();
-      initInv();
-      startGame('client');
+      setStage('connected', 'done');
+      setTimeout(() => {
+        if (document.body.contains(overlay)) overlay.remove();
+        clearInterval(elapsedTimer);
+        initInv();
+        startGame('client');
+      }, 200);
     };
-    await net.startClient(name, code);
-    if (cancelled) return;
-    if (msgEl) msgEl.textContent = '✓ Đã kết nối · Đang tải dữ liệu...';
+
+    /* Retry 2 lần */
+    let lastErr = null;
+    for (let attempt = 1; attempt <= 3; attempt++){
+      if (cancelled) return;
+      try {
+        if (attempt > 1){
+          console.log('[Client] 🔄 Retry ' + attempt + '/3');
+          setStage('signaling', 'pending');
+          setStage('ice', 'pending');
+          try { net.disconnect(); } catch(e){}
+          await new Promise(r => setTimeout(r, 800));
+        }
+        await net.startClient(name, code);
+        net.onStage = null;
+        return;
+      } catch(e){
+        lastErr = e;
+        console.warn('[Client] Attempt ' + attempt + ':', e.message);
+        if (attempt < 3){
+          setStage('signaling', 'pending');
+          setStage('ice', 'pending');
+        }
+      }
+    }
+
+    setStage('signaling', 'fail');
+    setStage('ice', 'fail');
+    throw lastErr || new Error('Không kết nối được sau 3 lần');
+
   } catch(e){
-    clearTimeout(watchdog);
-    if (document.body.contains(overlay)) overlay.remove();
+    clearInterval(elapsedTimer);
+    if (document.body.contains(overlay)) setTimeout(() => overlay.remove(), 1500);
+    net.onStage = null;
     if (!cancelled){
-      toast('❌ ' + (e.message || 'Không vào được phòng'), true);
-      console.error('joinRoomDirect error:', e);
+      const errMsg = e.message || 'Không vào được phòng';
+      toast('❌ ' + errMsg, true);
+      console.error('joinRoomDirect:', e);
+      if (errMsg.includes('Timeout') || errMsg.includes('WebRTC')){
+        setTimeout(() => {
+          const hint = confirm(
+            '⚠️ Không kết nối được sau 3 lần.\n\n' +
+            'Nếu 2 máy đang ở CÙNG MẠNG WIFI, router có thể chặn P2P.\n\n' +
+            '→ Bật TURN Relay để đi vòng qua server?'
+          );
+          if (hint){
+            localStorage.setItem('dh_force_turn', '1');
+            PEER_OPTS.config.iceTransportPolicy = 'relay';
+            toast('🔁 Đã bật TURN — thử lại');
+          }
+        }, 800);
+      }
     }
   }
 }
@@ -2407,7 +2560,6 @@ async function joinRoomByCode(){
   const status = $('joinStatus');
   if (code.length < 4){ status.textContent = '❌ Mã không hợp lệ'; return; }
   if (net.active){ status.textContent = '⚠ Đang trong phòng khác'; return; }
-
   const name = getPlayerName();
   status.textContent = 'Đang kết nối...';
   try {
@@ -2417,9 +2569,64 @@ async function joinRoomByCode(){
   } catch(e){ status.textContent = '❌ ' + (e.message || e); }
 }
 
-/* ============================================================
-   MENU
-   ============================================================ */
+/* Backend UI */
+function refreshBackendUI(){
+  const label = $('currentBackendLabel');
+  const select = $('backendSelect');
+  if (!label || !select) return;
+  label.textContent = (BACKEND && (BACKEND.name || BACKEND.host)) || '—';
+  select.innerHTML = '';
+  BACKEND_POOL.forEach((b, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = (b.name || b.host) + ' — ' + b.host;
+    if (BACKEND && BACKEND.host === b.host) opt.selected = true;
+    select.appendChild(opt);
+  });
+  if (BACKEND && !BACKEND_POOL.some(b => b.host === BACKEND.host)){
+    const opt = document.createElement('option');
+    opt.value = 'custom';
+    opt.textContent = '🌐 Custom: ' + BACKEND.host;
+    opt.selected = true;
+    select.appendChild(opt);
+  }
+  select.onchange = (e) => {
+    const val = e.target.value;
+    if (val === 'custom') return;
+    const b = BACKEND_POOL[parseInt(val)];
+    if (!b) return;
+    if (confirm('Đổi server sang:\n\n' + (b.name || b.host) + '\n\nReload?')){
+      setBackend(b); saveBackend(b);
+      location.reload();
+    }
+  };
+}
+window.recheckBackend = async function(){
+  toast('🔄 Đang kiểm tra server...');
+  const results = await Promise.all(BACKEND_POOL.map(async b => {
+    const t0 = performance.now();
+    const ok = await quickHealthCheck(b, 5000);
+    return { b, ok, ms: Math.round(performance.now() - t0) };
+  }));
+  const alive = results.filter(r => r.ok);
+  if (!alive.length){ toast('❌ Không server nào phản hồi', true); return; }
+  alive.sort((a, b) => a.ms - b.ms);
+  const best = alive[0];
+  toast('✓ Nhanh nhất: ' + best.b.host + ' (' + best.ms + 'ms)');
+  if (best.b.host !== BACKEND.host){
+    if (confirm('Đổi sang ' + best.b.host + '?')){
+      setBackend(best.b); saveBackend(best.b);
+      location.reload();
+    }
+  }
+};
+window.clearBackendCache = function(){
+  localStorage.removeItem('dh_backend_host');
+  toast('🗑 Đã xóa cache');
+  setTimeout(() => location.reload(), 500);
+};
+
+/* MENU */
 window.Game = {
   startSingleplayer: () => startSingleplayer(),
   showMP: () => showMenuPage('mp'),
@@ -2427,6 +2634,7 @@ window.Game = {
     if (gameStarted){ paused = true; $('pause').classList.add('hidden'); }
     $('menu').classList.remove('hidden');
     showMenuPage('settings');
+    setTimeout(refreshBackendUI, 100);
   },
   backMain: () => {
     showMenuPage('main');
@@ -2455,7 +2663,7 @@ window.Game = {
     hp.classList.add('hidden');
     p.classList.toggle('hidden');
     if (!p.classList.contains('hidden')) setTimeout(() => $('joinCode').focus(), 100);
-  },
+  }
 };
 
 const menuPages = {
@@ -2477,14 +2685,16 @@ async function hostRoom(){
   const name = getPlayerName();
   const status = $('hostStatus');
   const codeEl = $('roomCodeDisplay');
-  status.textContent = 'Đang kết nối...';
+  status.textContent = '📡 Đang kết nối signaling...';
   wakeUpBackend();
 
   try {
     const code = await net.startHost(name);
     codeEl.textContent = code;
     codeEl.classList.remove('hidden');
-    status.textContent = '✓ Chờ đối thủ... (tối đa 5)';
+    status.innerHTML =
+      '✓ Đã tạo phòng · <span style="color:#ffd060">' + code + '</span><br>' +
+      '<small style="color:#889878">🎧 Đang chờ đối thủ (tối đa 5)...</small>';
     initRNG(Date.now() & 0x7fffffff);
     world.fill(0); generateWorld();
     resetPlayerPosition(); initInv();
@@ -2512,12 +2722,26 @@ function toggleSettings(){
     $('pause').classList.add('hidden');
     $('menu').classList.remove('hidden');
     showMenuPage('settings');
-  } else showMenuPage('settings');
+    setTimeout(refreshBackendUI, 100);
+  } else {
+    showMenuPage('settings');
+    setTimeout(refreshBackendUI, 100);
+  }
 }
 
-/* ============================================================
-   GAME LIFECYCLE
-   ============================================================ */
+/* Force TURN checkbox init */
+setTimeout(() => {
+  const chk = $('forceTurnChk');
+  if (chk){
+    chk.checked = FORCE_TURN;
+    chk.addEventListener('change', (e) => {
+      setForceTURN(e.target.checked);
+      if (confirm('Đã ' + (e.target.checked ? 'BẬT' : 'TẮT') + ' TURN.\nReload để áp dụng?')) location.reload();
+    });
+  }
+}, 500);
+
+/* GAME LIFECYCLE */
 function startSingleplayer(){
   net.disconnect();
   initRNG(Date.now() & 0x7fffffff);
@@ -2564,9 +2788,7 @@ function resetPlayerPosition(){
   cam.x = player.x - VW/2; cam.y = player.y - VH/2;
 }
 
-/* ============================================================
-   MAIN LOOP
-   ============================================================ */
+/* MAIN LOOP */
 const G = { particles: [] };
 let lastT = performance.now();
 function loop(now){
@@ -2604,6 +2826,8 @@ loadProject().then(() => {
   showMenuPage('main');
   requestAnimationFrame(loop);
 });
+
+console.log('%c🐉 Dragon Hunter v1.11 ready', 'color:#88ff60;font-weight:bold;font-size:14px');
 </script>
 </body>
   </html>
