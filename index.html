@@ -472,118 +472,64 @@ const DEATH_DURATION = 0.9;
 const JUMP_DURATION = 0.65;
 
 /* ============================================================
-   🆕 WEAPON TYPES — cấu hình riêng cho từng loại vũ khí
-   ============================================================
-   Mỗi loại có:
-     - matchKeywords: từ khóa filename để nhận diện
-     - orientation: 'vertical' | 'horizontal' | 'balanced'
-     - pivotX/pivotY: điểm neo (0-1) trong bbox
-     - scale: tỉ lệ so với player height
-     - defaultAngle: góc mặc định (radian) khi giữ
+   WEAPON TYPES — auto-detect
    ============================================================ */
 const WEAPON_TYPES = {
   katana: {
     matchKeywords: ['katana', 'sword', 'blade', 'saber', 'sabre'],
-    orientation: 'vertical',
-    pivotX: 0.5,
-    pivotY: 0.12,
-    scale: 0.85,
-    defaultAngle: 0
+    orientation: 'vertical', pivotX: 0.5, pivotY: 0.12, scale: 0.85, defaultAngle: 0
   },
   dagger: {
     matchKeywords: ['dagger', 'knife', 'shiv'],
-    orientation: 'vertical',
-    pivotX: 0.5,
-    pivotY: 0.20,
-    scale: 0.55,
-    defaultAngle: 0
+    orientation: 'vertical', pivotX: 0.5, pivotY: 0.20, scale: 0.55, defaultAngle: 0
   },
   greatsword: {
     matchKeywords: ['greatsword', 'great_sword', 'zweihander', 'claymore', 'broadsword'],
-    orientation: 'vertical',
-    pivotX: 0.5,
-    pivotY: 0.10,
-    scale: 1.30,
-    defaultAngle: 0
+    orientation: 'vertical', pivotX: 0.5, pivotY: 0.10, scale: 1.30, defaultAngle: 0
   },
   bow: {
     matchKeywords: ['bow', 'longbow', 'shortbow'],
-    orientation: 'horizontal',
-    pivotX: 0.5,
-    pivotY: 0.5,
-    scale: 1.00,
-    defaultAngle: 0
+    orientation: 'horizontal', pivotX: 0.5, pivotY: 0.5, scale: 1.00, defaultAngle: 0
   },
   crossbow: {
     matchKeywords: ['crossbow'],
-    orientation: 'horizontal',
-    pivotX: 0.3,
-    pivotY: 0.5,
-    scale: 0.95,
-    defaultAngle: 0
+    orientation: 'horizontal', pivotX: 0.3, pivotY: 0.5, scale: 0.95, defaultAngle: 0
   },
   staff: {
     matchKeywords: ['staff', 'wand', 'rod', 'scepter'],
-    orientation: 'vertical',
-    pivotX: 0.5,
-    pivotY: 0.25,
-    scale: 1.20,
-    defaultAngle: 0
+    orientation: 'vertical', pivotX: 0.5, pivotY: 0.25, scale: 1.20, defaultAngle: 0
   },
   axe: {
     matchKeywords: ['axe', 'hatchet', 'tomahawk'],
-    orientation: 'vertical',
-    pivotX: 0.5,
-    pivotY: 0.15,
-    scale: 1.00,
-    defaultAngle: 0
+    orientation: 'vertical', pivotX: 0.5, pivotY: 0.15, scale: 1.00, defaultAngle: 0
   },
   spear: {
     matchKeywords: ['spear', 'lance', 'halberd', 'pike'],
-    orientation: 'vertical',
-    pivotX: 0.5,
-    pivotY: 0.15,
-    scale: 1.40,
-    defaultAngle: 0
+    orientation: 'vertical', pivotX: 0.5, pivotY: 0.15, scale: 1.40, defaultAngle: 0
   },
   shield: {
     matchKeywords: ['shield', 'buckler'],
-    orientation: 'balanced',
-    pivotX: 0.5,
-    pivotY: 0.5,
-    scale: 0.80,
-    defaultAngle: 0
+    orientation: 'balanced', pivotX: 0.5, pivotY: 0.5, scale: 0.80, defaultAngle: 0
   },
   gun: {
     matchKeywords: ['gun', 'rifle', 'pistol', 'revolver'],
-    orientation: 'horizontal',
-    pivotX: 0.3,
-    pivotY: 0.5,
-    scale: 1.00,
-    defaultAngle: 0
+    orientation: 'horizontal', pivotX: 0.3, pivotY: 0.5, scale: 1.00, defaultAngle: 0
   },
   generic: {
     matchKeywords: [],
-    orientation: 'vertical',
-    pivotX: 0.5,
-    pivotY: 0.15,
-    scale: 0.85,
-    defaultAngle: 0
+    orientation: 'vertical', pivotX: 0.5, pivotY: 0.15, scale: 0.85, defaultAngle: 0
   }
 };
 
 /* ============================================================
-   🆕 WEAPON CONFIG — user override
-   ============================================================
-   Có thể override từng trường bằng tay. Nếu để null → dùng
-   giá trị từ WEAPON_TYPES tương ứng.
+   WEAPON CONFIG — fallback defaults
    ============================================================ */
 const WEAPON_CONFIG = {
-  /* Vị trí tay player — từ tâm chân player */
   handX: 4,
   handY: -32,
-
-  /* Góc xoay từng frame cho từng anim (radian) */
+  scale: 0.9,
+  pivotX: 0.5,
+  pivotY: 0.12,
   angles: {
     idle:   [0, 0],
     run:    [0.05, 0.10, 0.05],
@@ -592,20 +538,12 @@ const WEAPON_CONFIG = {
     sit:    [0.15, 0.15],
     death:  [0.20, 0.30, 0.50]
   },
-
-  /* 🆕 Fallback anim khi thiếu */
   fallback: {},
-
-  /* 🆕 Override (null = dùng auto từ WEAPON_TYPES) */
-  overrides: {
-    pivotX: null,
-    pivotY: null,
-    scale: null,
-    defaultAngle: null
-  },
-
   debug: false
 };
+
+/* 🆕 Weapon tuning từ weapon-tuning.json */
+let weaponTuning = null;
 
 function $(id){ return document.getElementById(id); }
 
@@ -634,7 +572,7 @@ function decodeMetadata(img){
 }
 
 /* ============================================================
-   AUTO-DETECT FRAMES — gap detection
+   AUTO-DETECT FRAMES
    ============================================================ */
 function autoDetectFrameLines(canvas, expectedFrames){
   const W = canvas.width, H = canvas.height;
@@ -690,19 +628,13 @@ function detectBBox(canvas, x1, y1, x2, y2){
 }
 
 /* ============================================================
-   🆕 ANALYZE WEAPON — auto-detect type + orientation
+   ANALYZE WEAPON
    ============================================================ */
 function analyzeWeaponSprite(sprite, fileName){
   const analysis = {
-    type: 'generic',
-    orientation: 'vertical',
-    avgAspect: 1,
-    contentMaxH: 0,
-    contentMaxW: 0,
-    frameBBoxes: []
+    type: 'generic', orientation: 'vertical',
+    avgAspect: 1, contentMaxH: 0, contentMaxW: 0, frameBBoxes: []
   };
-
-  /* Per-frame bbox */
   let sumW = 0, sumH = 0, count = 0;
   for (let i = 0; i < sprite.frames; i++){
     const bb = detectBBox(sprite.canvas, sprite.vLines[i], 0, sprite.vLines[i+1], sprite.spriteH);
@@ -717,42 +649,30 @@ function analyzeWeaponSprite(sprite, fileName){
     const avgW = sumW / count, avgH = sumH / count;
     analysis.avgAspect = avgH / Math.max(1, avgW);
   }
-
-  /* Orientation từ aspect */
   if (analysis.avgAspect > 1.5) analysis.orientation = 'vertical';
   else if (analysis.avgAspect < 0.67) analysis.orientation = 'horizontal';
   else analysis.orientation = 'balanced';
 
-  /* Type từ filename */
   const lower = (fileName || '').toLowerCase();
   for (const type in WEAPON_TYPES){
     if (type === 'generic') continue;
     const keywords = WEAPON_TYPES[type].matchKeywords || [];
     for (const kw of keywords){
-      if (lower.includes(kw)){
-        analysis.type = type;
-        return analysis;
-      }
+      if (lower.includes(kw)){ analysis.type = type; return analysis; }
     }
   }
-
-  /* Fallback: đoán từ orientation */
   if (analysis.orientation === 'horizontal') analysis.type = 'bow';
-
   return analysis;
 }
 
-/* ============================================================
-   🆕 GET WEAPON RENDER CONFIG
-   ============================================================ */
 function getWeaponRenderConfig(weapon){
   const type = weapon.weaponType || 'generic';
   const typeCfg = WEAPON_TYPES[type] || WEAPON_TYPES.generic;
   return {
-    pivotX: WEAPON_CONFIG.overrides.pivotX ?? typeCfg.pivotX,
-    pivotY: WEAPON_CONFIG.overrides.pivotY ?? typeCfg.pivotY,
-    scale:  WEAPON_CONFIG.overrides.scale ?? typeCfg.scale,
-    defaultAngle: WEAPON_CONFIG.overrides.defaultAngle ?? typeCfg.defaultAngle,
+    pivotX: typeCfg.pivotX,
+    pivotY: typeCfg.pivotY,
+    scale: typeCfg.scale,
+    defaultAngle: typeCfg.defaultAngle,
     orientation: typeCfg.orientation
   };
 }
@@ -789,11 +709,45 @@ async function loadProject(){
     }
     await Promise.all(promises);
     console.log('✓ Loaded ' + Models.data.size + ' models');
+    /* 🆕 Load weapon tuning */
+    await loadWeaponTuning();
     updateLoadStatus('ok');
   } catch(e){
     console.warn('Fallback:', e.message);
     await loadFallbackSprites();
   }
+}
+
+/* ============================================================
+   🆕 LOAD WEAPON TUNING từ weapon-tuning.json
+   ============================================================ */
+async function loadWeaponTuning(){
+  try {
+    const res = await fetch('weapon-tuning.json', { cache: 'no-store' });
+    if (!res.ok){
+      console.log('[Tuning] No weapon-tuning.json → using defaults');
+      return;
+    }
+    const data = await res.json();
+    if (data.format !== 'dh-weapon-tuning'){
+      console.warn('[Tuning] Sai format');
+      return;
+    }
+    weaponTuning = data;
+    const animCount = Object.keys(data.animations || {}).length;
+    console.log('✓ Loaded weapon tuning: ' + animCount + ' anims');
+  } catch(e){
+    console.log('[Tuning] Not loaded:', e.message);
+  }
+}
+
+function getFrameTuning(anim, frameIdx){
+  if (!weaponTuning || !weaponTuning.animations) return null;
+  const animTuning = weaponTuning.animations[anim] ||
+                     weaponTuning.animations.idle;
+  if (!animTuning || !animTuning.length) return null;
+  const t = animTuning[frameIdx % animTuning.length];
+  return t || null;
 }
 
 function loadSprite(src, m, a, cfg){
@@ -828,7 +782,6 @@ function loadSprite(src, m, a, cfg){
       cc.imageSmoothingEnabled = false;
       cc.drawImage(img, 0, 0, img.width, spriteH, 0, 0, img.width, spriteH);
 
-      /* 🆕 Auto-detect frames nếu metadata thiếu */
       if (!vLines || vLines.length < 3){
         let detected = autoDetectFrameLines(cnv, null);
         if (!detected || detected.length < 3){
@@ -852,7 +805,6 @@ function loadSprite(src, m, a, cfg){
       };
       if (!anchors.length || anchors.every(x => !x) || !stableAnchor) autoComputeAnchors(sprite);
 
-      /* 🆕 WEAPON: analyze sprite để detect type + bbox */
       if (m === 'weapon'){
         const analysis = analyzeWeaponSprite(sprite, sprite.fileName);
         sprite.weaponType = analysis.type;
@@ -861,11 +813,9 @@ function loadSprite(src, m, a, cfg){
         sprite.contentMaxH = analysis.contentMaxH || spriteH;
         sprite.contentMaxW = analysis.contentMaxW || 100;
         sprite.avgAspect = analysis.avgAspect;
-
         const typeCfg = WEAPON_TYPES[analysis.type] || WEAPON_TYPES.generic;
         console.log(`  ⚔️ ${m}/${a}: type=${analysis.type} orient=${analysis.orientation} ` +
-          `aspect=${analysis.avgAspect.toFixed(2)} ` +
-          `content=${analysis.contentMaxW}×${analysis.contentMaxH} ` +
+          `aspect=${analysis.avgAspect.toFixed(2)} content=${analysis.contentMaxW}×${analysis.contentMaxH} ` +
           `pivot=(${typeCfg.pivotX},${typeCfg.pivotY}) scale=${typeCfg.scale}`);
       }
 
@@ -910,6 +860,7 @@ async function loadFallbackSprites(){
     `assets/${d.file}.png`, d.model, d.anim,
     { fileName: d.file, fps: 10, loop: false, vLines: null, anchors: [], spriteH: 0, frames: 10 }));
   await Promise.all(promises);
+  await loadWeaponTuning();
   updateLoadStatus('fallback');
 }
 function updateLoadStatus(mode){
@@ -919,6 +870,7 @@ function updateLoadStatus(mode){
   el.classList.remove('hidden');
   let html = `<b><span class="ok">✓ Đã load ${total} models</span></b>`;
   if (mode === 'fallback') html += ` <span class="meta">[fallback]</span>`;
+  if (weaponTuning) html += ` <span class="meta">[tuning]</span>`;
   html += '<br>';
   for (const [mn, mm] of Models.data){ html += `📦 ${mn}: ` + [...mm.animations.keys()].join(', ') + '<br>'; }
   el.innerHTML = html;
@@ -1697,10 +1649,7 @@ async function apiRegisterRoom(code, name){
       signal: AbortSignal.timeout ? AbortSignal.timeout(35000) : undefined
     });
     return res.ok;
-  } catch(e){
-    console.warn('Register room fail:', e.message);
-    return false;
-  }
+  } catch(e){ return false; }
 }
 async function apiUpdateRoomCount(code, count){
   try {
@@ -1732,7 +1681,6 @@ async function apiListRooms(retries = 2){
       backendAwake = true;
       return data.rooms || [];
     } catch(e){
-      console.warn('List rooms attempt', i+1, 'fail:', e.message);
       if (i === retries) return null;
       await new Promise(r => setTimeout(r, 800));
     }
@@ -1762,10 +1710,7 @@ function stopRoomPolling(){
 }
 async function fetchAndRenderRooms(){
   const list = await apiListRooms();
-  if (list === null){
-    renderRoomListError();
-    return;
-  }
+  if (list === null){ renderRoomListError(); return; }
   renderRoomList(list);
 }
 function renderRoomListError(){
@@ -1773,11 +1718,8 @@ function renderRoomListError(){
   const cnt = $('roomListCount');
   if (!el) return;
   cnt.textContent = '!';
-  el.innerHTML =
-    '<div class="room-empty" style="color:#ff9898">' +
-    '⚠ Không kết nối được server<br>' +
-    '<small style="color:#889878">Render có thể đang khởi động (~30s) — thử lại sau</small>' +
-    '</div>';
+  el.innerHTML = '<div class="room-empty" style="color:#ff9898">⚠ Không kết nối được server<br>' +
+    '<small style="color:#889878">Render có thể đang khởi động (~30s) — thử lại sau</small></div>';
 }
 function renderRoomList(rooms){
   const el = $('roomList');
@@ -1802,9 +1744,6 @@ function renderRoomList(rooms){
       '<span class="age">' + formatAge(now - r.ts) + '</span>';
     if (!isFull){
       item.addEventListener('click', () => Game.joinFromList(r.code, r.name));
-      item.title = 'Click để vào phòng ' + r.code;
-    } else {
-      item.title = 'Phòng đã đầy';
     }
     el.appendChild(item);
   }
@@ -1892,61 +1831,84 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
 }
 
 /* ============================================================
-   🆕 VẼ VŨ KHÍ — auto-detect type + pivot + scale
+   🆕 VẼ WEAPON — ưu tiên tuning > auto-type > default
    ============================================================ */
+function drawWeaponFromTuning(weapon, t, sx, syGround, facing){
+  const wFrameIdx = t.weaponFrame || 0;
+  const bb = weapon.frameBBoxes && weapon.frameBBoxes[wFrameIdx];
+  let srcX, srcY, srcW, srcH;
+  if (bb && bb.w > 0){
+    srcX = bb.x; srcY = bb.y; srcW = bb.w; srcH = bb.h;
+  } else {
+    srcX = weapon.vLines[wFrameIdx]; srcY = 0;
+    srcW = weapon.vLines[wFrameIdx + 1] - srcX; srcH = weapon.spriteH;
+  }
+
+  const contentH = weapon.contentMaxH || srcH;
+  const tuningScale = (weaponTuning && weaponTuning.defaults && weaponTuning.defaults.scale) || WEAPON_CONFIG.scale;
+  const baseScale = (DEST_HEIGHT * tuningScale) / contentH;
+  const finalScale = baseScale * (t.scale || 1);
+  const dw = srcW * finalScale;
+  const dh = srcH * finalScale;
+
+  const pivotX = -dw * (t.pivotX != null ? t.pivotX : WEAPON_CONFIG.pivotX);
+  const pivotY = -dh * (t.pivotY != null ? t.pivotY : WEAPON_CONFIG.pivotY);
+
+  const handX = (t.handX != null ? t.handX : WEAPON_CONFIG.handX) + (t.offsetX || 0);
+  const handY = (t.handY != null ? t.handY : WEAPON_CONFIG.handY) + (t.offsetY || 0);
+
+  ctx.save();
+  ctx.translate(sx, syGround);
+  if (facing < 0) ctx.scale(-1, 1);
+  ctx.translate(handX, handY);
+  ctx.rotate(t.rotation || 0);
+  ctx.drawImage(weapon.canvas, srcX, srcY, srcW, srcH, pivotX, pivotY, dw, dh);
+  ctx.restore();
+}
+
 function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facing){
-  /* Fallback anim nếu thiếu */
   const fallbackAnim = WEAPON_CONFIG.fallback[anim] || 'idle';
   let weapon = Models.get('weapon', anim);
   if (!weapon) weapon = Models.get('weapon', fallbackAnim);
   if (!weapon) weapon = Models.get('weapon', 'idle');
+  if (!weapon) return;
 
-  if (!weapon){
-    if (!drawWeapon._logged){
-      drawWeapon._logged = true;
-      console.warn('[Weapon] No weapon sprite loaded. Models:', [...Models.data.keys()]);
-    }
+  /* 🆕 Ưu tiên tuning từ weapon-tuning.json */
+  const tuning = getFrameTuning(anim, playerFrameIdx);
+  if (tuning){
+    drawWeaponFromTuning(weapon, tuning, sx, syGround, facing);
     return;
   }
 
+  /* Fallback: dùng auto-detect type config */
   const frames = weapon.frames || (weapon.vLines.length - 1);
   if (frames < 1) return;
 
-  /* 🆕 Lấy config theo loại vũ khí */
   const renderCfg = getWeaponRenderConfig(weapon);
   const cfg = WEAPON_CONFIG.angles[anim] ||
               WEAPON_CONFIG.angles[fallbackAnim] ||
               WEAPON_CONFIG.angles.idle;
 
-  /* Frame mapping — chia đều player frames sang weapon frames */
   const wFrameIdx = Math.min(
     frames - 1,
     Math.floor((playerFrameIdx / Math.max(1, playerTotalFrames)) * frames)
   );
   const angle = (cfg[wFrameIdx] !== undefined ? cfg[wFrameIdx] : 0) + renderCfg.defaultAngle;
 
-  /* BBox của frame hiện tại */
   const bb = weapon.frameBBoxes && weapon.frameBBoxes[wFrameIdx];
   let srcX, srcY, srcW, srcH;
   if (bb && bb.w > 0 && bb.h > 0){
-    srcX = bb.x;
-    srcY = bb.y;
-    srcW = bb.w;
-    srcH = bb.h;
+    srcX = bb.x; srcY = bb.y; srcW = bb.w; srcH = bb.h;
   } else {
-    srcX = weapon.vLines[wFrameIdx];
-    srcY = 0;
-    srcW = weapon.vLines[wFrameIdx + 1] - srcX;
-    srcH = weapon.spriteH;
+    srcX = weapon.vLines[wFrameIdx]; srcY = 0;
+    srcW = weapon.vLines[wFrameIdx + 1] - srcX; srcH = weapon.spriteH;
   }
 
-  /* Scale theo content max height của weapon */
   const contentH = weapon.contentMaxH || srcH;
   const scale = (DEST_HEIGHT * renderCfg.scale) / contentH;
   const dw = srcW * scale;
   const dh = srcH * scale;
 
-  /* Pivot tại vị trí cấu hình trong bbox */
   const pivotX = -dw * renderCfg.pivotX;
   const pivotY = -dh * renderCfg.pivotY;
 
@@ -1957,20 +1919,6 @@ function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facin
   ctx.rotate(angle);
   ctx.drawImage(weapon.canvas, srcX, srcY, srcW, srcH, pivotX, pivotY, dw, dh);
   ctx.restore();
-
-  /* Debug marker */
-  if (WEAPON_CONFIG.debug){
-    ctx.save();
-    ctx.fillStyle = '#ff0000';
-    ctx.beginPath();
-    ctx.arc(sx + (facing < 0 ? -WEAPON_CONFIG.handX : WEAPON_CONFIG.handX),
-            syGround + WEAPON_CONFIG.handY, 3, 0, Math.PI*2);
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.restore();
-  }
 }
 
 function drawPlayer(){
@@ -2283,10 +2231,7 @@ const ButtonSettings = (() => {
     sit:     ['--sit-tx', '--sit-ty']
   };
   const ELEMS = {
-    moveJoy: 'moveJoystick',
-    aimJoy: 'aimJoystick',
-    jump: 'btnJump',
-    sit: 'btnSit'
+    moveJoy: 'moveJoystick', aimJoy: 'aimJoystick', jump: 'btnJump', sit: 'btnSit'
   };
 
   function load(){
@@ -2388,10 +2333,7 @@ function getPlayerName(){
 }
 
 async function joinRoomDirect(code, hostName){
-  if (net.active){
-    toast('⚠ Đang trong phòng khác — thoát trước', true);
-    return;
-  }
+  if (net.active){ toast('⚠ Đang trong phòng khác — thoát trước', true); return; }
   try { net.disconnect(); } catch(e){}
   await new Promise(r => setTimeout(r, 100));
 
