@@ -23,14 +23,26 @@ async function migrate(){
   });
 
   try {
+    /* ---------- Schema 1: Main game tables ---------- */
     const schemaPath = path.join(__dirname, 'schema.sql');
     const sql = fs.readFileSync(schemaPath, 'utf8');
 
     console.log('[Migrate] Running schema.sql...');
     await pool.query(sql);
-    console.log('[Migrate] ✓ Schema applied');
+    console.log('[Migrate] ✓ schema.sql applied');
 
-    /* Verify tables */
+    /* ---------- Schema 2: Prompt Builder tables ---------- */
+    const promptSchemaPath = path.join(__dirname, 'schema_prompt.sql');
+    if (fs.existsSync(promptSchemaPath)){
+      const promptSql = fs.readFileSync(promptSchemaPath, 'utf8');
+      console.log('[Migrate] Running schema_prompt.sql...');
+      await pool.query(promptSql);
+      console.log('[Migrate] ✓ schema_prompt.sql applied');
+    } else {
+      console.log('[Migrate] ⚠ schema_prompt.sql not found — skip');
+    }
+
+    /* ---------- Verify tables ---------- */
     const r = await pool.query(`
       SELECT tablename FROM pg_tables
       WHERE schemaname = 'public'
