@@ -1,0 +1,651 @@
+{
+  "format": "dh-weapon-tuning",
+  "version": 1,
+  "exportedAt": "2026-09-23T02:21:59.085Z",
+  "charModel": "player",
+  "weaponModel": "weapon",
+  "defaults": {
+    "scale": 0.85
+  },
+  "animations": {
+    "idle": [
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 5,
+        "offsetY": -21,
+        "rotation": 0.925,
+        "scale": 3.2,
+        "pivotX": 0.65,
+        "pivotY": 0.15,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 5,
+        "offsetY": -21,
+        "rotation": 0.925,
+        "scale": 3.2,
+        "pivotX": 0.65,
+        "pivotY": 0.15,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 5,
+        "offsetY": -21,
+        "rotation": 0.925,
+        "scale": 3.2,
+        "pivotX": 0.65,
+        "pivotY": 0.15,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 5,
+        "offsetY": -21,
+        "rotation": 0.925,
+        "scale": 3.2,
+        "pivotX": 0.65,
+        "pivotY": 0.15,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 5,
+        "offsetY": -21,
+        "rotation": 0.925,
+        "scale": 3.2,
+        "pivotX": 0.65,
+        "pivotY": 0.15,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 5,
+        "offsetY": -21,
+        "rotation": 0.925,
+        "scale": 3.2,
+        "pivotX": 0.65,
+        "pivotY": 0.15,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 5,
+        "offsetY": -21,
+        "rotation": 0.925,
+        "scale": 3.2,
+        "pivotX": 0.65,
+        "pivotY": 0.15,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 5,
+        "offsetY": -21,
+        "rotation": 0.925,
+        "scale": 3.2,
+        "pivotX": 0.65,
+        "pivotY": 0.15,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 5,
+        "offsetY": -21,
+        "rotation": 0.925,
+        "scale": 3.2,
+        "pivotX": 0.65,
+        "pivotY": 0.15,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 5,
+        "offsetY": -21,
+        "rotation": 0.925,
+        "scale": 3.2,
+        "pivotX": 0.65,
+        "pivotY": 0.15,
+        "weaponFrame": 0
+      }
+    ],
+    "run": [
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -130,
+        "offsetY": -6,
+        "rotation": 1.344,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -130,
+        "offsetY": -6,
+        "rotation": 1.344,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -130,
+        "offsetY": -6,
+        "rotation": 1.344,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -130,
+        "offsetY": -6,
+        "rotation": 1.344,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -130,
+        "offsetY": -6,
+        "rotation": 1.344,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -130,
+        "offsetY": -6,
+        "rotation": 1.344,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -130,
+        "offsetY": -6,
+        "rotation": 1.344,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -130,
+        "offsetY": -6,
+        "rotation": 1.344,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 2
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -130,
+        "offsetY": -6,
+        "rotation": 1.344,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 2
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -130,
+        "offsetY": -6,
+        "rotation": 1.344,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 2
+      }
+    ],
+    "jump": [
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -126,
+        "offsetY": 11,
+        "rotation": 0.96,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -139,
+        "offsetY": -3,
+        "rotation": 0.96,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -128,
+        "offsetY": 1,
+        "rotation": 0.785,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -126,
+        "offsetY": 11,
+        "rotation": 0.663,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -145,
+        "offsetY": 17,
+        "rotation": 0.88,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -133,
+        "offsetY": 30,
+        "rotation": 0.82,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -134,
+        "offsetY": 36,
+        "rotation": 0.762,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -128,
+        "offsetY": 20,
+        "rotation": 0.89,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -133,
+        "offsetY": 5,
+        "rotation": 1.065,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      }
+    ],
+    "attack": [
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 3,
+        "offsetY": -2,
+        "rotation": 0,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 6,
+        "offsetY": -9,
+        "rotation": 0.07,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 26,
+        "offsetY": -7,
+        "rotation": 0,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 21,
+        "offsetY": -6,
+        "rotation": 0,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotation": 0,
+        "scale": 3.15,
+        "pivotX": -0.1,
+        "pivotY": 1.1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -10,
+        "offsetY": 1,
+        "rotation": 0.279,
+        "scale": 3.15,
+        "pivotX": -0.1,
+        "pivotY": 1.2,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 6,
+        "offsetY": -5,
+        "rotation": 0.419,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1.05,
+        "weaponFrame": 2
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotation": 0.419,
+        "scale": 3.15,
+        "pivotX": 0.05,
+        "pivotY": 1.1,
+        "weaponFrame": 2
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 10,
+        "offsetY": -16,
+        "rotation": 0.314,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 0.95,
+        "weaponFrame": 2
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 15,
+        "offsetY": -5,
+        "rotation": 0.175,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 2
+      }
+    ],
+    "sit": [
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -106,
+        "offsetY": -38,
+        "rotation": 1.745,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -117,
+        "offsetY": -25,
+        "rotation": 1.676,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -116,
+        "offsetY": -40,
+        "rotation": 1.606,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -111,
+        "offsetY": -25,
+        "rotation": 1.641,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -124,
+        "offsetY": -2,
+        "rotation": 1.501,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 0
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -128,
+        "offsetY": 44,
+        "rotation": 1.134,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -123,
+        "offsetY": 47,
+        "rotation": 1.134,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -125,
+        "offsetY": 47,
+        "rotation": 1.134,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -125,
+        "offsetY": 47,
+        "rotation": 1.134,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": -127,
+        "offsetY": 46,
+        "rotation": 1.134,
+        "scale": 3.15,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      }
+    ],
+    "death": [
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 94,
+        "offsetY": 74,
+        "rotation": -1.012,
+        "scale": 3.05,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 117,
+        "offsetY": 64,
+        "rotation": -1.152,
+        "scale": 3.05,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 132,
+        "offsetY": 42,
+        "rotation": -1.361,
+        "scale": 3.05,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 143,
+        "offsetY": 0,
+        "rotation": -1.658,
+        "scale": 3.05,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 125,
+        "offsetY": 29,
+        "rotation": -1.431,
+        "scale": 3.05,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 85,
+        "offsetY": 85,
+        "rotation": -1.012,
+        "scale": 3.05,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 102,
+        "offsetY": 67,
+        "rotation": -1.222,
+        "scale": 3.05,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      },
+      {
+        "handX": 4,
+        "handY": -32,
+        "offsetX": 97,
+        "offsetY": 63,
+        "rotation": -1.257,
+        "scale": 3.05,
+        "pivotX": 0.15,
+        "pivotY": 1,
+        "weaponFrame": 1
+      }
+    ]
+  }
+}
