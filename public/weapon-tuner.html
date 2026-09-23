@@ -2,243 +2,454 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Weapon Tuner · DH Studio</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Weapon Tuner · DH Studio v2</title>
 <style>
 :root{
   --bg:#0d1117;--panel:#161b22;--panel2:#1c2128;--hover:#21262d;
   --border:#30363d;--text:#e6edf3;--dim:#8b949e;--dim2:#6e7681;
-  --accent:#3fb950;--accent2:#56d364;--info:#58a6ff;
-  --danger:#f85149;--warn:#d29922;--weapon:#ff8a65;
+  --accent:#3fb950;--accent2:#56d364;--accent3:#238636;
+  --info:#58a6ff;--danger:#f85149;--warn:#d29922;
+  --weapon:#ff8a65;--enemy:#f85149;--boss:#d29922;--npc:#58a6ff;
+  --header-h:48px;
 }
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
-  font-family:-apple-system,'Segoe UI',Roboto,sans-serif;font-size:13px;user-select:none}
+  font-family:-apple-system,'Segoe UI',Roboto,sans-serif;font-size:13px;
+  user-select:none;-webkit-user-select:none;touch-action:manipulation}
 button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
-input{font:inherit;color:inherit}
+input,select{font:inherit;color:inherit}
+canvas{display:block;image-rendering:pixelated}
 
 .app{display:flex;flex-direction:column;height:100%}
 
-/* Header */
-.header{height:48px;background:var(--panel);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}
-.brand{font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px}
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header{height:var(--header-h);background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:100}
+.brand{font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px;flex-shrink:0}
 .brand .dot{width:10px;height:10px;background:var(--accent);border-radius:50%;
   box-shadow:0 0 8px var(--accent)}
 .brand .ver{font-size:10px;color:var(--dim);font-weight:400}
+.conn-badge{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--panel2);
+  color:var(--dim);font-family:monospace;display:flex;align-items:center;gap:4px}
+.conn-badge.on{background:#0d2818;color:var(--accent2)}
+.conn-badge.on::before{content:'';width:6px;height:6px;background:var(--accent);border-radius:50%;
+  box-shadow:0 0 6px var(--accent)}
 .hspace{flex:1}
+
 .btn{padding:6px 12px;background:var(--panel2);border:1px solid var(--border);
-  border-radius:6px;font-size:12px;font-weight:500;transition:all .12s;display:inline-flex;
-  align-items:center;gap:6px}
+  border-radius:6px;font-size:12px;font-weight:500;transition:all .12s;
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .btn:hover{background:var(--hover);border-color:var(--dim)}
-.btn.primary{background:#238636;border-color:#2ea043;color:#fff}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--accent3);border-color:#2ea043;color:#fff}
 .btn.primary:hover{background:#2ea043}
 .btn.danger{background:#8a1a1a;border-color:#da3633;color:#fff}
-.btn.small{padding:4px 8px;font-size:11px}
+.btn.small{padding:4px 9px;font-size:11px}
+.btn.icon{padding:6px 8px}
+.btn.on{background:var(--accent3);border-color:var(--accent);color:#fff}
 
-/* Main */
+/* Selectors in header */
+.selector-group{display:flex;gap:4px;align-items:center}
+.selector-group .lbl{font-size:10px;color:var(--dim);font-family:monospace;margin-right:2px}
+.sel{padding:5px 24px 5px 10px;background:#000;color:var(--accent2);border:1px solid var(--border);
+  border-radius:5px;font-size:11px;font-family:monospace;font-weight:600;
+  cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%238b949e' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 6px center;background-size:10px}
+.sel:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(63,185,80,.2)}
+.sel option{background:#161b22;color:var(--text)}
+
+/* ============================================================
+   MAIN
+   ============================================================ */
 .main{display:flex;flex:1;overflow:hidden}
 
-/* Sidebar left */
-.sidebar{width:220px;background:var(--panel);border-right:1px solid var(--border);
+/* ============================================================
+   SIDEBAR — Model browser
+   ============================================================ */
+.sidebar{width:230px;background:var(--panel);border-right:1px solid var(--border);
   display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
-.panel-title{height:32px;padding:0 12px;background:var(--panel2);
-  border-bottom:1px solid var(--border);display:flex;align-items:center;
-  font-size:10px;font-weight:700;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
-.anim-list{flex:1;overflow-y:auto;padding:6px}
-.anim-item{padding:8px 12px;margin-bottom:2px;border-radius:6px;cursor:pointer;
-  font-size:12px;display:flex;align-items:center;gap:8px;transition:all .1s}
-.anim-item:hover{background:var(--hover)}
-.anim-item.active{background:#21262d;box-shadow:inset 3px 0 0 var(--accent)}
-.anim-item .icon{width:6px;height:6px;border-radius:50%;background:var(--dim2)}
-.anim-item.active .icon{background:var(--accent);box-shadow:0 0 6px var(--accent)}
-.anim-item .name{flex:1;font-family:monospace}
-.anim-item .count{font-size:10px;color:var(--dim2)}
+.sidebar-tabs{display:flex;background:var(--panel2);border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-tab{flex:1;padding:9px 4px;text-align:center;font-size:10px;font-weight:700;
+  color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;
+  font-family:monospace;letter-spacing:.5px}
+.sidebar-tab:hover{color:var(--text);background:var(--hover)}
+.sidebar-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--panel)}
+.sidebar-body{flex:1;overflow-y:auto;padding:6px}
 
-/* Stage */
-.stage{flex:1;background:#0a0d12;position:relative;overflow:hidden;
-  display:flex;flex-direction:column}
+.model-group{margin-bottom:8px}
+.model-group-header{display:flex;align-items:center;gap:6px;padding:6px 8px;
+  background:var(--panel2);border-radius:5px;cursor:pointer;font-size:11px;
+  font-weight:600;border-left:3px solid transparent;transition:all .12s}
+.model-group-header:hover{background:var(--hover)}
+.model-group-header[data-type="player"]{border-left-color:var(--accent);color:var(--accent)}
+.model-group-header[data-type="weapon"]{border-left-color:var(--weapon);color:var(--weapon)}
+.model-group-header[data-type="enemy"]{border-left-color:var(--enemy);color:var(--enemy)}
+.model-group-header[data-type="boss"]{border-left-color:var(--boss);color:var(--boss)}
+.model-group-header[data-type="npc"]{border-left-color:var(--npc);color:var(--npc)}
+.model-group-header .arrow{font-size:9px;color:var(--dim);transition:transform .15s;width:10px}
+.model-group-header.collapsed .arrow{transform:rotate(-90deg)}
+.model-group-header .count{margin-left:auto;font-size:10px;color:var(--dim2);font-weight:400}
+.model-group-body{padding-left:6px;margin-top:3px}
+.model-group-body.hidden{display:none}
+
+.model-item{display:flex;align-items:center;gap:6px;padding:5px 8px;margin-top:2px;
+  border-radius:4px;cursor:pointer;font-size:10px;transition:all .1s;
+  border-left:2px solid transparent}
+.model-item:hover{background:var(--hover)}
+.model-item.active{background:var(--accent3);color:#fff;border-left-color:var(--accent2)}
+.model-item .dot{width:5px;height:5px;background:var(--dim2);border-radius:50%;flex-shrink:0}
+.model-item.active .dot{background:var(--accent2)}
+.model-item .name{flex:1;font-family:monospace;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.model-item .frames{font-size:9px;color:var(--dim);font-family:monospace}
+.model-item.active .frames{color:#c8ffb8}
+
+.empty-msg{padding:36px 16px;text-align:center;color:var(--dim);font-size:11px;line-height:1.8}
+
+/* ============================================================
+   STAGE
+   ============================================================ */
+.stage{flex:1;background:#0a0d12;display:flex;flex-direction:column;overflow:hidden;position:relative}
+
 .stage-toolbar{height:40px;background:var(--panel);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
-.frame-chips{display:flex;gap:4px;flex:1;overflow-x:auto;padding:4px 0}
-.frame-chip{padding:4px 10px;background:var(--panel2);border:1px solid var(--border);
-  border-radius:4px;font-size:11px;font-family:monospace;cursor:pointer;
-  transition:all .1s;min-width:32px;text-align:center}
-.frame-chip:hover{background:var(--hover)}
-.frame-chip.active{background:#238636;border-color:var(--accent);color:#fff}
-.frame-chip.has-custom{border-color:var(--warn)}
-.frame-chip.active.has-custom{background:#7d5a00;border-color:var(--warn)}
+  display:flex;align-items:center;padding:0 10px;gap:6px;flex-shrink:0;overflow-x:auto}
+.stage-toolbar::-webkit-scrollbar{height:2px}
+.toolbar-sep{width:1px;height:22px;background:var(--border);margin:0 4px;flex-shrink:0}
+.playback-info{font-size:10px;color:var(--dim);font-family:monospace;margin-left:auto;
+  white-space:nowrap;padding:0 8px}
 
 .canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;
-  overflow:hidden;position:relative;padding:20px}
+  overflow:hidden;position:relative;padding:20px;background:
+    radial-gradient(circle at center, #12171d 0%, #0a0d12 100%)}
+.canvas-wrap.preview-mode .hint-overlay{display:none}
+.canvas-wrap.preview-mode #debugBadge{display:none}
+
 #stageCanvas{image-rendering:pixelated;
-  box-shadow:0 0 0 1px var(--border),0 0 40px rgba(0,0,0,.7);
-  background:#111}
-.hint-overlay{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
-  background:rgba(22,27,34,.9);padding:6px 12px;border-radius:6px;
-  font-size:11px;color:var(--dim);font-family:monospace;
-  border:1px solid var(--border);pointer-events:none;opacity:.7}
+  box-shadow:0 0 0 1px var(--border),0 0 60px rgba(0,0,0,.8);
+  background:#111;cursor:grab}
+#stageCanvas:active{cursor:grabbing}
+#stageCanvas.preview{cursor:default}
+
+.hint-overlay{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  background:rgba(22,27,34,.9);padding:5px 12px;border-radius:6px;
+  font-size:10px;color:var(--dim);font-family:monospace;
+  border:1px solid var(--border);pointer-events:none;opacity:.8}
 .hint-overlay b{color:var(--accent)}
 
-/* Right panel */
-.tuner{width:320px;background:var(--panel);border-left:1px solid var(--border);
+#debugBadge{position:absolute;top:12px;left:12px;background:rgba(22,27,34,.9);
+  padding:4px 10px;border-radius:4px;font-size:10px;color:var(--info);
+  font-family:monospace;border:1px solid var(--border);pointer-events:none}
+
+/* Timeline (video editor style) */
+.timeline{height:80px;background:var(--panel);border-top:1px solid var(--border);
+  flex-shrink:0;display:flex;flex-direction:column;padding:6px 10px;gap:4px}
+.timeline-top{display:flex;align-items:center;gap:6px;font-size:10px;
+  color:var(--dim);font-family:monospace;flex-shrink:0}
+.timeline-top b{color:var(--accent2)}
+.timeline-top .time{color:var(--info)}
+
+.timeline-track{flex:1;display:flex;gap:2px;align-items:stretch;
+  background:var(--bg);border-radius:4px;padding:2px;position:relative;overflow-x:auto}
+.timeline-track::-webkit-scrollbar{height:6px}
+.tl-frame{flex:1;min-width:24px;background:var(--panel2);border-radius:3px;cursor:pointer;
+  position:relative;transition:all .1s;border:1px solid transparent;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:var(--dim2);font-family:monospace}
+.tl-frame:hover{background:var(--hover)}
+.tl-frame.active{background:var(--accent3);border-color:var(--accent);color:#fff;font-weight:600}
+.tl-frame.tuned{background:#4a3510;border-color:var(--warn)}
+.tl-frame.active.tuned{background:#7d5a00;border-color:var(--warn);color:#fff}
+.tl-frame .keyframe{position:absolute;top:2px;right:3px;width:5px;height:5px;
+  background:var(--warn);border-radius:50%}
+.tl-frame.active .keyframe{background:#fff}
+
+/* ============================================================
+   TUNER PANEL
+   ============================================================ */
+.tuner{width:290px;background:var(--panel);border-left:1px solid var(--border);
   display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
-.sec{padding:14px;border-bottom:1px solid var(--border)}
+
+.sec{padding:12px 14px;border-bottom:1px solid var(--border)}
+.sec:last-child{border-bottom:none}
 .sec-title{font-size:10px;font-weight:700;color:var(--dim);letter-spacing:1px;
   text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;
-  justify-content:space-between}
+  justify-content:space-between;font-family:monospace}
 .sec-title .badge{background:var(--panel2);color:var(--info);padding:2px 8px;
   border-radius:10px;font-size:9px;font-weight:700;letter-spacing:0;text-transform:none}
+.sec-title .badge.warn{background:#7d5a00;color:#fff}
 
-.field{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.field label{flex:0 0 90px;font-size:11px;color:var(--dim);font-family:monospace}
+.field{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.field:last-child{margin-bottom:0}
+.field label{flex:0 0 76px;font-size:10px;color:var(--dim);font-family:monospace}
 .field input[type=range]{flex:1;height:4px;-webkit-appearance:none;
-  background:var(--panel2);border-radius:2px;outline:none}
+  background:var(--panel2);border-radius:2px;outline:none;cursor:pointer}
 .field input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;
-  width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:pointer}
-.field input[type=number]{width:70px;padding:4px 8px;background:#000;color:var(--accent);
+  width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:pointer;
+  box-shadow:0 0 0 2px var(--bg)}
+.field input[type=range]::-moz-range-thumb{width:14px;height:14px;
+  background:var(--accent);border:none;border-radius:50%;cursor:pointer}
+.field input[type=number]{width:68px;padding:4px 6px;background:#000;color:var(--accent);
   border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:monospace;
   text-align:center}
-.field input:focus{outline:none;border-color:var(--accent)}
+.field input[type=number]:focus{outline:none;border-color:var(--accent)}
 
 .row{display:flex;gap:6px;margin-top:8px}
 .row .btn{flex:1;justify-content:center}
 
-/* Stats */
-.stats{font-family:monospace;font-size:11px;color:var(--dim);line-height:1.7}
+.stats{font-family:monospace;font-size:11px;color:var(--dim);line-height:1.8}
 .stats b{color:var(--text)}
 .stats .accent{color:var(--accent)}
+.stats .info{color:var(--info)}
+.stats .warn{color:var(--warn)}
 
-/* Toast */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+/* Toggle */
+.toggle{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;
+  background:var(--panel2);border:1px solid var(--border);border-radius:5px;
+  cursor:pointer;font-size:10px;font-family:monospace;transition:all .12s;color:var(--dim)}
+.toggle:hover{background:var(--hover);color:var(--text)}
+.toggle.on{background:var(--accent3);border-color:var(--accent);color:#fff}
+.toggle .sw{width:16px;height:10px;background:var(--dim2);border-radius:5px;position:relative;
+  transition:all .15s;flex-shrink:0}
+.toggle .sw::after{content:'';position:absolute;top:1px;left:1px;width:8px;height:8px;
+  background:#fff;border-radius:50%;transition:all .15s}
+.toggle.on .sw{background:rgba(255,255,255,.3)}
+.toggle.on .sw::after{left:7px}
+
+/* Speed control */
+.speed-control{display:flex;align-items:center;gap:4px;font-size:10px;
+  font-family:monospace;color:var(--dim)}
+.speed-control button{padding:3px 7px;background:var(--panel2);border:1px solid var(--border);
+  border-radius:3px;font-size:10px;color:var(--dim);cursor:pointer}
+.speed-control button.on{background:var(--accent3);color:#fff;border-color:var(--accent)}
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
+.modal.show{display:flex}
+.modal-box{background:var(--panel);border:1px solid var(--border);
+  border-radius:10px;padding:22px 26px;max-width:520px;width:100%;
+  box-shadow:0 12px 60px rgba(0,0,0,.8);max-height:90vh;overflow-y:auto}
+.modal-box h3{margin-bottom:14px;color:var(--accent);font-size:14px;display:flex;align-items:center;gap:8px}
+.modal-box p{font-size:12px;color:var(--dim);line-height:1.7;margin-bottom:12px}
+.modal-box input[type=text]{width:100%;padding:10px 12px;background:#000;color:var(--text);
+  border:1px solid var(--border);border-radius:5px;font-family:monospace;
+  font-size:12px;margin-bottom:12px}
+.modal-box input[type=text]:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(63,185,80,.2)}
+.modal-box .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;
+  padding-top:14px;border-top:1px solid var(--border)}
+
+.list-box{max-height:260px;overflow-y:auto;background:var(--bg);
+  border:1px solid var(--border);border-radius:6px;padding:6px}
+.list-item{display:flex;align-items:center;gap:8px;padding:8px 10px;
+  border-radius:5px;cursor:pointer;font-family:monospace;font-size:11px;
+  transition:all .12s;border:1px solid transparent}
+.list-item:hover{background:var(--hover);border-color:var(--border)}
+.list-item .name{color:var(--accent2);font-weight:600;flex:1}
+.list-item .meta{color:var(--dim);font-size:10px}
+.list-item .btn{padding:3px 8px;font-size:10px}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);
   background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);
   padding:10px 18px;border-radius:6px;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,.6);
-  opacity:0;pointer-events:none;transition:opacity .2s;z-index:100}
-#toast.show{opacity:1}
+  opacity:0;pointer-events:none;transition:all .2s;z-index:1000;
+  max-width:90vw;font-family:monospace;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.err{border-left-color:var(--danger)}
 #toast.warn{border-left-color:var(--warn)}
 
-/* Loading */
-.empty{padding:40px 20px;text-align:center;color:var(--dim);font-size:12px;line-height:1.8}
-.empty .big{font-size:40px;opacity:.4;margin-bottom:12px}
+/* Scrollbar */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--dim)}
 
 /* ============================================================
    MOBILE LANDSCAPE
    ============================================================ */
-@media (max-width:900px) and (orientation:landscape){
-  .sidebar{width:140px}
-  .tuner{width:260px}
-  .anim-item{padding:6px 8px;font-size:11px}
-  .field label{flex:0 0 70px;font-size:10px}
-  .field input[type=number]{width:56px}
-  .sec{padding:10px}
-  .header{height:40px;padding:0 10px;gap:8px}
-  .btn{padding:5px 9px;font-size:11px}
+@media (max-width:1100px) and (orientation:landscape){
+  :root{--header-h:40px}
+  .header{padding:0 10px;gap:6px}
+  .brand .ver{display:none}
+  .conn-badge{font-size:9px;padding:2px 6px}
+  .btn{padding:5px 9px;font-size:11px;gap:4px}
+  .btn.icon{padding:5px 6px}
+  .sel{font-size:10px;padding:4px 22px 4px 8px}
+  .sidebar{width:150px}
+  .sidebar-tab{padding:7px 2px;font-size:9px}
+  .model-item{padding:4px 6px;font-size:9px}
+  .model-group-header{padding:5px 6px;font-size:10px}
+  .tuner{width:220px}
+  .sec{padding:9px 10px}
+  .field label{flex:0 0 60px;font-size:9px}
+  .field input[type=number]{width:56px;font-size:10px}
+  .field{margin-bottom:6px}
+  .sec-title{font-size:9px;margin-bottom:6px}
+  .stats{font-size:9px}
+  .timeline{height:60px}
+  .tl-frame{min-width:20px;font-size:8px}
+  .stage-toolbar{height:34px;padding:0 6px}
+  .playback-info{font-size:9px}
 }
-
-@media (max-width:700px) and (orientation:landscape){
-  .sidebar{width:100px}
-  .tuner{width:200px}
-  .sidebar .panel-title span{display:none}
+@media (max-width:800px) and (orientation:landscape){
+  .sidebar{width:110px}
+  .tuner{width:180px}
   .brand span:nth-child(2){display:none}
+  .model-item .frames{display:none}
 }
-
-/* Modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);
-  display:none;align-items:center;justify-content:center;z-index:200}
-.modal.show{display:flex}
-.modal-box{background:var(--panel);border:1px solid var(--border);
-  border-radius:10px;padding:20px 24px;max-width:500px;width:90%;
-  box-shadow:0 12px 60px rgba(0,0,0,.8)}
-.modal-box h3{margin-bottom:12px;color:var(--accent);font-size:14px}
-.modal-box p{font-size:12px;color:var(--dim);line-height:1.7;margin-bottom:12px}
-.modal-box input[type=text], .modal-box textarea{
-  width:100%;padding:8px 10px;background:#000;color:var(--text);
-  border:1px solid var(--border);border-radius:4px;font-family:monospace;
-  font-size:11px;margin-bottom:12px}
-.modal-box textarea{min-height:200px;resize:vertical}
-.modal-box .actions{display:flex;gap:8px;justify-content:flex-end}
 </style>
 </head>
 <body>
 <div class="app">
 
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
 <header class="header">
   <div class="brand">
     <div class="dot"></div>
     <span>WEAPON TUNER</span>
-    <span class="ver">v1.0</span>
+    <span class="ver">v2.0</span>
   </div>
+
+  <div class="conn-badge" id="connBadge">⚠ Chưa kết nối</div>
+
+  <div class="selector-group">
+    <span class="lbl">CHAR:</span>
+    <select class="sel" id="charSelect" disabled><option>—</option></select>
+  </div>
+
+  <div class="selector-group">
+    <span class="lbl">WEAPON:</span>
+    <select class="sel" id="weaponSelect" disabled><option>—</option></select>
+  </div>
+
   <div class="hspace"></div>
-  <button class="btn" id="loadProjectBtn">📂 Load sprites.json</button>
-  <button class="btn" id="loadTuningBtn">📥 Load tuning</button>
-  <button class="btn primary" id="saveServerBtn">☁ Save to server</button>
-  <button class="btn primary" id="exportBtn">💾 Export JSON</button>
+
+  <button class="btn" id="connectBtn">🔌 Kết nối game</button>
+  <button class="btn" id="loadFileBtn" title="Load sprites.json từ file">📁</button>
+  <button class="btn" id="loadTuningBtn" title="Load tuning đã lưu" disabled>📥</button>
+  <button class="btn primary" id="saveTuningBtn" title="Save to server" disabled>☁</button>
+  <button class="btn primary" id="exportBtn" title="Export weapon-tuning.json" disabled>💾</button>
+  <button class="btn icon" id="helpBtn" title="Hướng dẫn">❓</button>
 </header>
 
+<!-- ============================================================
+     MAIN
+     ============================================================ -->
 <main class="main">
 
-  <!-- Sidebar -->
+  <!-- SIDEBAR: Model browser -->
   <aside class="sidebar">
-    <div class="panel-title">ANIMATIONS</div>
-    <div class="anim-list" id="animList">
-      <div class="empty">
-        <div class="big">📁</div>
-        Load sprites.json<br>để bắt đầu
+    <div class="sidebar-tabs">
+      <div class="sidebar-tab active" data-tab="models">MODELS</div>
+      <div class="sidebar-tab" data-tab="anims">ANIMS</div>
+    </div>
+    <div class="sidebar-body" id="sidebarBody">
+      <div class="empty-msg">
+        Chưa kết nối<br><br>
+        Bấm <b style="color:var(--accent)">🔌 Kết nối game</b><br>
+        hoặc <b style="color:var(--accent)">📁</b> load file
       </div>
     </div>
   </aside>
 
-  <!-- Stage -->
+  <!-- STAGE -->
   <section class="stage">
+
     <div class="stage-toolbar">
-      <button class="btn small" id="prevFrameBtn">◀</button>
-      <div class="frame-chips" id="frameChips"></div>
-      <button class="btn small" id="nextFrameBtn">▶</button>
-      <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
-      <button class="btn small" id="playBtn">▶ Play</button>
-      <button class="btn small" id="stopBtn">⏸</button>
+      <button class="btn small" id="prevFrameBtn" title="Frame trước">◀</button>
+      <button class="btn small" id="playBtn" title="Play/Pause (Space)">▶</button>
+      <button class="btn small" id="nextFrameBtn" title="Frame sau">▶</button>
+      <button class="btn small" id="stopBtn" title="Stop">⏹</button>
+
+      <div class="toolbar-sep"></div>
+
+      <div class="speed-control">
+        <span style="margin-right:2px">Speed:</span>
+        <button data-speed="0.25">0.25×</button>
+        <button data-speed="0.5">0.5×</button>
+        <button data-speed="1" class="on">1×</button>
+        <button data-speed="2">2×</button>
+        <button data-speed="4">4×</button>
+      </div>
+
+      <button class="toggle on" id="loopToggle" title="Loop animation">
+        <span class="sw"></span>Loop
+      </button>
+
+      <button class="toggle" id="previewToggle" title="Chế độ xem trước">
+        <span class="sw"></span>Preview
+      </button>
+
+      <span class="playback-info" id="playbackInfo">—</span>
     </div>
-    <div class="canvas-wrap">
+
+    <div class="canvas-wrap" id="canvasWrap">
       <canvas id="stageCanvas" width="400" height="400"></canvas>
+      <div id="debugBadge">—</div>
       <div class="hint-overlay">
-        <b>Drag</b> chuột để di chuyển vũ khí · <b>Shift+Drag</b> để xoay
+        <b>Drag</b> để di chuyển · <b>Shift+Drag</b> để xoay · <b>Space</b> play/pause
       </div>
     </div>
+
+    <!-- Timeline -->
+    <div class="timeline">
+      <div class="timeline-top">
+        <span>Timeline: <b id="tlAnimName">—</b></span>
+        <span class="time" id="tlTimeInfo">0.00s / 0.00s</span>
+        <span>FPS: <b id="tlFps">—</b></span>
+        <span style="margin-left:auto">
+          Frame <b id="tlFrameInfo">0/0</b>
+        </span>
+      </div>
+      <div class="timeline-track" id="timelineTrack"></div>
+    </div>
+
   </section>
 
-  <!-- Tuner panel -->
+  <!-- TUNER PANEL -->
   <aside class="tuner">
 
     <div class="sec">
       <div class="sec-title">
-        <span>🎯 VỊ TRÍ</span>
-        <span class="badge" id="frameBadge">Frame —</span>
+        <span>🎯 Vị trí</span>
+        <span class="badge" id="frameBadge">—</span>
       </div>
       <div class="field">
         <label>Hand X</label>
-        <input type="range" id="handX" min="-100" max="100" value="4">
+        <input type="range" id="handX" min="-120" max="120" value="4">
         <input type="number" id="handXNum" value="4">
       </div>
       <div class="field">
         <label>Hand Y</label>
-        <input type="range" id="handY" min="-100" max="100" value="-32">
+        <input type="range" id="handY" min="-120" max="120" value="-32">
         <input type="number" id="handYNum" value="-32">
       </div>
       <div class="field">
         <label>Offset X</label>
-        <input type="range" id="offX" min="-30" max="30" value="0">
-        <input type="number" id="offXNum" value="0">
+        <input type="range" id="offX" min="-40" max="40" step="0.5" value="0">
+        <input type="number" id="offXNum" value="0" step="0.5">
       </div>
       <div class="field">
         <label>Offset Y</label>
-        <input type="range" id="offY" min="-30" max="30" value="0">
-        <input type="number" id="offYNum" value="0">
+        <input type="range" id="offY" min="-40" max="40" step="0.5" value="0">
+        <input type="number" id="offYNum" value="0" step="0.5">
       </div>
     </div>
 
     <div class="sec">
-      <div class="sec-title"><span>⚙️ XOAY + SCALE</span></div>
+      <div class="sec-title"><span>⚙️ Xoay + Scale</span></div>
       <div class="field">
         <label>Rotation°</label>
         <input type="range" id="rot" min="-180" max="180" value="0">
@@ -246,69 +457,144 @@ input{font:inherit;color:inherit}
       </div>
       <div class="field">
         <label>Scale</label>
-        <input type="range" id="sc" min="0.3" max="2.5" step="0.05" value="1">
+        <input type="range" id="sc" min="0.2" max="3" step="0.05" value="1">
         <input type="number" id="scNum" value="1" step="0.05">
       </div>
       <div class="field">
         <label>Pivot X</label>
-        <input type="range" id="pivotX" min="0" max="1" step="0.05" value="0.5">
+        <input type="range" id="pivotX" min="-0.5" max="1.5" step="0.05" value="0.5">
         <input type="number" id="pivotXNum" value="0.5" step="0.05">
       </div>
       <div class="field">
         <label>Pivot Y</label>
-        <input type="range" id="pivotY" min="0" max="1" step="0.05" value="0.12">
+        <input type="range" id="pivotY" min="-0.5" max="1.5" step="0.05" value="0.12">
         <input type="number" id="pivotYNum" value="0.12" step="0.05">
       </div>
-    </div>
-
-    <div class="sec">
-      <div class="sec-title"><span>⚡ HÀNH ĐỘNG</span></div>
-      <div class="row">
-        <button class="btn small" id="applyAllAnimBtn">↕ Toàn anim</button>
-        <button class="btn small" id="applyAllFramesBtn">↔ Toàn frame</button>
-      </div>
-      <div class="row">
-        <button class="btn small" id="resetFrameBtn">↺ Reset frame</button>
-        <button class="btn small danger" id="resetAnimBtn">🗑 Reset anim</button>
+      <div class="field">
+        <label>W.Frame</label>
+        <input type="range" id="wFrame" min="0" max="10" step="1" value="0">
+        <input type="number" id="wFrameNum" value="0" min="0" step="1">
       </div>
     </div>
 
     <div class="sec">
-      <div class="sec-title"><span>📊 THÔNG TIN</span></div>
+      <div class="sec-title"><span>⚡ Hành động</span></div>
+      <div class="row">
+        <button class="btn small" id="applyAnimBtn" title="Áp dụng vị trí cho toàn bộ frame trong anim">↕ Cả anim</button>
+        <button class="btn small" id="applyAllBtn" title="Áp dụng cho toàn bộ animation">↔ Tất cả</button>
+      </div>
+      <div class="row">
+        <button class="btn small" id="copyPrevBtn" title="Copy từ frame trước">📋 Copy prev</button>
+        <button class="btn small" id="resetFrameBtn">↺ Reset</button>
+      </div>
+      <div class="row">
+        <button class="btn small danger" id="resetAnimBtn" style="flex:1">🗑 Reset anim</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title"><span>📊 Thông tin</span></div>
       <div class="stats" id="stats">
         Chưa load sprite
       </div>
     </div>
 
   </aside>
+
 </main>
+</div>
 
-<div id="toast"></div>
+<!-- ============================================================
+     MODAL: Connect game
+     ============================================================ -->
+<div class="modal" id="connectModal">
+  <div class="modal-box">
+    <h3>🔌 Kết nối tới game</h3>
+    <p>Nhập URL của game (đã deploy trên GitHub Pages / Render):</p>
+    <input type="text" id="gameUrlInput" placeholder="https://dragon.dragonhunter.gamer.free" value="https://dragon.dragonhunter.gamer.free">
+    <p style="font-size:11px;color:var(--dim2);margin-bottom:0">
+      Tool sẽ fetch <code>sprites.json</code> từ <code>URL/sprites.json</code> và load tất cả model.
+    </p>
+    <div class="actions">
+      <button class="btn" onclick="closeModal('connectModal')">Hủy</button>
+      <button class="btn primary" id="connectConfirmBtn">🔌 Kết nối</button>
+    </div>
+  </div>
+</div>
 
-<!-- Modal: Load tuning from server -->
+<!-- ============================================================
+     MODAL: Save tuning
+     ============================================================ -->
+<div class="modal" id="saveModal">
+  <div class="modal-box">
+    <h3>☁ Lưu tuning lên server</h3>
+    <p>Nhập tên (không dấu, không space):</p>
+    <input type="text" id="saveNameInput" placeholder="katana_v1" value="katana_v1">
+    <div class="actions">
+      <button class="btn" onclick="closeModal('saveModal')">Hủy</button>
+      <button class="btn primary" id="saveConfirmBtn">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Load tuning
+     ============================================================ -->
 <div class="modal" id="loadTuningModal">
   <div class="modal-box">
     <h3>📥 Load tuning từ server</h3>
-    <p>Chọn tuning đã lưu:</p>
-    <div id="tuningList" style="max-height:200px;overflow-y:auto;margin-bottom:12px"></div>
+    <div class="list-box" id="tuningList">
+      <div class="empty-msg">Đang tải...</div>
+    </div>
     <div class="actions">
       <button class="btn" onclick="closeModal('loadTuningModal')">Đóng</button>
     </div>
   </div>
 </div>
 
-<!-- Modal: Save to server -->
-<div class="modal" id="saveModal">
+<!-- ============================================================
+     MODAL: Help
+     ============================================================ -->
+<div class="modal" id="helpModal">
   <div class="modal-box">
-    <h3>☁ Save to Server</h3>
-    <p>Nhập tên cho tuning này (không dấu, không space):</p>
-    <input type="text" id="saveNameInput" placeholder="katana_v1" value="katana_v1">
+    <h3>❓ Hướng dẫn</h3>
+    <p style="text-align:left;line-height:1.9">
+      <b style="color:var(--accent)">1. Kết nối</b><br>
+      • Bấm <b>🔌 Kết nối game</b> → nhập URL game (VD: <code>https://dragon.dragonhunter.gamer.free</code>)<br>
+      • Tool tự fetch <code>sprites.json</code> → load tất cả model<br>
+      • Hoặc bấm <b>📁</b> để load file từ máy<br><br>
+
+      <b style="color:var(--accent)">2. Chọn combo</b><br>
+      • Dropdown <b>CHAR</b> ở header → chọn model nhân vật (player/enemy/boss...)<br>
+      • Dropdown <b>WEAPON</b> → chọn model vũ khí<br><br>
+
+      <b style="color:var(--accent)">3. Chỉnh vị trí</b><br>
+      • <b>Kéo chuột</b> trên canvas → di chuyển vũ khí<br>
+      • <b>Shift + kéo</b> → xoay<br>
+      • Hoặc dùng sliders bên phải<br><br>
+
+      <b style="color:var(--accent)">4. Timeline</b><br>
+      • Click frame trên timeline → nhảy tới frame đó<br>
+      • Frame có <b style="color:var(--warn)">keyframe vàng</b> = đã chỉnh riêng<br>
+      • <b>Space</b> = play/pause animation<br>
+      • Speed 0.25× - 4× để xem chi tiết<br><br>
+
+      <b style="color:var(--accent)">5. Preview mode</b><br>
+      • Bật <b>Preview</b> → ẩn hint + debug, xem animation thực tế như trong game<br><br>
+
+      <b style="color:var(--accent)">6. Export</b><br>
+      • <b>☁</b> → lưu lên server (Postgres)<br>
+      • <b>💾</b> → tải <code>weapon-tuning.json</code> → copy vào repo game<br>
+      • Game tự load khi mở → vũ khí hiển thị đúng vị trí từng frame
+    </p>
     <div class="actions">
-      <button class="btn" onclick="closeModal('saveModal')">Hủy</button>
-      <button class="btn primary" id="saveConfirmBtn">Save</button>
+      <button class="btn primary" onclick="closeModal('helpModal')">Đã hiểu</button>
     </div>
   </div>
 </div>
+
+<input type="file" id="fileInput" accept=".json,application/json" style="display:none">
+<div id="toast"></div>
 
 <script>
 "use strict";
@@ -317,41 +603,42 @@ input{font:inherit;color:inherit}
    CONFIG
    ============================================================ */
 const BACKEND = 'https://game-sinhton.onrender.com';
-const DEST_HEIGHT = 55;   /* Chiều cao player trong game */
+const DEST_HEIGHT = 55;
 const FOOT_OFFSET = 8;
+
+const MODEL_META = {
+  player: { icon: '🎮', color: 'var(--accent)', isCharacter: true },
+  enemy:  { icon: '👹', color: 'var(--enemy)', isCharacter: true },
+  boss:   { icon: '🐉', color: 'var(--boss)', isCharacter: true },
+  npc:    { icon: '🧑', color: 'var(--npc)', isCharacter: true },
+  weapon: { icon: '⚔️', color: 'var(--weapon)', isCharacter: false },
+  skill:  { icon: '✨', color: '#a371f7', isCharacter: false },
+  effect: { icon: '💥', color: '#a371f7', isCharacter: false },
+  item:   { icon: '💎', color: 'var(--info)', isCharacter: false }
+};
 
 /* ============================================================
    STATE
    ============================================================ */
 const state = {
-  playerModel: null,          /* Models.get('player') */
-  weaponModel: null,          /* Models.get('weapon') */
+  connected: false,
+  baseUrl: '',
+  project: null,
+  models: new Map(),           /* modelName → Map(animName → sprite) */
+  charModel: null,
+  weaponModel: null,
   currentAnim: 'idle',
   currentFrame: 0,
   playing: false,
   playTime: 0,
-  raf: null,
-
-  /* Per-frame config — Map<anim, Array<frameConfig>> */
-  tuning: new Map(),
-
-  /* Global defaults */
-  defaults: {
-    handX: 4,
-    handY: -32,
-    pivotX: 0.5,
-    pivotY: 0.12,
-    scale: 0.85,
-    baseScale: 1.0
-  },
-
-  /* Drag state */
-  drag: null
+  speed: 1,
+  loop: true,
+  previewMode: false,
+  tuning: new Map(),           /* anim → [ frameConfig ] */
+  drag: null,
+  sidebarTab: 'models'
 };
 
-/* ============================================================
-   DOM
-   ============================================================ */
 const $ = id => document.getElementById(id);
 const cv = $('stageCanvas');
 const ctx = cv.getContext('2d');
@@ -365,13 +652,10 @@ function toast(msg, type){
   el.textContent = msg;
   el.className = 'show ' + (type || '');
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.className = '', 2500);
+  el._t = setTimeout(() => el.className = '', 2600);
 }
 function closeModal(id){ $(id).classList.remove('show'); }
 
-/* ============================================================
-   METADATA DECODER
-   ============================================================ */
 function decodeMetadata(img){
   try {
     const c = document.createElement('canvas');
@@ -391,117 +675,6 @@ function decodeMetadata(img){
     }
     return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
   } catch(e){ return null; }
-}
-
-/* ============================================================
-   LOAD SPRITES
-   ============================================================ */
-async function loadProject(){
-  const url = prompt('URL của sprites.json:', './sprites.json');
-  if (!url) return;
-
-  try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const project = await res.json();
-    if (project.format !== 'dh-studio-project' || !project.models){
-      throw new Error('Sai định dạng');
-    }
-
-    /* Tìm player và weapon model */
-    const playerModel = project.models.player;
-    const weaponModel = project.models.weapon;
-
-    if (!playerModel || !weaponModel){
-      toast('❌ File thiếu model player hoặc weapon', 'err');
-      return;
-    }
-
-    const baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
-    const assetsPath = baseUrl + 'assets/';
-
-    /* Load tất cả sprites */
-    toast('⏳ Đang load sprites...');
-
-    const playerSprites = {};
-    const weaponSprites = {};
-
-    for (const animName in playerModel.animations){
-      const cfg = playerModel.animations[animName];
-      const sprite = await loadSpriteFromProject(assetsPath, cfg.fileName);
-      if (sprite) playerSprites[animName] = { ...sprite, ...cfg };
-    }
-    for (const animName in weaponModel.animations){
-      const cfg = weaponModel.animations[animName];
-      const sprite = await loadSpriteFromProject(assetsPath, cfg.fileName);
-      if (sprite) weaponSprites[animName] = { ...sprite, ...cfg };
-    }
-
-    state.playerModel = { animations: playerSprites };
-    state.weaponModel = { animations: weaponSprites };
-
-    /* Init tuning */
-    initTuning();
-
-    /* UI */
-    renderAnimList();
-    selectAnim('idle');
-    toast('✓ Loaded ' + Object.keys(playerSprites).length + ' player anim + ' +
-          Object.keys(weaponSprites).length + ' weapon anim');
-
-  } catch(e){
-    console.error(e);
-    toast('❌ Load fail: ' + e.message, 'err');
-  }
-}
-
-function loadSpriteFromProject(assetsPath, fileName){
-  return new Promise(resolve => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const meta = decodeMetadata(img);
-      const cnv = document.createElement('canvas');
-      cnv.width = img.width;
-      cnv.height = img.height;
-      const cc = cnv.getContext('2d', { willReadFrequently: true });
-      cc.imageSmoothingEnabled = false;
-      cc.drawImage(img, 0, 0);
-
-      let vLines = meta && meta.vLines ? meta.vLines : null;
-      if (!vLines){
-        vLines = [0, img.width];
-      }
-      const spriteH = meta && meta.spriteH ? meta.spriteH : img.height - (meta ? 1 : 0);
-
-      /* Compute per-frame bboxes for weapon */
-      const frames = vLines.length - 1;
-      const frameBBoxes = [];
-      let maxH = 0, maxW = 0;
-      for (let i = 0; i < frames; i++){
-        const bb = detectBBox(cnv, vLines[i], 0, vLines[i+1], spriteH);
-        frameBBoxes.push(bb);
-        if (bb){
-          if (bb.h > maxH) maxH = bb.h;
-          if (bb.w > maxW) maxW = bb.w;
-        }
-      }
-
-      resolve({
-        canvas: cnv,
-        img,
-        spriteH,
-        vLines,
-        frames,
-        frameBBoxes,
-        contentMaxH: maxH || spriteH,
-        contentMaxW: maxW || 100,
-        meta
-      });
-    };
-    img.onerror = () => resolve(null);
-    img.src = assetsPath + fileName + '.png';
-  });
 }
 
 function detectBBox(canvas, x1, y1, x2, y2){
@@ -525,147 +698,748 @@ function detectBBox(canvas, x1, y1, x2, y2){
 }
 
 /* ============================================================
-   INIT TUNING
+   CONNECT / LOAD
    ============================================================ */
-function initTuning(){
+$('connectBtn').addEventListener('click', () => {
+  $('connectModal').classList.add('show');
+  setTimeout(() => $('gameUrlInput').select(), 100);
+});
+$('connectConfirmBtn').addEventListener('click', async () => {
+  const url = $('gameUrlInput').value.trim().replace(/\/+$/, '');
+  if (!url){ toast('URL trống', 'err'); return; }
+  closeModal('connectModal');
+  await connectToGame(url);
+});
+$('gameUrlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter'){ e.preventDefault(); $('connectConfirmBtn').click(); }
+});
+
+async function connectToGame(baseUrl){
+  state.baseUrl = baseUrl;
+  setConnStatus('loading', 'Đang kết nối...');
+
+  try {
+    const url = baseUrl + '/sprites.json';
+    toast('⏳ Đang tải sprites.json...');
+
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' — kiểm tra URL');
+    const project = await res.json();
+
+    if (project.format !== 'dh-studio-project' || !project.models){
+      throw new Error('Sai định dạng sprites.json');
+    }
+
+    await loadAllModelsFromProject(project, baseUrl + '/assets/');
+    state.connected = true;
+    setConnStatus('on', '✓ ' + baseUrl.replace(/^https?:\/\//, ''));
+    toast('✓ Kết nối thành công: ' + state.models.size + ' model');
+  } catch(e){
+    console.error(e);
+    setConnStatus('off', '❌ Lỗi');
+    toast('❌ Kết nối fail: ' + e.message, 'err');
+  }
+}
+
+function setConnStatus(mode, text){
+  const b = $('connBadge');
+  b.className = 'conn-badge' + (mode === 'on' ? ' on' : '');
+  b.textContent = text;
+}
+
+$('loadFileBtn').addEventListener('click', () => $('fileInput').click());
+$('fileInput').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+  try {
+    const text = await file.text();
+    const project = JSON.parse(text);
+    if (project.format !== 'dh-studio-project' || !project.models){
+      toast('❌ File sai định dạng', 'err'); return;
+    }
+    state.baseUrl = prompt('URL assets (nơi chứa ảnh PNG):', './assets') || './assets';
+    if (!state.baseUrl.endsWith('/')) state.baseUrl += '/';
+    await loadAllModelsFromProject(project, state.baseUrl);
+    state.connected = true;
+    setConnStatus('on', '✓ File local');
+    toast('✓ Đã load ' + state.models.size + ' model');
+  } catch(e){
+    toast('❌ Load fail: ' + e.message, 'err');
+  }
+});
+
+async function loadAllModelsFromProject(project, assetsPath){
+  state.project = project;
+  state.models.clear();
   state.tuning.clear();
-  for (const anim in state.playerModel.animations){
-    const p = state.playerModel.animations[anim];
-    const w = state.weaponModel.animations[anim] || state.weaponModel.animations.idle;
-    if (!w) continue;
-    const frames = p.vLines.length - 1;
+
+  /* Collect all load promises */
+  const tasks = [];
+  for (const modelName in project.models){
+    const model = project.models[modelName];
+    const map = new Map();
+    state.models.set(modelName, map);
+
+    for (const animName in model.animations){
+      const cfg = model.animations[animName];
+      tasks.push(
+        loadSpriteFromProject(assetsPath, cfg.fileName, cfg)
+          .then(sprite => {
+            if (sprite) map.set(animName, sprite);
+          })
+      );
+    }
+  }
+
+  toast('⏳ Đang load ảnh...');
+  await Promise.all(tasks);
+
+  /* Log kết quả */
+  const summary = [];
+  for (const [name, map] of state.models){
+    if (map.size > 0) summary.push(name + '(' + map.size + ')');
+  }
+  console.log('✓ Loaded models:', summary.join(', '));
+
+  /* Auto-pick player + weapon */
+  autoPickModels();
+
+  /* Render */
+  renderSidebar();
+  renderHeaderSelectors();
+}
+
+function loadSpriteFromProject(assetsPath, fileName, cfg){
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const meta = decodeMetadata(img);
+      const cnv = document.createElement('canvas');
+      cnv.width = img.width;
+      const spriteH = meta && meta.spriteH ? meta.spriteH : img.height;
+      cnv.height = spriteH;
+      const cc = cnv.getContext('2d', { willReadFrequently: true });
+      cc.imageSmoothingEnabled = false;
+      cc.drawImage(img, 0, 0, img.width, spriteH, 0, 0, img.width, spriteH);
+
+      let vLines = meta && meta.vLines && meta.vLines.length >= 2 ? meta.vLines : null;
+      if (!vLines){
+        /* Fallback: even split */
+        const n = cfg.frames || 1;
+        vLines = [0];
+        for (let i = 1; i < n; i++) vLines.push(Math.round(i * img.width / n));
+        vLines.push(img.width);
+      }
+
+      const frames = vLines.length - 1;
+      const frameBBoxes = [];
+      let maxH = 0, maxW = 0;
+      for (let i = 0; i < frames; i++){
+        const bb = detectBBox(cnv, vLines[i], 0, vLines[i+1], spriteH);
+        frameBBoxes.push(bb);
+        if (bb){
+          if (bb.h > maxH) maxH = bb.h;
+          if (bb.w > maxW) maxW = bb.w;
+        }
+      }
+
+      /* Anchors */
+      const anchors = (meta && meta.anchors || []).map(a =>
+        Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null));
+      const stableAnchor = meta && meta.stableAnchor
+        ? { x: meta.stableAnchor[0], y: meta.stableAnchor[1] }
+        : null;
+
+      resolve({
+        canvas: cnv, img, spriteH, vLines, frames,
+        frameBBoxes,
+        contentMaxH: maxH || spriteH,
+        contentMaxW: maxW || 100,
+        anchors, stableAnchor,
+        anchorMode: (meta && meta.anchorMode) || cfg.anchorMode || 'stable-x',
+        fps: (meta && meta.fps) || cfg.fps || 10,
+        loop: (meta && meta.loop !== undefined) ? meta.loop : (cfg.loop !== false),
+        fileName
+      });
+    };
+    img.onerror = () => { console.warn('  ✗ ' + assetsPath + fileName + '.png'); resolve(null); };
+    img.src = assetsPath + fileName + '.png';
+  });
+}
+
+function autoPickModels(){
+  /* Pick first character model */
+  const charModels = [...state.models.keys()].filter(m => MODEL_META[m] && MODEL_META[m].isCharacter);
+  if (charModels.length > 0){
+    state.charModel = charModels.includes('player') ? 'player' : charModels[0];
+  } else {
+    state.charModel = [...state.models.keys()][0] || null;
+  }
+
+  /* Pick weapon */
+  state.weaponModel = state.models.has('weapon') ? 'weapon' : null;
+
+  /* Pick default anim from char model */
+  if (state.charModel && state.models.get(state.charModel)){
+    const anims = [...state.models.get(state.charModel).keys()];
+    state.currentAnim = anims.includes('idle') ? 'idle' : anims[0];
+    state.currentFrame = 0;
+  }
+
+  initTuningForCurrentCombo();
+}
+
+/* ============================================================
+   TUNING INIT
+   ============================================================ */
+function initTuningForCurrentCombo(){
+  if (!state.charModel || !state.weaponModel) return;
+  const charMap = state.models.get(state.charModel);
+  if (!charMap) return;
+
+  state.tuning.clear();
+
+  for (const [anim, charSprite] of charMap){
+    const frames = charSprite.frames;
     const arr = [];
     for (let i = 0; i < frames; i++){
-      const wFrames = w.vLines.length - 1;
-      const wIdx = Math.min(wFrames - 1, Math.floor((i / Math.max(1, frames)) * wFrames));
-      arr.push({
-        handX: state.defaults.handX,
-        handY: state.defaults.handY,
-        offsetX: 0,
-        offsetY: 0,
-        rotation: 0,
-        scale: 1,
-        pivotX: state.defaults.pivotX,
-        pivotY: state.defaults.pivotY,
-        weaponFrame: wIdx
-      });
+      arr.push(defaultFrameConfig(anim, i, frames));
     }
     state.tuning.set(anim, arr);
   }
 }
 
+function defaultFrameConfig(anim, frameIdx, totalFrames){
+  const weaponMap = state.weaponModel ? state.models.get(state.weaponModel) : null;
+  const weaponSprite = weaponMap ? (weaponMap.get(anim) || weaponMap.get('idle')) : null;
+
+  let wFrameIdx = 0;
+  if (weaponSprite){
+    const wFrames = weaponSprite.frames;
+    wFrameIdx = Math.min(wFrames - 1, Math.floor((frameIdx / Math.max(1, totalFrames)) * wFrames));
+  }
+
+  return {
+    handX: 4,
+    handY: -32,
+    offsetX: 0,
+    offsetY: 0,
+    rotation: 0,
+    scale: 1,
+    pivotX: 0.5,
+    pivotY: 0.12,
+    weaponFrame: wFrameIdx
+  };
+}
+
 /* ============================================================
-   UI: ANIM LIST
+   HEADER SELECTORS
    ============================================================ */
-function renderAnimList(){
-  const list = $('animList');
-  list.innerHTML = '';
-  if (!state.playerModel){ return; }
-  for (const anim in state.playerModel.animations){
-    const p = state.playerModel.animations[anim];
-    const frames = p.vLines.length - 1;
-    const item = document.createElement('div');
-    item.className = 'anim-item' + (anim === state.currentAnim ? ' active' : '');
-    item.innerHTML =
-      '<span class="icon"></span>' +
-      '<span class="name">' + anim + '</span>' +
-      '<span class="count">' + frames + 'f</span>';
-    item.addEventListener('click', () => selectAnim(anim));
-    list.appendChild(item);
+function renderHeaderSelectors(){
+  const charSel = $('charSelect');
+  const weaponSel = $('weaponSelect');
+
+  /* Char models */
+  charSel.innerHTML = '';
+  const charModels = [...state.models.keys()].filter(m => MODEL_META[m] && MODEL_META[m].isCharacter);
+  const otherModels = [...state.models.keys()].filter(m => !MODEL_META[m] || !MODEL_META[m].isCharacter);
+
+  if (charModels.length === 0 && otherModels.length === 0){
+    charSel.innerHTML = '<option>—</option>';
+    charSel.disabled = true;
+  } else {
+    for (const m of charModels){
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = (MODEL_META[m].icon || '📦') + ' ' + m;
+      charSel.appendChild(opt);
+    }
+    for (const m of otherModels){
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = '📦 ' + m;
+      charSel.appendChild(opt);
+    }
+    charSel.disabled = false;
+    if (state.charModel) charSel.value = state.charModel;
+  }
+
+  /* Weapon models */
+  weaponSel.innerHTML = '<option value="">— Không có —</option>';
+  const weaponModels = [...state.models.keys()].filter(m =>
+    m === 'weapon' || (MODEL_META[m] && !MODEL_META[m].isCharacter && m !== 'skill' && m !== 'effect' && m !== 'item'));
+  for (const m of weaponModels){
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = '⚔️ ' + m;
+    weaponSel.appendChild(opt);
+  }
+  weaponSel.disabled = false;
+  if (state.weaponModel) weaponSel.value = state.weaponModel;
+
+  /* Enable tuning buttons */
+  $('loadTuningBtn').disabled = false;
+  $('saveTuningBtn').disabled = false;
+  $('exportBtn').disabled = false;
+}
+
+$('charSelect').addEventListener('change', e => {
+  state.charModel = e.target.value;
+  /* Reset anim to idle */
+  const charMap = state.models.get(state.charModel);
+  if (charMap){
+    const anims = [...charMap.keys()];
+    state.currentAnim = anims.includes('idle') ? 'idle' : anims[0];
+    state.currentFrame = 0;
+    state.playing = false;
+  }
+  initTuningForCurrentCombo();
+  renderSidebar();
+  renderTimeline();
+  render();
+  toast('👤 Char: ' + state.charModel);
+});
+
+$('weaponSelect').addEventListener('change', e => {
+  state.weaponModel = e.target.value || null;
+  initTuningForCurrentCombo();
+  renderTimeline();
+  render();
+  toast('⚔️ Weapon: ' + (state.weaponModel || 'không có'));
+});
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+document.querySelectorAll('.sidebar-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.sidebarTab = tab.dataset.tab;
+    renderSidebar();
+  });
+});
+
+function renderSidebar(){
+  const body = $('sidebarBody');
+  if (!state.connected || state.models.size === 0){
+    body.innerHTML = '<div class="empty-msg">Chưa kết nối<br><br>Bấm <b style="color:var(--accent)">🔌 Kết nối game</b></div>';
+    return;
+  }
+
+  if (state.sidebarTab === 'models') renderSidebarModels(body);
+  else renderSidebarAnims(body);
+}
+
+function renderSidebarModels(body){
+  body.innerHTML = '';
+
+  for (const [modelName, animMap] of state.models){
+    if (animMap.size === 0) continue;
+
+    const meta = MODEL_META[modelName] || { icon: '📦', color: 'var(--text)', isCharacter: false };
+    const isActive = modelName === state.charModel || modelName === state.weaponModel;
+
+    const group = document.createElement('div');
+    group.className = 'model-group';
+
+    const header = document.createElement('div');
+    header.className = 'model-group-header';
+    header.dataset.type = modelName;
+    header.innerHTML = `<span class="arrow">▼</span><span>${meta.icon} ${modelName}</span><span class="count">${animMap.size}</span>`;
+    header.addEventListener('click', () => {
+      header.classList.toggle('collapsed');
+      group.querySelector('.model-group-body').classList.toggle('hidden');
+    });
+    group.appendChild(header);
+
+    const groupBody = document.createElement('div');
+    groupBody.className = 'model-group-body';
+    for (const [animName, sprite] of animMap){
+      const item = document.createElement('div');
+      item.className = 'model-item' +
+        (modelName === state.charModel && animName === state.currentAnim && MODEL_META[modelName]?.isCharacter ? ' active' : '');
+      item.innerHTML =
+        `<span class="dot"></span>` +
+        `<span class="name">${animName}</span>` +
+        `<span class="frames">${sprite.frames}f</span>`;
+
+      item.addEventListener('click', () => {
+        /* Nếu là character model → đổi char + anim */
+        if (meta.isCharacter || modelName === state.charModel){
+          if (state.charModel !== modelName){
+            state.charModel = modelName;
+            state.tuning.clear();
+            initTuningForCurrentCombo();
+            $('charSelect').value = modelName;
+          }
+          state.currentAnim = animName;
+          state.currentFrame = 0;
+          state.playing = false;
+          renderSidebar();
+          renderTimeline();
+          render();
+        } else {
+          /* Weapon/skill/etc → switch weapon model */
+          if (state.weaponModel !== modelName){
+            state.weaponModel = modelName;
+            state.tuning.clear();
+            initTuningForCurrentCombo();
+            $('weaponSelect').value = modelName;
+          }
+          state.currentAnim = animName;
+          state.currentFrame = 0;
+          state.playing = false;
+          renderSidebar();
+          renderTimeline();
+          render();
+        }
+      });
+
+      groupBody.appendChild(item);
+    }
+    group.appendChild(groupBody);
+    body.appendChild(group);
   }
 }
 
-function selectAnim(anim){
-  state.currentAnim = anim;
-  state.currentFrame = 0;
-  renderAnimList();
-  renderFrameChips();
-  updateTunerUIFromFrame();
-  render();
-}
+function renderSidebarAnims(body){
+  body.innerHTML = '';
+  if (!state.charModel){ body.innerHTML = '<div class="empty-msg">Chưa chọn character model</div>'; return; }
+  const charMap = state.models.get(state.charModel);
+  if (!charMap) return;
 
-/* ============================================================
-   UI: FRAME CHIPS
-   ============================================================ */
-function renderFrameChips(){
-  const el = $('frameChips');
-  el.innerHTML = '';
-  const p = state.playerModel.animations[state.currentAnim];
-  if (!p) return;
-  const frames = p.vLines.length - 1;
-  const tuning = state.tuning.get(state.currentAnim) || [];
-  for (let i = 0; i < frames; i++){
-    const t = tuning[i];
-    const custom = t && (t.offsetX !== 0 || t.offsetY !== 0 || t.rotation !== 0 || t.scale !== 1);
-    const chip = document.createElement('div');
-    chip.className = 'frame-chip' +
-      (i === state.currentFrame ? ' active' : '') +
-      (custom ? ' has-custom' : '');
-    chip.textContent = i;
-    chip.addEventListener('click', () => {
-      state.currentFrame = i;
-      renderFrameChips();
-      updateTunerUIFromFrame();
+  for (const [animName, sprite] of charMap){
+    const item = document.createElement('div');
+    item.className = 'model-item' + (animName === state.currentAnim ? ' active' : '');
+    const tuning = state.tuning.get(animName) || [];
+    const tunedCount = tuning.filter(t =>
+      t.offsetX !== 0 || t.offsetY !== 0 || t.rotation !== 0 || t.scale !== 1
+    ).length;
+    item.innerHTML =
+      `<span class="dot"></span>` +
+      `<span class="name">${animName}</span>` +
+      `<span class="frames">${sprite.frames}f${tunedCount > 0 ? ' ⚡' + tunedCount : ''}</span>`;
+    item.addEventListener('click', () => {
+      state.currentAnim = animName;
+      state.currentFrame = 0;
+      state.playing = false;
+      renderSidebar();
+      renderTimeline();
       render();
     });
-    el.appendChild(chip);
+    body.appendChild(item);
   }
 }
 
 /* ============================================================
-   UI: TUNER PANEL
+   RENDER TIMELINE
    ============================================================ */
-function updateTunerUIFromFrame(){
+function renderTimeline(){
+  const track = $('timelineTrack');
+  track.innerHTML = '';
+
+  if (!state.charModel){
+    $('tlAnimName').textContent = '—';
+    $('tlFrameInfo').textContent = '0/0';
+    return;
+  }
+
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  if (!charSprite){ return; }
+
+  const frames = charSprite.frames;
   const tuning = state.tuning.get(state.currentAnim) || [];
+
+  $('tlAnimName').textContent = state.charModel + ' · ' + state.currentAnim;
+  $('tlFps').textContent = charSprite.fps;
+  $('tlFrameInfo').textContent = (state.currentFrame + 1) + '/' + frames;
+  $('frameBadge').textContent = 'Frame ' + state.currentFrame;
+
+  const frameDuration = 1 / charSprite.fps;
+  const totalDuration = frames * frameDuration;
+  $('tlTimeInfo').textContent =
+    (state.currentFrame * frameDuration).toFixed(2) + 's / ' + totalDuration.toFixed(2) + 's';
+
+  for (let i = 0; i < frames; i++){
+    const el = document.createElement('div');
+    const t = tuning[i];
+    const isTuned = t && (t.offsetX !== 0 || t.offsetY !== 0 || t.rotation !== 0 ||
+                          t.scale !== 1 || t.handX !== 4 || t.handY !== -32);
+    el.className = 'tl-frame' +
+      (i === state.currentFrame ? ' active' : '') +
+      (isTuned ? ' tuned' : '');
+    el.textContent = i;
+    if (isTuned){
+      const kf = document.createElement('span');
+      kf.className = 'keyframe';
+      el.appendChild(kf);
+    }
+    el.addEventListener('click', () => {
+      state.currentFrame = i;
+      updateTunerUIFromFrame();
+      renderTimeline();
+      render();
+    });
+    track.appendChild(el);
+  }
+}
+
+/* ============================================================
+   RENDER STAGE
+   ============================================================ */
+function render(){
+  const canvasWrap = $('canvasWrap');
+  if (state.previewMode) canvasWrap.classList.add('preview-mode');
+  else canvasWrap.classList.remove('preview-mode');
+
+  cv.classList.toggle('preview', state.previewMode);
+
+  if (!state.charModel){ return; }
+
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  if (!charSprite){
+    cv.width = 400; cv.height = 400;
+    ctx.fillStyle = '#111'; ctx.fillRect(0, 0, 400, 400);
+    return;
+  }
+
+  const cellX = charSprite.vLines[state.currentFrame];
+  const cellW = charSprite.vLines[state.currentFrame + 1] - cellX;
+  const cellH = charSprite.spriteH;
+
+  /* Canvas size */
+  const wrapW = canvasWrap.clientWidth - 40;
+  const wrapH = canvasWrap.clientHeight - 40;
+  const scale = Math.max(1, Math.min(wrapW / cellW, wrapH / cellH, 8));
+  const dw = Math.round(cellW * scale);
+  const dh = Math.round(cellH * scale);
+
+  cv.width = dw;
+  cv.height = dh;
+  cv.style.width = dw + 'px';
+  cv.style.height = dh + 'px';
+  ctx.imageSmoothingEnabled = false;
+
+  /* Background */
+  ctx.fillStyle = '#111';
+  ctx.fillRect(0, 0, dw, dh);
+
+  /* Grid */
+  if (!state.previewMode){
+    ctx.strokeStyle = 'rgba(63,185,80,.06)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < dw; x += scale * 8){
+      ctx.beginPath(); ctx.moveTo(x+.5, 0); ctx.lineTo(x+.5, dh); ctx.stroke();
+    }
+    for (let y = 0; y < dh; y += scale * 8){
+      ctx.beginPath(); ctx.moveTo(0, y+.5); ctx.lineTo(dw, y+.5); ctx.stroke();
+    }
+  }
+
+  /* Draw player */
+  ctx.drawImage(charSprite.canvas, cellX, 0, cellW, cellH, 0, 0, dw, dh);
+
+  /* Draw weapon */
+  if (state.weaponModel){
+    const weaponMap = state.models.get(state.weaponModel);
+    const weaponSprite = weaponMap && (weaponMap.get(state.currentAnim) || weaponMap.get('idle'));
+
+    if (weaponSprite){
+      const tuning = state.tuning.get(state.currentAnim) || [];
+      const t = tuning[state.currentFrame];
+      if (t) drawWeaponOnCanvas(weaponSprite, t, dw, dh, cellH);
+    }
+  }
+
+  /* Debug badge */
+  if (!state.previewMode){
+    const tuning = state.tuning.get(state.currentAnim) || [];
+    const t = tuning[state.currentFrame];
+    if (t){
+      $('debugBadge').textContent =
+        `🎯 Hand(${t.handX.toFixed(0)},${t.handY.toFixed(0)}) · ` +
+        `Off(${t.offsetX.toFixed(1)},${t.offsetY.toFixed(1)}) · ` +
+        `Rot${(t.rotation * 180 / Math.PI).toFixed(0)}° · ` +
+        `Scale${t.scale.toFixed(2)} · WF${t.weaponFrame}`;
+    }
+  }
+}
+
+function drawWeaponOnCanvas(weaponSprite, t, canvasW, canvasH, playerCellH){
+  const wFrameIdx = Math.max(0, Math.min(weaponSprite.frames - 1, t.weaponFrame || 0));
+  const bb = weaponSprite.frameBBoxes[wFrameIdx];
+
+  let srcX, srcY, srcW, srcH;
+  if (bb && bb.w > 0){
+    srcX = bb.x; srcY = bb.y; srcW = bb.w; srcH = bb.h;
+  } else {
+    srcX = weaponSprite.vLines[wFrameIdx]; srcY = 0;
+    srcW = weaponSprite.vLines[wFrameIdx + 1] - srcX;
+    srcH = weaponSprite.spriteH;
+  }
+
+  /* Scale weapon theo DEST_HEIGHT like in-game */
+  const contentH = weaponSprite.contentMaxH || srcH;
+  const baseScale = (DEST_HEIGHT * 0.85) / contentH;
+  const finalScale = baseScale * (t.scale || 1);
+  const wdw = srcW * finalScale;
+  const wdh = srcH * finalScale;
+
+  /* Player scale (canvas space / game space) */
+  const playerScale = canvasH / playerCellH;
+
+  /* Player anchor on canvas = center X, bottom Y */
+  const pAnchorX = canvasW / 2;
+  const pAnchorY = canvasH;
+
+  /* Hand position in game space → canvas space */
+  const handGameX = t.handX + t.offsetX;
+  const handGameY = t.handY + t.offsetY;
+  const handCvX = pAnchorX + handGameX * playerScale;
+  const handCvY = pAnchorY + handGameY * playerScale;
+
+  /* Weapon size in canvas */
+  const finalWdw = wdw * playerScale;
+  const finalWdh = wdh * playerScale;
+
+  const pivotX = -finalWdw * t.pivotX;
+  const pivotY = -finalWdh * t.pivotY;
+
+  ctx.save();
+  ctx.translate(handCvX, handCvY);
+  ctx.rotate(t.rotation || 0);
+  ctx.drawImage(weaponSprite.canvas, srcX, srcY, srcW, srcH,
+                pivotX, pivotY, finalWdw, finalWdh);
+  ctx.restore();
+
+  /* Debug: chấm đỏ tại hand (chỉ khi không preview) */
+  if (!state.previewMode){
+    ctx.fillStyle = 'rgba(248,81,73,.9)';
+    ctx.beginPath();
+    ctx.arc(handCvX, handCvY, 3, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    /* Vẽ pivot */
+    ctx.fillStyle = 'rgba(88,166,255,.9)';
+    ctx.beginPath();
+    ctx.arc(handCvX + pivotX, handCvY + pivotY, 2, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+/* ============================================================
+   DRAG WEAPON ON CANVAS
+   ============================================================ */
+cv.addEventListener('mousedown', e => {
+  if (state.previewMode) return;
+  if (!state.charModel || !state.weaponModel) return;
+
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning) return;
   const t = tuning[state.currentFrame];
   if (!t) return;
 
-  $('frameBadge').textContent = 'Frame ' + state.currentFrame;
+  state.drag = {
+    startX: e.clientX,
+    startY: e.clientY,
+    origHandX: t.handX,
+    origHandY: t.handY,
+    origOffX: t.offsetX,
+    origOffY: t.offsetY,
+    origRot: t.rotation,
+    isRotate: e.shiftKey
+  };
+  e.preventDefault();
+});
 
-  setField('handX', t.handX);
-  setField('handY', t.handY);
-  setField('offX', t.offsetX);
-  setField('offY', t.offsetY);
-  setField('rot', Math.round(t.rotation * 180 / Math.PI));
-  setField('sc', t.scale);
-  setField('pivotX', t.pivotX);
-  setField('pivotY', t.pivotY);
+cv.addEventListener('touchstart', e => {
+  if (state.previewMode) return;
+  if (e.touches.length !== 1) return;
+  if (!state.charModel || !state.weaponModel) return;
 
-  updateStats();
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning) return;
+  const t = tuning[state.currentFrame];
+  if (!t) return;
+
+  const touch = e.touches[0];
+  state.drag = {
+    startX: touch.clientX,
+    startY: touch.clientY,
+    origHandX: t.handX,
+    origHandY: t.handY,
+    origOffX: t.offsetX,
+    origOffY: t.offsetY,
+    origRot: t.rotation,
+    isRotate: false
+  };
+  e.preventDefault();
+}, { passive: false });
+
+function handleDragMove(clientX, clientY){
+  if (!state.drag) return;
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning) return;
+  const t = tuning[state.currentFrame];
+  if (!t) return;
+
+  const dx = clientX - state.drag.startX;
+  const dy = clientY - state.drag.startY;
+
+  /* Convert to game-space delta */
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap.get(state.currentAnim);
+  const playerScale = cv.height / charSprite.spriteH;
+
+  if (state.drag.isRotate){
+    t.rotation = state.drag.origRot + dx * 0.02;
+  } else {
+    t.offsetX = state.drag.origOffX + dx / playerScale;
+    t.offsetY = state.drag.origOffY + dy / playerScale;
+  }
+
+  updateTunerUIFromFrame();
+  renderTimeline();
+  render();
 }
 
-function setField(id, val){
-  $(id).value = val;
-  $(id + 'Num').value = val;
-}
+window.addEventListener('mousemove', e => {
+  if (state.drag) handleDragMove(e.clientX, e.clientY);
+});
+window.addEventListener('touchmove', e => {
+  if (state.drag && e.touches.length === 1){
+    handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
+    e.preventDefault();
+  }
+}, { passive: false });
 
-function updateStats(){
-  const p = state.playerModel && state.playerModel.animations[state.currentAnim];
-  const w = state.weaponModel && (state.weaponModel.animations[state.currentAnim] || state.weaponModel.animations.idle);
-  if (!p || !w) return;
-  const tuning = state.tuning.get(state.currentAnim) || [];
-  const customCount = tuning.filter(t =>
-    t.offsetX !== 0 || t.offsetY !== 0 || t.rotation !== 0 || t.scale !== 1
-  ).length;
+window.addEventListener('mouseup', () => { state.drag = null; });
+window.addEventListener('touchend', () => { state.drag = null; });
 
-  $('stats').innerHTML =
-    'Player: <b>' + p.vLines.length - 1 + 'f</b> · ' + p.spriteH + 'px<br>' +
-    'Weapon: <b>' + w.vLines.length - 1 + 'f</b> · ' + w.spriteH + 'px<br>' +
-    'Content: <b>' + w.contentMaxW + '×' + w.contentMaxH + '</b><br>' +
-    'Custom frames: <span class="accent">' + customCount + '</span>/' + tuning.length;
-}
-
-/* Wire sliders */
-const sliders = ['handX', 'handY', 'offX', 'offY', 'rot', 'sc', 'pivotX', 'pivotY'];
-sliders.forEach(id => {
+/* ============================================================
+   SLIDERS
+   ============================================================ */
+const SLIDERS = ['handX', 'handY', 'offX', 'offY', 'rot', 'sc', 'pivotX', 'pivotY', 'wFrame'];
+SLIDERS.forEach(id => {
   const slider = $(id);
   const num = $(id + 'Num');
+  if (!slider || !num) return;
+
   slider.addEventListener('input', e => {
     num.value = e.target.value;
     applySliderChange(id, parseFloat(e.target.value));
   });
   num.addEventListener('input', e => {
     const v = parseFloat(e.target.value);
+    if (isNaN(v)) return;
     slider.value = v;
     applySliderChange(id, v);
   });
@@ -678,219 +1452,205 @@ function applySliderChange(id, val){
   if (!t) return;
 
   switch(id){
-    case 'handX':   t.handX = val; break;
-    case 'handY':   t.handY = val; break;
-    case 'offX':    t.offsetX = val; break;
-    case 'offY':    t.offsetY = val; break;
-    case 'rot':     t.rotation = val * Math.PI / 180; break;
-    case 'sc':      t.scale = val; break;
-    case 'pivotX':  t.pivotX = val; break;
-    case 'pivotY':  t.pivotY = val; break;
+    case 'handX':  t.handX = val; break;
+    case 'handY':  t.handY = val; break;
+    case 'offX':   t.offsetX = val; break;
+    case 'offY':   t.offsetY = val; break;
+    case 'rot':    t.rotation = val * Math.PI / 180; break;
+    case 'sc':     t.scale = val; break;
+    case 'pivotX': t.pivotX = val; break;
+    case 'pivotY': t.pivotY = val; break;
+    case 'wFrame': t.weaponFrame = val; break;
   }
-  renderFrameChips();
+
+  renderTimeline();
   updateStats();
   render();
 }
 
-/* ============================================================
-   RENDER STAGE
-   ============================================================ */
-function render(){
-  const p = state.playerModel && state.playerModel.animations[state.currentAnim];
-  if (!p){ return; }
+function updateTunerUIFromFrame(){
+  const tuning = state.tuning.get(state.currentAnim) || [];
+  const t = tuning[state.currentFrame];
+  if (!t) return;
 
-  const w = state.weaponModel.animations[state.currentAnim] ||
-            state.weaponModel.animations.idle;
+  setField('handX', t.handX);
+  setField('handY', t.handY);
+  setField('offX', t.offsetX);
+  setField('offY', t.offsetY);
+  setField('rot', Math.round(t.rotation * 180 / Math.PI));
+  setField('sc', t.scale);
+  setField('pivotX', t.pivotX);
+  setField('pivotY', t.pivotY);
+  setField('wFrame', t.weaponFrame);
 
-  /* Canvas size */
-  const cellW = p.vLines[state.currentFrame + 1] - p.vLines[state.currentFrame];
-  const cellH = p.spriteH;
-  const scale = Math.min(
-    (cv.parentElement.clientWidth - 60) / cellW,
-    (cv.parentElement.clientHeight - 60) / cellH,
-    6
-  );
-  const dw = Math.round(cellW * scale);
-  const dh = Math.round(cellH * scale);
-
-  cv.width = dw;
-  cv.height = dh;
-  cv.style.width = dw + 'px';
-  cv.style.height = dh + 'px';
-  ctx.imageSmoothingEnabled = false;
-
-  /* Clear */
-  ctx.fillStyle = '#111';
-  ctx.fillRect(0, 0, dw, dh);
-
-  /* Draw player */
-  const srcX = p.vLines[state.currentFrame];
-  const srcW = p.vLines[state.currentFrame + 1] - srcX;
-  ctx.drawImage(p.canvas, srcX, 0, srcW, cellH, 0, 0, dw, dh);
-
-  /* Draw weapon */
-  const t = (state.tuning.get(state.currentAnim) || [])[state.currentFrame];
-  if (t && w){
-    const wFrameIdx = t.weaponFrame || 0;
-    const bb = w.frameBBoxes[wFrameIdx];
-    let wsx, wsy, wsw, wsh;
-    if (bb && bb.w > 0){
-      wsx = bb.x; wsy = bb.y; wsw = bb.w; wsh = bb.h;
-    } else {
-      wsx = w.vLines[wFrameIdx]; wsy = 0;
-      wsw = w.vLines[wFrameIdx + 1] - wsx; wsh = w.spriteH;
+  /* Weapon frame slider max */
+  if (state.weaponModel){
+    const wMap = state.models.get(state.weaponModel);
+    const wSprite = wMap && (wMap.get(state.currentAnim) || wMap.get('idle'));
+    if (wSprite){
+      $('wFrame').max = Math.max(0, wSprite.frames - 1);
+      $('wFrameNum').max = Math.max(0, wSprite.frames - 1);
     }
-
-    const contentH = w.contentMaxH || wsh;
-    const wScale = (DEST_HEIGHT * state.defaults.scale) / contentH;
-    const finalScale = wScale * t.scale;
-    const wdw = wsw * finalScale;
-    const wdh = wsh * finalScale;
-
-    /* Player scale (for converting player-space to canvas-space) */
-    const playerScale = dh / cellH;
-
-    /* Translate: canvas coords */
-    const screenSx = dw / 2;                    /* player anchor ở giữa */
-    const screenSy = dh;                        /* chân player */
-
-    /* Hand position (game space) + offset (local) */
-    const gameHandX = t.handX + t.offsetX;
-    const gameHandY = t.handY + t.offsetY;
-
-    /* Convert to canvas space */
-    const cvHandX = screenSx + gameHandX * playerScale;
-    const cvHandY = screenSy + gameHandY * playerScale;
-
-    /* Weapon size in canvas space (scale again) */
-    const finalWdw = wdw * playerScale;
-    const finalWdh = wdh * playerScale;
-
-    const pivotX = -finalWdw * t.pivotX;
-    const pivotY = -finalWdh * t.pivotY;
-
-    ctx.save();
-    ctx.translate(cvHandX, cvHandY);
-    ctx.rotate(t.rotation);
-    ctx.drawImage(w.canvas, wsx, wsy, wsw, wsh, pivotX, pivotY, finalWdw, finalWdh);
-    ctx.restore();
-
-    /* Debug: vẽ chấm đỏ vị trí tay */
-    ctx.fillStyle = '#ff3050';
-    ctx.beginPath();
-    ctx.arc(cvHandX, cvHandY, 3, 0, Math.PI*2);
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
-    ctx.stroke();
   }
+
+  updateStats();
 }
 
-/* ============================================================
-   DRAG WEAPON
-   ============================================================ */
-cv.addEventListener('mousedown', e => {
-  const tuning = state.tuning.get(state.currentAnim);
-  if (!tuning) return;
-  const t = tuning[state.currentFrame];
-  if (!t) return;
+function setField(id, val){
+  const s = $(id), n = $(id + 'Num');
+  if (s) s.value = val;
+  if (n) n.value = Math.round(val * 100) / 100;
+}
 
-  const rect = cv.getBoundingClientRect();
-  state.drag = {
-    startX: e.clientX,
-    startY: e.clientY,
-    origHandX: t.handX,
-    origHandY: t.handY,
-    origOffX: t.offsetX,
-    origOffY: t.offsetY,
-    origRot: t.rotation,
-    isRotate: e.shiftKey
-  };
-});
-
-window.addEventListener('mousemove', e => {
-  if (!state.drag) return;
-  const tuning = state.tuning.get(state.currentAnim);
-  if (!tuning) return;
-  const t = tuning[state.currentFrame];
-  if (!t) return;
-
-  const dx = e.clientX - state.drag.startX;
-  const dy = e.clientY - state.drag.startY;
-
-  if (state.drag.isRotate){
-    /* Rotate based on horizontal movement */
-    t.rotation = state.drag.origRot + dx * 0.02;
-  } else {
-    /* Move: convert screen delta to game-space delta */
-    const p = state.playerModel.animations[state.currentAnim];
-    const cellH = p.spriteH;
-    const dh = cv.height;
-    const playerScale = dh / cellH;
-    t.offsetX = state.drag.origOffX + dx / playerScale;
-    t.offsetY = state.drag.origOffY + dy / playerScale;
+function updateStats(){
+  const charMap = state.charModel ? state.models.get(state.charModel) : null;
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  if (!charSprite){
+    $('stats').innerHTML = '—';
+    return;
   }
 
-  updateTunerUIFromFrame();
-  renderFrameChips();
-  render();
-});
+  const tuning = state.tuning.get(state.currentAnim) || [];
+  const tunedCount = tuning.filter(t =>
+    t.offsetX !== 0 || t.offsetY !== 0 || t.rotation !== 0 ||
+    t.scale !== 1 || t.handX !== 4 || t.handY !== -32
+  ).length;
 
-window.addEventListener('mouseup', () => {
-  state.drag = null;
-});
+  const weaponMap = state.weaponModel ? state.models.get(state.weaponModel) : null;
+  const weaponSprite = weaponMap && (weaponMap.get(state.currentAnim) || weaponMap.get('idle'));
+
+  $('stats').innerHTML =
+    `Char: <b>${state.charModel}/${state.currentAnim}</b><br>` +
+    `Size: <b>${charSprite.spriteH}px · ${charSprite.frames}f</b><br>` +
+    `Weapon: <b>${state.weaponModel || '—'}</b><br>` +
+    (weaponSprite
+      ? `W.Size: <b>${weaponSprite.contentMaxW}×${weaponSprite.contentMaxH}</b><br>` +
+        `W.Frames: <b>${weaponSprite.frames}f</b><br>`
+      : '') +
+    `Tuned: <span class="warn">${tunedCount}/${tuning.length}</span> frames`;
+}
 
 /* ============================================================
    PLAYBACK
    ============================================================ */
-function playAnim(){
-  if (state.playing) return;
+$('playBtn').addEventListener('click', togglePlay);
+$('stopBtn').addEventListener('click', stopAnim);
+$('prevFrameBtn').addEventListener('click', () => stepFrame(-1));
+$('nextFrameBtn').addEventListener('click', () => stepFrame(1));
+
+function togglePlay(){
+  if (state.playing) stopAnim();
+  else startAnim();
+}
+function startAnim(){
+  if (!state.charModel) return;
   state.playing = true;
-  state.playTime = 0;
-  $('playBtn').textContent = '⏸ Pause';
+  state.playTime = state.currentFrame / getCurrentFps();
+  $('playBtn').textContent = '⏸';
   loopPlayback();
 }
 function stopAnim(){
   state.playing = false;
   if (state.raf) cancelAnimationFrame(state.raf);
-  $('playBtn').textContent = '▶ Play';
+  $('playBtn').textContent = '▶';
 }
 function loopPlayback(){
   if (!state.playing) return;
-  const p = state.playerModel && state.playerModel.animations[state.currentAnim];
-  if (!p){ stopAnim(); return; }
-  const frames = p.vLines.length - 1;
-  state.playTime += 1/60;
-  const fps = p.fps || 10;
-  state.currentFrame = Math.floor(state.playTime * fps) % frames;
-  updateTunerUIFromFrame();
-  renderFrameChips();
+
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  if (!charSprite){ stopAnim(); return; }
+
+  const fps = charSprite.fps;
+  const frames = charSprite.frames;
+
+  state.playTime += (1/60) * state.speed;
+  let f = Math.floor(state.playTime * fps);
+
+  if (state.loop){
+    f = ((f % frames) + frames) % frames;
+  } else {
+    if (f >= frames){
+      state.currentFrame = frames - 1;
+      stopAnim();
+      updateTunerUIFromFrame();
+      renderTimeline();
+      render();
+      return;
+    }
+    f = Math.max(0, f);
+  }
+
+  if (f !== state.currentFrame){
+    state.currentFrame = f;
+    updateTunerUIFromFrame();
+    renderTimeline();
+  }
   render();
   state.raf = requestAnimationFrame(loopPlayback);
 }
+function stepFrame(dir){
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  if (!charSprite) return;
+  const frames = charSprite.frames;
+  state.currentFrame = ((state.currentFrame + dir) % frames + frames) % frames;
+  updateTunerUIFromFrame();
+  renderTimeline();
+  render();
+}
+function getCurrentFps(){
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  return charSprite ? charSprite.fps : 10;
+}
+
+/* Speed buttons */
+document.querySelectorAll('.speed-control button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.speed-control button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    state.speed = parseFloat(btn.dataset.speed);
+  });
+});
+
+/* Loop toggle */
+$('loopToggle').addEventListener('click', () => {
+  state.loop = !state.loop;
+  $('loopToggle').classList.toggle('on', state.loop);
+});
+
+/* Preview toggle */
+$('previewToggle').addEventListener('click', () => {
+  state.previewMode = !state.previewMode;
+  $('previewToggle').classList.toggle('on', state.previewMode);
+  render();
+});
+
+/* Keyboard shortcuts */
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+
+  if (e.code === 'Space'){
+    e.preventDefault();
+    togglePlay();
+  }
+  if (e.code === 'ArrowLeft'){ e.preventDefault(); stepFrame(-1); }
+  if (e.code === 'ArrowRight'){ e.preventDefault(); stepFrame(1); }
+  if (e.code === 'KeyP'){ e.preventDefault(); $('previewToggle').click(); }
+  if (e.code === 'KeyL'){ e.preventDefault(); $('loopToggle').click(); }
+  if (e.key === 'Escape'){
+    closeModal('connectModal');
+    closeModal('saveModal');
+    closeModal('loadTuningModal');
+    closeModal('helpModal');
+  }
+});
 
 /* ============================================================
-   BUTTONS
+   ACTION BUTTONS
    ============================================================ */
-$('loadProjectBtn').addEventListener('click', loadProject);
-$('prevFrameBtn').addEventListener('click', () => {
-  const p = state.playerModel.animations[state.currentAnim];
-  const frames = p.vLines.length - 1;
-  state.currentFrame = (state.currentFrame - 1 + frames) % frames;
-  renderFrameChips(); updateTunerUIFromFrame(); render();
-});
-$('nextFrameBtn').addEventListener('click', () => {
-  const p = state.playerModel.animations[state.currentAnim];
-  const frames = p.vLines.length - 1;
-  state.currentFrame = (state.currentFrame + 1) % frames;
-  renderFrameChips(); updateTunerUIFromFrame(); render();
-});
-$('playBtn').addEventListener('click', () => {
-  if (state.playing) stopAnim(); else playAnim();
-});
-$('stopBtn').addEventListener('click', stopAnim);
-
-$('applyAllFramesBtn').addEventListener('click', () => {
+$('applyAnimBtn').addEventListener('click', () => {
   const tuning = state.tuning.get(state.currentAnim);
   if (!tuning) return;
   const src = tuning[state.currentFrame];
@@ -900,12 +1660,13 @@ $('applyAllFramesBtn').addEventListener('click', () => {
     t.scale = src.scale;
     t.pivotX = src.pivotX;
     t.pivotY = src.pivotY;
-    /* Giữ offset và rotation riêng cho từng frame */
+    /* Giữ offset và rotation riêng */
   }
-  toast('✓ Áp dụng vị trí cho toàn anim');
-  renderFrameChips(); render();
+  renderTimeline(); render();
+  toast('✓ Áp dụng vị trí cho cả anim');
 });
-$('applyAllAnimBtn').addEventListener('click', () => {
+
+$('applyAllBtn').addEventListener('click', () => {
   const src = state.tuning.get(state.currentAnim);
   if (!src) return;
   const srcFrame = src[state.currentFrame];
@@ -918,59 +1679,67 @@ $('applyAllAnimBtn').addEventListener('click', () => {
       t.pivotY = srcFrame.pivotY;
     }
   }
+  renderTimeline(); render();
   toast('✓ Áp dụng cho toàn bộ animations');
-  renderFrameChips(); render();
 });
+
+$('copyPrevBtn').addEventListener('click', () => {
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning || state.currentFrame === 0) return;
+  const prev = tuning[state.currentFrame - 1];
+  const cur = tuning[state.currentFrame];
+  cur.handX = prev.handX;
+  cur.handY = prev.handY;
+  cur.offsetX = prev.offsetX;
+  cur.offsetY = prev.offsetY;
+  cur.rotation = prev.rotation;
+  cur.scale = prev.scale;
+  cur.pivotX = prev.pivotX;
+  cur.pivotY = prev.pivotY;
+  cur.weaponFrame = prev.weaponFrame;
+  updateTunerUIFromFrame();
+  renderTimeline(); render();
+  toast('📋 Copy từ frame ' + (state.currentFrame - 1));
+});
+
 $('resetFrameBtn').addEventListener('click', () => {
   const tuning = state.tuning.get(state.currentAnim);
   if (!tuning) return;
-  const w = state.weaponModel.animations[state.currentAnim] || state.weaponModel.animations.idle;
-  const wFrames = w.vLines.length - 1;
-  const p = state.playerModel.animations[state.currentAnim];
-  const frames = p.vLines.length - 1;
-  const wIdx = Math.min(wFrames - 1, Math.floor((state.currentFrame / Math.max(1, frames)) * wFrames));
-  tuning[state.currentFrame] = {
-    handX: state.defaults.handX,
-    handY: state.defaults.handY,
-    offsetX: 0, offsetY: 0, rotation: 0, scale: 1,
-    pivotX: state.defaults.pivotX,
-    pivotY: state.defaults.pivotY,
-    weaponFrame: wIdx
-  };
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap.get(state.currentAnim);
+  tuning[state.currentFrame] = defaultFrameConfig(state.currentAnim, state.currentFrame, charSprite.frames);
   updateTunerUIFromFrame();
-  renderFrameChips();
-  render();
+  renderTimeline(); render();
   toast('↺ Reset frame ' + state.currentFrame);
 });
+
 $('resetAnimBtn').addEventListener('click', () => {
+  if (!confirm('Reset toàn bộ anim "' + state.currentAnim + '"?')) return;
   const tuning = state.tuning.get(state.currentAnim);
   if (!tuning) return;
-  if (!confirm('Reset toàn bộ anim ' + state.currentAnim + '?')) return;
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap.get(state.currentAnim);
   for (let i = 0; i < tuning.length; i++){
-    const t = tuning[i];
-    t.handX = state.defaults.handX;
-    t.handY = state.defaults.handY;
-    t.offsetX = 0; t.offsetY = 0; t.rotation = 0; t.scale = 1;
-    t.pivotX = state.defaults.pivotX;
-    t.pivotY = state.defaults.pivotY;
+    tuning[i] = defaultFrameConfig(state.currentAnim, i, charSprite.frames);
   }
   updateTunerUIFromFrame();
-  renderFrameChips();
-  render();
-  toast('🗑 Reset ' + state.currentAnim);
+  renderTimeline(); render();
+  toast('🗑 Reset anim ' + state.currentAnim);
 });
 
 /* ============================================================
-   EXPORT JSON
+   EXPORT
    ============================================================ */
 $('exportBtn').addEventListener('click', () => {
-  if (!state.playerModel){ toast('Chưa load sprites', 'err'); return; }
+  if (!state.charModel){ toast('Chưa load dữ liệu', 'err'); return; }
 
   const output = {
     format: 'dh-weapon-tuning',
     version: 1,
     exportedAt: new Date().toISOString(),
-    defaults: state.defaults,
+    charModel: state.charModel,
+    weaponModel: state.weaponModel,
+    defaults: { scale: 0.85 },
     animations: {}
   };
 
@@ -999,25 +1768,133 @@ $('exportBtn').addEventListener('click', () => {
 });
 
 /* ============================================================
-   SAVE TO SERVER
+   SAVE / LOAD TUNING
    ============================================================ */
-$('saveServerBtn').addEventListener('click', () => {
-  if (!state.playerModel){ toast('Chưa load sprites', 'err'); return; }
+$('saveTuningBtn').addEventListener('click', () => {
+  if (!state.charModel){ toast('Chưa load dữ liệu', 'err'); return; }
   $('saveModal').classList.add('show');
-  $('saveNameInput').focus();
-  $('saveNameInput').select();
+  setTimeout(() => { $('saveNameInput').focus(); $('saveNameInput').select(); }, 100);
 });
 
 $('saveConfirmBtn').addEventListener('click', async () => {
   const name = $('saveNameInput').value.trim();
   if (!name){ toast('Tên trống', 'err'); return; }
 
-  /* Build config giống export */
+  const output = buildTuningOutput();
+  try {
+    const res = await fetch(BACKEND + '/tuning', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, config: output }),
+      signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    toast('☁ Đã lưu: ' + name);
+    closeModal('saveModal');
+  } catch(e){
+    toast('❌ Save fail: ' + e.message, 'err');
+  }
+});
+
+$('loadTuningBtn').addEventListener('click', async () => {
+  $('loadTuningModal').classList.add('show');
+  $('tuningList').innerHTML = '<div class="empty-msg">Đang tải...</div>';
+  try {
+    const res = await fetch(BACKEND + '/tuning', {
+      signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined
+    });
+    const data = await res.json();
+    const list = $('tuningList');
+
+    if (!data.tunings || data.tunings.length === 0){
+      list.innerHTML = '<div class="empty-msg">Chưa có tuning nào trên server</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    for (const item of data.tunings){
+      const el = document.createElement('div');
+      el.className = 'list-item';
+      el.innerHTML =
+        `<span class="name">${item.name}</span>` +
+        `<span class="meta">${item.updatedAt ? new Date(item.updatedAt).toLocaleString() : ''}</span>`;
+      const loadBtn = document.createElement('button');
+      loadBtn.className = 'btn primary small';
+      loadBtn.textContent = 'Load';
+      loadBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        loadTuningFromServer(item.name);
+      });
+      el.appendChild(loadBtn);
+      el.addEventListener('click', () => loadTuningFromServer(item.name));
+      list.appendChild(el);
+    }
+  } catch(e){
+    $('tuningList').innerHTML = '<div class="empty-msg" style="color:var(--danger)">❌ Lỗi: ' + e.message + '</div>';
+  }
+});
+
+async function loadTuningFromServer(name){
+  try {
+    const res = await fetch(BACKEND + '/tuning/' + encodeURIComponent(name), {
+      signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    applyTuningConfig(data.config);
+    closeModal('loadTuningModal');
+    toast('📥 Đã load: ' + name);
+  } catch(e){
+    toast('❌ Load fail: ' + e.message, 'err');
+  }
+}
+
+function applyTuningConfig(config){
+  if (!config || !config.animations){
+    toast('Config sai định dạng', 'err');
+    return;
+  }
+
+  /* Try to match char/weapon model */
+  if (config.charModel && state.models.has(config.charModel)){
+    state.charModel = config.charModel;
+    $('charSelect').value = config.charModel;
+  }
+  if (config.weaponModel && state.models.has(config.weaponModel)){
+    state.weaponModel = config.weaponModel;
+    $('weaponSelect').value = config.weaponModel;
+  }
+
+  /* Reset tuning */
+  initTuningForCurrentCombo();
+
+  for (const anim in config.animations){
+    const src = config.animations[anim];
+    const dst = state.tuning.get(anim);
+    if (!dst) continue;
+    for (let i = 0; i < Math.min(src.length, dst.length); i++){
+      Object.assign(dst[i], src[i]);
+    }
+  }
+
+  if (!state.tuning.has(state.currentAnim)){
+    const anims = [...state.tuning.keys()];
+    state.currentAnim = anims[0] || 'idle';
+    state.currentFrame = 0;
+  }
+
+  updateTunerUIFromFrame();
+  renderTimeline(); render();
+}
+
+function buildTuningOutput(){
   const output = {
     format: 'dh-weapon-tuning',
     version: 1,
     exportedAt: new Date().toISOString(),
-    defaults: state.defaults,
+    charModel: state.charModel,
+    weaponModel: state.weaponModel,
+    defaults: { scale: 0.85 },
     animations: {}
   };
   for (const [anim, tuning] of state.tuning){
@@ -1033,102 +1910,35 @@ $('saveConfirmBtn').addEventListener('click', async () => {
       weaponFrame: t.weaponFrame
     }));
   }
-
-  try {
-    const res = await fetch(BACKEND + '/tuning', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, config: output })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    toast('☁ Đã lưu: ' + name);
-    closeModal('saveModal');
-  } catch(e){
-    toast('❌ Save fail: ' + e.message, 'err');
-  }
-});
-
-/* ============================================================
-   LOAD FROM SERVER
-   ============================================================ */
-$('loadTuningBtn').addEventListener('click', async () => {
-  try {
-    const res = await fetch(BACKEND + '/tuning');
-    const data = await res.json();
-    const list = $('tuningList');
-    if (!data.tunings || !data.tunings.length){
-      list.innerHTML = '<div class="empty">Chưa có tuning nào trên server</div>';
-    } else {
-      list.innerHTML = '';
-      for (const item of data.tunings){
-        const btn = document.createElement('button');
-        btn.className = 'btn';
-        btn.style.cssText = 'width:100%;margin-bottom:6px;justify-content:space-between';
-        btn.innerHTML = '<span>' + item.name + '</span><span style="color:var(--dim);font-size:10px">Load</span>';
-        btn.addEventListener('click', () => loadTuningFromServer(item.name));
-        list.appendChild(btn);
-      }
-    }
-    $('loadTuningModal').classList.add('show');
-  } catch(e){
-    toast('❌ Load list fail: ' + e.message, 'err');
-  }
-});
-
-async function loadTuningFromServer(name){
-  try {
-    const res = await fetch(BACKEND + '/tuning/' + encodeURIComponent(name));
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    applyTuningConfig(data.config);
-    closeModal('loadTuningModal');
-    toast('📥 Đã load: ' + name);
-  } catch(e){
-    toast('❌ Load fail: ' + e.message, 'err');
-  }
-}
-
-function applyTuningConfig(config){
-  if (!config || !config.animations) return;
-  if (config.defaults){
-    Object.assign(state.defaults, config.defaults);
-  }
-  for (const anim in config.animations){
-    const src = config.animations[anim];
-    const dst = state.tuning.get(anim);
-    if (!dst) continue;
-    for (let i = 0; i < Math.min(src.length, dst.length); i++){
-      Object.assign(dst[i], src[i]);
-    }
-  }
-  updateTunerUIFromFrame();
-  renderFrameChips();
-  render();
+  return output;
 }
 
 /* ============================================================
-   RESIZE
+   HELP
    ============================================================ */
-window.addEventListener('resize', () => { render(); });
-window.addEventListener('orientationchange', () => {
-  setTimeout(() => { render(); }, 200);
+$('helpBtn').addEventListener('click', () => {
+  $('helpModal').classList.add('show');
 });
 
 /* ============================================================
    INIT
    ============================================================ */
 setTimeout(() => {
-  cv.width = 400;
-  cv.height = 400;
-  ctx.fillStyle = '#111';
-  ctx.fillRect(0, 0, 400, 400);
+  cv.width = 400; cv.height = 400;
+  ctx.fillStyle = '#111'; ctx.fillRect(0, 0, 400, 400);
   ctx.fillStyle = '#666';
-  ctx.font = '12px monospace';
+  ctx.font = '13px monospace';
   ctx.textAlign = 'center';
-  ctx.fillText('Load sprites.json để bắt đầu', 200, 200);
+  ctx.fillText('🔌 Kết nối game để bắt đầu', 200, 200);
 }, 100);
 
-console.log('%c🎯 Weapon Tuner v1.0 ready', 'color:#3fb950;font-weight:bold');
+/* Handle resize */
+window.addEventListener('resize', () => { render(); });
+window.addEventListener('orientationchange', () => {
+  setTimeout(render, 200);
+});
+
+console.log('%c🎯 Weapon Tuner v2.0 — Game-connected', 'color:#3fb950;font-weight:bold;font-size:14px');
 </script>
 </body>
-  </html>
+    </html>
