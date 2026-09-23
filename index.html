@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Dragon Hunter</title>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{
   --text:#e8f0d8;
@@ -120,7 +119,6 @@ button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 #touchUI{display:none;position:fixed;inset:0;pointer-events:none;z-index:8;touch-action:none}
 @media (pointer:coarse){ #touchUI{display:block} }
 body.is-touch #touchUI{display:block}
-
 .joystick{
   position:absolute;
   width:var(--joy-size);height:var(--joy-size);
@@ -236,6 +234,7 @@ body.edit-btn-mode #editOverlay{display:flex}
   box-shadow:0 3px 0 rgba(0,0,0,.5);touch-action:manipulation}
 #settingsBtn.show{display:flex}
 
+/* ROOM LIST */
 .room-list-header{
   display:flex;align-items:center;gap:8px;
   font-size:11px;color:#a8b498;margin:12px 0 6px;
@@ -319,12 +318,118 @@ body.edit-btn-mode #editOverlay{display:flex}
 #loadStatus .ok{color:#88ff60}
 #loadStatus .err{color:#ff6060}
 #loadStatus .meta{color:#88d8ff}
+
+/* AUTH UI */
+.auth-panel{
+  background:linear-gradient(180deg,#3a4438 0%,#2a3328 100%);
+  border:3px solid #0a0d08;
+  box-shadow:inset 0 0 0 2px #5a6850,inset 0 0 0 4px #8a9878,
+    0 8px 0 #000,0 12px 30px rgba(0,0,0,.7);
+  padding:26px 30px;text-align:center;
+  max-width:420px;width:100%;border-radius:6px;
+}
+.auth-panel h2{
+  font-family:Consolas,monospace;font-size:22px;
+  letter-spacing:3px;color:#88ff60;margin-bottom:6px;
+}
+.auth-tabs{display:flex;gap:6px;margin-bottom:18px}
+.auth-tab{
+  flex:1;padding:10px;background:rgba(20,24,16,.6);
+  border:2px solid #0a0d08;border-radius:4px;
+  font-family:Consolas,monospace;font-size:12px;font-weight:bold;
+  color:#889878;cursor:pointer;transition:all .15s;
+}
+.auth-tab:hover{color:#e8f0d8;background:#4a5440}
+.auth-tab.active{
+  color:#0a1a06;background:linear-gradient(180deg,#88d858,#4a8a30);
+  box-shadow:inset 0 1px 0 #b8ff88;
+}
+.auth-field{margin-bottom:12px;text-align:left}
+.auth-field label{
+  display:block;font-size:10px;color:#a8b498;
+  font-family:Consolas,monospace;margin-bottom:4px;
+  letter-spacing:1px;text-transform:uppercase;
+}
+.auth-field input{
+  width:100%;padding:11px 14px;
+  background:#0a0d08;color:#e8f0d8;
+  border:2px solid #0a0d08;border-radius:4px;
+  font-family:Consolas,monospace;font-size:13px;
+}
+.auth-field input:focus{
+  outline:none;border-color:#6fbf4a;
+  box-shadow:0 0 0 3px rgba(136,255,96,.2);
+}
+.auth-field input::placeholder{color:#586850}
+.auth-error{
+  padding:9px 12px;background:rgba(200,60,50,.15);
+  border-left:3px solid #e8503a;border-radius:3px;
+  color:#ff9898;font-size:11px;font-family:Consolas,monospace;
+  text-align:left;margin-bottom:12px;display:none;
+}
+.auth-error.show{display:block}
+.auth-hint{
+  font-size:10px;color:#586850;font-family:Consolas,monospace;
+  margin-top:14px;line-height:1.7;
+}
+.auth-hint b{color:#88ff60}
+.auth-loading{
+  display:inline-block;width:14px;height:14px;
+  border:2px solid #30363d;border-top-color:#6fbf4a;
+  border-radius:50%;animation:spinAuth 1s linear infinite;
+  vertical-align:middle;margin-right:6px;
+}
+@keyframes spinAuth{to{transform:rotate(360deg)}}
+
+#userHud{
+  position:fixed;top:8px;right:52px;
+  display:none;align-items:center;gap:8px;
+  background:rgba(20,24,16,.9);
+  border:2px solid #0a0d08;border-radius:6px;
+  padding:5px 10px 5px 6px;
+  font-family:Consolas,monospace;font-size:11px;
+  z-index:12;cursor:pointer;
+  box-shadow:0 3px 0 rgba(0,0,0,.5);
+}
+#userHud.show{display:flex}
+#userHud:hover{background:rgba(30,36,26,.95)}
+#userHud .avatar{
+  width:24px;height:24px;border-radius:50%;
+  background:linear-gradient(135deg,#6fbf4a,#4a8a30);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:bold;font-size:11px;color:#0a1a06;
+}
+#userHud .name{
+  color:#88ff60;font-weight:bold;
+  max-width:100px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;
+}
+#userHud .level{
+  padding:2px 6px;background:rgba(136,255,96,.15);
+  border-radius:8px;font-size:9px;color:#88ff60;
+}
+#userHud .status{color:#586850;font-size:9px}
+#userHud .status.saving{color:#ffd060}
+#userHud .status.saved{color:#88ff60}
+#userHud .status.error{color:#ff6060}
+
+#connBadge{
+  position:fixed;top:52px;left:8px;
+  font-size:10px;padding:3px 8px;border-radius:10px;
+  background:rgba(20,24,16,.9);color:#889878;
+  font-family:Consolas,monospace;z-index:5;
+  pointer-events:none;display:none;border:1px solid #3a4438;
+}
+#connBadge.show{display:block}
+#connBadge.on{color:#88ff60;border-color:#4a8a30}
+#connBadge.off{color:#ff6060;border-color:#8a2a20}
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
 <div id="coords">XYZ: <b>0 0</b></div>
 <div id="time">☀ 06:00 · Ngày 1</div>
+<div id="connBadge">⚡ WS: ---</div>
 <div id="netInfo">
   <div>🏠 <b id="netCode">-----</b></div>
   <div>👥 <span id="netCount">1</span> người chơi</div>
@@ -357,6 +462,14 @@ body.edit-btn-mode #editOverlay{display:flex}
 </div>
 
 <button id="settingsBtn" onclick="Game.showSettings()">⚙</button>
+
+<div id="userHud">
+  <div class="avatar" id="userAvatar">H</div>
+  <div class="name" id="userName">Hunter</div>
+  <div class="level" id="userLevel">Lv.1</div>
+  <div class="status" id="userStatus"></div>
+</div>
+
 <div id="loadStatus" class="hidden"></div>
 <div id="toast"></div>
 <div id="pause" class="modal hidden">
@@ -367,6 +480,67 @@ body.edit-btn-mode #editOverlay{display:flex}
     <button class="mbtn danger" onclick="Game.quitToMenu()">🏠 Về menu chính</button>
   </div>
 </div>
+
+<div id="authModal" class="modal hidden">
+  <div class="auth-panel">
+    <h2>🐉 DRAGON HUNTER</h2>
+    <div style="font-size:10px;color:#8a9878;letter-spacing:3px;margin-bottom:20px;
+      font-family:Consolas,monospace">TÀI KHOẢN</div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" data-authtab="login">ĐĂNG NHẬP</div>
+      <div class="auth-tab" data-authtab="register">ĐĂNG KÝ</div>
+    </div>
+
+    <div id="authLoginPage">
+      <div class="auth-field">
+        <label>Tên đăng nhập</label>
+        <input type="text" id="loginUser" maxlength="20"
+          placeholder="hunter" autocomplete="username">
+      </div>
+      <div class="auth-field">
+        <label>Mật khẩu</label>
+        <input type="password" id="loginPass"
+          placeholder="••••••" autocomplete="current-password">
+      </div>
+      <div class="auth-error" id="loginError"></div>
+      <button class="mbtn primary" id="loginBtn" style="margin-top:8px">🔓 Đăng nhập</button>
+      <button class="mbtn back" id="loginGuestBtn" style="font-size:11px">
+        👤 Chơi với tư cách khách
+      </button>
+    </div>
+
+    <div id="authRegisterPage" style="display:none">
+      <div class="auth-field">
+        <label>Tên đăng nhập</label>
+        <input type="text" id="regUser" maxlength="20" placeholder="hunter">
+      </div>
+      <div class="auth-field">
+        <label>Tên hiển thị</label>
+        <input type="text" id="regDisplay" maxlength="20" placeholder="Dragon Hunter">
+      </div>
+      <div class="auth-field">
+        <label>Mật khẩu</label>
+        <input type="password" id="regPass" placeholder="Tối thiểu 6 ký tự">
+      </div>
+      <div class="auth-field">
+        <label>Xác nhận mật khẩu</label>
+        <input type="password" id="regPass2" placeholder="Nhập lại mật khẩu">
+      </div>
+      <div class="auth-error" id="regError"></div>
+      <button class="mbtn primary" id="regBtn" style="margin-top:8px">📝 Tạo tài khoản</button>
+      <button class="mbtn back" id="regGuestBtn" style="font-size:11px">
+        👤 Chơi với tư cách khách
+      </button>
+    </div>
+
+    <div class="auth-hint">
+      <b>Tài khoản</b> được lưu trên server — game update không mất.<br>
+      Đăng nhập để lưu level, item, vị trí.
+    </div>
+  </div>
+</div>
+
 <div id="menu" class="modal">
   <div class="menu-panel">
     <div class="logo">DRAGON HUNTER</div>
@@ -417,31 +591,14 @@ body.edit-btn-mode #editOverlay{display:flex}
       <div class="setting-row"><label>🔔 SFX</label>
         <input type="range" id="setSfx" min="0" max="100" value="80"><span class="val" id="valSfx">80</span></div>
 
-      <h3 style="margin-top:14px">🌐 KẾT NỐI (PvP)</h3>
-      <div class="setting-row">
-        <label>🔁 TURN Relay</label>
-        <input type="checkbox" id="forceTurnChk"
-          style="accent-color:#6fbf4a;width:20px;height:20px;cursor:pointer">
-        <span class="val" style="color:#889878;font-size:10px">Bật khi 2 máy cùng wifi</span>
-      </div>
-      <div style="font-size:10px;color:#586850;margin-top:4px;
-        font-family:Consolas,monospace;text-align:left;line-height:1.6;padding:6px 10px;
-        background:rgba(0,0,0,.3);border-radius:4px;border-left:2px solid #4a8a30">
-        <b style="color:#88ff60">Khi nào bật:</b><br>
-        • 2 máy cùng wifi / cùng nhà / cùng khu<br>
-        • Kết nối mãi không được dù đã thử nhiều lần<br>
-        • Thấy lỗi "Timeout" hoặc "WebRTC error"<br><br>
-        <b style="color:#ffd060">Lưu ý:</b> TURN đi vòng qua server nên chậm hơn P2P. Bình thường để tắt.
-      </div>
-
-      <h3 style="margin-top:14px">🌐 SERVER BACKEND</h3>
+      <h3 style="margin-top:14px">🌐 SERVER</h3>
       <div style="font-size:10px;color:#889878;font-family:Consolas,monospace;
         padding:8px 10px;background:rgba(0,0,0,.3);border-radius:4px;
         border-left:2px solid #4a8a30;line-height:1.8;margin-bottom:10px">
         <b style="color:#88ff60">Hiện tại:</b>
         <span id="currentBackendLabel" style="color:#ffd060">đang tải...</span><br>
-        <b style="color:#88ff60">Auto-failover:</b> đang bật<br>
-        <b style="color:#88ff60">Health check:</b> 5s timeout · pool 2 server
+        <b style="color:#88ff60">Protocol:</b> WebSocket (wss://)<br>
+        <b style="color:#88ff60">Auto-failover:</b> đang bật
       </div>
       <div class="setting-row">
         <label>📋 Chọn server</label>
@@ -452,14 +609,14 @@ body.edit-btn-mode #editOverlay{display:flex}
       <div class="setting-row">
         <label></label>
         <button class="mbtn" onclick="recheckBackend()" style="flex:1;padding:8px;font-size:11px">
-          🔄 Kiểm tra lại tất cả server
+          🔄 Kiểm tra server
         </button>
       </div>
       <div class="setting-row">
         <label></label>
         <button class="mbtn" onclick="clearBackendCache()" style="flex:1;padding:8px;font-size:11px;
           background:linear-gradient(180deg,#d05848,#8a2a20);color:#fff">
-          🗑 Xóa cache server
+          🗑 Xóa cache
         </button>
       </div>
 
@@ -470,9 +627,6 @@ body.edit-btn-mode #editOverlay{display:flex}
       <button class="mbtn" onclick="ButtonSettings.reset()" style="padding:10px;font-size:12px;margin-top:6px">
         ↺ Reset vị trí nút
       </button>
-      <div style="font-size:10px;color:#586850;margin-top:8px;font-family:Consolas,monospace;text-align:left;line-height:1.6">
-        Bấm "Chỉnh vị trí" → kéo các nút đến vị trí mong muốn → bấm Lưu.
-      </div>
 
       <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
     </div>
@@ -486,11 +640,11 @@ window.addEventListener('error', e => console.error('[ERROR]', e.error || e.mess
 window.addEventListener('unhandledrejection', e => console.error('[PROMISE]', e.reason));
 
 /* ============================================================
-   🆕 BACKEND CONFIG — Multi-host với auto-failover
+   BACKEND POOL
    ============================================================ */
 const BACKEND_POOL = [
-  { host:'game-sinhton.onrender.com', port:443, peerPath:'/peerjs/myapp', secure:true, name:'Render · main' },
-  { host:'game-sinhton-1.onrender.com', port:443, peerPath:'/peerjs/myapp', secure:true, name:'Render · backup' }
+  { host:'game-sinhton.onrender.com', port:443, secure:true, name:'Render · main' },
+  { host:'game-sinhton-1.onrender.com', port:443, secure:true, name:'Render · backup' }
 ];
 
 const urlParams = new URLSearchParams(location.search);
@@ -515,15 +669,14 @@ let BACKEND_URL = '';
 function setBackend(b){
   BACKEND = b;
   BACKEND_URL = (b.secure ? 'https://' : 'http://') + b.host;
-  console.log('[Backend] ✓ Active:', b.name || b.host, '→', BACKEND_URL);
+  console.log('[Backend] Active:', b.name || b.host, '→', BACKEND_URL);
+  updateConnBadge('⚡ WS: ' + b.host);
 }
-
 function saveBackend(b){
   try {
     localStorage.setItem('dh_backend_host', JSON.stringify({ ...b, ts: Date.now() }));
   } catch(e){}
 }
-
 function quickHealthCheck(backend, timeoutMs){
   return new Promise(resolve => {
     const proto = backend.secure ? 'https' : 'http';
@@ -535,90 +688,46 @@ function quickHealthCheck(backend, timeoutMs){
       .catch(() => { clearTimeout(timer); resolve(false); });
   });
 }
-
 async function resolveBackend(){
   if (backendOverride){
-    const b = { host: backendOverride, port: 443, peerPath: '/peerjs/myapp', secure: true, name: 'Override' };
-    console.log('[Backend] 🎯 Dùng URL param:', backendOverride);
-    setBackend(b);
-    return b;
+    const b = { host: backendOverride, port: 443, secure: true, name: 'Override' };
+    setBackend(b); return b;
   }
   if (cachedBackend){
     const ok = await quickHealthCheck(cachedBackend, 3000);
-    if (ok){
-      console.log('[Backend] 💾 Cache OK:', cachedBackend.host);
-      setBackend(cachedBackend);
-      return cachedBackend;
-    }
-    console.log('[Backend] ✗ Cache die — thử pool');
+    if (ok){ setBackend(cachedBackend); return cachedBackend; }
     localStorage.removeItem('dh_backend_host');
   }
-  console.log('[Backend] 🔍 Health-check ' + BACKEND_POOL.length + ' server...');
   const results = await Promise.all(BACKEND_POOL.map(b => quickHealthCheck(b, 5000).then(ok => ({ b, ok }))));
   const alive = results.filter(r => r.ok);
-  if (alive.length === 0){
-    console.warn('[Backend] ⚠ Không server nào phản hồi — dùng server đầu');
-    setBackend(BACKEND_POOL[0]);
-    return BACKEND_POOL[0];
-  }
+  if (alive.length === 0){ setBackend(BACKEND_POOL[0]); return BACKEND_POOL[0]; }
   const best = alive[0].b;
-  setBackend(best);
-  saveBackend(best);
-  console.log('[Backend] ✓ ' + alive.length + '/' + BACKEND_POOL.length + ' alive');
+  setBackend(best); saveBackend(best);
   return best;
 }
 
-/* Init ngay */
 if (backendOverride){
-  setBackend({ host: backendOverride, port: 443, peerPath: '/peerjs/myapp', secure: true, name: 'Override' });
+  setBackend({ host: backendOverride, port: 443, secure: true, name: 'Override' });
 } else if (cachedBackend){
   setBackend(cachedBackend);
 } else {
   setBackend(BACKEND_POOL[0]);
 }
+resolveBackend().catch(e => console.warn('[Backend]', e));
 
-resolveBackend().catch(e => console.warn('[Backend] Resolve fail:', e));
+function updateConnBadge(text, cls){
+  const el = $('connBadge');
+  if (!el) return;
+  el.classList.add('show');
+  el.className = 'show' + (cls ? ' ' + cls : '');
+  el.textContent = text;
+}
 
 /* ============================================================
-   🆕 WebRTC config
+   CONFIG
    ============================================================ */
 const MAX_PLAYERS = 5;
 const DEATH_RESPAWN_DELAY = 0.8;
-let FORCE_TURN = localStorage.getItem('dh_force_turn') === '1';
-
-const PEER_OPTS = {
-  get host(){ return BACKEND.host; },
-  get port(){ return BACKEND.port; },
-  get path(){ return BACKEND.peerPath; },
-  get secure(){ return BACKEND.secure; },
-  debug: 1,
-  pingInterval: 5000,
-  config: {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' },
-      { urls: 'stun:stun.cloudflare.com:3478' },
-      { urls: 'turn:openrelay.metered.ca:80', username:'openrelayproject', credential:'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443', username:'openrelayproject', credential:'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username:'openrelayproject', credential:'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:3478?transport=tcp', username:'openrelayproject', credential:'openrelayproject' }
-    ],
-    iceCandidatePoolSize: 10,
-    iceTransportPolicy: FORCE_TURN ? 'relay' : 'all',
-    bundlePolicy: 'max-bundle',
-    rtcpMuxPolicy: 'require'
-  }
-};
-
-window.setForceTURN = (on) => {
-  FORCE_TURN = !!on;
-  localStorage.setItem('dh_force_turn', on ? '1' : '0');
-  PEER_OPTS.config.iceTransportPolicy = on ? 'relay' : 'all';
-  console.log('[WebRTC] Force TURN:', on ? 'ON' : 'OFF', '— cần reload');
-  toast('🔄 Force TURN: ' + (on ? 'ON' : 'OFF') + ' — reload để áp dụng');
-};
-console.log('[WebRTC] Force TURN:', FORCE_TURN ? 'ON' : 'OFF');
 
 const buzz = ms => { if (navigator.vibrate) try{ navigator.vibrate(ms||6); }catch(e){} };
 const isTouchDevice = matchMedia('(pointer:coarse)').matches ||
@@ -642,7 +751,6 @@ const ATTACK_DURATION = 10 / 16;
 const DEATH_DURATION = 0.9;
 const JUMP_DURATION = 0.65;
 
-/* Weapon config — fallback khi không có tuning */
 const WEAPON_CONFIG = {
   handX: 4, handY: -32,
   scale: 0.85,
@@ -658,11 +766,685 @@ const WEAPON_CONFIG = {
   fallback: {},
   debug: false
 };
-
 let weaponTuning = null;
 
 function $(id){ return document.getElementById(id); }
 
+/* ============================================================
+   AUTH SYSTEM
+   ============================================================ */
+const AUTH = {
+  token: localStorage.getItem('dh_auth_token') || null,
+  user: null,
+  isGuest: localStorage.getItem('dh_auth_guest') === '1',
+  _saveTimer: null,
+  _dirty: false,
+
+  async api(endpoint, options = {}){
+    const headers = { ...(options.headers || {}) };
+    if (this.token) headers['Authorization'] = 'Bearer ' + this.token;
+    if (options.body && typeof options.body !== 'string'){
+      headers['Content-Type'] = 'application/json';
+      options.body = JSON.stringify(options.body);
+    }
+    const res = await fetch(BACKEND_URL + endpoint, {
+      ...options, headers,
+      signal: AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined
+    });
+    let data = null;
+    try { data = await res.json(); } catch(e){}
+    if (!res.ok){
+      const err = new Error((data && data.error) || ('HTTP ' + res.status));
+      err.status = res.status;
+      throw err;
+    }
+    return data;
+  },
+
+  async register(username, password, displayName){
+    const data = await this.api('/auth/register', {
+      method: 'POST', body: { username, password, displayName }
+    });
+    this.token = data.token; this.user = data.user; this.isGuest = false;
+    localStorage.setItem('dh_auth_token', this.token);
+    localStorage.removeItem('dh_auth_guest');
+    return data;
+  },
+  async login(username, password){
+    const data = await this.api('/auth/login', {
+      method: 'POST', body: { username, password }
+    });
+    this.token = data.token; this.user = data.user; this.isGuest = false;
+    localStorage.setItem('dh_auth_token', this.token);
+    localStorage.removeItem('dh_auth_guest');
+    return data;
+  },
+  async verify(){
+    if (!this.token) return false;
+    try {
+      const data = await this.api('/auth/me');
+      this.user = data.user; return true;
+    } catch(e){
+      if (e.status === 401){
+        this.token = null;
+        localStorage.removeItem('dh_auth_token');
+      }
+      return false;
+    }
+  },
+  async logout(){
+    try { await this.api('/auth/logout', { method: 'POST' }); } catch(e){}
+    this.token = null; this.user = null;
+    localStorage.removeItem('dh_auth_token');
+  },
+  playAsGuest(){
+    this.isGuest = true; this.token = null;
+    this.user = { displayName: 'Khách' };
+    localStorage.setItem('dh_auth_guest', '1');
+    localStorage.removeItem('dh_auth_token');
+  },
+  async save(data){
+    if (!this.token) return false;
+    try {
+      setSaveStatus('saving');
+      await this.api('/save', { method: 'POST', body: { data } });
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 1500);
+      return true;
+    } catch(e){
+      setSaveStatus('error');
+      return false;
+    }
+  },
+  async load(){
+    if (!this.token) return null;
+    try { const r = await this.api('/save'); return r.data || null; }
+    catch(e){ return null; }
+  },
+  triggerSave(){
+    this._dirty = true;
+    if (this._saveTimer) clearTimeout(this._saveTimer);
+    this._saveTimer = setTimeout(() => this.flushSave(), 3000);
+  },
+  flushSave(){
+    if (!this._dirty || !this.token) return;
+    this._dirty = false;
+    this.save(collectSaveData());
+  }
+};
+
+function setSaveStatus(s){
+  const el = $('userStatus');
+  if (!el) return;
+  el.textContent = s === 'saving' ? '⏳' :
+                   s === 'saved' ? '✓' :
+                   s === 'error' ? '⚠' : '';
+  el.className = 'status ' + s;
+}
+
+function collectSaveData(){
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    player: {
+      level: player.level || 1,
+      exp: player.exp || 0,
+      hp: player.hp,
+      maxHp: player.maxHp,
+      x: Math.round(player.x),
+      y: Math.round(player.y),
+      selected: player.selected
+    },
+    inventory: {
+      hotbar: inv.hotbar.map(it => it ? { id: it.id, n: it.n } : null)
+    },
+    stats: {
+      kills: player._kills || 0,
+      deaths: player._deaths || 0
+    },
+    world: { time: worldTime, day: dayCount }
+  };
+}
+
+function applySaveData(data){
+  if (!data || !data.player) return;
+  const p = data.player;
+  player.level = p.level || 1;
+  player.exp = p.exp || 0;
+  player.hp = p.hp || 20;
+  player.maxHp = p.maxHp || 20;
+  player.selected = p.selected || 0;
+  if (p.x != null && p.y != null && !net.active){
+    player.x = p.x; player.y = p.y;
+  }
+  if (data.inventory && data.inventory.hotbar){
+    for (let i = 0; i < Math.min(9, data.inventory.hotbar.length); i++){
+      inv.hotbar[i] = data.inventory.hotbar[i];
+    }
+  }
+  if (data.stats){
+    player._kills = data.stats.kills || 0;
+    player._deaths = data.stats.deaths || 0;
+  }
+  if (data.world){
+    worldTime = data.world.time != null ? data.world.time : 0.25;
+    dayCount = data.world.day || 1;
+  }
+  updateUserHud();
+}
+
+function updateUserHud(){
+  const hud = $('userHud');
+  if (!AUTH.user && !AUTH.isGuest){ hud.classList.remove('show'); return; }
+  hud.classList.add('show');
+  const name = AUTH.user ? (AUTH.user.displayName || AUTH.user.username) : 'Khách';
+  $('userAvatar').textContent = name.charAt(0).toUpperCase();
+  $('userName').textContent = name;
+  $('userLevel').textContent = 'Lv.' + (player.level || 1);
+}
+
+function showAuthModal(show = true){ $('authModal').classList.toggle('hidden', !show); }
+function showAuthError(id, msg){
+  const el = $(id); el.textContent = msg; el.classList.add('show');
+}
+function clearAuthError(id){ $(id).classList.remove('show'); }
+
+async function loadAndApplySave(){
+  const data = await AUTH.load();
+  if (data) applySaveData(data);
+}
+
+async function initAuth(){
+  showAuthModal(false);
+  if (AUTH.token){
+    showAuthModal(true);
+    const ok = await AUTH.verify();
+    if (ok){
+      showAuthModal(false);
+      toast('👋 Chào lại, ' + AUTH.user.displayName);
+      await loadAndApplySave();
+      updateUserHud();
+      return true;
+    }
+    showAuthModal(false);
+  }
+  if (AUTH.isGuest){
+    AUTH.user = { displayName: 'Khách' };
+    updateUserHud();
+    return true;
+  }
+  showAuthModal(true);
+  setTimeout(() => $('loginUser').focus(), 100);
+  return false;
+}
+
+document.querySelectorAll('.auth-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const mode = tab.dataset.authtab;
+    $('authLoginPage').style.display = mode === 'login' ? 'block' : 'none';
+    $('authRegisterPage').style.display = mode === 'register' ? 'block' : 'none';
+    clearAuthError('loginError'); clearAuthError('regError');
+  });
+});
+
+$('loginBtn').addEventListener('click', async () => {
+  const u = $('loginUser').value.trim();
+  const p = $('loginPass').value;
+  clearAuthError('loginError');
+  if (!u || !p){ showAuthError('loginError', '❌ Nhập đầy đủ'); return; }
+  $('loginBtn').disabled = true;
+  $('loginBtn').innerHTML = '<span class="auth-loading"></span>Đang đăng nhập...';
+  try {
+    await AUTH.login(u, p);
+    showAuthModal(false);
+    toast('✓ Chào mừng, ' + AUTH.user.displayName);
+    await loadAndApplySave();
+    updateUserHud();
+  } catch(e){
+    showAuthError('loginError', '❌ ' + e.message);
+  } finally {
+    $('loginBtn').disabled = false;
+    $('loginBtn').innerHTML = '🔓 Đăng nhập';
+  }
+});
+
+$('regBtn').addEventListener('click', async () => {
+  const u = $('regUser').value.trim();
+  const dn = $('regDisplay').value.trim();
+  const p1 = $('regPass').value;
+  const p2 = $('regPass2').value;
+  clearAuthError('regError');
+  if (!u || !p1){ showAuthError('regError', '❌ Nhập đầy đủ'); return; }
+  if (p1.length < 6){ showAuthError('regError', '❌ Mật khẩu tối thiểu 6 ký tự'); return; }
+  if (p1 !== p2){ showAuthError('regError', '❌ Mật khẩu không khớp'); return; }
+  $('regBtn').disabled = true;
+  $('regBtn').innerHTML = '<span class="auth-loading"></span>Đang tạo...';
+  try {
+    await AUTH.register(u, p1, dn || u);
+    showAuthModal(false);
+    toast('✓ Tạo tài khoản thành công!');
+    updateUserHud();
+  } catch(e){
+    showAuthError('regError', '❌ ' + e.message);
+  } finally {
+    $('regBtn').disabled = false;
+    $('regBtn').innerHTML = '📝 Tạo tài khoản';
+  }
+});
+
+$('loginGuestBtn').addEventListener('click', () => {
+  AUTH.playAsGuest(); showAuthModal(false); updateUserHud();
+  toast('👤 Chơi với tư cách khách');
+});
+$('regGuestBtn').addEventListener('click', () => {
+  AUTH.playAsGuest(); showAuthModal(false); updateUserHud();
+  toast('👤 Chơi với tư cách khách');
+});
+$('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+$('regPass2').addEventListener('keydown', e => { if (e.key === 'Enter') $('regBtn').click(); });
+
+$('userHud').addEventListener('click', () => {
+  if (AUTH.isGuest){
+    if (confirm('Đang chơi khách. Đăng nhập để lưu?')){
+      AUTH.isGuest = false;
+      localStorage.removeItem('dh_auth_guest');
+      showAuthModal(true);
+    }
+    return;
+  }
+  const choice = prompt(
+    '👤 ' + (AUTH.user.displayName || 'User') + '\n' +
+    'Username: ' + (AUTH.user.username || '—') + '\n' +
+    'Level: ' + (player.level || 1) + '\n\n' +
+    'Nhập "out" để đăng xuất\n' +
+    'Nhập "save" để lưu ngay'
+  );
+  if (choice === 'out'){
+    if (confirm('Đăng xuất?')){
+      AUTH.logout().then(() => { toast('👋 Đã đăng xuất'); setTimeout(() => location.reload(), 500); });
+    }
+  } else if (choice === 'save'){
+    AUTH.save(collectSaveData()).then(ok => toast(ok ? '💾 Đã lưu' : '❌ Lưu fail'));
+  }
+});
+
+window.addEventListener('beforeunload', () => {
+  if (AUTH.token && AUTH._dirty){
+    const data = collectSaveData();
+    try {
+      const blob = new Blob([JSON.stringify({ data })], { type: 'application/json' });
+      navigator.sendBeacon(BACKEND_URL + '/save?token=' + AUTH.token, blob);
+    } catch(e){}
+  }
+});
+
+setInterval(() => {
+  if (AUTH.token && gameStarted && !paused) AUTH.flushSave();
+}, 60000);
+
+/* ============================================================
+   WEBSOCKET NETWORK CLIENT
+   ============================================================ */
+const net = {
+  ws: null,
+  active: false,
+  connecting: false,
+  myId: null,
+  name: 'Hunter',
+  roomCode: null,
+  players: new Map(),
+  onRoomCreated: null,
+  onWorldReady: null,
+  onError: null,
+  pingTimer: null,
+  reconnectTimer: null,
+  reconnectAttempts: 0,
+  _latency: 0,
+
+  get url(){
+    const proto = BACKEND.secure ? 'wss://' : 'ws://';
+    return proto + BACKEND.host + '/ws';
+  },
+
+  connect(){
+    return new Promise((resolve, reject) => {
+      if (this.ws && this.ws.readyState === 1) return resolve();
+      if (this.connecting){
+        /* Wait for existing connection */
+        const check = setInterval(() => {
+          if (this.ws && this.ws.readyState === 1){ clearInterval(check); resolve(); }
+          if (!this.connecting){ clearInterval(check); reject(new Error('WS failed')); }
+        }, 100);
+        return;
+      }
+
+      this.connecting = true;
+      console.log('[WS] Connecting to', this.url);
+      updateConnBadge('⚡ WS: connecting...');
+
+      try {
+        this.ws = new WebSocket(this.url);
+      } catch(e){
+        this.connecting = false;
+        return reject(e);
+      }
+
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (!settled){
+          settled = true;
+          this.connecting = false;
+          try { this.ws.close(); } catch(e){}
+          updateConnBadge('⚡ WS: timeout', 'off');
+          reject(new Error('WS timeout 15s'));
+        }
+      }, 15000);
+
+      this.ws.onopen = () => {
+        clearTimeout(timer);
+        this.connecting = false;
+        this.reconnectAttempts = 0;
+        console.log('[WS] ✓ Connected');
+        updateConnBadge('⚡ WS: online', 'on');
+        this._startPing();
+        if (!settled){ settled = true; resolve(); }
+      };
+
+      this.ws.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data);
+          this._onMessage(msg);
+        } catch(err){
+          console.warn('[WS] Bad message:', err.message);
+        }
+      };
+
+      this.ws.onerror = () => {
+        console.warn('[WS] Error');
+      };
+
+      this.ws.onclose = () => {
+        clearTimeout(timer);
+        console.log('[WS] Closed');
+        this.active = false;
+        this.connecting = false;
+        this._stopPing();
+        updateConnBadge('⚡ WS: offline', 'off');
+        if (!settled){ settled = true; reject(new Error('WS closed')); }
+        this._tryReconnect();
+      };
+    });
+  },
+
+  _startPing(){
+    this._stopPing();
+    this.pingTimer = setInterval(() => {
+      this.send({ t: 'ping', time: Date.now() });
+    }, 15000);
+  },
+  _stopPing(){
+    if (this.pingTimer){ clearInterval(this.pingTimer); this.pingTimer = null; }
+  },
+
+  _onMessage(msg){
+    switch (msg.t){
+      case 'welcome':
+        this.myId = msg.id;
+        console.log('[WS] Welcome · ID:', this.myId);
+        break;
+
+      case 'room_created':
+        this.roomCode = msg.code;
+        this.active = true;
+        this.players.clear();
+        console.log('[WS] Room created:', msg.code);
+        if (this.onRoomCreated) this.onRoomCreated(msg);
+        break;
+
+      case 'room_joined':
+        this.roomCode = msg.code;
+        this.active = true;
+        this.players.clear();
+        for (const p of msg.players){
+          if (p.id !== this.myId) this.players.set(p.id, p);
+        }
+        console.log('[WS] Joined room:', msg.code, '·', msg.players.length, 'players');
+        if (this.onWorldReady) this.onWorldReady();
+        break;
+
+      case 'player_joined':
+        this.players.set(msg.player.id, msg.player);
+        toast('⚔️ ' + msg.player.name + ' vào phòng!');
+        updateNetHud();
+        break;
+
+      case 'player_left':
+        this.players.delete(msg.id);
+        toast('👋 ' + (msg.name || 'Player') + ' rời phòng');
+        updateNetHud();
+        break;
+
+      case 'player_update':
+        let existing = this.players.get(msg.id);
+        if (existing){
+          existing.x = msg.x;
+          existing.y = msg.y;
+          existing.facing = msg.facing;
+          existing.anim = msg.anim;
+          existing.sitting = msg.sitting;
+          existing.hp = msg.hp;
+          existing.lastSeen = Date.now();
+        } else {
+          this.players.set(msg.id, {
+            id: msg.id,
+            name: 'Remote',
+            x: msg.x, y: msg.y,
+            hp: msg.hp, maxHp: 20,
+            facing: msg.facing,
+            anim: msg.anim,
+            sitting: msg.sitting,
+            level: 1,
+            animT: 0,
+            lastSeen: Date.now()
+          });
+        }
+        break;
+
+      case 'attack':
+        /* Có thể thêm slash effect ở đây nếu cần */
+        break;
+
+      case 'hit':
+        player.hp = msg.hp;
+        player.hurtT = DEATH_DURATION;
+        flashDamage();
+        Audio2D.sfx.hurt();
+        updateHpBar();
+        toast('⚔️ ' + msg.attackerName + ' gây ' + msg.dmg + ' HP!');
+        if (player.hp <= 0){
+          Audio2D.sfx.kill();
+          player.deathT = 0;
+          player.currentAnim = 'death';
+          player.animTime = 0;
+          player.sitting = false;
+          player._deaths = (player._deaths || 0) + 1;
+          if (AUTH.token) AUTH.triggerSave();
+        }
+        break;
+
+      case 'player_died':
+        if (msg.id !== this.myId){
+          toast('💀 ' + msg.name + ' bị hạ bởi ' + msg.killer);
+          if (msg.killerId === this.myId){
+            player._kills = (player._kills || 0) + 1;
+            if (AUTH.token) AUTH.triggerSave();
+          }
+        }
+        break;
+
+      case 'pos_correct':
+        player.x = msg.x;
+        player.y = msg.y;
+        break;
+
+      case 'chat':
+        toast('💬 ' + msg.from + ': ' + msg.text);
+        break;
+
+      case 'error':
+        console.warn('[WS] Server error:', msg.msg);
+        if (this.onError) this.onError(msg.msg);
+        break;
+
+      case 'pong':
+        this._latency = Date.now() - msg.time;
+        updateConnBadge('⚡ WS: ' + this._latency + 'ms', 'on');
+        break;
+
+      default:
+        console.log('[WS] Unknown:', msg);
+    }
+  },
+
+  send(msg){
+    if (this.ws && this.ws.readyState === 1){
+      try { this.ws.send(JSON.stringify(msg)); } catch(e){}
+    }
+  },
+
+  async createRoom(name){
+    await this.connect();
+    this.name = name;
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.onRoomCreated = null;
+        reject(new Error('Timeout tạo phòng'));
+      }, 10000);
+
+      this.onRoomCreated = (msg) => {
+        clearTimeout(timer);
+        this.onRoomCreated = null;
+        resolve(msg.code);
+      };
+
+      this.send({
+        t: 'create_room',
+        name: name,
+        x: player.x,
+        y: player.y,
+        level: player.level || 1
+      });
+    });
+  },
+
+  async joinRoom(code, name){
+    await this.connect();
+    this.name = name;
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        this.onWorldReady = null;
+        this.onError = null;
+        reject(new Error('Timeout vào phòng'));
+      }, 10000);
+
+      this.onWorldReady = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        this.onWorldReady = null;
+        this.onError = null;
+        initInv();
+        startGame('client');
+        resolve();
+      };
+
+      this.onError = (errMsg) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        this.onWorldReady = null;
+        this.onError = null;
+        reject(new Error(errMsg));
+      };
+
+      this.send({
+        t: 'join_room',
+        code: code,
+        name: name,
+        x: player.x,
+        y: player.y,
+        level: player.level || 1
+      });
+    });
+  },
+
+  broadcastPos(){
+    if (!this.active) return;
+    this.send({
+      t: 'move',
+      x: Math.round(player.x),
+      y: Math.round(player.y),
+      facing: player.facing,
+      anim: player.currentAnim,
+      hp: player.hp,
+      sitting: player.sitting
+    });
+  },
+
+  attack(angle, dmg){
+    if (!this.active) return;
+    this.send({ t: 'attack', angle: angle, dmg: dmg });
+  },
+
+  chat(text){
+    if (!this.active) return;
+    this.send({ t: 'chat', text: text });
+  },
+
+  disconnect(){
+    this.active = false;
+    this._stopPing();
+    if (this.reconnectTimer){ clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
+    this.reconnectAttempts = 0;
+
+    if (this.ws){
+      try { this.send({ t: 'leave_room' }); } catch(e){}
+      try { this.ws.close(); } catch(e){}
+      this.ws = null;
+    }
+    this.players.clear();
+    this.roomCode = null;
+    updateNetHud();
+    updateConnBadge('⚡ WS: offline', 'off');
+  },
+
+  _tryReconnect(){
+    if (this.reconnectTimer) return;
+    this.reconnectAttempts++;
+    const delay = Math.min(30000, 1000 * Math.pow(2, this.reconnectAttempts));
+    console.log('[WS] Reconnect in', delay + 'ms (attempt', this.reconnectAttempts + ')');
+
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      if (this.reconnectAttempts > 5){
+        console.warn('[WS] Stop reconnect after 5 attempts');
+        return;
+      }
+      this.connect()
+        .then(() => console.log('[WS] ✓ Reconnected'))
+        .catch(e => console.warn('[WS] Reconnect fail:', e.message));
+    }, delay);
+  }
+};
+
+/* ============================================================
+   METADATA + SPRITES
+   ============================================================ */
 function decodeMetadata(img){
   try {
     const c = document.createElement('canvas');
@@ -683,7 +1465,6 @@ function decodeMetadata(img){
     return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
   } catch(e){ return null; }
 }
-
 function autoDetectFrameLines(canvas, expectedFrames){
   const W = canvas.width, H = canvas.height;
   const cx = canvas.getContext('2d', { willReadFrequently: true });
@@ -773,25 +1554,22 @@ async function loadProject(){
     await loadFallbackSprites();
   }
 }
-
 async function loadWeaponTuning(){
   try {
     const res = await fetch('weapon-tuning.json', { cache: 'no-store' });
     if (!res.ok){ console.log('[Tuning] No weapon-tuning.json'); return; }
     const data = await res.json();
-    if (data.format !== 'dh-weapon-tuning'){ console.warn('[Tuning] Sai format'); return; }
+    if (data.format !== 'dh-weapon-tuning'){ console.warn('[Tuning] Bad format'); return; }
     weaponTuning = data;
     console.log('✓ Weapon tuning: ' + Object.keys(data.animations || {}).length + ' anims');
-  } catch(e){ console.log('[Tuning] Not loaded:', e.message); }
+  } catch(e){ console.log('[Tuning]', e.message); }
 }
-
 function getFrameTuning(anim, frameIdx){
   if (!weaponTuning || !weaponTuning.animations) return null;
   const animTuning = weaponTuning.animations[anim] || weaponTuning.animations.idle;
   if (!animTuning || !animTuning.length) return null;
   return animTuning[frameIdx % animTuning.length] || null;
 }
-
 function loadSprite(src, m, a, cfg){
   return new Promise(resolve => {
     const img = new Image();
@@ -861,7 +1639,6 @@ function loadSprite(src, m, a, cfg){
         sprite.frameBBoxes = frameBBoxes;
         sprite.contentMaxH = maxH || spriteH;
         sprite.contentMaxW = maxW || 100;
-        console.log(`  ⚔️ ${m}/${a}: content=${sprite.contentMaxW}×${sprite.contentMaxH}`);
       }
 
       Models.addSprite(m, a, sprite);
@@ -1070,7 +1847,8 @@ const player = {
   facing: 1, selected: 0,
   animT: 0, currentAnim: 'idle', animTime: 0,
   _stepAcc: 0, attackT: 0, hurtT: 0, jumpT: 0, jumpY: 0,
-  sitting: false, deathT: 0
+  sitting: false, deathT: 0,
+  level: 1, exp: 0, _kills: 0, _deaths: 0, _saveAcc: 0
 };
 
 const cam = { x: 0, y: 0 };
@@ -1091,7 +1869,6 @@ resize();
 const joy = { id:null, x:0, y:0, cx:0, cy:0 };
 const moveJoystick = $('moveJoystick');
 const moveKnob = $('moveKnob');
-
 moveJoystick.addEventListener('pointerdown', e => {
   if (joy.id !== null) return;
   e.preventDefault();
@@ -1107,8 +1884,7 @@ function updateMoveJoystick(cx, cy){
   const max = 52;
   const d = Math.hypot(dx, dy);
   if (d > max){ dx = dx/d*max; dy = dy/d*max; }
-  joy.x = dx/max;
-  joy.y = dy/max;
+  joy.x = dx/max; joy.y = dy/max;
   moveKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
 }
 function endMoveJoystick(e){
@@ -1126,7 +1902,6 @@ addEventListener('pointercancel', endMoveJoystick);
 const aim = { angle:0, joyId:null, joyX:0, joyY:0, autoAttack:false, cx:0, cy:0 };
 const aimJoystick = $('aimJoystick');
 const aimKnob = $('aimKnob');
-
 aimJoystick.addEventListener('pointerdown', e => {
   if (aim.joyId !== null) return;
   e.preventDefault();
@@ -1269,35 +2044,14 @@ function tryAttack(){
   Audio2D.sfx.swordSwing();
 
   const angle = aim.angle;
-  const hitX = player.x + Math.cos(angle) * 50;
-  const hitY = player.y + Math.sin(angle) * 50;
   const cosA = Math.cos(angle);
   if (Math.abs(cosA) > 0.15) player.facing = cosA > 0 ? 1 : -1;
 
-  if (!net.active) return;
-  const range = 72;
-  let target = null, minD = range;
-  for (const [id, p] of net.players){
-    const d = Math.hypot(p.x - hitX, p.y - hitY);
-    if (d < minD){ minD = d; target = { id, p }; }
-  }
-  if (target){
+  if (net.active){
     const held = inv.hotbar[player.selected];
     const heldDef = held ? defOf(held.id) : null;
     const dmg = (heldDef && heldDef.tool === 'sword') ? (heldDef.dmg || 1) : 1;
-    net.send({ t:'hit', target: target.id, from: net.myId, fromName: net.name, dmg });
-    burstHitVisual(target.p.x, target.p.y);
-    Audio2D.sfx.swordHit();
-    toast(`⚔️ Đánh ${target.p.name} -${dmg} HP`);
-  }
-}
-function burstHitVisual(x, y){
-  for (let i=0;i<10;i++){
-    const a = Math.random()*Math.PI*2;
-    const s = 60 + Math.random()*100;
-    G.particles.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
-      life: 0.3+Math.random()*0.2, maxLife: 0.5,
-      color: Math.random()<0.6?'#ff4040':'#ffcc40', size: 2+Math.random()*3 });
+    net.attack(angle, dmg);
   }
 }
 
@@ -1378,6 +2132,15 @@ function updatePlayer(dt){
     player._stepAcc += player.speed*dt;
     if (player._stepAcc > 26){ player._stepAcc = 0; Audio2D.sfx.step(); }
   } else player._stepAcc = 0;
+
+  /* Auto-save timer */
+  if (gameStarted && !paused){
+    player._saveAcc = (player._saveAcc || 0) + dt;
+    if (player._saveAcc > 30){
+      player._saveAcc = 0;
+      if (AUTH.token) AUTH.triggerSave();
+    }
+  }
 }
 function respawnPlayer(){
   player.hp = player.maxHp;
@@ -1393,313 +2156,14 @@ function respawnPlayer(){
   updateHpBar();
 }
 
-/* NETWORK */
-const net = {
-  active: false, mode: null, peer: null, hostConn: null,
-  clients: new Map(), myId: null, name: 'Hunter', roomCode: null,
-  players: new Map(), onWorldReady: null, onStage: null, _stage: null,
-
-  startHost(name){
-    this.name = name || 'Host';
-    this.mode = 'host';
-    this.players.clear();
-    const code = genRoomCode();
-    this.roomCode = code;
-    const self = this;
-
-    return new Promise((resolve, reject) => {
-      try { this.peer = new Peer('dragonhunter-' + code, PEER_OPTS); }
-      catch(e){ reject(e); return; }
-
-      const timer = setTimeout(() => {
-        try { self.peer.destroy(); } catch(e){}
-        reject(new Error('Timeout kết nối signaling (20s)'));
-      }, 20000);
-
-      this.peer.on('open', id => {
-        clearTimeout(timer);
-        self.myId = id;
-        self.active = true;
-        self.peer.on('connection', conn => self._acceptClient(conn));
-        console.log('[Host] ✓ Peer open:', id, '· Room:', code);
-        resolve(code);
-      });
-
-      this.peer.on('error', e => {
-        clearTimeout(timer);
-        console.error('[Host] Error:', e);
-        const msg = String((e && e.type) || (e && e.message) || e);
-        if (msg.includes('is taken')) reject(new Error('Mã phòng trùng — thử lại'));
-        else reject(new Error(msg || 'Không tạo được host'));
-      });
-
-      this.peer.on('disconnected', () => {
-        console.warn('[Host] Signaling disconnected — reconnect...');
-        try { self.peer.reconnect(); } catch(e){}
-      });
-    });
-  },
-
-  startClient(name, code){
-    this.name = name || 'Hunter';
-    this.mode = 'client';
-    this.players.clear();
-    this.roomCode = code;
-    const self = this;
-
-    return new Promise((resolve, reject) => {
-      let settled = false;
-      const finish = (fn, val) => {
-        if (settled) return;
-        settled = true;
-        fn(val);
-      };
-
-      try { this.peer = new Peer(PEER_OPTS); }
-      catch(e){ return finish(reject, e); }
-
-      self._stage = 'signaling';
-      if (self.onStage) self.onStage('signaling');
-      console.log('[Client] ⏳ Stage 1/3: signaling...');
-
-      const timer = setTimeout(() => {
-        try { self.peer.destroy(); } catch(e){}
-        finish(reject, new Error('Timeout 45s — không kết nối được host'));
-      }, 45000);
-
-      this.peer.on('open', id => {
-        self.myId = id;
-        self._stage = 'ice';
-        if (self.onStage) self.onStage('ice');
-        console.log('[Client] ✓ Stage 1/3 OK. PeerID:', id);
-        console.log('[Client] ⏳ Stage 2/3: ICE negotiation to dragonhunter-' + code);
-
-        const conn = self.peer.connect('dragonhunter-' + code, {
-          reliable: true,
-          serialization: 'json',
-          metadata: { name: self.name },
-          pingInterval: 5000
-        });
-        self.hostConn = conn;
-
-        /* ICE debug log */
-        setTimeout(() => {
-          try {
-            const pc = conn.peerConnection;
-            if (!pc) return;
-            const candidates = { host:0, srflx:0, prflx:0, relay:0 };
-            pc.onicecandidate = (e) => {
-              if (e.candidate){
-                const type = e.candidate.type || 'unknown';
-                candidates[type] = (candidates[type] || 0) + 1;
-              } else {
-                console.log('[ICE] ✓ Done. Candidates:', candidates);
-                if (!candidates.relay) console.warn('[ICE] ⚠ Không có RELAY — TURN có thể bị chặn');
-              }
-            };
-            pc.onicegatheringstatechange = () => console.log('[ICE] Gathering:', pc.iceGatheringState);
-            pc.oniceconnectionstatechange = () => {
-              console.log('[ICE] Connection:', pc.iceConnectionState);
-              if (pc.iceConnectionState === 'failed') console.error('[ICE] ❌ FAILED');
-            };
-          } catch(e){}
-        }, 100);
-
-        conn.on('open', () => {
-          clearTimeout(timer);
-          self.active = true;
-          self._stage = 'connected';
-          if (self.onStage) self.onStage('connected');
-          console.log('[Client] ✓ Stage 3/3 OK — P2P connected!');
-          finish(resolve);
-        });
-
-        conn.on('data', d => {
-          if (d && d.t === 'full'){
-            toast('❌ Phòng đã đầy (' + (d.max || MAX_PLAYERS) + '/' + MAX_PLAYERS + ')');
-            self.disconnect();
-            if (gameStarted) backToMenu();
-            return;
-          }
-          self._onData(d, conn);
-        });
-
-        conn.on('close', () => {
-          toast('❌ Mất kết nối với host');
-          self.disconnect();
-          if (gameStarted) backToMenu();
-        });
-
-        conn.on('error', e => {
-          clearTimeout(timer);
-          console.error('[Client] Conn error:', e);
-          finish(reject, new Error('WebRTC: ' + ((e && e.message) || (e && e.type) || 'error')));
-        });
-      });
-
-      this.peer.on('error', e => {
-        clearTimeout(timer);
-        console.error('[Client] Peer error:', e);
-        const msg = String((e && e.type) || (e && e.message) || e);
-        if (msg.includes('is taken')) finish(reject, new Error('Không tìm thấy phòng'));
-        else if (msg.includes('peer-unavailable')) finish(reject, new Error('Host đã rời phòng'));
-        else if (msg.includes('network')) finish(reject, new Error('Lỗi mạng'));
-        else if (msg.includes('server-error')) finish(reject, new Error('Signaling lỗi'));
-        else finish(reject, new Error(msg || 'Không kết nối được host'));
-      });
-
-      this.peer.on('disconnected', () => {
-        console.warn('[Client] Signaling disconnected — reconnect...');
-        try { self.peer.reconnect(); } catch(e){}
-      });
-    });
-  },
-
-  _acceptClient(conn){
-    const self = this;
-    conn.on('open', () => {
-      if (this.clients.size >= MAX_PLAYERS - 1){
-        try { conn.send({ t:'full', max: MAX_PLAYERS }); } catch(e){}
-        setTimeout(() => { try { conn.close(); } catch(e){} }, 200);
-        return;
-      }
-      this.clients.set(conn.peer, conn);
-      try {
-        conn.send({ t:'world', seed: SEED, data: u8ToB64(world) });
-        for (const [id, p] of this.players){
-          conn.send({ t:'pos', id, name: p.name, x: p.x, y: p.y,
-                     facing: p.facing, hp: p.hp, sitting: !!p.sitting });
-        }
-        conn.send({ t:'pos', id: this.myId, name: this.name,
-                    x: player.x, y: player.y, facing: player.facing,
-                    hp: player.hp, sitting: player.sitting });
-      } catch(e){}
-      toast('⚔️ Đối thủ mới! (' + (1 + this.clients.size) + '/' + MAX_PLAYERS + ')');
-      updateNetHud();
-      updateRoomHeartbeat();
-      /* Update host status */
-      const statusEl = $('hostStatus');
-      if (statusEl && self.roomCode){
-        const count = 1 + self.clients.size;
-        statusEl.innerHTML =
-          '✓ Phòng đang mở · <span style="color:#ffd060">' + self.roomCode + '</span><br>' +
-          '<small style="color:#88ff60">⚔️ ' + count + '/' + MAX_PLAYERS + ' người chơi</small>';
-      }
-    });
-    conn.on('data', d => this._onData(d, conn));
-    conn.on('close', () => {
-      this.clients.delete(conn.peer); this.players.delete(conn.peer);
-      toast('👋 Đối thủ rời');
-      updateNetHud();
-      updateRoomHeartbeat();
-      const statusEl2 = $('hostStatus');
-      if (statusEl2 && self.roomCode){
-        const count = 1 + self.clients.size;
-        statusEl2.innerHTML =
-          '✓ Phòng đang mở · <span style="color:#ffd060">' + self.roomCode + '</span><br>' +
-          '<small style="color:#889878">🎧 ' + count + '/' + MAX_PLAYERS + ' người chơi</small>';
-      }
-    });
-  },
-
-  _onData(d, conn){
-    if (d.t === 'world'){
-      initRNG(d.seed); world.set(b64ToU8(d.data));
-      resetPlayerPosition();
-      if (this.onWorldReady) this.onWorldReady();
-    } else if (d.t === 'pos'){
-      const existing = this.players.get(d.id);
-      this.players.set(d.id, {
-        name: d.name, x: d.x, y: d.y, facing: d.facing, hp: d.hp,
-        sitting: !!d.sitting,
-        lastSeen: performance.now(),
-        animT: existing ? existing.animT : 0
-      });
-      if (this.mode === 'host' && conn){
-        for (const [id, c] of this.clients){
-          if (c === conn) continue;
-          try { c.send(d); } catch(e){}
-        }
-      }
-      updateNetHud();
-    } else if (d.t === 'hit'){
-      if (d.target === this.myId){
-        player.hp = Math.max(0, player.hp - d.dmg);
-        player.hurtT = DEATH_DURATION;
-        flashDamage(); Audio2D.sfx.hurt(); updateHpBar();
-        toast(`⚔️ ${d.fromName} gây ${d.dmg}!`);
-        if (player.hp <= 0){
-          Audio2D.sfx.kill();
-          player.deathT = 0;
-          player.currentAnim = 'death';
-          player.animTime = 0;
-          player.sitting = false;
-          this.broadcastPos();
-        } else this.broadcastPos();
-      }
-      if (this.mode === 'host' && conn){
-        for (const [id, c] of this.clients){
-          if (c === conn) continue;
-          try { c.send(d); } catch(e){}
-        }
-      }
-    }
-  },
-
-  broadcastPos(){
-    if (!this.active) return;
-    this.send({ t:'pos', id: this.myId, name: this.name,
-                x: player.x, y: player.y, facing: player.facing,
-                hp: player.hp, sitting: player.sitting });
-  },
-
-  send(msg){
-    if (!this.active) return;
-    try {
-      if (this.mode === 'host'){ for (const c of this.clients.values()) c.send(msg); }
-      else if (this.hostConn){ this.hostConn.send(msg); }
-    } catch(e){}
-  },
-
-  disconnect(){
-    const wasRoom = this.roomCode;
-    const wasMode = this.mode;
-    this.active = false;
-    this.players.clear(); this.clients.clear();
-    this.hostConn = null;
-    if (this.peer){ try { this.peer.destroy(); } catch(e){} }
-    this.peer = null; this.myId = null;
-    if (wasRoom && wasMode === 'host') apiDeleteRoom(wasRoom);
-    this.roomCode = null;
-    this.mode = null;
-    stopRoomHeartbeat();
-    updateNetHud();
-  }
-};
-function genRoomCode(){
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let s = '';
-  for (let i=0;i<6;i++) s += chars[Math.floor(Math.random()*chars.length)];
-  return s;
-}
-function u8ToB64(u8){
-  let s = ''; const chunk = 0x8000;
-  for (let i=0;i<u8.length;i+=chunk) s += String.fromCharCode.apply(null, u8.subarray(i, i+chunk));
-  return btoa(s);
-}
-function b64ToU8(s){
-  const bin = atob(s);
-  const u8 = new Uint8Array(bin.length);
-  for (let i=0;i<bin.length;i++) u8[i] = bin.charCodeAt(i);
-  return u8;
-}
+/* NETWORK HELPERS */
 let netSyncTimer = null;
 function startNetSync(){
   if (netSyncTimer) return;
   netSyncTimer = setInterval(() => {
     if (net.active && gameStarted && !paused) net.broadcastPos();
-    const now = performance.now();
-    for (const [id, p] of net.players) if (now - p.lastSeen > 5000) net.players.delete(id);
+    const now = Date.now();
+    for (const [id, p] of net.players) if (now - (p.lastSeen || 0) > 10000) net.players.delete(id);
     updateNetHud();
   }, 100);
 }
@@ -1709,152 +2173,6 @@ function updateNetHud(){
   el.classList.add('show');
   $('netCode').textContent = net.roomCode || '-----';
   $('netCount').textContent = 1 + net.players.size;
-}
-
-/* ROOM LIST API */
-let roomPollingTimer = null;
-let roomHeartbeatTimer = null;
-let backendAwake = false;
-
-async function wakeUpBackend(){
-  if (backendAwake) return true;
-  try {
-    const checks = BACKEND_POOL.map(b => {
-      const proto = b.secure ? 'https' : 'http';
-      return fetch(proto + '://' + b.host + '/health', {
-        cache: 'no-store',
-        signal: AbortSignal.timeout ? AbortSignal.timeout(35000) : undefined
-      }).then(r => { if (!r.ok) throw new Error('HTTP'); return b; });
-    });
-    let winner = null;
-    if (typeof Promise.any === 'function'){
-      try { winner = await Promise.any(checks); } catch(e){ winner = null; }
-    } else {
-      const settled = await Promise.allSettled(checks);
-      const ok = settled.find(s => s.status === 'fulfilled');
-      winner = ok ? ok.value : null;
-    }
-    if (winner){
-      if (winner.host !== BACKEND.host){ setBackend(winner); saveBackend(winner); }
-      backendAwake = true;
-      console.log('✓ Backend awake:', winner.host);
-      return true;
-    }
-    return false;
-  } catch(e){ return false; }
-}
-
-async function apiRegisterRoom(code, name){
-  try {
-    const res = await fetch(BACKEND_URL + '/rooms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, name }),
-      signal: AbortSignal.timeout ? AbortSignal.timeout(35000) : undefined
-    });
-    return res.ok;
-  } catch(e){ return false; }
-}
-async function apiUpdateRoomCount(code, count){
-  try {
-    await fetch(BACKEND_URL + '/rooms/' + code + '/count', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ count }),
-      signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined
-    });
-  } catch(e){}
-}
-async function apiDeleteRoom(code){
-  try {
-    await fetch(BACKEND_URL + '/rooms/' + code, {
-      method: 'DELETE',
-      signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined
-    });
-  } catch(e){}
-}
-async function apiListRooms(retries = 2){
-  for (let i = 0; i <= retries; i++){
-    try {
-      const res = await fetch(BACKEND_URL + '/rooms', {
-        cache: 'no-store',
-        signal: AbortSignal.timeout ? AbortSignal.timeout(35000) : undefined
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      backendAwake = true;
-      return data.rooms || [];
-    } catch(e){
-      if (i === retries) return null;
-      await new Promise(r => setTimeout(r, 800));
-    }
-  }
-}
-
-function startRoomHeartbeat(){
-  if (roomHeartbeatTimer) return;
-  updateRoomHeartbeat();
-  roomHeartbeatTimer = setInterval(updateRoomHeartbeat, 5000);
-}
-function stopRoomHeartbeat(){
-  if (roomHeartbeatTimer){ clearInterval(roomHeartbeatTimer); roomHeartbeatTimer = null; }
-}
-function updateRoomHeartbeat(){
-  if (!net.active || !net.roomCode) return;
-  apiUpdateRoomCount(net.roomCode, 1 + net.clients.size);
-}
-function startRoomPolling(){
-  if (roomPollingTimer) return;
-  wakeUpBackend().then(() => fetchAndRenderRooms());
-  roomPollingTimer = setInterval(fetchAndRenderRooms, 3000);
-}
-function stopRoomPolling(){
-  if (roomPollingTimer){ clearInterval(roomPollingTimer); roomPollingTimer = null; }
-}
-async function fetchAndRenderRooms(){
-  const list = await apiListRooms();
-  if (list === null){ renderRoomListError(); return; }
-  renderRoomList(list);
-}
-function renderRoomListError(){
-  const el = $('roomList');
-  const cnt = $('roomListCount');
-  if (!el) return;
-  cnt.textContent = '!';
-  el.innerHTML = '<div class="room-empty" style="color:#ff9898">⚠ Không kết nối được server<br>' +
-    '<small style="color:#889878">Render có thể đang khởi động (~30s) — thử lại sau</small></div>';
-}
-function renderRoomList(rooms){
-  const el = $('roomList');
-  const cnt = $('roomListCount');
-  if (!el) return;
-  cnt.textContent = rooms.length;
-  if (!rooms.length){
-    el.innerHTML = '<div class="room-empty">Chưa có phòng nào — hãy tạo phòng!</div>';
-    return;
-  }
-  const now = Date.now();
-  el.innerHTML = '';
-  for (const r of rooms){
-    const isFull = r.count >= (r.max || MAX_PLAYERS);
-    const item = document.createElement('div');
-    item.className = 'room-item' + (isFull ? ' full' : '');
-    const countClass = isFull ? 'full' : (r.count <= 1 ? 'low' : '');
-    item.innerHTML =
-      '<span class="code">' + r.code + '</span>' +
-      '<span class="host">' + (r.name || 'Host') + '</span>' +
-      '<span class="count ' + countClass + '">' + r.count + '/' + (r.max || MAX_PLAYERS) + '</span>' +
-      '<span class="age">' + formatAge(now - r.ts) + '</span>';
-    if (!isFull) item.addEventListener('click', () => Game.joinFromList(r.code, r.name));
-    el.appendChild(item);
-  }
-}
-function formatAge(ms){
-  const s = Math.floor(ms / 1000);
-  if (s < 60) return s + 's';
-  const m = Math.floor(s / 60);
-  if (m < 60) return m + 'm';
-  return Math.floor(m / 60) + 'h';
 }
 
 /* RENDER */
@@ -1873,7 +2191,6 @@ function getNightFactor(){
   const t = worldTime * Math.PI * 2;
   return (1 - Math.cos(t)) / 2;
 }
-
 function drawSpriteAt(sprite, idx, cx, cy, facing){
   if (!sprite || !sprite.renderImg) return;
   const s = sprite;
@@ -1929,7 +2246,6 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
   ctx.restore();
 }
 
-/* Draw weapon using tuning */
 function drawWeaponFromTuning(weapon, t, sx, syGround, facing){
   const wFrameIdx = t.weaponFrame || 0;
   const bb = weapon.frameBBoxes && weapon.frameBBoxes[wFrameIdx];
@@ -1940,17 +2256,14 @@ function drawWeaponFromTuning(weapon, t, sx, syGround, facing){
     srcX = weapon.vLines[wFrameIdx]; srcY = 0;
     srcW = weapon.vLines[wFrameIdx + 1] - srcX; srcH = weapon.spriteH;
   }
-
   const contentH = weapon.contentMaxH || srcH;
   const tuningScale = (weaponTuning && weaponTuning.defaults && weaponTuning.defaults.scale) || WEAPON_CONFIG.scale;
   const baseScale = (DEST_HEIGHT * tuningScale) / contentH;
   const finalScale = baseScale * (t.scale || 1);
   const dw = srcW * finalScale;
   const dh = srcH * finalScale;
-
   const pivotX = -dw * (t.pivotX != null ? t.pivotX : WEAPON_CONFIG.pivotX);
   const pivotY = -dh * (t.pivotY != null ? t.pivotY : WEAPON_CONFIG.pivotY);
-
   const handX = (t.handX != null ? t.handX : WEAPON_CONFIG.handX) + (t.offsetX || 0);
   const handY = (t.handY != null ? t.handY : WEAPON_CONFIG.handY) + (t.offsetY || 0);
 
@@ -1970,14 +2283,12 @@ function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facin
   if (!weapon) weapon = Models.get('weapon', 'idle');
   if (!weapon) return;
 
-  /* Tuning takes priority */
   const tuning = getFrameTuning(anim, playerFrameIdx);
   if (tuning){
     drawWeaponFromTuning(weapon, tuning, sx, syGround, facing);
     return;
   }
 
-  /* Fallback default */
   const frames = weapon.frames || (weapon.vLines.length - 1);
   if (frames < 1) return;
   const cfg = WEAPON_CONFIG.angles[anim] || WEAPON_CONFIG.angles[fallbackAnim] || WEAPON_CONFIG.angles.idle;
@@ -1993,12 +2304,10 @@ function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facin
     srcX = weapon.vLines[wFrameIdx]; srcY = 0;
     srcW = weapon.vLines[wFrameIdx + 1] - srcX; srcH = weapon.spriteH;
   }
-
   const contentH = weapon.contentMaxH || srcH;
   const scale = (DEST_HEIGHT * WEAPON_CONFIG.scale) / contentH;
   const dw = srcW * scale;
   const dh = srcH * scale;
-
   const pivotX = -dw * WEAPON_CONFIG.pivotX;
   const pivotY = -dh * WEAPON_CONFIG.pivotY;
 
@@ -2042,7 +2351,6 @@ function drawPlayer(){
   const weaponAnim = player.hp <= 0 ? 'death' : player.currentAnim;
   drawWeapon(weaponAnim, idx, total, sx, sySprite, player.facing);
 }
-
 const LOCAL_COLORS = { body:'#3a5a9a', skin:'#f0c8a0' };
 function drawFallbackBody(sx, sy, animT, animName, facing, colors){
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
@@ -2050,19 +2358,16 @@ function drawFallbackBody(sx, sy, animT, animName, facing, colors){
   ctx.fillStyle = colors.body; ctx.fillRect(sx-6, sy-10, 12, 13);
   ctx.fillStyle = colors.skin; ctx.fillRect(sx-5, sy-18, 10, 8);
 }
-
 const REMOTE_PALETTE = [
   { body:'#d04a5a' }, { body:'#4a6ad0' }, { body:'#6ad04a' },
   { body:'#d0b04a' }, { body:'#b04ad0' }
 ];
 function hashCode(s){ let h = 0; for (let i=0;i<s.length;i++) h = ((h<<5) - h) + s.charCodeAt(i) | 0; return h; }
-
 function drawRemotePlayer(p){
   const sx = p.x - cam.x, sy = p.y - cam.y;
   if (sx < -80 || sx > VW+80 || sy < -80 || sy > VH+80) return;
-  const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name)) % REMOTE_PALETTE.length];
-
-  const animName = (p.hp <= 0) ? 'death' : (p.sitting ? 'sit' : 'idle');
+  const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name || '?')) % REMOTE_PALETTE.length];
+  const animName = (p.hp <= 0) ? 'death' : (p.sitting ? 'sit' : (p.anim || 'idle'));
   const sprite = getPlayerSprite(animName);
   if (sprite){
     const rawIdx = Math.floor((p.animT || 0) * sprite.fps);
@@ -2077,20 +2382,18 @@ function drawRemotePlayer(p){
     ctx.fillStyle = pal.body; ctx.fillRect(sx-6, sy-10, 12, 13);
     ctx.fillStyle = '#f0c8a0'; ctx.fillRect(sx-5, sy-18, 10, 8);
   }
-
   if (p.sitting && p.hp > 0){
     ctx.font = 'bold 12px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('🪑', sx, sy - 40);
   }
-
   ctx.font = 'bold 10px Consolas, monospace';
   ctx.textAlign = 'center';
-  const w = ctx.measureText(p.name).width + 8;
+  const w = ctx.measureText(p.name || '?').width + 8;
   ctx.fillStyle = 'rgba(0,0,0,0.65)';
   ctx.fillRect(sx - w/2, sy - 36, w, 13);
   ctx.fillStyle = '#88ffd8';
-  ctx.fillText(p.name, sx, sy - 26);
+  ctx.fillText(p.name || '?', sx, sy - 26);
   const hpPct = Math.max(0, Math.min(1, (p.hp ?? 20) / 20));
   const bw = 24;
   ctx.fillStyle = 'rgba(0,0,0,0.8)';
@@ -2103,17 +2406,14 @@ function drawRemotePlayer(p){
 function drawAimArrow(){
   if (!gameStarted || paused) return;
   if (player.hp <= 0) return;
-
   const sx = Math.round(player.x - cam.x);
   const syBelly = Math.round(player.y - cam.y - 14);
   const a = aim.angle;
   const cosA = Math.cos(a), sinA = Math.sin(a);
   const px = -sinA, py = cosA;
-
   const orbitR = 42;
   const cx = sx + cosA * orbitR;
   const cy = syBelly + sinA * orbitR;
-
   const headLen = 10, headW = 6;
   const tipX = cx + cosA * (headLen * 0.6);
   const tipY = cy + sinA * (headLen * 0.6);
@@ -2123,7 +2423,6 @@ function drawAimArrow(){
   const b2Y = cy - sinA * (headLen * 0.4) - py * headW;
   const midX = (tipX + b1X + b2X) / 3;
   const midY = (tipY + b1Y + b2Y) / 3;
-
   ctx.save();
   ctx.globalAlpha = 0.4;
   ctx.fillStyle = '#000';
@@ -2134,7 +2433,6 @@ function drawAimArrow(){
   ctx.closePath();
   ctx.fill();
   ctx.globalAlpha = 1;
-
   ctx.strokeStyle = '#000';
   ctx.lineWidth = 2.5;
   ctx.lineJoin = 'round';
@@ -2142,7 +2440,6 @@ function drawAimArrow(){
   ctx.moveTo(tipX, tipY); ctx.lineTo(b1X, b1Y); ctx.lineTo(b2X, b2Y);
   ctx.closePath();
   ctx.stroke();
-
   const grad = ctx.createLinearGradient(b2X, b2Y, tipX, tipY);
   grad.addColorStop(0, '#c8d8c0');
   grad.addColorStop(0.5, '#fff');
@@ -2152,19 +2449,16 @@ function drawAimArrow(){
   ctx.moveTo(tipX, tipY); ctx.lineTo(b1X, b1Y); ctx.lineTo(b2X, b2Y);
   ctx.closePath();
   ctx.fill();
-
   ctx.fillStyle = 'rgba(255,255,255,.9)';
   ctx.beginPath();
   ctx.moveTo(tipX, tipY); ctx.lineTo(b1X, b1Y); ctx.lineTo(midX, midY);
   ctx.closePath();
   ctx.fill();
-
   ctx.fillStyle = 'rgba(0,0,0,.25)';
   ctx.beginPath();
   ctx.moveTo(tipX, tipY); ctx.lineTo(b2X, b2Y); ctx.lineTo(midX, midY);
   ctx.closePath();
   ctx.fill();
-
   if (aim.joyId !== null){
     const t = performance.now() / 150;
     const pulse = 1 + Math.sin(t) * 0.2;
@@ -2201,9 +2495,7 @@ function render(){
   ents.push({ y: player.y, draw: () => drawPlayer() });
   ents.sort((a,b) => a.y - b.y);
   for (const e of ents) e.draw();
-
   drawAimArrow();
-
   for (const p of G.particles){
     const a = p.life / p.maxLife;
     ctx.globalAlpha = a;
@@ -2211,7 +2503,6 @@ function render(){
     ctx.fillRect(p.x - cam.x - p.size/2, p.y - cam.y - p.size/2, p.size, p.size);
   }
   ctx.globalAlpha = 1;
-
   if (nightFactor > 0.05){
     ctx.fillStyle = `rgba(5, 8, 25, ${nightFactor * 0.75})`;
     ctx.fillRect(0, 0, VW, VH);
@@ -2219,7 +2510,6 @@ function render(){
   $('time').textContent = `${nightFactor > 0.6 ? '🌙' : '☀'} ${getClockString()} · Ngày ${dayCount}`;
   $('coords').innerHTML = `XYZ: <b>${(player.x/TILE).toFixed(1)} ${(player.y/TILE).toFixed(1)}</b>`;
 }
-
 function updateCam(){
   const targetX = player.x - VW/2;
   const targetY = player.y - VH/2;
@@ -2228,7 +2518,6 @@ function updateCam(){
   cam.x = Math.max(0, Math.min(WORLD_W*TILE - VW, cam.x));
   cam.y = Math.max(0, Math.min(WORLD_H*TILE - VH, cam.y));
 }
-
 let worldTime = 0.25;
 const DAY_DURATION = 1200;
 let dayCount = 1;
@@ -2298,7 +2587,6 @@ const ButtonSettings = (() => {
     sit:     ['--sit-tx', '--sit-ty']
   };
   const ELEMS = { moveJoy: 'moveJoystick', aimJoy: 'aimJoystick', jump: 'btnJump', sit: 'btnSit' };
-
   function load(){
     try {
       const raw = localStorage.getItem(KEY);
@@ -2317,7 +2605,6 @@ const ButtonSettings = (() => {
     root.style.setProperty(vy, o.dy + 'px');
   }
   function applyAll(){ for (const k of KEYS) applyOne(k); }
-
   function makeDraggable(key){
     const el = $(ELEMS[key]);
     if (!el) return;
@@ -2342,7 +2629,6 @@ const ButtonSettings = (() => {
     el.addEventListener('pointerup', stop, true);
     el.addEventListener('pointercancel', stop, true);
   }
-
   function openEditor(){
     load();
     backup = JSON.parse(JSON.stringify(offsets));
@@ -2354,9 +2640,8 @@ const ButtonSettings = (() => {
     editMode = false;
     document.body.classList.remove('edit-btn-mode');
     save();
-    toast('💾 Đã lưu vị trí nút');
-    if (gameStarted){ paused = false; }
-    else $('menu').classList.remove('hidden');
+    toast('💾 Đã lưu');
+    if (gameStarted){ paused = false; } else $('menu').classList.remove('hidden');
   }
   function cancelEdit(){
     if (backup) offsets = JSON.parse(JSON.stringify(backup));
@@ -2369,7 +2654,7 @@ const ButtonSettings = (() => {
     localStorage.removeItem(KEY);
     for (const k of KEYS) offsets[k] = { dx: 0, dy: 0 };
     applyAll();
-    toast('↺ Đã reset vị trí');
+    toast('↺ Đã reset');
   }
   function init(){
     load(); applyAll();
@@ -2387,27 +2672,17 @@ const ButtonSettings = (() => {
 /* NAME + JOIN */
 function getPlayerName(){
   const el = $('playerName');
-  const name = (el && el.value.trim()) || 'Hunter';
+  let name = (el && el.value.trim()) || 'Hunter';
+  if (AUTH.user && AUTH.user.displayName) name = AUTH.user.displayName;
   if (name.length > 12) return name.slice(0, 12);
   return name;
 }
 
 async function joinRoomDirect(code, hostName){
-  if (net.active){ toast('⚠ Đang trong phòng khác — thoát trước', true); return; }
+  if (net.active){ toast('⚠ Đang trong phòng khác', true); return; }
   try { net.disconnect(); } catch(e){}
-  await new Promise(r => setTimeout(r, 150));
+  await new Promise(r => setTimeout(r, 100));
 
-  const name = getPlayerName();
-  const list = await apiListRooms();
-  if (list){
-    const room = list.find(r => r.code === code);
-    if (room && room.count >= (room.max || MAX_PLAYERS)){
-      toast('❌ Phòng ' + code + ' đã đầy (' + room.count + '/' + MAX_PLAYERS + ')', true);
-      return;
-    }
-  }
-
-  /* Overlay với stages */
   const overlay = document.createElement('div');
   overlay.id = 'joinOverlay';
   overlay.style.cssText =
@@ -2420,58 +2695,18 @@ async function joinRoomDirect(code, hostName){
     '<div style="font-size:15px;font-weight:bold;color:#88ff60;margin-bottom:14px">' +
       '🔗 Đang vào phòng <span style="color:#ffd060">' + code + '</span>' +
     '</div>' +
-    '<div id="joinStages" style="text-align:left;font-size:11px;line-height:2;color:#889878;margin-bottom:16px">' +
-      '<div data-stage="signaling"><span class="stage-dot" style="color:#586850">○</span> <span>Kết nối signaling server</span></div>' +
-      '<div data-stage="ice"><span class="stage-dot" style="color:#586850">○</span> <span>ICE negotiation (P2P handshake)</span></div>' +
-      '<div data-stage="connected"><span class="stage-dot" style="color:#586850">○</span> <span>Vào game</span></div>' +
-    '</div>' +
     '<div id="joinElapsed" style="font-size:10px;color:#586850;margin-bottom:12px">Đã chờ: 0.0s</div>' +
-    '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
-      '<button id="joinCancelBtn" style="background:#5a5850;border:2px solid #0a0d08;' +
-        'color:#e8f0d8;border-radius:5px;padding:8px 16px;font-size:11px;' +
-        'cursor:pointer;font-family:inherit;font-weight:bold">✕ Hủy</button>' +
-      '<button id="joinForceTurnBtn" style="background:#7d5a00;border:2px solid #ffd060;' +
-        'color:#ffd060;border-radius:5px;padding:8px 14px;font-size:11px;' +
-        'cursor:pointer;font-family:inherit;font-weight:bold">🔁 Thử TURN Relay</button>' +
-    '</div>';
+    '<button id="joinCancelBtn" style="background:#5a5850;border:2px solid #0a0d08;' +
+      'color:#e8f0d8;border-radius:5px;padding:8px 16px;font-size:11px;' +
+      'cursor:pointer;font-family:inherit;font-weight:bold">✕ Hủy</button>';
   document.body.appendChild(overlay);
-
-  function setStage(stage, status){
-    const row = overlay.querySelector(`[data-stage="${stage}"]`);
-    if (!row) return;
-    const dot = row.querySelector('.stage-dot');
-    const text = row.querySelector('span:nth-child(2)');
-    if (status === 'active'){
-      dot.textContent = '◐'; dot.style.color = '#ffd060';
-      text.style.color = '#e8f0d8';
-    } else if (status === 'done'){
-      dot.textContent = '✓'; dot.style.color = '#88ff60';
-      text.style.color = '#88ff60';
-    } else if (status === 'fail'){
-      dot.textContent = '✗'; dot.style.color = '#ff6060';
-      text.style.color = '#ff6060';
-    } else {
-      dot.textContent = '○'; dot.style.color = '#586850';
-      text.style.color = '#889878';
-    }
-  }
 
   let cancelled = false;
   overlay.querySelector('#joinCancelBtn').addEventListener('click', () => {
     cancelled = true;
     overlay.remove();
     try { net.disconnect(); } catch(e){}
-    toast('↩ Đã hủy vào phòng');
-  });
-  overlay.querySelector('#joinForceTurnBtn').addEventListener('click', () => {
-    console.log('[WebRTC] 🔁 User bật Force TURN');
-    localStorage.setItem('dh_force_turn', '1');
-    PEER_OPTS.config.iceTransportPolicy = 'relay';
-    toast('🔁 Bật TURN Relay — đang thử lại...');
-    cancelled = true;
-    overlay.remove();
-    try { net.disconnect(); } catch(e){}
-    setTimeout(() => joinRoomDirect(code, hostName), 500);
+    toast('↩ Đã hủy');
   });
 
   const startTime = Date.now();
@@ -2481,76 +2716,18 @@ async function joinRoomDirect(code, hostName){
     if (el) el.textContent = 'Đã chờ: ' + ((Date.now() - startTime) / 1000).toFixed(1) + 's';
   }, 100);
 
-  net.onStage = (stage) => {
-    if (cancelled) return;
-    if (stage === 'signaling') setStage('signaling', 'active');
-    else if (stage === 'ice'){ setStage('signaling', 'done'); setStage('ice', 'active'); }
-    else if (stage === 'connected'){ setStage('ice', 'done'); setStage('connected', 'active'); }
-  };
-
   try {
-    net.onWorldReady = () => {
-      if (cancelled) return;
-      setStage('connected', 'done');
-      setTimeout(() => {
-        if (document.body.contains(overlay)) overlay.remove();
-        clearInterval(elapsedTimer);
-        initInv();
-        startGame('client');
-      }, 200);
-    };
-
-    /* Retry 2 lần */
-    let lastErr = null;
-    for (let attempt = 1; attempt <= 3; attempt++){
-      if (cancelled) return;
-      try {
-        if (attempt > 1){
-          console.log('[Client] 🔄 Retry ' + attempt + '/3');
-          setStage('signaling', 'pending');
-          setStage('ice', 'pending');
-          try { net.disconnect(); } catch(e){}
-          await new Promise(r => setTimeout(r, 800));
-        }
-        await net.startClient(name, code);
-        net.onStage = null;
-        return;
-      } catch(e){
-        lastErr = e;
-        console.warn('[Client] Attempt ' + attempt + ':', e.message);
-        if (attempt < 3){
-          setStage('signaling', 'pending');
-          setStage('ice', 'pending');
-        }
-      }
-    }
-
-    setStage('signaling', 'fail');
-    setStage('ice', 'fail');
-    throw lastErr || new Error('Không kết nối được sau 3 lần');
-
+    const name = getPlayerName();
+    await net.joinRoom(code, name);
+    clearInterval(elapsedTimer);
+    if (document.body.contains(overlay)) overlay.remove();
+    toast('✓ Đã vào phòng ' + code);
   } catch(e){
     clearInterval(elapsedTimer);
-    if (document.body.contains(overlay)) setTimeout(() => overlay.remove(), 1500);
-    net.onStage = null;
+    if (document.body.contains(overlay)) overlay.remove();
     if (!cancelled){
-      const errMsg = e.message || 'Không vào được phòng';
-      toast('❌ ' + errMsg, true);
-      console.error('joinRoomDirect:', e);
-      if (errMsg.includes('Timeout') || errMsg.includes('WebRTC')){
-        setTimeout(() => {
-          const hint = confirm(
-            '⚠️ Không kết nối được sau 3 lần.\n\n' +
-            'Nếu 2 máy đang ở CÙNG MẠNG WIFI, router có thể chặn P2P.\n\n' +
-            '→ Bật TURN Relay để đi vòng qua server?'
-          );
-          if (hint){
-            localStorage.setItem('dh_force_turn', '1');
-            PEER_OPTS.config.iceTransportPolicy = 'relay';
-            toast('🔁 Đã bật TURN — thử lại');
-          }
-        }, 800);
-      }
+      toast('❌ ' + (e.message || 'Không vào được'), true);
+      if (AUTH.token) AUTH.triggerSave();
     }
   }
 }
@@ -2563,8 +2740,7 @@ async function joinRoomByCode(){
   const name = getPlayerName();
   status.textContent = 'Đang kết nối...';
   try {
-    net.onWorldReady = () => { initInv(); startGame('client'); };
-    await net.startClient(name, code);
+    await net.joinRoom(code, name);
     status.textContent = '✓ Đã kết nối';
   } catch(e){ status.textContent = '❌ ' + (e.message || e); }
 }
@@ -2595,14 +2771,14 @@ function refreshBackendUI(){
     if (val === 'custom') return;
     const b = BACKEND_POOL[parseInt(val)];
     if (!b) return;
-    if (confirm('Đổi server sang:\n\n' + (b.name || b.host) + '\n\nReload?')){
+    if (confirm('Đổi server sang ' + (b.name || b.host) + '?\nReload?')){
       setBackend(b); saveBackend(b);
       location.reload();
     }
   };
 }
 window.recheckBackend = async function(){
-  toast('🔄 Đang kiểm tra server...');
+  toast('🔄 Đang kiểm tra...');
   const results = await Promise.all(BACKEND_POOL.map(async b => {
     const t0 = performance.now();
     const ok = await quickHealthCheck(b, 5000);
@@ -2665,7 +2841,6 @@ window.Game = {
     if (!p.classList.contains('hidden')) setTimeout(() => $('joinCode').focus(), 100);
   }
 };
-
 const menuPages = {
   main: $('menuMain'),
   mp: $('menuMP'),
@@ -2677,7 +2852,6 @@ function showMenuPage(name){
   if (name === 'mp') startRoomPolling();
   else stopRoomPolling();
 }
-
 async function hostRoom(){
   if (net.active){ toast('⚠ Đang trong phòng khác', true); return; }
   $('hostPanel').classList.remove('hidden');
@@ -2685,28 +2859,24 @@ async function hostRoom(){
   const name = getPlayerName();
   const status = $('hostStatus');
   const codeEl = $('roomCodeDisplay');
-  status.textContent = '📡 Đang kết nối signaling...';
-  wakeUpBackend();
+  status.textContent = '📡 Đang tạo phòng...';
 
   try {
-    const code = await net.startHost(name);
+    const code = await net.createRoom(name);
     codeEl.textContent = code;
     codeEl.classList.remove('hidden');
     status.innerHTML =
       '✓ Đã tạo phòng · <span style="color:#ffd060">' + code + '</span><br>' +
-      '<small style="color:#889878">🎧 Đang chờ đối thủ (tối đa 5)...</small>';
+      '<small style="color:#889878">🎧 Chờ đối thủ (tối đa ' + MAX_PLAYERS + ')...</small>';
+
     initRNG(Date.now() & 0x7fffffff);
     world.fill(0); generateWorld();
     resetPlayerPosition(); initInv();
-    apiRegisterRoom(code, name).then(ok => {
-      if (ok) console.log('✓ Room registered:', code);
-      else console.warn('✗ Room register failed:', code);
-    });
-    startRoomHeartbeat();
-    setTimeout(() => startGame('host'), 800);
-  } catch(e){ status.textContent = '❌ Lỗi: ' + (e.message || e); }
+    setTimeout(() => startGame('host'), 500);
+  } catch(e){
+    status.textContent = '❌ ' + (e.message || e);
+  }
 }
-
 function bindSlider(id, valId, cb){
   const s = $(id), v = $(valId);
   if (!s) return;
@@ -2729,17 +2899,69 @@ function toggleSettings(){
   }
 }
 
-/* Force TURN checkbox init */
-setTimeout(() => {
-  const chk = $('forceTurnChk');
-  if (chk){
-    chk.checked = FORCE_TURN;
-    chk.addEventListener('change', (e) => {
-      setForceTURN(e.target.checked);
-      if (confirm('Đã ' + (e.target.checked ? 'BẬT' : 'TẮT') + ' TURN.\nReload để áp dụng?')) location.reload();
+/* ROOM POLLING (lobby listing) */
+let roomPollingTimer = null;
+function startRoomPolling(){
+  if (roomPollingTimer) return;
+  fetchAndRenderRooms();
+  roomPollingTimer = setInterval(fetchAndRenderRooms, 5000);
+}
+function stopRoomPolling(){
+  if (roomPollingTimer){ clearInterval(roomPollingTimer); roomPollingTimer = null; }
+}
+async function fetchAndRenderRooms(){
+  try {
+    const res = await fetch(BACKEND_URL + '/rooms', {
+      cache: 'no-store',
+      signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined
     });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    renderRoomList(data.rooms || []);
+  } catch(e){
+    renderRoomListError();
   }
-}, 500);
+}
+function renderRoomListError(){
+  const el = $('roomList');
+  const cnt = $('roomListCount');
+  if (!el) return;
+  cnt.textContent = '!';
+  el.innerHTML = '<div class="room-empty" style="color:#ff9898">⚠ Không kết nối server<br>' +
+    '<small style="color:#889878">Render khởi động (~30s) — thử lại sau</small></div>';
+}
+function renderRoomList(rooms){
+  const el = $('roomList');
+  const cnt = $('roomListCount');
+  if (!el) return;
+  cnt.textContent = rooms.length;
+  if (!rooms.length){
+    el.innerHTML = '<div class="room-empty">Chưa có phòng nào</div>';
+    return;
+  }
+  const now = Date.now();
+  el.innerHTML = '';
+  for (const r of rooms){
+    const isFull = r.count >= (r.max || MAX_PLAYERS);
+    const item = document.createElement('div');
+    item.className = 'room-item' + (isFull ? ' full' : '');
+    const countClass = isFull ? 'full' : (r.count <= 1 ? 'low' : '');
+    item.innerHTML =
+      '<span class="code">' + r.code + '</span>' +
+      '<span class="host">' + (r.name || 'Host') + '</span>' +
+      '<span class="count ' + countClass + '">' + r.count + '/' + (r.max || MAX_PLAYERS) + '</span>' +
+      '<span class="age">' + formatAge(now - r.ts) + '</span>';
+    if (!isFull) item.addEventListener('click', () => Game.joinFromList(r.code, r.name));
+    el.appendChild(item);
+  }
+}
+function formatAge(ms){
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return s + 's';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + 'm';
+  return Math.floor(m / 60) + 'h';
+}
 
 /* GAME LIFECYCLE */
 function startSingleplayer(){
@@ -2758,7 +2980,7 @@ function startGame(mode){
   renderHotbar(); updateHpBar();
   startNetSync(); updateNetHud();
   toast(mode === 'sp' ? '🎮 Chơi đơn' :
-        mode === 'host' ? '🏠 Phòng: ' + net.roomCode : '⚔️ Đã vào phòng ' + net.roomCode);
+        mode === 'host' ? '🏠 Phòng: ' + net.roomCode : '⚔️ Đã vào phòng');
 }
 function togglePause(){
   if (!gameStarted) return;
@@ -2770,12 +2992,12 @@ function backToMenu(){
   gameStarted = false; paused = false;
   $('pause').classList.add('hidden');
   $('settingsBtn').classList.remove('show');
-  stopRoomHeartbeat();
   stopRoomPolling();
   net.disconnect();
   $('menu').classList.remove('hidden');
   showMenuPage('main');
   if (netSyncTimer){ clearInterval(netSyncTimer); netSyncTimer = null; }
+  if (AUTH.token) AUTH.save(collectSaveData());
 }
 function resetPlayerPosition(){
   player.hp = player.maxHp;
@@ -2817,17 +3039,18 @@ mouse.x = VW/2; mouse.y = VH/2;
 
 ButtonSettings.init();
 $('roomRefreshBtn').addEventListener('click', () => Game.refreshRooms());
-
 $('joinCode').addEventListener('keydown', e => {
   if (e.key === 'Enter'){ e.preventDefault(); joinRoomByCode(); }
 });
 
-loadProject().then(() => {
-  showMenuPage('main');
+loadProject().then(async () => {
+  const authed = await initAuth();
+  if (authed) showMenuPage('main');
+  else $('menu').classList.add('hidden');
   requestAnimationFrame(loop);
 });
 
-console.log('%c🐉 Dragon Hunter v1.11 ready', 'color:#88ff60;font-weight:bold;font-size:14px');
+console.log('%c🐉 Dragon Hunter v3.0 — WebSocket + Postgres', 'color:#88ff60;font-weight:bold;font-size:14px');
 </script>
 </body>
-  </html>
+                     </html>
