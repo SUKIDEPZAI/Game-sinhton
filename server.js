@@ -1,8 +1,9 @@
 /* ============================================================
-   Dragon Hunter Backend v4.0
+   Dragon Hunter Backend v4.1
    - Express (REST: auth, save, rooms list, tuning)
    - WebSocket (game state, realtime)
    - PostgreSQL (persistent data)
+   - Prompt Builder API (via ./public/prompt.routes)
    ============================================================ */
 
 const express = require('express');
@@ -12,6 +13,7 @@ const crypto = require('crypto');
 const cors = require('cors');
 const { WebSocketServer } = require('ws');
 const { Pool } = require('pg');
+const mountPromptRoutes = require('./public/prompt.routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -51,6 +53,9 @@ async function initDB(){
     });
     await db.query('SELECT 1');
     console.log('[DB] Connected');
+
+    /* Mount Prompt Routes sau khi DB sẵn sàng */
+    mountPromptRoutes(app, db, requireAuth);
   } catch(e){
     console.error('[DB] Fail:', e.message);
     db = null;
@@ -134,11 +139,12 @@ app.post('/auth/register', async (req, res) => {
     );
     const userId = ins.rows[0].id;
     const defaultSave = {
-      version: 1,
+      version: 2,
       createdAt: new Date().toISOString(),
-      player: { level: 1, exp: 0, hp: 20, maxHp: 20, selected: 0 },
+      player: { level: 1, exp: 0, hp: 20, maxHp: 20, selected: 0, stamina: 100, maxStamina: 100 },
       inventory: { hotbar: [] },
-      stats: { kills: 0, deaths: 0 }
+      stats: { kills: 0, deaths: 0, damageDealt: 0, damageTaken: 0 },
+      achievements: {}
     };
     await db.query(
       'INSERT INTO user_saves (user_id, data) VALUES ($1, $2) ON CONFLICT (user_id) DO NOTHING',
@@ -355,15 +361,17 @@ app.get('/tuning', async (req, res) => {
 /* HEALTH */
 app.get('/', function(req, res){
   res.send(
-    '<h1>Dragon Hunter Backend v4</h1>' +
+    '<h1>Dragon Hunter Backend v4.1</h1>' +
     '<ul>' +
     '<li><a href="/health">/health</a></li>' +
     '<li><a href="/rooms">/rooms</a></li>' +
     '<li><a href="/tuning">/tuning</a></li>' +
     '<li><a href="/weapon-tuner.html">/weapon-tuner.html</a></li>' +
     '<li><a href="/editor.html">/editor.html</a></li>' +
+    '<li><a href="/prompt.routes.js">/prompt.routes.js</a></li>' +
     '</ul>' +
-    '<p>WebSocket: wss://game-sinhton.onrender.com/ws</p>'
+    '<p>WebSocket: wss://game-sinhton.onrender.com/ws</p>' +
+    '<p>Prompt API: /prompt/snapshot · /prompt/versions · /prompt/analytics</p>'
   );
 });
 
@@ -374,9 +382,11 @@ app.get('/health', async function(req, res){
   }
   res.json({
     ok: true,
+    version: '4.1',
     ts: Date.now(),
     db: db ? (dbOk ? 'connected' : 'error') : 'memory',
     accounts: db ? 'enabled' : 'disabled',
+    promptApi: db ? 'enabled' : 'disabled',
     wsClients: wss.clients.size,
     activeRooms: rooms.size,
     maxPlayers: MAX_PLAYERS
@@ -644,12 +654,14 @@ function handleMove(ws, msg){
   room.broadcast({
     t: 'player_update',
     id: player.id,
+    name: player.name,
     x: player.x,
     y: player.y,
     facing: player.facing,
     anim: player.anim,
     sitting: player.sitting,
-    hp: player.hp
+    hp: player.hp,
+    level: player.level
   }, player.id);
 }
 
@@ -786,9 +798,11 @@ setInterval(async function(){
   } catch(e){}
 }, 60 * 60 * 1000);
 
-/* START */
+/* ============================================================
+   START
+   ============================================================ */
 server.listen(PORT, function(){
-  console.log('Listening on ' + PORT);
+  console.log('🐉 Dragon Hunter v4.1 · Listening on ' + PORT);
   initDB();
 });
 
