@@ -5,442 +5,780 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Dragon Hunter</title>
 <style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
 :root{
-  --text:#e8f0d8;
-  --joy-size: 145px;
-  --joy-knob: 67px;
-  --joy-offset-left: 30px;
-  --joy-offset-bottom: 75px;
-  --aim-size: 145px;
-  --aim-knob: 62px;
-  --aim-offset-right: 125px;
-  --aim-offset-bottom: 75px;
-  --jump-size: 58px;
-  --jump-right: 25px;
-  --jump-bottom: 155px;
-  --sit-size: 58px;
-  --sit-right: 110px;
-  --sit-bottom: 145px;
-  --btn-opacity: 1;
-  --jump-tx: 0px; --jump-ty: 0px;
-  --sit-tx: 0px; --sit-ty: 0px;
-  --mjoy-tx: 0px; --mjoy-ty: 0px;
-  --ajoy-tx: 0px; --ajoy-ty: 0px;
+  --bg-0:#0a0e14;
+  --bg-1:#0f151d;
+  --bg-2:#161e28;
+  --bg-3:#1e2836;
+  --bg-4:#28323f;
+  --border:#2a3542;
+  --border-hi:#3a4552;
+  --text:#e8eef5;
+  --text-dim:#8a9aac;
+  --text-dim2:#5a6a7c;
+  --primary:#5eead4;
+  --primary-2:#22d3ee;
+  --primary-dk:#0d9488;
+  --primary-glow:rgba(94,234,212,.35);
+  --accent:#fbbf24;
+  --accent-2:#f59e0b;
+  --danger:#f87171;
+  --danger-dk:#dc2626;
+  --success:#4ade80;
+  --warning:#fbbf24;
+  --info:#60a5fa;
+  --purple:#a78bfa;
+  --radius-sm:6px;
+  --radius:10px;
+  --radius-lg:16px;
+  --radius-xl:24px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+  --shadow:0 4px 12px rgba(0,0,0,.4);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.6);
+  --shadow-glow:0 0 24px var(--primary-glow);
+  --header-h:56px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:#14180f;
-  font-family:'Segoe UI',Arial,sans-serif;color:var(--text);
-  user-select:none;-webkit-user-select:none;touch-action:manipulation;position:fixed;inset:0}
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  background:var(--bg-0);color:var(--text);
+  font-family:'Inter','SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  font-size:14px;line-height:1.5;
+  user-select:none;-webkit-user-select:none;
+  touch-action:manipulation;position:fixed;inset:0;
+  -webkit-font-smoothing:antialiased;
+}
 canvas{display:block;image-rendering:pixelated;touch-action:none}
-button{cursor:pointer;font-family:inherit;touch-action:manipulation}
+button{cursor:pointer;font-family:inherit;touch-action:manipulation;border:none;background:none;color:inherit}
+input,select{font-family:inherit;color:inherit}
 
-#coords{position:fixed;top:8px;left:8px;color:#fff;font-size:11px;font-family:Consolas,monospace;
-  background:rgba(0,0,0,.5);padding:4px 8px;border-radius:4px;z-index:5;pointer-events:none}
-#time{position:fixed;top:8px;left:50%;transform:translateX(-50%);color:#ffd54a;font-size:12px;
-  font-weight:bold;background:rgba(0,0,0,.6);padding:4px 12px;border-radius:10px;z-index:5;pointer-events:none}
-#netInfo{position:fixed;top:44px;right:8px;color:#a8ffd8;font-size:11px;font-family:Consolas,monospace;
-  background:rgba(20,40,30,.85);padding:5px 10px;border-radius:6px;z-index:5;pointer-events:none;
-  border:1px solid #3a5a4a;display:none;line-height:1.5}
-#netInfo.show{display:block}
-#netInfo b{color:#e8ff80}
-#hpBar{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);display:flex;align-items:center;
-  gap:8px;padding:6px 14px;background:rgba(0,0,0,.7);border:2px solid #000;border-radius:8px;
-  z-index:5;pointer-events:none;font-family:Consolas,monospace;box-shadow:0 2px 0 rgba(0,0,0,.5);transition:box-shadow .2s}
-#hpBar .heartIcon{font-size:16px}
-#hpFill{width:180px;height:12px;background:#3a1010;border:1px solid #000;position:relative;overflow:hidden;border-radius:2px}
-#hpFillInner{height:100%;width:100%;background:linear-gradient(180deg,#ff6b6b,#c02020);transition:width .2s}
-#hpText{font-size:11px;color:#ffd0d0;font-weight:bold;min-width:44px;text-align:right}
-#hotbar{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:2px;
-  padding:3px;background:rgba(20,24,16,.9);border:2px solid #000;border-radius:4px;z-index:6;
-  box-shadow:0 2px 0 rgba(0,0,0,.6)}
-.hslot{width:48px;height:48px;background:#586048;border:2px solid #2a3020;position:relative;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .1s}
-.hslot:hover{background:#687658}
-.hslot.active{border-color:#fff;background:#78886a;box-shadow:0 0 0 1px #000 inset}
-.hslot .ic{width:40px;height:40px;background-size:contain;background-repeat:no-repeat;image-rendering:pixelated}
-.hslot .lbl{position:absolute;top:2px;left:4px;font-size:9px;color:#c8d8b8;font-weight:bold}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100;display:flex;
-  align-items:center;justify-content:center;padding:14px}
-.modal.hidden{display:none!important}
-#toast{position:fixed;bottom:150px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.88);
-  color:#fff;padding:8px 16px;border-radius:4px;font-size:12px;z-index:30;opacity:0;
-  transition:opacity .25s;pointer-events:none;border:1px solid #333}
-#toast.show{opacity:1}
-.menu-panel{background:linear-gradient(180deg,#3a4438 0%,#2a3328 100%);border:3px solid #0a0d08;
-  box-shadow:inset 0 0 0 2px #5a6850,inset 0 0 0 4px #8a9878,0 8px 0 #000,0 12px 30px rgba(0,0,0,.7);
-  padding:24px 28px;text-align:center;max-width:480px;width:100%;max-height:92vh;overflow-y:auto;
-  border-radius:6px;position:relative;z-index:1}
-.logo{font-size:30px;font-weight:900;letter-spacing:2px;
-  background:linear-gradient(180deg,#ffe888 0%,#ff6020 55%,#8a1a00 100%);
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  text-shadow:0 2px 0 rgba(0,0,0,.4);margin-bottom:4px;font-family:Consolas,monospace;line-height:1.1}
-.logo-sub{font-size:10px;color:#8a9878;letter-spacing:3px;margin-bottom:20px;
-  font-family:Consolas,monospace;text-transform:uppercase}
-.menu-page{display:flex;flex-direction:column;gap:10px}
-.menu-page.hidden{display:none}
-.menu-page h3{font-size:13px;color:#a8b498;letter-spacing:2px;margin:6px 0 10px;font-family:Consolas,monospace}
-.mbtn{background:linear-gradient(180deg,#6a7860 0%,#4a5440 100%);color:#e8f0d8;border:2px solid #0a0d08;
-  box-shadow:inset 0 1px 0 #98a888,0 4px 0 #1a1f14;padding:13px 18px;font-size:14px;font-weight:bold;
-  cursor:pointer;letter-spacing:1px;border-radius:3px;font-family:inherit;transition:all .08s;
-  display:flex;align-items:center;justify-content:center;gap:8px;position:relative;z-index:2;
-  user-select:none;-webkit-user-select:none;width:100%}
-.mbtn:hover{background:linear-gradient(180deg,#7a8870 0%,#5a6450 100%)}
-.mbtn:active{transform:translateY(2px);box-shadow:inset 0 1px 0 #98a888,0 2px 0 #1a1f14}
-.mbtn.primary{background:linear-gradient(180deg,#88d858 0%,#4a8a30 100%);
-  box-shadow:inset 0 1px 0 #b8ff88,0 4px 0 #1a3a10;color:#0a1a06;text-shadow:0 1px 0 rgba(255,255,255,.25)}
-.mbtn.danger{background:linear-gradient(180deg,#d05848 0%,#8a2a20 100%);
-  box-shadow:inset 0 1px 0 #ff9888,0 4px 0 #3a0a06;color:#fff}
-.mbtn.back{background:linear-gradient(180deg,#5a5850 0%,#3a3830 100%);font-size:12px;padding:10px;
-  margin-top:8px;box-shadow:inset 0 1px 0 #888878,0 4px 0 #1a1810}
-.menu-page label{font-size:11px;color:#a8b498;text-align:left;display:block;margin:8px 0 4px;letter-spacing:1px}
-.menu-page input[type=text]{width:100%;padding:10px 12px;background:#1a2018;color:#e8f0d8;
-  border:2px solid #0a0d08;border-radius:3px;font-family:inherit;font-size:14px;letter-spacing:2px;
-  text-align:center;box-shadow:inset 0 2px 4px rgba(0,0,0,.5);position:relative;z-index:2}
-.menu-page input:focus{outline:none;border-color:#6fbf4a}
-.code-display{margin:14px 0;padding:14px;background:#0a0d08;border:2px dashed #4a8a30;border-radius:6px;
-  font-size:26px;font-weight:900;letter-spacing:6px;color:#88ff60;font-family:Consolas,monospace;
-  text-shadow:0 0 12px rgba(136,255,96,.6);text-align:center}
-.status-text{font-size:11px;color:#a8b498;margin-top:10px;min-height:16px;font-family:Consolas,monospace}
-.setting-row{display:flex;align-items:center;gap:10px;margin:10px 0}
-.setting-row label{flex:0 0 130px;font-size:11px;color:#a8b498;text-align:left;margin:0}
-.setting-row input[type=range]{flex:1;-webkit-appearance:none;height:14px;background:#1a2018;
-  border:2px solid #0a0d08;border-radius:8px;box-shadow:inset 0 2px 3px rgba(0,0,0,.6)}
-.setting-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
-  background:linear-gradient(180deg,#a8b898 0%,#68765a 100%);border:2px solid #0a0d08;border-radius:50%;
-  cursor:pointer;box-shadow:0 2px 0 #1a1f14}
-.setting-row .val{font-size:11px;color:#88ff60;font-family:Consolas,monospace;min-width:44px;text-align:right}
-.pause-panel{background:linear-gradient(180deg,#3a4438 0%,#2a3328 100%);border:3px solid #0a0d08;
-  box-shadow:inset 0 0 0 2px #5a6850,inset 0 0 0 4px #8a9878,0 8px 0 #000,0 12px 30px rgba(0,0,0,.7);
-  padding:24px 28px;text-align:center;max-width:360px;width:100%;border-radius:6px;
-  display:flex;flex-direction:column;gap:10px}
-.pause-panel h2{font-family:Consolas,monospace;font-size:22px;letter-spacing:4px;color:#e8f0d8;
-  margin-bottom:10px;text-shadow:0 2px 0 rgba(0,0,0,.5)}
+/* ============================================================
+   BASE COMPONENTS
+   ============================================================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 18px;border-radius:var(--radius);
+  font-size:13px;font-weight:600;letter-spacing:.3px;
+  background:var(--bg-3);color:var(--text);
+  border:1px solid var(--border);
+  transition:all .15s cubic-bezier(.4,0,.2,1);
+  box-shadow:var(--shadow-sm);white-space:nowrap;
+}
+.btn:hover:not(:disabled){background:var(--bg-4);border-color:var(--border-hi);transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn:active:not(:disabled){transform:translateY(0);box-shadow:var(--shadow-sm)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{
+  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  color:#0a0e14;border-color:var(--primary);
+  font-weight:700;box-shadow:0 4px 12px var(--primary-glow);
+}
+.btn.primary:hover:not(:disabled){
+  background:linear-gradient(135deg,#7dfbe2,#4ae0f5);
+  box-shadow:0 6px 20px var(--primary-glow);
+}
+.btn.danger{
+  background:linear-gradient(135deg,var(--danger),var(--danger-dk));
+  color:#fff;border-color:var(--danger);
+}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover:not(:disabled){background:var(--bg-3)}
+.btn.full{width:100%}
+.btn.lg{padding:14px 24px;font-size:15px}
+.btn.sm{padding:7px 12px;font-size:12px}
+.btn.xs{padding:5px 9px;font-size:11px}
 
+.input-wrap{position:relative;width:100%}
+.input{
+  width:100%;padding:12px 16px;background:var(--bg-1);color:var(--text);
+  border:1.5px solid var(--border);border-radius:var(--radius);
+  font-size:14px;transition:all .15s;
+}
+.input:focus{outline:none;border-color:var(--primary);background:var(--bg-2);
+  box-shadow:0 0 0 4px var(--primary-glow)}
+.input::placeholder{color:var(--text-dim2)}
+.input-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:var(--text-dim2);font-size:16px;pointer-events:none}
+.field{margin-bottom:14px}
+.field-label{display:block;font-size:11px;font-weight:600;color:var(--text-dim);
+  letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
+.field-hint{font-size:11px;color:var(--text-dim2);margin-top:5px;line-height:1.5}
+.field-error{font-size:11px;color:var(--danger);margin-top:5px;display:none}
+.field-error.show{display:block;animation:shake .3s}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-4px)}
+  75%{transform:translateX(4px)}
+}
+
+.badge{display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:999px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.badge.primary{background:rgba(94,234,212,.15);color:var(--primary)}
+.badge.success{background:rgba(74,222,128,.15);color:var(--success)}
+.badge.warning{background:rgba(251,191,36,.15);color:var(--warning)}
+.badge.danger{background:rgba(248,113,113,.15);color:var(--danger)}
+.badge.info{background:rgba(96,165,250,.15);color:var(--info)}
+
+/* ============================================================
+   GAME CANVAS
+   ============================================================ */
+#cv{position:fixed;inset:0;z-index:1}
+
+/* ============================================================
+   HUD TOP-LEFT
+   ============================================================ */
+.hud-tl{position:fixed;top:12px;left:12px;z-index:10;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.hud-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 12px;background:rgba(10,14,20,.75);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:999px;
+  font-family:'JetBrains Mono','Consolas',monospace;font-size:11px;
+  font-weight:600;color:var(--text);
+  box-shadow:var(--shadow-sm);
+}
+.hud-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--text-dim2);flex-shrink:0}
+.hud-chip .dot.on{background:var(--success);box-shadow:0 0 8px var(--success);
+  animation:pulse-dot 2s ease-in-out infinite}
+.hud-chip .dot.off{background:var(--danger)}
+.hud-chip .dot.connecting{background:var(--warning);animation:pulse-dot 1s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.5}}
+.hud-chip .label{color:var(--text-dim)}
+.hud-chip .value{color:var(--primary);font-weight:700}
+
+/* ============================================================
+   HUD TOP-CENTER (TIME)
+   ============================================================ */
+.hud-tc{
+  position:fixed;top:12px;left:50%;transform:translateX(-50%);
+  z-index:10;pointer-events:none;
+  padding:6px 16px;background:rgba(10,14,20,.75);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:999px;
+  font-family:'JetBrains Mono','Consolas',monospace;
+  font-size:12px;font-weight:700;color:var(--accent);
+  box-shadow:var(--shadow-sm);
+}
+
+/* ============================================================
+   HUD TOP-RIGHT (USER + SETTINGS)
+   ============================================================ */
+.hud-tr{
+  position:fixed;top:12px;right:12px;z-index:12;
+  display:flex;align-items:center;gap:8px;
+}
+.user-chip{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 12px 6px 6px;
+  background:rgba(10,14,20,.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:999px;
+  cursor:pointer;transition:all .15s;
+  box-shadow:var(--shadow-sm);min-width:130px;max-width:200px;
+}
+.user-chip:hover{background:rgba(15,20,28,.95);border-color:var(--border-hi);transform:translateY(-1px);box-shadow:var(--shadow)}
+.user-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13px;color:#0a0e14;
+  flex-shrink:0;box-shadow:0 0 12px var(--primary-glow);
+}
+.user-avatar.guest{background:linear-gradient(135deg,#8a9aac,#5a6a7c);box-shadow:none}
+.user-info{display:flex;flex-direction:column;line-height:1.2;overflow:hidden}
+.user-name{font-size:12px;font-weight:700;color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-sub{font-size:10px;color:var(--text-dim);font-weight:500;
+  display:flex;align-items:center;gap:4px}
+.user-status-dot{width:5px;height:5px;border-radius:50%;background:var(--success)}
+.user-status-dot.saving{background:var(--warning);animation:pulse-dot 1s infinite}
+.user-status-dot.error{background:var(--danger)}
+.icon-btn{
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(10,14,20,.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--border);color:var(--text);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;transition:all .15s;
+  box-shadow:var(--shadow-sm);
+}
+.icon-btn:hover{background:rgba(15,20,28,.95);border-color:var(--border-hi);
+  transform:translateY(-1px);box-shadow:var(--shadow)}
+.icon-btn:active{transform:translateY(0)}
+
+/* ============================================================
+   HUD BOTTOM-CENTER (HP + HOTBAR)
+   ============================================================ */
+.hud-bc{
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  z-index:6;display:flex;flex-direction:column;gap:8px;
+  align-items:center;pointer-events:none;
+}
+.hp-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 16px;background:rgba(10,14,20,.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1.5px solid var(--border);border-radius:999px;
+  box-shadow:var(--shadow);transition:all .2s;
+}
+.hp-bar.damage{border-color:var(--danger);box-shadow:0 0 24px rgba(248,113,113,.6);
+  animation:flash-damage .25s}
+@keyframes flash-damage{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.hp-heart{font-size:16px}
+.hp-track{width:180px;height:14px;background:rgba(58,16,16,.8);
+  border-radius:999px;overflow:hidden;position:relative;
+  border:1px solid rgba(0,0,0,.6);box-shadow:inset 0 1px 3px rgba(0,0,0,.6)}
+.hp-fill{height:100%;background:linear-gradient(90deg,#f87171,#dc2626);
+  transition:width .3s cubic-bezier(.4,0,.2,1);position:relative;border-radius:999px}
+.hp-fill::after{content:'';position:absolute;top:0;left:0;right:0;height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.3),transparent);border-radius:999px}
+.hp-text{font-family:'JetBrains Mono','Consolas',monospace;
+  font-size:12px;font-weight:700;color:#fca5a5;
+  min-width:52px;text-align:right}
+
+/* HOTBAR */
+.hotbar{
+  display:flex;gap:4px;padding:6px;
+  background:rgba(10,14,20,.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1.5px solid var(--border);border-radius:12px;
+  box-shadow:var(--shadow);pointer-events:auto;
+}
+.slot{
+  width:52px;height:52px;background:var(--bg-2);
+  border:1.5px solid var(--border);border-radius:8px;
+  position:relative;cursor:pointer;transition:all .12s;
+  display:flex;align-items:center;justify-content:center;
+}
+.slot:hover{background:var(--bg-3);border-color:var(--border-hi);transform:translateY(-2px)}
+.slot.active{border-color:var(--primary);background:var(--bg-3);
+  box-shadow:0 0 16px var(--primary-glow)}
+.slot .item-color{width:40px;height:40px;border-radius:6px;image-rendering:pixelated}
+.slot .key{position:absolute;top:3px;left:5px;font-size:9px;
+  font-weight:800;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+.slot.active .key{color:var(--primary)}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast-wrap{position:fixed;top:80px;left:50%;transform:translateX(-50%);
+  z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none;
+  max-width:90vw;width:400px}
+.toast{
+  padding:12px 18px;background:rgba(20,26,34,.95);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-left:3px solid var(--primary);
+  border-radius:var(--radius);font-size:13px;font-weight:500;color:var(--text);
+  box-shadow:var(--shadow-lg);
+  animation:toast-in .25s cubic-bezier(.4,0,.2,1);
+}
+.toast.error{border-left-color:var(--danger);color:#fca5a5}
+.toast.warning{border-left-color:var(--warning);color:#fcd34d}
+.toast.success{border-left-color:var(--success);color:#86efac}
+.toast.out{animation:toast-out .25s ease-in forwards}
+@keyframes toast-in{from{opacity:0;transform:translateY(-12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toast-out{to{opacity:0;transform:translateY(-8px) scale(.96)}}
+
+/* ============================================================
+   MODAL (BASE)
+   ============================================================ */
+.modal{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(5,8,12,.85);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;opacity:0;pointer-events:none;
+  transition:opacity .2s;
+}
+.modal.show{opacity:1;pointer-events:auto}
+.modal-content{
+  background:linear-gradient(180deg,var(--bg-2) 0%,var(--bg-1) 100%);
+  border:1px solid var(--border);border-radius:var(--radius-xl);
+  padding:32px;max-width:440px;width:100%;
+  box-shadow:var(--shadow-lg),0 0 80px rgba(94,234,212,.08);
+  position:relative;max-height:90vh;overflow-y:auto;
+  transform:scale(.96) translateY(12px);opacity:0;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+}
+.modal.show .modal-content{transform:scale(1) translateY(0);opacity:1}
+.modal-close{
+  position:absolute;top:16px;right:16px;
+  width:32px;height:32px;border-radius:50%;
+  background:var(--bg-3);color:var(--text-dim);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:pointer;transition:all .15s;
+}
+.modal-close:hover{background:var(--danger);color:#fff;transform:rotate(90deg)}
+.modal-header{margin-bottom:24px;text-align:center}
+.modal-logo{
+  font-size:26px;font-weight:900;letter-spacing:2px;
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-2) 50%,var(--accent) 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:6px;font-family:'JetBrains Mono',monospace;
+  filter:drop-shadow(0 0 12px var(--primary-glow));
+}
+.modal-sub{font-size:11px;color:var(--text-dim);
+  letter-spacing:3px;text-transform:uppercase;font-weight:600}
+
+/* ============================================================
+   AUTH MODAL
+   ============================================================ */
+.auth-tabs{
+  display:flex;gap:4px;background:var(--bg-1);
+  padding:4px;border-radius:var(--radius);margin-bottom:22px;
+  border:1px solid var(--border);
+}
+.auth-tab{
+  flex:1;padding:10px;text-align:center;
+  font-size:12px;font-weight:700;color:var(--text-dim);
+  border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;
+  letter-spacing:.5px;
+}
+.auth-tab:hover{color:var(--text)}
+.auth-tab.active{
+  background:var(--bg-3);color:var(--primary);
+  box-shadow:var(--shadow-sm);
+}
+.auth-page{display:none}
+.auth-page.active{display:block;animation:fade-up .2s}
+@keyframes fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.auth-hint{
+  padding:12px 14px;background:rgba(94,234,212,.08);
+  border-left:3px solid var(--primary);border-radius:var(--radius-sm);
+  font-size:11px;color:var(--text-dim);line-height:1.7;margin-top:14px;
+}
+.auth-hint b{color:var(--primary);font-weight:700}
+.auth-hint code{background:var(--bg-1);padding:1px 6px;border-radius:4px;
+  color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10px}
+
+.auth-actions{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+.guest-btn{
+  padding:11px;background:transparent;color:var(--text-dim);
+  border:1px dashed var(--border);border-radius:var(--radius);
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.guest-btn:hover{border-color:var(--text-dim);color:var(--text);background:var(--bg-3)}
+
+.btn-loading{
+  display:inline-block;width:14px;height:14px;
+  border:2px solid rgba(255,255,255,.25);
+  border-top-color:currentColor;border-radius:50%;
+  animation:spin .7s linear infinite;vertical-align:middle;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ============================================================
+   ACCOUNT MODAL
+   ============================================================ */
+.account-header{
+  text-align:center;padding-bottom:20px;border-bottom:1px solid var(--border);
+  margin-bottom:20px;
+}
+.account-avatar-lg{
+  width:72px;height:72px;border-radius:50%;margin:0 auto 12px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:800;color:#0a0e14;
+  box-shadow:0 0 24px var(--primary-glow);
+}
+.account-avatar-lg.guest{background:linear-gradient(135deg,#8a9aac,#5a6a7c);box-shadow:none}
+.account-name{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
+.account-username{font-size:12px;color:var(--text-dim);
+  font-family:'JetBrains Mono',monospace}
+
+.account-stats{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:8px;
+  margin-bottom:20px;
+}
+.stat-card{
+  padding:12px;background:var(--bg-1);border:1px solid var(--border);
+  border-radius:var(--radius);text-align:center;
+}
+.stat-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;
+  letter-spacing:.8px;font-weight:600;margin-bottom:4px}
+.stat-value{font-size:18px;font-weight:800;color:var(--primary);
+  font-family:'JetBrains Mono',monospace}
+
+.account-info{
+  padding:12px 14px;background:var(--bg-1);border:1px solid var(--border);
+  border-radius:var(--radius);font-size:11px;color:var(--text-dim);
+  line-height:1.9;margin-bottom:16px;
+  font-family:'JetBrains Mono',monospace;
+}
+.account-info-row{display:flex;justify-content:space-between;align-items:center}
+.account-info-row span:first-child{color:var(--text-dim2)}
+.account-info-row span:last-child{color:var(--text);font-weight:600}
+
+/* ============================================================
+   MENU MODAL
+   ============================================================ */
+.menu-panel{
+  display:flex;flex-direction:column;gap:12px;
+  max-width:400px;width:100%;
+}
+.menu-btn{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 20px;background:var(--bg-2);
+  border:1.5px solid var(--border);border-radius:var(--radius-lg);
+  cursor:pointer;transition:all .18s cubic-bezier(.4,0,.2,1);
+  font-size:15px;font-weight:600;color:var(--text);
+  position:relative;overflow:hidden;
+}
+.menu-btn::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:var(--primary);transform:scaleY(0);
+  transition:transform .2s;transform-origin:center;
+}
+.menu-btn:hover{border-color:var(--primary);background:var(--bg-3);
+  transform:translateX(4px);box-shadow:var(--shadow)}
+.menu-btn:hover::before{transform:scaleY(1)}
+.menu-btn .icon{font-size:24px;width:32px;text-align:center}
+.menu-btn .arrow{margin-left:auto;color:var(--text-dim);
+  transition:transform .2s;font-size:14px}
+.menu-btn:hover .arrow{transform:translateX(4px);color:var(--primary)}
+.menu-btn.primary{
+  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  color:#0a0e14;border-color:var(--primary);
+  box-shadow:0 6px 20px var(--primary-glow);
+}
+.menu-btn.primary::before{background:#0a0e14}
+.menu-btn.primary:hover{background:linear-gradient(135deg,#7dfbe2,#4ae0f5);
+  border-color:var(--primary)}
+.menu-btn.primary .arrow{color:rgba(10,14,20,.6)}
+.menu-btn.primary:hover .arrow{color:#0a0e14}
+
+/* ============================================================
+   MP LOBBY
+   ============================================================ */
+.room-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;
+  max-height:220px;overflow-y:auto;padding:2px}
+.room-list::-webkit-scrollbar{width:6px}
+.room-list::-webkit-scrollbar-track{background:transparent}
+.room-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.room-list::-webkit-scrollbar-thumb:hover{background:var(--border-hi)}
+
+.room-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;background:var(--bg-1);
+  border:1.5px solid var(--border);border-radius:var(--radius);
+  cursor:pointer;transition:all .15s;
+}
+.room-item:hover{border-color:var(--primary);background:var(--bg-3);transform:translateX(3px)}
+.room-item.full{opacity:.5;cursor:not-allowed}
+.room-item.full:hover{transform:none;border-color:var(--border);background:var(--bg-1)}
+.room-code{font-family:'JetBrains Mono',monospace;font-size:14px;
+  font-weight:800;color:var(--primary);letter-spacing:1.5px;min-width:70px}
+.room-host{flex:1;font-size:13px;color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.room-count{font-size:11px;color:var(--text-dim);font-weight:600;
+  font-family:'JetBrains Mono',monospace;min-width:36px;text-align:right}
+.room-count.full{color:var(--danger)}
+.room-count.low{color:var(--success)}
+
+.room-empty{padding:36px 20px;text-align:center;color:var(--text-dim2);font-size:12px}
+.room-empty .icon{font-size:40px;opacity:.4;margin-bottom:12px}
+
+.section-title{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;font-weight:700;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;
+}
+.section-title .count{color:var(--primary);font-family:'JetBrains Mono',monospace}
+.refresh-btn{
+  padding:5px 10px;background:var(--bg-2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-size:11px;color:var(--text-dim);
+  cursor:pointer;transition:all .15s;font-weight:600;
+}
+.refresh-btn:hover{background:var(--bg-3);color:var(--primary);border-color:var(--primary)}
+.refresh-btn.spinning{animation:spin 1s linear infinite}
+
+/* ============================================================
+   JOIN OVERLAY
+   ============================================================ */
+.join-overlay{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);
+  z-index:150;padding:28px 34px;
+  background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+  border:1.5px solid var(--primary);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg),0 0 60px var(--primary-glow);
+  text-align:center;min-width:320px;max-width:90vw;
+  opacity:0;transition:all .25s cubic-bezier(.4,0,.2,1);
+}
+.join-overlay.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.join-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+.join-code{font-family:'JetBrains Mono',monospace;font-size:22px;
+  font-weight:900;color:var(--primary);letter-spacing:4px;margin-bottom:16px;
+  text-shadow:0 0 20px var(--primary-glow)}
+.join-stages{text-align:left;font-size:12px;line-height:2.2;
+  color:var(--text-dim);margin-bottom:16px;
+  font-family:'JetBrains Mono',monospace}
+.join-stage{display:flex;align-items:center;gap:10px}
+.join-stage .dot{font-size:14px;color:var(--text-dim2);width:16px;text-align:center}
+.join-stage.done .dot{color:var(--success)}
+.join-stage.done{color:var(--success)}
+.join-stage.active .dot{color:var(--warning);animation:pulse-dot 1s infinite}
+.join-stage.active{color:var(--text)}
+.join-elapsed{font-size:11px;color:var(--text-dim2);margin-bottom:16px;
+  font-family:'JetBrains Mono',monospace}
+
+/* ============================================================
+   PAUSE MODAL
+   ============================================================ */
+.pause-modal{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(5,8,12,.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.pause-modal.show{opacity:1;pointer-events:auto}
+.pause-panel{
+  background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+  border:1px solid var(--border);border-radius:var(--radius-xl);
+  padding:32px;max-width:360px;width:100%;
+  display:flex;flex-direction:column;gap:10px;
+  box-shadow:var(--shadow-lg);text-align:center;
+}
+.pause-icon{font-size:48px;margin-bottom:8px}
+.pause-title{font-size:20px;font-weight:800;
+  font-family:'JetBrains Mono',monospace;letter-spacing:2px;
+  color:var(--text);margin-bottom:20px}
+
+/* ============================================================
+   SETTINGS MODAL
+   ============================================================ */
+.settings-section{margin-bottom:20px}
+.settings-section-title{font-size:11px;font-weight:700;
+  color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:10px}
+.slider-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.slider-row label{flex:0 0 90px;font-size:12px;color:var(--text-dim);font-weight:600}
+.slider-row input[type=range]{
+  flex:1;-webkit-appearance:none;height:6px;
+  background:var(--bg-1);border-radius:999px;outline:none;
+  border:1px solid var(--border);
+}
+.slider-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  border-radius:50%;cursor:pointer;
+  box-shadow:0 2px 8px var(--primary-glow);
+}
+.slider-row .val{flex:0 0 40px;text-align:right;font-size:12px;
+  color:var(--primary);font-weight:700;font-family:'JetBrains Mono',monospace}
+
+/* ============================================================
+   MOBILE CONTROLS
+   ============================================================ */
 #touchUI{display:none;position:fixed;inset:0;pointer-events:none;z-index:8;touch-action:none}
 @media (pointer:coarse){ #touchUI{display:block} }
 body.is-touch #touchUI{display:block}
+
 .joystick{
   position:absolute;
-  width:var(--joy-size);height:var(--joy-size);
-  border-radius:50%;
+  width:145px;height:145px;border-radius:50%;
   pointer-events:auto;touch-action:none;
+  transform:translate(var(--jx,0px),var(--jy,0px));
 }
-#moveJoystick{
-  left:var(--joy-offset-left);bottom:var(--joy-offset-bottom);
-  transform:translate(var(--mjoy-tx), var(--mjoy-ty));
-}
-#aimJoystick{
-  width:var(--aim-size);height:var(--aim-size);
-  right:var(--aim-offset-right);bottom:var(--aim-offset-bottom);
-  transform:translate(var(--ajoy-tx), var(--ajoy-ty));
-}
+#moveJoystick{left:30px;bottom:75px}
+#aimJoystick{right:125px;bottom:75px;width:145px;height:145px}
+
 .joystick-glow{
   position:absolute;inset:0;border-radius:50%;
-  background:radial-gradient(circle,
-    rgba(255,255,255,.10),
-    rgba(255,255,255,.035) 65%,
-    rgba(0,0,0,.18));
-  border:3px solid rgba(255,255,255,.32);
-  box-shadow:inset 0 0 18px rgba(0,0,0,.30), 0 5px 15px rgba(0,0,0,.35);
+  background:radial-gradient(circle,rgba(94,234,212,.08),rgba(0,0,0,.15));
+  border:2px solid rgba(94,234,212,.35);
+  box-shadow:inset 0 0 24px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.4);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
 }
-.joystick-knob{
-  position:absolute;width:var(--joy-knob);height:var(--joy-knob);left:50%;top:50%;
-  transform:translate(-50%,-50%);border-radius:50%;
-  background:radial-gradient(circle at 35% 30%, #eef2e8, #aeb8a5 60%, #7b8573);
-  border:3px solid rgba(255,255,255,.65);
-  box-shadow:0 4px 0 rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.3);
-}
-.aim-knob{
-  position:absolute;width:var(--aim-knob);height:var(--aim-knob);left:50%;top:50%;
-  transform:translate(-50%,-50%);border-radius:50%;
-  background:radial-gradient(circle at 35% 30%, #f2f4ed, #b8c0b0 60%, #7c8677);
-  border:3px solid rgba(255,255,255,.65);
-  box-shadow:0 4px 0 rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.3);
+.joystick-knob,.aim-knob{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:62px;height:62px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8f5e4,#a8b8a0 60%,#7a8a72);
+  border:3px solid rgba(255,255,255,.55);
+  box-shadow:0 4px 12px rgba(0,0,0,.5),inset 0 2px 4px rgba(255,255,255,.4);
 }
 .circle-button{
   position:absolute;pointer-events:auto;
-  width:72px;height:72px;border-radius:50%;
-  border:3px solid rgba(255,255,255,.45);
+  width:64px;height:64px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.5);
   display:flex;justify-content:center;align-items:center;
-  color:#fff;font-size:28px;font-weight:900;
-  text-shadow:2px 2px 0 rgba(0,0,0,.4);
-  opacity:var(--btn-opacity);
-  box-shadow:inset 0 3px 5px rgba(255,255,255,.25),
-             inset 0 -5px 8px rgba(0,0,0,.25),
-             0 5px 12px rgba(0,0,0,.35);
-  transition:transform .08s, opacity .1s;
-  touch-action:none;
+  color:#fff;font-size:24px;font-weight:900;
+  text-shadow:0 2px 4px rgba(0,0,0,.5);
+  box-shadow:inset 0 3px 6px rgba(255,255,255,.3),
+             inset 0 -4px 8px rgba(0,0,0,.3),
+             0 6px 14px rgba(0,0,0,.4);
+  transition:transform .08s;touch-action:none;
+  transform:translate(var(--jx,0px),var(--jy,0px));
 }
-.action-button{
-  right:var(--sit-right);bottom:var(--sit-bottom);
-  width:var(--sit-size);height:var(--sit-size);
-  font-size:calc(var(--sit-size) * 0.4);
-  background:linear-gradient(145deg, #e3c65b, #96721f);
-  transform:translate(var(--sit-tx), var(--sit-ty));
-}
-.action-button:active{transform:translate(var(--sit-tx), var(--sit-ty)) scale(.86)}
-.jump-button{
-  right:var(--jump-right);bottom:var(--jump-bottom);
-  width:var(--jump-size);height:var(--jump-size);
-  font-size:calc(var(--jump-size) * 0.44);
-  background:linear-gradient(145deg, #6ab0e8, #22548a);
-  transform:translate(var(--jump-tx), var(--jump-ty));
-}
-.jump-button:active{transform:translate(var(--jump-tx), var(--jump-ty)) scale(.86)}
-
-body.is-touch #hotbar{transform:translateX(-50%) scale(.72);bottom:4px}
-body.is-touch #hpBar{bottom:62px;transform:translateX(-50%) scale(.85)}
+.circle-button:active{transform:translate(var(--jx,0px),var(--jy,0px)) scale(.9)}
+.jump-button{right:25px;bottom:155px;
+  background:linear-gradient(135deg,#60a5fa,#1e40af)}
+.action-button{right:110px;bottom:145px;
+  background:linear-gradient(135deg,#fbbf24,#b45309)}
 
 body.edit-btn-mode .circle-button,
 body.edit-btn-mode .joystick{
-  outline:3px dashed #ffd060;
-  outline-offset:3px;
-  cursor:move;
+  outline:3px dashed var(--accent);outline-offset:3px;cursor:move;
 }
 body.edit-btn-mode .circle-button::after{
-  content:'✥';
-  position:absolute;
-  top:-8px;right:-8px;
-  width:20px;height:20px;
-  background:#ffd060;color:#000;
+  content:'✥';position:absolute;top:-10px;right:-10px;
+  width:22px;height:22px;background:var(--accent);color:#000;
   border-radius:50%;font-size:12px;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:bold;
+  display:flex;align-items:center;justify-content:center;font-weight:bold;
 }
+
+/* ============================================================
+   EDIT BUTTONS OVERLAY
+   ============================================================ */
 #editOverlay{
-  position:fixed;top:12px;left:50%;transform:translateX(-50%);
-  z-index:9999;display:none;gap:8px;align-items:center;
-  background:rgba(20,24,16,.95);
-  border:2px solid #ffd060;border-radius:8px;
-  padding:8px 12px;box-shadow:0 6px 20px rgba(0,0,0,.6);
-  font-family:Consolas,monospace;font-size:11px;color:#ffd060;
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  z-index:9999;display:none;gap:10px;align-items:center;
+  background:rgba(10,14,20,.95);
+  border:1.5px solid var(--accent);border-radius:var(--radius);
+  padding:10px 14px;box-shadow:var(--shadow-lg);
+  font-size:12px;color:var(--accent);font-weight:600;
 }
 body.edit-btn-mode #editOverlay{display:flex}
-#editOverlay button{
-  background:linear-gradient(180deg,#6a7860,#4a5440);
-  color:#e8f0d8;border:2px solid #0a0d08;
-  border-radius:4px;padding:6px 12px;
-  font-size:11px;font-weight:bold;
-  font-family:Consolas,monospace;
-  box-shadow:0 2px 0 #1a1f14;
-}
-#editOverlay button.primary{
-  background:linear-gradient(180deg,#88d858,#4a8a30);
-  color:#0a1a06;
-}
-#settingsBtn{position:fixed;top:8px;right:8px;z-index:13;width:36px;height:36px;
-  background:rgba(20,24,16,.9);border:2px solid #0a0d08;border-radius:6px;color:#e8f0d8;font-size:16px;
-  display:none;align-items:center;justify-content:center;cursor:pointer;
-  box-shadow:0 3px 0 rgba(0,0,0,.5);touch-action:manipulation}
-#settingsBtn.show{display:flex}
 
-/* ROOM LIST */
-.room-list-header{
-  display:flex;align-items:center;gap:8px;
-  font-size:11px;color:#a8b498;margin:12px 0 6px;
-  padding:0 2px;font-family:Consolas,monospace;letter-spacing:1px;
+/* ============================================================
+   LOADING SCREEN
+   ============================================================ */
+#loader{
+  position:fixed;inset:0;z-index:300;
+  background:var(--bg-0);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;transition:opacity .4s;
 }
-.room-list-header .badge{
-  background:#4a8a30;color:#b8ff88;
-  padding:1px 6px;border-radius:8px;font-size:9px;
+#loader.hidden{opacity:0;pointer-events:none}
+.loader-logo{
+  font-size:32px;font-weight:900;letter-spacing:4px;
+  font-family:'JetBrains Mono',monospace;
+  background:linear-gradient(135deg,var(--primary),var(--primary-2),var(--accent));
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 20px var(--primary-glow));
 }
-.room-list-header .refresh-btn{
-  margin-left:auto;background:transparent;
-  border:1px solid #586850;border-radius:3px;
-  color:#a8b498;padding:3px 8px;font-size:11px;
-  cursor:pointer;font-family:inherit;transition:all .15s;
+.loader-bar{
+  width:240px;height:4px;background:var(--bg-2);
+  border-radius:999px;overflow:hidden;
 }
-.room-list-header .refresh-btn:hover{
-  background:rgba(136,255,96,.1);color:#88ff60;border-color:#4a8a30;
+.loader-fill{
+  height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-2));
+  width:0%;transition:width .3s;border-radius:999px;
+  box-shadow:0 0 12px var(--primary-glow);
 }
-.room-list-header .refresh-btn.spinning{
-  animation:spin 1s linear infinite;
-}
-@keyframes spin{ to{transform:rotate(360deg)} }
-.room-list{
-  background:#0a0d08;border:1px solid #2a3328;
-  border-radius:4px;max-height:200px;overflow-y:auto;
-  padding:4px;margin-bottom:6px;min-height:64px;
-}
-.room-empty{
-  text-align:center;padding:22px 10px;color:#586850;
-  font-size:11px;font-family:Consolas,monospace;
-}
-.room-item{
-  display:flex;align-items:center;gap:8px;
-  padding:8px 10px;border-radius:3px;cursor:pointer;
-  font-family:Consolas,monospace;font-size:11px;
-  transition:all .12s;border:1px solid transparent;
-}
-.room-item:not(.full):hover{
-  background:rgba(136,255,96,.15);
-  border-color:#4a8a30;
-  transform:translateX(2px);
-}
-.room-item:not(.full):active{
-  transform:translateX(0) scale(.98);
-}
-.room-item .code{
-  color:#88ff60;font-weight:bold;letter-spacing:1.5px;
-  min-width:64px;
-}
-.room-item .host{
-  color:#e8f0d8;flex:1;overflow:hidden;
-  text-overflow:ellipsis;white-space:nowrap;
-}
-.room-item .count{
-  color:#a8b498;font-size:10px;min-width:32px;text-align:right;
-}
-.room-item .count.full{color:#ff6060;font-weight:bold}
-.room-item .count.low{color:#88ff60}
-.room-item .age{
-  color:#586850;font-size:10px;min-width:36px;text-align:right;
-}
-.room-item.full{
-  opacity:.5;cursor:not-allowed;
-}
-.room-item.full:hover{background:transparent}
+.loader-text{font-size:12px;color:var(--text-dim);
+  font-family:'JetBrains Mono',monospace;letter-spacing:1px}
 
-#joinOverlay{ animation:pop-in .15s ease-out; }
-@keyframes pop-in{
-  from{ opacity:0; transform:translate(-50%,-50%) scale(.9); }
-  to{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+/* ============================================================
+   ROTATE HINT
+   ============================================================ */
+#rotate{
+  display:none;position:fixed;inset:0;background:var(--bg-0);
+  color:var(--text);z-index:200;align-items:center;justify-content:center;
+  text-align:center;padding:30px;font-size:16px;letter-spacing:2px;
 }
-
-#rotate{display:none;position:fixed;inset:0;background:#0a0d08;color:#e8f0d8;z-index:200;
-  align-items:center;justify-content:center;text-align:center;padding:30px;font-size:16px;letter-spacing:2px}
 @media (orientation:portrait) and (max-width:900px){ #rotate{display:flex} }
-#loadStatus{position:fixed;bottom:170px;left:50%;transform:translateX(-50%);
-  background:rgba(20,24,16,.94);color:#e8f0d8;padding:10px 16px;border-radius:6px;
-  font-family:Consolas,monospace;font-size:11px;z-index:12;border:1px solid #3a4438;
-  line-height:1.7;pointer-events:none;max-width:92vw;text-align:left}
-#loadStatus.hidden{display:none}
-#loadStatus .ok{color:#88ff60}
-#loadStatus .err{color:#ff6060}
-#loadStatus .meta{color:#88d8ff}
 
-/* AUTH UI */
-.auth-panel{
-  background:linear-gradient(180deg,#3a4438 0%,#2a3328 100%);
-  border:3px solid #0a0d08;
-  box-shadow:inset 0 0 0 2px #5a6850,inset 0 0 0 4px #8a9878,
-    0 8px 0 #000,0 12px 30px rgba(0,0,0,.7);
-  padding:26px 30px;text-align:center;
-  max-width:420px;width:100%;border-radius:6px;
+/* ============================================================
+   LOAD STATUS
+   ============================================================ */
+#loadStatus{
+  position:fixed;top:12px;left:50%;transform:translateX(-50%);
+  background:rgba(10,14,20,.95);
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 18px;font-size:11px;color:var(--text-dim);
+  font-family:'JetBrains Mono',monospace;
+  z-index:15;line-height:1.8;pointer-events:none;
+  max-width:92vw;box-shadow:var(--shadow);transition:opacity .3s;
 }
-.auth-panel h2{
-  font-family:Consolas,monospace;font-size:22px;
-  letter-spacing:3px;color:#88ff60;margin-bottom:6px;
-}
-.auth-tabs{display:flex;gap:6px;margin-bottom:18px}
-.auth-tab{
-  flex:1;padding:10px;background:rgba(20,24,16,.6);
-  border:2px solid #0a0d08;border-radius:4px;
-  font-family:Consolas,monospace;font-size:12px;font-weight:bold;
-  color:#889878;cursor:pointer;transition:all .15s;
-}
-.auth-tab:hover{color:#e8f0d8;background:#4a5440}
-.auth-tab.active{
-  color:#0a1a06;background:linear-gradient(180deg,#88d858,#4a8a30);
-  box-shadow:inset 0 1px 0 #b8ff88;
-}
-.auth-field{margin-bottom:12px;text-align:left}
-.auth-field label{
-  display:block;font-size:10px;color:#a8b498;
-  font-family:Consolas,monospace;margin-bottom:4px;
-  letter-spacing:1px;text-transform:uppercase;
-}
-.auth-field input{
-  width:100%;padding:11px 14px;
-  background:#0a0d08;color:#e8f0d8;
-  border:2px solid #0a0d08;border-radius:4px;
-  font-family:Consolas,monospace;font-size:13px;
-}
-.auth-field input:focus{
-  outline:none;border-color:#6fbf4a;
-  box-shadow:0 0 0 3px rgba(136,255,96,.2);
-}
-.auth-field input::placeholder{color:#586850}
-.auth-error{
-  padding:9px 12px;background:rgba(200,60,50,.15);
-  border-left:3px solid #e8503a;border-radius:3px;
-  color:#ff9898;font-size:11px;font-family:Consolas,monospace;
-  text-align:left;margin-bottom:12px;display:none;
-}
-.auth-error.show{display:block}
-.auth-hint{
-  font-size:10px;color:#586850;font-family:Consolas,monospace;
-  margin-top:14px;line-height:1.7;
-}
-.auth-hint b{color:#88ff60}
-.auth-loading{
-  display:inline-block;width:14px;height:14px;
-  border:2px solid #30363d;border-top-color:#6fbf4a;
-  border-radius:50%;animation:spinAuth 1s linear infinite;
-  vertical-align:middle;margin-right:6px;
-}
-@keyframes spinAuth{to{transform:rotate(360deg)}}
+#loadStatus.hidden{opacity:0;pointer-events:none}
+#loadStatus .ok{color:var(--success)}
+#loadStatus .err{color:var(--danger)}
+#loadStatus .meta{color:var(--info)}
 
-#userHud{
-  position:fixed;top:8px;right:52px;
-  display:none;align-items:center;gap:8px;
-  background:rgba(20,24,16,.9);
-  border:2px solid #0a0d08;border-radius:6px;
-  padding:5px 10px 5px 6px;
-  font-family:Consolas,monospace;font-size:11px;
-  z-index:12;cursor:pointer;
-  box-shadow:0 3px 0 rgba(0,0,0,.5);
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:600px){
+  .modal-content{padding:24px 20px;border-radius:var(--radius-lg)}
+  .menu-btn{padding:14px 16px;font-size:14px}
+  .menu-btn .icon{font-size:20px;width:26px}
+  .hud-tc{display:none}
+  .user-chip{min-width:auto;padding:6px}
+  .user-info{display:none}
 }
-#userHud.show{display:flex}
-#userHud:hover{background:rgba(30,36,26,.95)}
-#userHud .avatar{
-  width:24px;height:24px;border-radius:50%;
-  background:linear-gradient(135deg,#6fbf4a,#4a8a30);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:bold;font-size:11px;color:#0a1a06;
-}
-#userHud .name{
-  color:#88ff60;font-weight:bold;
-  max-width:100px;overflow:hidden;
-  text-overflow:ellipsis;white-space:nowrap;
-}
-#userHud .level{
-  padding:2px 6px;background:rgba(136,255,96,.15);
-  border-radius:8px;font-size:9px;color:#88ff60;
-}
-#userHud .status{color:#586850;font-size:9px}
-#userHud .status.saving{color:#ffd060}
-#userHud .status.saved{color:#88ff60}
-#userHud .status.error{color:#ff6060}
-
-#connBadge{
-  position:fixed;top:52px;left:8px;
-  font-size:10px;padding:3px 8px;border-radius:10px;
-  background:rgba(20,24,16,.9);color:#889878;
-  font-family:Consolas,monospace;z-index:5;
-  pointer-events:none;display:none;border:1px solid #3a4438;
-}
-#connBadge.show{display:block}
-#connBadge.on{color:#88ff60;border-color:#4a8a30}
-#connBadge.off{color:#ff6060;border-color:#8a2a20}
 </style>
 </head>
 <body>
-<canvas id="cv"></canvas>
-<div id="coords">XYZ: <b>0 0</b></div>
-<div id="time">☀ 06:00 · Ngày 1</div>
-<div id="connBadge">⚡ WS: ---</div>
-<div id="netInfo">
-  <div>🏠 <b id="netCode">-----</b></div>
-  <div>👥 <span id="netCount">1</span> người chơi</div>
-</div>
-<div id="hpBar">
-  <span class="heartIcon">❤️</span>
-  <div id="hpFill"><div id="hpFillInner"></div></div>
-  <span id="hpText">20/20</span>
-</div>
-<div id="hotbar"></div>
 
+<!-- ============================================================
+     LOADING SCREEN
+     ============================================================ -->
+<div id="loader">
+  <div class="loader-logo">🐉 DRAGON HUNTER</div>
+  <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+  <div class="loader-text" id="loaderText">Đang tải sprite...</div>
+</div>
+
+<!-- GAME CANVAS -->
+<canvas id="cv"></canvas>
+
+<!-- ============================================================
+     HUD — TOP LEFT
+     ============================================================ -->
+<div class="hud-tl">
+  <div class="hud-chip">
+    <span class="dot" id="wsDot"></span>
+    <span class="label">WS</span>
+    <span class="value" id="wsLatency">--</span>
+  </div>
+  <div class="hud-chip" id="coords">
+    <span class="label">XYZ</span>
+    <span class="value" id="coordVal">0, 0</span>
+  </div>
+</div>
+
+<!-- HUD — TOP CENTER -->
+<div class="hud-tc" id="time">☀ 06:00 · Ngày 1</div>
+
+<!-- HUD — TOP RIGHT -->
+<div class="hud-tr">
+  <div class="user-chip" id="userChip" style="display:none">
+    <div class="user-avatar" id="userAvatar">H</div>
+    <div class="user-info">
+      <div class="user-name" id="userName">Hunter</div>
+      <div class="user-sub">
+        <span class="user-status-dot" id="userStatusDot"></span>
+        <span id="userLevel">Lv.1</span>
+        <span id="userSaveStatus"></span>
+      </div>
+    </div>
+  </div>
+  <button class="icon-btn" id="settingsBtn" title="Cài đặt" style="display:none">⚙</button>
+</div>
+
+<!-- ============================================================
+     HUD — BOTTOM CENTER
+     ============================================================ -->
+<div class="hud-bc">
+  <div class="hp-bar" id="hpBar">
+    <span class="hp-heart">❤️</span>
+    <div class="hp-track"><div class="hp-fill" id="hpFill" style="width:100%"></div></div>
+    <span class="hp-text" id="hpText">20/20</span>
+  </div>
+  <div class="hotbar" id="hotbar"></div>
+</div>
+
+<!-- ============================================================
+     MOBILE CONTROLS
+     ============================================================ -->
 <div id="touchUI">
   <div id="moveJoystick" class="joystick">
     <div class="joystick-glow"></div>
@@ -454,184 +792,305 @@ body.edit-btn-mode #editOverlay{display:flex}
   <button id="btnSit" class="circle-button action-button">🪑</button>
 </div>
 
+<!-- EDIT BUTTONS OVERLAY -->
 <div id="editOverlay">
   <span>📐 Kéo nút để di chuyển</span>
-  <button class="primary" id="editSave">💾 Lưu</button>
-  <button id="editReset">↺ Reset</button>
-  <button id="editCancel">✕ Hủy</button>
+  <button class="btn sm primary" id="editSave">💾 Lưu</button>
+  <button class="btn sm" id="editReset">↺ Reset</button>
+  <button class="btn sm" id="editCancel">✕ Hủy</button>
 </div>
 
-<button id="settingsBtn" onclick="Game.showSettings()">⚙</button>
+<!-- ============================================================
+     TOASTS
+     ============================================================ -->
+<div class="toast-wrap" id="toastWrap"></div>
 
-<div id="userHud">
-  <div class="avatar" id="userAvatar">H</div>
-  <div class="name" id="userName">Hunter</div>
-  <div class="level" id="userLevel">Lv.1</div>
-  <div class="status" id="userStatus"></div>
-</div>
-
+<!-- ============================================================
+     LOAD STATUS
+     ============================================================ -->
 <div id="loadStatus" class="hidden"></div>
-<div id="toast"></div>
-<div id="pause" class="modal hidden">
-  <div class="pause-panel">
-    <h2>TẠM DỪNG</h2>
-    <button class="mbtn primary" onclick="Game.resumeGame()">▶ Tiếp tục</button>
-    <button class="mbtn" onclick="Game.pauseSettings()">⚙ Cài đặt</button>
-    <button class="mbtn danger" onclick="Game.quitToMenu()">🏠 Về menu chính</button>
-  </div>
-</div>
 
-<div id="authModal" class="modal hidden">
-  <div class="auth-panel">
-    <h2>🐉 DRAGON HUNTER</h2>
-    <div style="font-size:10px;color:#8a9878;letter-spacing:3px;margin-bottom:20px;
-      font-family:Consolas,monospace">TÀI KHOẢN</div>
+<!-- ============================================================
+     AUTH MODAL
+     ============================================================ -->
+<div class="modal" id="authModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-logo">🐉 DRAGON HUNTER</div>
+      <div class="modal-sub">Đăng nhập để lưu tiến trình</div>
+    </div>
 
     <div class="auth-tabs">
       <div class="auth-tab active" data-authtab="login">ĐĂNG NHẬP</div>
       <div class="auth-tab" data-authtab="register">ĐĂNG KÝ</div>
     </div>
 
-    <div id="authLoginPage">
-      <div class="auth-field">
-        <label>Tên đăng nhập</label>
-        <input type="text" id="loginUser" maxlength="20"
+    <!-- LOGIN -->
+    <div class="auth-page active" id="authLoginPage">
+      <div class="field">
+        <label class="field-label">Tên đăng nhập</label>
+        <input class="input" type="text" id="loginUser" maxlength="20"
           placeholder="hunter" autocomplete="username">
       </div>
-      <div class="auth-field">
-        <label>Mật khẩu</label>
-        <input type="password" id="loginPass"
+      <div class="field">
+        <label class="field-label">Mật khẩu</label>
+        <input class="input" type="password" id="loginPass"
           placeholder="••••••" autocomplete="current-password">
       </div>
-      <div class="auth-error" id="loginError"></div>
-      <button class="mbtn primary" id="loginBtn" style="margin-top:8px">🔓 Đăng nhập</button>
-      <button class="mbtn back" id="loginGuestBtn" style="font-size:11px">
-        👤 Chơi với tư cách khách
-      </button>
+      <div class="field-error" id="loginError"></div>
+      <div class="auth-actions">
+        <button class="btn primary full lg" id="loginBtn">🔓 Đăng nhập</button>
+        <button class="guest-btn" id="loginGuestBtn">👤 Chơi với tư cách khách</button>
+      </div>
     </div>
 
-    <div id="authRegisterPage" style="display:none">
-      <div class="auth-field">
-        <label>Tên đăng nhập</label>
-        <input type="text" id="regUser" maxlength="20" placeholder="hunter">
+    <!-- REGISTER -->
+    <div class="auth-page" id="authRegisterPage">
+      <div class="field">
+        <label class="field-label">Tên đăng nhập</label>
+        <input class="input" type="text" id="regUser" maxlength="20"
+          placeholder="hunter">
+        <div class="field-hint">3-20 ký tự · chữ thường, số, _</div>
       </div>
-      <div class="auth-field">
-        <label>Tên hiển thị</label>
-        <input type="text" id="regDisplay" maxlength="20" placeholder="Dragon Hunter">
+      <div class="field">
+        <label class="field-label">Tên hiển thị</label>
+        <input class="input" type="text" id="regDisplay" maxlength="20"
+          placeholder="Dragon Hunter">
       </div>
-      <div class="auth-field">
-        <label>Mật khẩu</label>
-        <input type="password" id="regPass" placeholder="Tối thiểu 6 ký tự">
+      <div class="field">
+        <label class="field-label">Mật khẩu</label>
+        <input class="input" type="password" id="regPass"
+          placeholder="Tối thiểu 6 ký tự">
       </div>
-      <div class="auth-field">
-        <label>Xác nhận mật khẩu</label>
-        <input type="password" id="regPass2" placeholder="Nhập lại mật khẩu">
+      <div class="field">
+        <label class="field-label">Xác nhận mật khẩu</label>
+        <input class="input" type="password" id="regPass2"
+          placeholder="Nhập lại mật khẩu">
       </div>
-      <div class="auth-error" id="regError"></div>
-      <button class="mbtn primary" id="regBtn" style="margin-top:8px">📝 Tạo tài khoản</button>
-      <button class="mbtn back" id="regGuestBtn" style="font-size:11px">
-        👤 Chơi với tư cách khách
-      </button>
+      <div class="field-error" id="regError"></div>
+      <div class="auth-actions">
+        <button class="btn primary full lg" id="regBtn">📝 Tạo tài khoản</button>
+        <button class="guest-btn" id="regGuestBtn">👤 Chơi với tư cách khách</button>
+      </div>
     </div>
 
     <div class="auth-hint">
-      <b>Tài khoản</b> được lưu trên server — game update không mất.<br>
-      Đăng nhập để lưu level, item, vị trí.
+      <b>Tài khoản</b> được lưu trên server — dữ liệu không mất khi game update.<br>
+      <b>Lưu ý:</b> username không thể đổi, mật khẩu cần ≥6 ký tự.
     </div>
   </div>
 </div>
 
-<div id="menu" class="modal">
-  <div class="menu-panel">
-    <div class="logo">DRAGON HUNTER</div>
-    <div class="logo-sub">Thợ Săn Rồng · PvP</div>
-    <div id="menuMain" class="menu-page">
-      <button class="mbtn primary" onclick="Game.startSingleplayer()">🎮 Chơi đơn</button>
-      <button class="mbtn primary" onclick="Game.showMP()">🌐 Chơi mạng (PvP)</button>
-      <button class="mbtn" onclick="Game.showSettings()">⚙ Cài đặt</button>
-      <div style="font-size:10px;color:#586850;margin-top:14px;font-family:Consolas,monospace;line-height:1.6">
-        <b style="color:#88ff60">WASD</b> di chuyển · <b style="color:#88ff60">Space</b> nhảy<br>
-        <b style="color:#88ff60">Chuột trái</b> tấn công · <b style="color:#88ff60">C</b> ngồi<br>
-        <b style="color:#88ff60">1-4</b> chọn kiếm
+<!-- ============================================================
+     ACCOUNT MODAL
+     ============================================================ -->
+<div class="modal" id="accountModal">
+  <div class="modal-content">
+    <div class="modal-close" onclick="closeModal('accountModal')">✕</div>
+
+    <div class="account-header">
+      <div class="account-avatar-lg" id="accountAvatar">H</div>
+      <div class="account-name" id="accountName">Hunter</div>
+      <div class="account-username" id="accountUsername">@hunter</div>
+    </div>
+
+    <div class="account-stats">
+      <div class="stat-card">
+        <div class="stat-label">Level</div>
+        <div class="stat-value" id="accountLevel">1</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">HP</div>
+        <div class="stat-value" id="accountHp">20</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Kills</div>
+        <div class="stat-value" id="accountKills">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Deaths</div>
+        <div class="stat-value" id="accountDeaths">0</div>
       </div>
     </div>
-    <div id="menuMP" class="menu-page hidden">
-      <h3>CHIẾN TRƯỜNG PvP</h3>
-      <label>TÊN CỦA BẠN</label>
-      <input type="text" id="playerName" maxlength="12" placeholder="Hunter" value="Hunter">
-      <div class="room-list-header">
-        <span>🏠 PHÒNG GẦN ĐÂY</span>
-        <span class="badge" id="roomListCount">0</span>
-        <button class="refresh-btn" id="roomRefreshBtn" title="Làm mới">🔄</button>
-      </div>
-      <div id="roomList" class="room-list">
-        <div class="room-empty">Đang tải...</div>
-      </div>
-      <button class="mbtn primary" onclick="Game.hostRoom()">🏠 Tạo phòng mới</button>
-      <button class="mbtn" onclick="Game.toggleJoinByCode()">🔑 Nhập mã phòng</button>
-      <div id="hostPanel" class="hidden" style="margin-top:10px">
-        <div id="roomCodeDisplay" class="code-display hidden"></div>
-        <div class="status-text" id="hostStatus"></div>
-      </div>
-      <div id="joinPanel" class="hidden" style="margin-top:10px">
-        <label>MÃ PHÒNG</label>
-        <input type="text" id="joinCode" maxlength="6" placeholder="ABC123"
-          style="text-transform:uppercase;font-size:18px;letter-spacing:4px">
-        <button class="mbtn primary" onclick="Game.joinRoom()" style="margin-top:10px">Kết nối</button>
-        <div class="status-text" id="joinStatus"></div>
-      </div>
-      <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
-    </div>
-    <div id="menuSettings" class="menu-page hidden">
-      <h3>CÀI ĐẶT ÂM THANH</h3>
-      <div class="setting-row"><label>🔊 Tổng</label>
-        <input type="range" id="setMaster" min="0" max="100" value="70"><span class="val" id="valMaster">70</span></div>
-      <div class="setting-row"><label>🎵 Nhạc</label>
-        <input type="range" id="setMusic" min="0" max="100" value="35"><span class="val" id="valMusic">35</span></div>
-      <div class="setting-row"><label>🔔 SFX</label>
-        <input type="range" id="setSfx" min="0" max="100" value="80"><span class="val" id="valSfx">80</span></div>
 
-      <h3 style="margin-top:14px">🌐 SERVER</h3>
-      <div style="font-size:10px;color:#889878;font-family:Consolas,monospace;
-        padding:8px 10px;background:rgba(0,0,0,.3);border-radius:4px;
-        border-left:2px solid #4a8a30;line-height:1.8;margin-bottom:10px">
-        <b style="color:#88ff60">Hiện tại:</b>
-        <span id="currentBackendLabel" style="color:#ffd060">đang tải...</span><br>
-        <b style="color:#88ff60">Protocol:</b> WebSocket (wss://)<br>
-        <b style="color:#88ff60">Auto-failover:</b> đang bật
-      </div>
-      <div class="setting-row">
-        <label>📋 Chọn server</label>
-        <select id="backendSelect" style="flex:1;padding:6px 10px;
-          background:#1a2018;color:#e8f0d8;border:2px solid #0a0d08;border-radius:3px;
-          font-family:Consolas,monospace;font-size:11px"></select>
-      </div>
-      <div class="setting-row">
-        <label></label>
-        <button class="mbtn" onclick="recheckBackend()" style="flex:1;padding:8px;font-size:11px">
-          🔄 Kiểm tra server
-        </button>
-      </div>
-      <div class="setting-row">
-        <label></label>
-        <button class="mbtn" onclick="clearBackendCache()" style="flex:1;padding:8px;font-size:11px;
-          background:linear-gradient(180deg,#d05848,#8a2a20);color:#fff">
-          🗑 Xóa cache
-        </button>
-      </div>
+    <div class="account-info" id="accountInfo"></div>
 
-      <h3 style="margin-top:14px">📐 NÚT MOBILE</h3>
-      <button class="mbtn primary" onclick="ButtonSettings.openEditor()" style="padding:12px;font-size:13px">
-        🎯 Chỉnh vị trí nút
+    <div class="auth-actions">
+      <button class="btn primary full" id="accountSaveBtn">💾 Lưu ngay</button>
+      <button class="btn full" id="accountLogoutBtn" style="color:var(--danger);border-color:rgba(248,113,113,.3)">
+        🚪 Đăng xuất
       </button>
-      <button class="mbtn" onclick="ButtonSettings.reset()" style="padding:10px;font-size:12px;margin-top:6px">
-        ↺ Reset vị trí nút
-      </button>
-
-      <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
     </div>
   </div>
 </div>
+
+<!-- ============================================================
+     MENU MODAL
+     ============================================================ -->
+<div class="modal show" id="menuModal">
+  <div class="modal-content" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-logo">🐉 DRAGON HUNTER</div>
+      <div class="modal-sub">Thợ Săn Rồng · PvP</div>
+    </div>
+
+    <div id="menuMain" class="menu-panel">
+      <button class="menu-btn primary" onclick="Game.startSingleplayer()">
+        <span class="icon">🎮</span>
+        <span>Chơi đơn</span>
+        <span class="arrow">→</span>
+      </button>
+      <button class="menu-btn" onclick="Game.showMP()">
+        <span class="icon">🌐</span>
+        <span>Chơi mạng (PvP)</span>
+        <span class="arrow">→</span>
+      </button>
+      <button class="menu-btn" onclick="Game.showSettings()">
+        <span class="icon">⚙️</span>
+        <span>Cài đặt</span>
+        <span class="arrow">→</span>
+      </button>
+      <div style="font-size:11px;color:var(--text-dim2);text-align:center;
+        margin-top:12px;line-height:1.8;font-family:'JetBrains Mono',monospace">
+        <b style="color:var(--primary)">WASD</b> di chuyển · <b style="color:var(--primary)">Space</b> nhảy<br>
+        <b style="color:var(--primary)">Click</b> tấn công · <b style="color:var(--primary)">C</b> ngồi
+      </div>
+    </div>
+
+    <div id="menuMP" class="menu-panel" style="display:none">
+      <div class="field">
+        <label class="field-label">Tên của bạn</label>
+        <input class="input" type="text" id="playerName" maxlength="12"
+          placeholder="Hunter" value="Hunter">
+      </div>
+
+      <div class="section-title">
+        <span>🏠 Phòng gần đây</span>
+        <span class="count" id="roomListCount">0</span>
+        <button class="refresh-btn" id="roomRefreshBtn">🔄</button>
+      </div>
+      <div class="room-list" id="roomList">
+        <div class="room-empty">
+          <div class="icon">🏠</div>
+          Đang tải danh sách phòng...
+        </div>
+      </div>
+
+      <button class="menu-btn primary" onclick="Game.hostRoom()" style="margin-bottom:8px">
+        <span class="icon">➕</span>
+        <span>Tạo phòng mới</span>
+        <span class="arrow">→</span>
+      </button>
+      <button class="menu-btn" onclick="Game.toggleJoinByCode()">
+        <span class="icon">🔑</span>
+        <span>Nhập mã phòng</span>
+        <span class="arrow">→</span>
+      </button>
+
+      <div id="hostPanel" style="display:none;margin-top:14px;text-align:center">
+        <div class="join-code" id="roomCodeDisplay" style="margin-bottom:8px"></div>
+        <div style="font-size:12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace"
+          id="hostStatus"></div>
+      </div>
+
+      <div id="joinPanel" style="display:none;margin-top:14px">
+        <div class="field">
+          <label class="field-label">Mã phòng</label>
+          <input class="input" type="text" id="joinCode" maxlength="6"
+            placeholder="ABC123" style="text-transform:uppercase;
+            font-size:18px;letter-spacing:6px;text-align:center;
+            font-family:'JetBrains Mono',monospace;font-weight:700">
+        </div>
+        <button class="btn primary full" onclick="Game.joinRoom()"
+          style="margin-top:8px">🔗 Kết nối</button>
+        <div style="font-size:11px;color:var(--text-dim);text-align:center;
+          margin-top:8px;font-family:'JetBrains Mono',monospace"
+          id="joinStatus"></div>
+      </div>
+
+      <button class="menu-btn" onclick="Game.backMain()" style="margin-top:14px">
+        <span class="icon">←</span>
+        <span>Quay lại</span>
+      </button>
+    </div>
+
+    <div id="menuSettings" class="menu-panel" style="display:none">
+      <div class="settings-section">
+        <div class="settings-section-title">🔊 Âm thanh</div>
+        <div class="slider-row">
+          <label>Tổng</label>
+          <input type="range" id="setMaster" min="0" max="100" value="70">
+          <span class="val" id="valMaster">70</span>
+        </div>
+        <div class="slider-row">
+          <label>Nhạc nền</label>
+          <input type="range" id="setMusic" min="0" max="100" value="35">
+          <span class="val" id="valMusic">35</span>
+        </div>
+        <div class="slider-row">
+          <label>Hiệu ứng</label>
+          <input type="range" id="setSfx" min="0" max="100" value="80">
+          <span class="val" id="valSfx">80</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">🌐 Server</div>
+        <div class="account-info" style="margin-bottom:10px">
+          <div class="account-info-row">
+            <span>Hiện tại</span>
+            <span id="currentBackendLabel">—</span>
+          </div>
+          <div class="account-info-row">
+            <span>Protocol</span>
+            <span>WebSocket (wss)</span>
+          </div>
+        </div>
+        <button class="btn sm full" onclick="recheckBackend()" style="margin-bottom:8px">
+          🔄 Kiểm tra lại
+        </button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">📐 Nút mobile</div>
+        <button class="btn primary full sm" onclick="ButtonSettings.openEditor()"
+          style="margin-bottom:8px">🎯 Chỉnh vị trí nút</button>
+        <button class="btn full sm" onclick="ButtonSettings.reset()">
+          ↺ Reset vị trí
+        </button>
+      </div>
+
+      <button class="menu-btn" onclick="Game.backMain()" style="margin-top:14px">
+        <span class="icon">←</span>
+        <span>Quay lại</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAUSE MODAL
+     ============================================================ -->
+<div class="pause-modal" id="pauseModal">
+  <div class="pause-panel">
+    <div class="pause-icon">⏸</div>
+    <div class="pause-title">TẠM DỪNG</div>
+    <button class="menu-btn primary" onclick="Game.resumeGame()">
+      <span class="icon">▶</span>
+      <span>Tiếp tục</span>
+    </button>
+    <button class="menu-btn" onclick="Game.pauseSettings()">
+      <span class="icon">⚙</span>
+      <span>Cài đặt</span>
+    </button>
+    <button class="menu-btn" onclick="Game.quitToMenu()"
+      style="border-color:rgba(248,113,113,.3)">
+      <span class="icon">🏠</span>
+      <span style="color:var(--danger)">Về menu chính</span>
+    </button>
+  </div>
+</div>
+
 <div id="rotate"><div>↔<br><br><b>Xoay ngang điện thoại</b><br>để chơi game</div></div>
 
 <script>
@@ -640,7 +1099,7 @@ window.addEventListener('error', e => console.error('[ERROR]', e.error || e.mess
 window.addEventListener('unhandledrejection', e => console.error('[PROMISE]', e.reason));
 
 /* ============================================================
-   BACKEND POOL
+   BACKEND
    ============================================================ */
 const BACKEND_POOL = [
   { host:'game-sinhton.onrender.com', port:443, secure:true, name:'Render · main' },
@@ -669,13 +1128,10 @@ let BACKEND_URL = '';
 function setBackend(b){
   BACKEND = b;
   BACKEND_URL = (b.secure ? 'https://' : 'http://') + b.host;
-  console.log('[Backend] Active:', b.name || b.host, '→', BACKEND_URL);
-  updateConnBadge('⚡ WS: ' + b.host);
+  console.log('[Backend] Active:', b.name || b.host);
 }
 function saveBackend(b){
-  try {
-    localStorage.setItem('dh_backend_host', JSON.stringify({ ...b, ts: Date.now() }));
-  } catch(e){}
+  try { localStorage.setItem('dh_backend_host', JSON.stringify({ ...b, ts: Date.now() })); } catch(e){}
 }
 function quickHealthCheck(backend, timeoutMs){
   return new Promise(resolve => {
@@ -715,20 +1171,11 @@ if (backendOverride){
 }
 resolveBackend().catch(e => console.warn('[Backend]', e));
 
-function updateConnBadge(text, cls){
-  const el = $('connBadge');
-  if (!el) return;
-  el.classList.add('show');
-  el.className = 'show' + (cls ? ' ' + cls : '');
-  el.textContent = text;
-}
-
 /* ============================================================
    CONFIG
    ============================================================ */
 const MAX_PLAYERS = 5;
 const DEATH_RESPAWN_DELAY = 0.8;
-
 const buzz = ms => { if (navigator.vibrate) try{ navigator.vibrate(ms||6); }catch(e){} };
 const isTouchDevice = matchMedia('(pointer:coarse)').matches ||
   ('ontouchstart' in window && !matchMedia('(pointer:fine)').matches);
@@ -763,15 +1210,49 @@ const WEAPON_CONFIG = {
     sit:    [0.15, 0.15],
     death:  [0.20, 0.30, 0.50]
   },
-  fallback: {},
-  debug: false
+  fallback: {}
 };
 let weaponTuning = null;
 
 function $(id){ return document.getElementById(id); }
 
 /* ============================================================
-   AUTH SYSTEM
+   MODAL HELPERS
+   ============================================================ */
+function showModal(id){ const el = $(id); if (el) el.classList.add('show'); }
+function closeModal(id){ const el = $(id); if (el) el.classList.remove('show'); }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function toast(msg, type){
+  const wrap = $('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('out');
+    setTimeout(() => el.remove(), 250);
+  }, 2400);
+}
+
+/* ============================================================
+   LOADER
+   ============================================================ */
+function setLoaderProgress(pct, text){
+  const fill = $('loaderFill');
+  const txt = $('loaderText');
+  if (fill) fill.style.width = pct + '%';
+  if (txt && text) txt.textContent = text;
+}
+function hideLoader(){
+  const l = $('loader');
+  if (l){ l.classList.add('hidden'); setTimeout(() => l.remove(), 500); }
+}
+
+/* ============================================================
+   AUTH
    ============================================================ */
 const AUTH = {
   token: localStorage.getItem('dh_auth_token') || null,
@@ -839,20 +1320,20 @@ const AUTH = {
   },
   playAsGuest(){
     this.isGuest = true; this.token = null;
-    this.user = { displayName: 'Khách' };
+    this.user = { displayName: 'Khách', username: 'guest' };
     localStorage.setItem('dh_auth_guest', '1');
     localStorage.removeItem('dh_auth_token');
   },
   async save(data){
     if (!this.token) return false;
     try {
-      setSaveStatus('saving');
+      setUserSaveStatus('saving');
       await this.api('/save', { method: 'POST', body: { data } });
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus(''), 1500);
+      setUserSaveStatus('saved');
+      setTimeout(() => setUserSaveStatus(''), 1500);
       return true;
     } catch(e){
-      setSaveStatus('error');
+      setUserSaveStatus('error');
       return false;
     }
   },
@@ -873,13 +1354,15 @@ const AUTH = {
   }
 };
 
-function setSaveStatus(s){
-  const el = $('userStatus');
+function setUserSaveStatus(s){
+  const el = $('userSaveStatus');
   if (!el) return;
   el.textContent = s === 'saving' ? '⏳' :
                    s === 'saved' ? '✓' :
                    s === 'error' ? '⚠' : '';
-  el.className = 'status ' + s;
+  el.style.color = s === 'saving' ? 'var(--warning)' :
+                   s === 'saved' ? 'var(--success)' :
+                   s === 'error' ? 'var(--danger)' : '';
 }
 
 function collectSaveData(){
@@ -930,83 +1413,141 @@ function applySaveData(data){
     worldTime = data.world.time != null ? data.world.time : 0.25;
     dayCount = data.world.day || 1;
   }
-  updateUserHud();
+  updateUserHUD();
+  updateHpBar();
+  renderHotbar();
 }
 
-function updateUserHud(){
-  const hud = $('userHud');
-  if (!AUTH.user && !AUTH.isGuest){ hud.classList.remove('show'); return; }
-  hud.classList.add('show');
+function updateUserHUD(){
+  const chip = $('userChip');
+  const avatar = $('userAvatar');
+  const nameEl = $('userName');
+  const levelEl = $('userLevel');
+  if (!AUTH.user && !AUTH.isGuest){
+    chip.style.display = 'none';
+    return;
+  }
+  chip.style.display = 'flex';
   const name = AUTH.user ? (AUTH.user.displayName || AUTH.user.username) : 'Khách';
-  $('userAvatar').textContent = name.charAt(0).toUpperCase();
-  $('userName').textContent = name;
-  $('userLevel').textContent = 'Lv.' + (player.level || 1);
+  avatar.textContent = name.charAt(0).toUpperCase();
+  avatar.classList.toggle('guest', AUTH.isGuest || !AUTH.user);
+  nameEl.textContent = name;
+  levelEl.textContent = 'Lv.' + (player.level || 1);
 }
 
-function showAuthModal(show = true){ $('authModal').classList.toggle('hidden', !show); }
-function showAuthError(id, msg){
-  const el = $(id); el.textContent = msg; el.classList.add('show');
-}
-function clearAuthError(id){ $(id).classList.remove('show'); }
+function updateAccountModal(){
+  const avatar = $('accountAvatar');
+  const nameEl = $('accountName');
+  const usernameEl = $('accountUsername');
+  const infoEl = $('accountInfo');
 
-async function loadAndApplySave(){
-  const data = await AUTH.load();
-  if (data) applySaveData(data);
+  if (!AUTH.user && !AUTH.isGuest) return;
+
+  const name = AUTH.user ? (AUTH.user.displayName || AUTH.user.username) : 'Khách';
+  avatar.textContent = name.charAt(0).toUpperCase();
+  avatar.classList.toggle('guest', AUTH.isGuest);
+  nameEl.textContent = name;
+  usernameEl.textContent = AUTH.user && AUTH.user.username ? '@' + AUTH.user.username : '@guest';
+
+  $('accountLevel').textContent = player.level || 1;
+  $('accountHp').textContent = player.hp + '/' + player.maxHp;
+  $('accountKills').textContent = player._kills || 0;
+  $('accountDeaths').textContent = player._deaths || 0;
+
+  if (AUTH.isGuest){
+    infoEl.innerHTML =
+      '<div class="account-info-row"><span>Loại tài khoản</span><span>Khách</span></div>' +
+      '<div class="account-info-row"><span>Lưu dữ liệu</span><span style="color:var(--warning)">Không</span></div>' +
+      '<div style="margin-top:8px;color:var(--text-dim2);font-size:10px;text-align:center">' +
+      'Đăng nhập để lưu tiến trình vĩnh viễn' +
+      '</div>';
+    $('accountLogoutBtn').textContent = '🔓 Đăng nhập';
+    $('accountSaveBtn').style.display = 'none';
+  } else {
+    const created = AUTH.user.createdAt ? new Date(AUTH.user.createdAt).toLocaleDateString('vi-VN') : '—';
+    const lastLogin = AUTH.user.lastLogin ? new Date(AUTH.user.lastLogin).toLocaleString('vi-VN') : '—';
+    infoEl.innerHTML =
+      '<div class="account-info-row"><span>Loại tài khoản</span><span>Chính thức</span></div>' +
+      '<div class="account-info-row"><span>Tạo ngày</span><span>' + created + '</span></div>' +
+      '<div class="account-info-row"><span>Đăng nhập cuối</span><span>' + lastLogin + '</span></div>';
+    $('accountLogoutBtn').textContent = '🚪 Đăng xuất';
+    $('accountSaveBtn').style.display = '';
+  }
 }
 
 async function initAuth(){
-  showAuthModal(false);
+  /* Try auto-login */
   if (AUTH.token){
-    showAuthModal(true);
+    setLoaderProgress(40, 'Đang xác thực tài khoản...');
     const ok = await AUTH.verify();
     if (ok){
-      showAuthModal(false);
-      toast('👋 Chào lại, ' + AUTH.user.displayName);
-      await loadAndApplySave();
-      updateUserHud();
+      console.log('Auto-login OK:', AUTH.user.username);
+      const data = await AUTH.load();
+      if (data) applySaveData(data);
+      updateUserHUD();
       return true;
     }
-    showAuthModal(false);
   }
+
+  /* Previously guest */
   if (AUTH.isGuest){
-    AUTH.user = { displayName: 'Khách' };
-    updateUserHud();
+    AUTH.user = { displayName: 'Khách', username: 'guest' };
+    updateUserHUD();
     return true;
   }
-  showAuthModal(true);
-  setTimeout(() => $('loginUser').focus(), 100);
+
+  /* Show auth modal */
+  showModal('authModal');
   return false;
 }
 
+/* ============================================================
+   AUTH MODAL INTERACTIONS
+   ============================================================ */
 document.querySelectorAll('.auth-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     const mode = tab.dataset.authtab;
-    $('authLoginPage').style.display = mode === 'login' ? 'block' : 'none';
-    $('authRegisterPage').style.display = mode === 'register' ? 'block' : 'none';
-    clearAuthError('loginError'); clearAuthError('regError');
+    $('authLoginPage').classList.toggle('active', mode === 'login');
+    $('authRegisterPage').classList.toggle('active', mode === 'register');
+    clearAuthError('loginError');
+    clearAuthError('regError');
   });
 });
+
+function showAuthError(id, msg){
+  const el = $(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function clearAuthError(id){
+  $(id).classList.remove('show');
+}
 
 $('loginBtn').addEventListener('click', async () => {
   const u = $('loginUser').value.trim();
   const p = $('loginPass').value;
   clearAuthError('loginError');
-  if (!u || !p){ showAuthError('loginError', '❌ Nhập đầy đủ'); return; }
-  $('loginBtn').disabled = true;
-  $('loginBtn').innerHTML = '<span class="auth-loading"></span>Đang đăng nhập...';
+  if (!u || !p){ showAuthError('loginError', 'Vui lòng nhập đầy đủ'); return; }
+
+  const btn = $('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-loading"></span> Đang đăng nhập...';
+
   try {
     await AUTH.login(u, p);
-    showAuthModal(false);
-    toast('✓ Chào mừng, ' + AUTH.user.displayName);
-    await loadAndApplySave();
-    updateUserHud();
+    closeModal('authModal');
+    toast('👋 Chào mừng, ' + AUTH.user.displayName, 'success');
+    const data = await AUTH.load();
+    if (data) applySaveData(data);
+    updateUserHUD();
+    showModal('menuModal');
   } catch(e){
     showAuthError('loginError', '❌ ' + e.message);
   } finally {
-    $('loginBtn').disabled = false;
-    $('loginBtn').innerHTML = '🔓 Đăng nhập';
+    btn.disabled = false;
+    btn.innerHTML = '🔓 Đăng nhập';
   }
 });
 
@@ -1016,431 +1557,70 @@ $('regBtn').addEventListener('click', async () => {
   const p1 = $('regPass').value;
   const p2 = $('regPass2').value;
   clearAuthError('regError');
-  if (!u || !p1){ showAuthError('regError', '❌ Nhập đầy đủ'); return; }
-  if (p1.length < 6){ showAuthError('regError', '❌ Mật khẩu tối thiểu 6 ký tự'); return; }
-  if (p1 !== p2){ showAuthError('regError', '❌ Mật khẩu không khớp'); return; }
-  $('regBtn').disabled = true;
-  $('regBtn').innerHTML = '<span class="auth-loading"></span>Đang tạo...';
+  if (!u || !p1){ showAuthError('regError', 'Vui lòng nhập đầy đủ'); return; }
+  if (!/^[a-z0-9_]{3,20}$/.test(u.toLowerCase())){
+    showAuthError('regError', 'Username: 3-20 ký tự [a-z0-9_]'); return;
+  }
+  if (p1.length < 6){ showAuthError('regError', 'Mật khẩu tối thiểu 6 ký tự'); return; }
+  if (p1 !== p2){ showAuthError('regError', 'Mật khẩu xác nhận không khớp'); return; }
+
+  const btn = $('regBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-loading"></span> Đang tạo...';
+
   try {
     await AUTH.register(u, p1, dn || u);
-    showAuthModal(false);
-    toast('✓ Tạo tài khoản thành công!');
-    updateUserHud();
+    closeModal('authModal');
+    toast('✓ Tạo tài khoản thành công!', 'success');
+    updateUserHUD();
+    showModal('menuModal');
   } catch(e){
     showAuthError('regError', '❌ ' + e.message);
   } finally {
-    $('regBtn').disabled = false;
-    $('regBtn').innerHTML = '📝 Tạo tài khoản';
+    btn.disabled = false;
+    btn.innerHTML = '📝 Tạo tài khoản';
   }
 });
 
-$('loginGuestBtn').addEventListener('click', () => {
-  AUTH.playAsGuest(); showAuthModal(false); updateUserHud();
-  toast('👤 Chơi với tư cách khách');
+['loginGuestBtn', 'regGuestBtn'].forEach(id => {
+  $(id).addEventListener('click', () => {
+    AUTH.playAsGuest();
+    closeModal('authModal');
+    updateUserHUD();
+    toast('👤 Đang chơi với tư cách khách', 'warning');
+    showModal('menuModal');
+  });
 });
-$('regGuestBtn').addEventListener('click', () => {
-  AUTH.playAsGuest(); showAuthModal(false); updateUserHud();
-  toast('👤 Chơi với tư cách khách');
-});
+
 $('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
 $('regPass2').addEventListener('keydown', e => { if (e.key === 'Enter') $('regBtn').click(); });
 
-$('userHud').addEventListener('click', () => {
+/* ============================================================
+   USER CHIP → ACCOUNT MODAL
+   ============================================================ */
+$('userChip').addEventListener('click', () => {
+  updateAccountModal();
+  showModal('accountModal');
+});
+
+$('accountSaveBtn').addEventListener('click', async () => {
+  const ok = await AUTH.save(collectSaveData());
+  toast(ok ? '💾 Đã lưu thành công' : '❌ Lưu thất bại', ok ? 'success' : 'error');
+});
+
+$('accountLogoutBtn').addEventListener('click', async () => {
   if (AUTH.isGuest){
-    if (confirm('Đang chơi khách. Đăng nhập để lưu?')){
-      AUTH.isGuest = false;
-      localStorage.removeItem('dh_auth_guest');
-      showAuthModal(true);
-    }
+    AUTH.isGuest = false;
+    localStorage.removeItem('dh_auth_guest');
+    closeModal('accountModal');
+    showModal('authModal');
     return;
   }
-  const choice = prompt(
-    '👤 ' + (AUTH.user.displayName || 'User') + '\n' +
-    'Username: ' + (AUTH.user.username || '—') + '\n' +
-    'Level: ' + (player.level || 1) + '\n\n' +
-    'Nhập "out" để đăng xuất\n' +
-    'Nhập "save" để lưu ngay'
-  );
-  if (choice === 'out'){
-    if (confirm('Đăng xuất?')){
-      AUTH.logout().then(() => { toast('👋 Đã đăng xuất'); setTimeout(() => location.reload(), 500); });
-    }
-  } else if (choice === 'save'){
-    AUTH.save(collectSaveData()).then(ok => toast(ok ? '💾 Đã lưu' : '❌ Lưu fail'));
-  }
+  if (!confirm('Đăng xuất khỏi tài khoản?')) return;
+  await AUTH.logout();
+  toast('👋 Đã đăng xuất', 'success');
+  setTimeout(() => location.reload(), 600);
 });
-
-window.addEventListener('beforeunload', () => {
-  if (AUTH.token && AUTH._dirty){
-    const data = collectSaveData();
-    try {
-      const blob = new Blob([JSON.stringify({ data })], { type: 'application/json' });
-      navigator.sendBeacon(BACKEND_URL + '/save?token=' + AUTH.token, blob);
-    } catch(e){}
-  }
-});
-
-setInterval(() => {
-  if (AUTH.token && gameStarted && !paused) AUTH.flushSave();
-}, 60000);
-
-/* ============================================================
-   WEBSOCKET NETWORK CLIENT
-   ============================================================ */
-const net = {
-  ws: null,
-  active: false,
-  connecting: false,
-  myId: null,
-  name: 'Hunter',
-  roomCode: null,
-  players: new Map(),
-  onRoomCreated: null,
-  onWorldReady: null,
-  onError: null,
-  pingTimer: null,
-  reconnectTimer: null,
-  reconnectAttempts: 0,
-  _latency: 0,
-
-  get url(){
-    const proto = BACKEND.secure ? 'wss://' : 'ws://';
-    return proto + BACKEND.host + '/ws';
-  },
-
-  connect(){
-    return new Promise((resolve, reject) => {
-      if (this.ws && this.ws.readyState === 1) return resolve();
-      if (this.connecting){
-        /* Wait for existing connection */
-        const check = setInterval(() => {
-          if (this.ws && this.ws.readyState === 1){ clearInterval(check); resolve(); }
-          if (!this.connecting){ clearInterval(check); reject(new Error('WS failed')); }
-        }, 100);
-        return;
-      }
-
-      this.connecting = true;
-      console.log('[WS] Connecting to', this.url);
-      updateConnBadge('⚡ WS: connecting...');
-
-      try {
-        this.ws = new WebSocket(this.url);
-      } catch(e){
-        this.connecting = false;
-        return reject(e);
-      }
-
-      let settled = false;
-      const timer = setTimeout(() => {
-        if (!settled){
-          settled = true;
-          this.connecting = false;
-          try { this.ws.close(); } catch(e){}
-          updateConnBadge('⚡ WS: timeout', 'off');
-          reject(new Error('WS timeout 15s'));
-        }
-      }, 15000);
-
-      this.ws.onopen = () => {
-        clearTimeout(timer);
-        this.connecting = false;
-        this.reconnectAttempts = 0;
-        console.log('[WS] ✓ Connected');
-        updateConnBadge('⚡ WS: online', 'on');
-        this._startPing();
-        if (!settled){ settled = true; resolve(); }
-      };
-
-      this.ws.onmessage = (e) => {
-        try {
-          const msg = JSON.parse(e.data);
-          this._onMessage(msg);
-        } catch(err){
-          console.warn('[WS] Bad message:', err.message);
-        }
-      };
-
-      this.ws.onerror = () => {
-        console.warn('[WS] Error');
-      };
-
-      this.ws.onclose = () => {
-        clearTimeout(timer);
-        console.log('[WS] Closed');
-        this.active = false;
-        this.connecting = false;
-        this._stopPing();
-        updateConnBadge('⚡ WS: offline', 'off');
-        if (!settled){ settled = true; reject(new Error('WS closed')); }
-        this._tryReconnect();
-      };
-    });
-  },
-
-  _startPing(){
-    this._stopPing();
-    this.pingTimer = setInterval(() => {
-      this.send({ t: 'ping', time: Date.now() });
-    }, 15000);
-  },
-  _stopPing(){
-    if (this.pingTimer){ clearInterval(this.pingTimer); this.pingTimer = null; }
-  },
-
-  _onMessage(msg){
-    switch (msg.t){
-      case 'welcome':
-        this.myId = msg.id;
-        console.log('[WS] Welcome · ID:', this.myId);
-        break;
-
-      case 'room_created':
-        this.roomCode = msg.code;
-        this.active = true;
-        this.players.clear();
-        console.log('[WS] Room created:', msg.code);
-        if (this.onRoomCreated) this.onRoomCreated(msg);
-        break;
-
-      case 'room_joined':
-        this.roomCode = msg.code;
-        this.active = true;
-        this.players.clear();
-        for (const p of msg.players){
-          if (p.id !== this.myId) this.players.set(p.id, p);
-        }
-        console.log('[WS] Joined room:', msg.code, '·', msg.players.length, 'players');
-        if (this.onWorldReady) this.onWorldReady();
-        break;
-
-      case 'player_joined':
-        this.players.set(msg.player.id, msg.player);
-        toast('⚔️ ' + msg.player.name + ' vào phòng!');
-        updateNetHud();
-        break;
-
-      case 'player_left':
-        this.players.delete(msg.id);
-        toast('👋 ' + (msg.name || 'Player') + ' rời phòng');
-        updateNetHud();
-        break;
-
-      case 'player_update':
-        let existing = this.players.get(msg.id);
-        if (existing){
-          existing.x = msg.x;
-          existing.y = msg.y;
-          existing.facing = msg.facing;
-          existing.anim = msg.anim;
-          existing.sitting = msg.sitting;
-          existing.hp = msg.hp;
-          existing.lastSeen = Date.now();
-        } else {
-          this.players.set(msg.id, {
-            id: msg.id,
-            name: 'Remote',
-            x: msg.x, y: msg.y,
-            hp: msg.hp, maxHp: 20,
-            facing: msg.facing,
-            anim: msg.anim,
-            sitting: msg.sitting,
-            level: 1,
-            animT: 0,
-            lastSeen: Date.now()
-          });
-        }
-        break;
-
-      case 'attack':
-        /* Có thể thêm slash effect ở đây nếu cần */
-        break;
-
-      case 'hit':
-        player.hp = msg.hp;
-        player.hurtT = DEATH_DURATION;
-        flashDamage();
-        Audio2D.sfx.hurt();
-        updateHpBar();
-        toast('⚔️ ' + msg.attackerName + ' gây ' + msg.dmg + ' HP!');
-        if (player.hp <= 0){
-          Audio2D.sfx.kill();
-          player.deathT = 0;
-          player.currentAnim = 'death';
-          player.animTime = 0;
-          player.sitting = false;
-          player._deaths = (player._deaths || 0) + 1;
-          if (AUTH.token) AUTH.triggerSave();
-        }
-        break;
-
-      case 'player_died':
-        if (msg.id !== this.myId){
-          toast('💀 ' + msg.name + ' bị hạ bởi ' + msg.killer);
-          if (msg.killerId === this.myId){
-            player._kills = (player._kills || 0) + 1;
-            if (AUTH.token) AUTH.triggerSave();
-          }
-        }
-        break;
-
-      case 'pos_correct':
-        player.x = msg.x;
-        player.y = msg.y;
-        break;
-
-      case 'chat':
-        toast('💬 ' + msg.from + ': ' + msg.text);
-        break;
-
-      case 'error':
-        console.warn('[WS] Server error:', msg.msg);
-        if (this.onError) this.onError(msg.msg);
-        break;
-
-      case 'pong':
-        this._latency = Date.now() - msg.time;
-        updateConnBadge('⚡ WS: ' + this._latency + 'ms', 'on');
-        break;
-
-      default:
-        console.log('[WS] Unknown:', msg);
-    }
-  },
-
-  send(msg){
-    if (this.ws && this.ws.readyState === 1){
-      try { this.ws.send(JSON.stringify(msg)); } catch(e){}
-    }
-  },
-
-  async createRoom(name){
-    await this.connect();
-    this.name = name;
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this.onRoomCreated = null;
-        reject(new Error('Timeout tạo phòng'));
-      }, 10000);
-
-      this.onRoomCreated = (msg) => {
-        clearTimeout(timer);
-        this.onRoomCreated = null;
-        resolve(msg.code);
-      };
-
-      this.send({
-        t: 'create_room',
-        name: name,
-        x: player.x,
-        y: player.y,
-        level: player.level || 1
-      });
-    });
-  },
-
-  async joinRoom(code, name){
-    await this.connect();
-    this.name = name;
-    return new Promise((resolve, reject) => {
-      let settled = false;
-      const timer = setTimeout(() => {
-        if (settled) return;
-        settled = true;
-        this.onWorldReady = null;
-        this.onError = null;
-        reject(new Error('Timeout vào phòng'));
-      }, 10000);
-
-      this.onWorldReady = () => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        this.onWorldReady = null;
-        this.onError = null;
-        initInv();
-        startGame('client');
-        resolve();
-      };
-
-      this.onError = (errMsg) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        this.onWorldReady = null;
-        this.onError = null;
-        reject(new Error(errMsg));
-      };
-
-      this.send({
-        t: 'join_room',
-        code: code,
-        name: name,
-        x: player.x,
-        y: player.y,
-        level: player.level || 1
-      });
-    });
-  },
-
-  broadcastPos(){
-    if (!this.active) return;
-    this.send({
-      t: 'move',
-      x: Math.round(player.x),
-      y: Math.round(player.y),
-      facing: player.facing,
-      anim: player.currentAnim,
-      hp: player.hp,
-      sitting: player.sitting
-    });
-  },
-
-  attack(angle, dmg){
-    if (!this.active) return;
-    this.send({ t: 'attack', angle: angle, dmg: dmg });
-  },
-
-  chat(text){
-    if (!this.active) return;
-    this.send({ t: 'chat', text: text });
-  },
-
-  disconnect(){
-    this.active = false;
-    this._stopPing();
-    if (this.reconnectTimer){ clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
-    this.reconnectAttempts = 0;
-
-    if (this.ws){
-      try { this.send({ t: 'leave_room' }); } catch(e){}
-      try { this.ws.close(); } catch(e){}
-      this.ws = null;
-    }
-    this.players.clear();
-    this.roomCode = null;
-    updateNetHud();
-    updateConnBadge('⚡ WS: offline', 'off');
-  },
-
-  _tryReconnect(){
-    if (this.reconnectTimer) return;
-    this.reconnectAttempts++;
-    const delay = Math.min(30000, 1000 * Math.pow(2, this.reconnectAttempts));
-    console.log('[WS] Reconnect in', delay + 'ms (attempt', this.reconnectAttempts + ')');
-
-    this.reconnectTimer = setTimeout(() => {
-      this.reconnectTimer = null;
-      if (this.reconnectAttempts > 5){
-        console.warn('[WS] Stop reconnect after 5 attempts');
-        return;
-      }
-      this.connect()
-        .then(() => console.log('[WS] ✓ Reconnected'))
-        .catch(e => console.warn('[WS] Reconnect fail:', e.message));
-    }, delay);
-  }
-};
 
 /* ============================================================
    METADATA + SPRITES
@@ -1533,21 +1713,36 @@ const Models = {
 
 async function loadProject(){
   try {
+    setLoaderProgress(10, 'Đang tải sprites.json...');
     const res = await fetch('sprites.json', { cache: 'no-store' });
     if (!res.ok) throw new Error('no file');
     const project = await res.json();
     if (project.format !== 'dh-studio-project' || !project.models) throw new Error('bad');
     const promises = [];
+    let total = 0;
+    for (const m in project.models){
+      const model = project.models[m];
+      for (const a in model.animations){
+        total++;
+      }
+    }
+    let loaded = 0;
     for (const m in project.models){
       const model = project.models[m];
       for (const a in model.animations){
         const cfg = model.animations[a];
-        promises.push(loadSprite(`assets/${cfg.fileName}.png`, m, a, cfg));
+        promises.push(loadSprite(`assets/${cfg.fileName}.png`, m, a, cfg).then(() => {
+          loaded++;
+          const pct = 10 + Math.round((loaded / total) * 70);
+          setLoaderProgress(pct, `Đang tải sprites ${loaded}/${total}...`);
+        }));
       }
     }
     await Promise.all(promises);
     console.log('✓ Loaded ' + Models.data.size + ' models');
+    setLoaderProgress(85, 'Đang tải weapon tuning...');
     await loadWeaponTuning();
+    setLoaderProgress(95, 'Hoàn tất');
     updateLoadStatus('ok');
   } catch(e){
     console.warn('Fallback:', e.message);
@@ -1557,11 +1752,11 @@ async function loadProject(){
 async function loadWeaponTuning(){
   try {
     const res = await fetch('weapon-tuning.json', { cache: 'no-store' });
-    if (!res.ok){ console.log('[Tuning] No weapon-tuning.json'); return; }
+    if (!res.ok){ console.log('[Tuning] No file'); return; }
     const data = await res.json();
     if (data.format !== 'dh-weapon-tuning'){ console.warn('[Tuning] Bad format'); return; }
     weaponTuning = data;
-    console.log('✓ Weapon tuning: ' + Object.keys(data.animations || {}).length + ' anims');
+    console.log('✓ Weapon tuning loaded');
   } catch(e){ console.log('[Tuning]', e.message); }
 }
 function getFrameTuning(anim, frameIdx){
@@ -1642,10 +1837,9 @@ function loadSprite(src, m, a, cfg){
       }
 
       Models.addSprite(m, a, sprite);
-      console.log(`  ✓ ${m}/${a}: ${sprite.frames}f @ ${fps}fps`);
       resolve();
     };
-    img.onerror = () => { console.warn(`  ✗ ${src} not found`); resolve(); };
+    img.onerror = () => { console.warn('✗', src); resolve(); };
     img.src = src;
   });
 }
@@ -1688,15 +1882,17 @@ async function loadFallbackSprites(){
 function updateLoadStatus(mode){
   const el = $('loadStatus');
   const total = Models.data.size;
-  if (total === 0){ el.classList.remove('hidden'); el.innerHTML = `<b><span class="err">⚠ KHÔNG LOAD ĐƯỢC SPRITE</span></b>`; return; }
+  if (total === 0){
+    el.classList.remove('hidden');
+    el.innerHTML = '<b><span class="err">⚠ Không load được sprite</span></b>';
+    return;
+  }
   el.classList.remove('hidden');
-  let html = `<b><span class="ok">✓ Đã load ${total} models</span></b>`;
-  if (mode === 'fallback') html += ` <span class="meta">[fallback]</span>`;
-  if (weaponTuning) html += ` <span class="meta">[tuning]</span>`;
-  html += '<br>';
-  for (const [mn, mm] of Models.data){ html += `📦 ${mn}: ` + [...mm.animations.keys()].join(', ') + '<br>'; }
+  let html = '<b><span class="ok">✓ Đã load ' + total + ' models</span></b>';
+  if (mode === 'fallback') html += ' <span class="meta">[fallback]</span>';
+  if (weaponTuning) html += ' <span class="meta">[tuning]</span>';
   el.innerHTML = html;
-  setTimeout(() => el.classList.add('hidden'), 6000);
+  setTimeout(() => el.classList.add('hidden'), 4000);
 }
 function getPlayerSprite(anim){
   let s = Models.get('player', anim);
@@ -1710,7 +1906,9 @@ function getPlayerSprite(anim){
   return s;
 }
 
-/* AUDIO */
+/* ============================================================
+   AUDIO
+   ============================================================ */
 const Audio2D = (() => {
   let ctx = null, enabled = true;
   let masterGain, musicGain, sfxGain, noiseBuf = null;
@@ -1813,7 +2011,9 @@ const Audio2D = (() => {
   };
 })();
 
-/* WORLD */
+/* ============================================================
+   WORLD / ITEMS
+   ============================================================ */
 const TILE = 32;
 const T = { AIR:0, GRASS:1 };
 const TILES = { 1: { id:1, name:'Cỏ', colors:['#6fbf4a','#5a9a48','#4a7a3a'] } };
@@ -1865,7 +2065,9 @@ addEventListener('resize', resize);
 addEventListener('orientationchange', () => setTimeout(resize, 100));
 resize();
 
-/* JOYSTICK MOVE */
+/* ============================================================
+   JOYSTICKS
+   ============================================================ */
 const joy = { id:null, x:0, y:0, cx:0, cy:0 };
 const moveJoystick = $('moveJoystick');
 const moveKnob = $('moveKnob');
@@ -1898,7 +2100,6 @@ addEventListener('pointermove', e => {
 addEventListener('pointerup', endMoveJoystick);
 addEventListener('pointercancel', endMoveJoystick);
 
-/* JOYSTICK AIM */
 const aim = { angle:0, joyId:null, joyX:0, joyY:0, autoAttack:false, cx:0, cy:0 };
 const aimJoystick = $('aimJoystick');
 const aimKnob = $('aimKnob');
@@ -1936,7 +2137,9 @@ addEventListener('pointermove', e => {
 addEventListener('pointerup', endAimJoystick);
 addEventListener('pointercancel', endAimJoystick);
 
-/* INPUT */
+/* ============================================================
+   INPUT
+   ============================================================ */
 const keys = {};
 const mouse = { x: 0, y: 0 };
 let gameStarted = false, paused = false;
@@ -1995,7 +2198,9 @@ function endLook(e){ if (e.pointerId === lookId) lookId = null; }
 addEventListener('pointerup', endLook);
 addEventListener('pointercancel', endLook);
 
-/* BUTTONS */
+/* ============================================================
+   BUTTONS
+   ============================================================ */
 function bindBtn(id, downFn, upFn){
   const el = $(id);
   if (!el) return;
@@ -2013,7 +2218,9 @@ function bindBtn(id, downFn, upFn){
 bindBtn('btnJump', () => tryJump(), null);
 bindBtn('btnSit', () => trySit(), null);
 
-/* ACTIONS */
+/* ============================================================
+   ACTIONS
+   ============================================================ */
 function tryJump(){
   if (!gameStarted || paused) return;
   if (player.hp <= 0) return;
@@ -2055,7 +2262,9 @@ function tryAttack(){
   }
 }
 
-/* UPDATE PLAYER */
+/* ============================================================
+   UPDATE PLAYER
+   ============================================================ */
 function updatePlayer(dt){
   if (player.hp <= 0){
     player.deathT += dt;
@@ -2133,7 +2342,6 @@ function updatePlayer(dt){
     if (player._stepAcc > 26){ player._stepAcc = 0; Audio2D.sfx.step(); }
   } else player._stepAcc = 0;
 
-  /* Auto-save timer */
   if (gameStarted && !paused){
     player._saveAcc = (player._saveAcc || 0) + dt;
     if (player._saveAcc > 30){
@@ -2144,7 +2352,7 @@ function updatePlayer(dt){
 }
 function respawnPlayer(){
   player.hp = player.maxHp;
-  toast('💀 Bạn đã bị hạ. Hồi sinh!');
+  toast('💀 Bạn đã bị hạ. Hồi sinh!', 'warning');
   player.x = WORLD_W*TILE/2; player.y = WORLD_H*TILE/2;
   player.jumpT = 0; player.jumpY = 0;
   player.attackT = 0; player.hurtT = 0;
@@ -2156,7 +2364,290 @@ function respawnPlayer(){
   updateHpBar();
 }
 
-/* NETWORK HELPERS */
+/* ============================================================
+   WEBSOCKET NETWORK
+   ============================================================ */
+const net = {
+  ws: null, active: false, connecting: false,
+  myId: null, name: 'Hunter', roomCode: null,
+  players: new Map(),
+  onRoomCreated: null, onWorldReady: null, onError: null,
+  pingTimer: null, reconnectTimer: null, reconnectAttempts: 0,
+  _latency: 0,
+
+  get url(){
+    const proto = BACKEND.secure ? 'wss://' : 'ws://';
+    return proto + BACKEND.host + '/ws';
+  },
+
+  connect(){
+    return new Promise((resolve, reject) => {
+      if (this.ws && this.ws.readyState === 1) return resolve();
+      if (this.connecting){
+        const check = setInterval(() => {
+          if (this.ws && this.ws.readyState === 1){ clearInterval(check); resolve(); }
+          if (!this.connecting){ clearInterval(check); reject(new Error('WS failed')); }
+        }, 100);
+        return;
+      }
+
+      this.connecting = true;
+      updateWsStatus('connecting');
+      console.log('[WS] Connecting to', this.url);
+
+      try { this.ws = new WebSocket(this.url); }
+      catch(e){ this.connecting = false; return reject(e); }
+
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (!settled){
+          settled = true;
+          this.connecting = false;
+          try { this.ws.close(); } catch(e){}
+          updateWsStatus('offline');
+          reject(new Error('WS timeout 15s'));
+        }
+      }, 15000);
+
+      this.ws.onopen = () => {
+        clearTimeout(timer);
+        this.connecting = false;
+        this.reconnectAttempts = 0;
+        console.log('[WS] Connected');
+        updateWsStatus('online');
+        this._startPing();
+        if (!settled){ settled = true; resolve(); }
+      };
+
+      this.ws.onmessage = (e) => {
+        try { this._onMessage(JSON.parse(e.data)); } catch(err){}
+      };
+
+      this.ws.onclose = () => {
+        clearTimeout(timer);
+        console.log('[WS] Closed');
+        this.active = false;
+        this.connecting = false;
+        this._stopPing();
+        updateWsStatus('offline');
+        if (!settled){ settled = true; reject(new Error('WS closed')); }
+        this._tryReconnect();
+      };
+
+      this.ws.onerror = () => console.warn('[WS] Error');
+    });
+  },
+
+  _startPing(){
+    this._stopPing();
+    this.pingTimer = setInterval(() => {
+      this.send({ t: 'ping', time: Date.now() });
+    }, 15000);
+  },
+  _stopPing(){
+    if (this.pingTimer){ clearInterval(this.pingTimer); this.pingTimer = null; }
+  },
+
+  _onMessage(msg){
+    switch (msg.t){
+      case 'welcome':
+        this.myId = msg.id;
+        break;
+      case 'room_created':
+        this.roomCode = msg.code;
+        this.active = true;
+        this.players.clear();
+        if (this.onRoomCreated) this.onRoomCreated(msg);
+        break;
+      case 'room_joined':
+        this.roomCode = msg.code;
+        this.active = true;
+        this.players.clear();
+        for (const p of msg.players){
+          if (p.id !== this.myId) this.players.set(p.id, p);
+        }
+        if (this.onWorldReady) this.onWorldReady();
+        break;
+      case 'player_joined':
+        this.players.set(msg.player.id, msg.player);
+        toast('⚔️ ' + msg.player.name + ' vào phòng', 'success');
+        updateNetHud();
+        break;
+      case 'player_left':
+        this.players.delete(msg.id);
+        toast('👋 ' + (msg.name || 'Player') + ' rời phòng');
+        updateNetHud();
+        break;
+      case 'player_update':
+        let existing = this.players.get(msg.id);
+        if (existing){
+          existing.x = msg.x; existing.y = msg.y;
+          existing.facing = msg.facing; existing.anim = msg.anim;
+          existing.sitting = msg.sitting; existing.hp = msg.hp;
+          existing.lastSeen = Date.now();
+        } else {
+          this.players.set(msg.id, {
+            id: msg.id, name: 'Remote',
+            x: msg.x, y: msg.y, hp: msg.hp, maxHp: 20,
+            facing: msg.facing, anim: msg.anim, sitting: msg.sitting,
+            level: 1, animT: 0, lastSeen: Date.now()
+          });
+        }
+        break;
+      case 'hit':
+        player.hp = msg.hp;
+        player.hurtT = DEATH_DURATION;
+        flashDamage(); Audio2D.sfx.hurt(); updateHpBar();
+        toast('⚔️ ' + msg.attackerName + ' gây ' + msg.dmg + ' HP!', 'warning');
+        if (player.hp <= 0){
+          Audio2D.sfx.kill();
+          player.deathT = 0;
+          player.currentAnim = 'death';
+          player.animTime = 0;
+          player.sitting = false;
+          player._deaths = (player._deaths || 0) + 1;
+          if (AUTH.token) AUTH.triggerSave();
+        }
+        break;
+      case 'player_died':
+        if (msg.id !== this.myId){
+          toast('💀 ' + msg.name + ' bị hạ bởi ' + msg.killer);
+          if (msg.killerId === this.myId){
+            player._kills = (player._kills || 0) + 1;
+            if (AUTH.token) AUTH.triggerSave();
+          }
+        }
+        break;
+      case 'pos_correct':
+        player.x = msg.x; player.y = msg.y;
+        break;
+      case 'chat':
+        toast('💬 ' + msg.from + ': ' + msg.text);
+        break;
+      case 'error':
+        console.warn('[WS] Error:', msg.msg);
+        if (this.onError) this.onError(msg.msg);
+        break;
+      case 'pong':
+        this._latency = Date.now() - msg.time;
+        updateWsStatus('online', this._latency);
+        break;
+    }
+  },
+
+  send(msg){
+    if (this.ws && this.ws.readyState === 1){
+      try { this.ws.send(JSON.stringify(msg)); } catch(e){}
+    }
+  },
+
+  async createRoom(name){
+    await this.connect();
+    this.name = name;
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.onRoomCreated = null;
+        reject(new Error('Timeout tạo phòng'));
+      }, 10000);
+      this.onRoomCreated = (msg) => {
+        clearTimeout(timer);
+        this.onRoomCreated = null;
+        resolve(msg.code);
+      };
+      this.send({ t: 'create_room', name, x: player.x, y: player.y, level: player.level || 1 });
+    });
+  },
+
+  async joinRoom(code, name){
+    await this.connect();
+    this.name = name;
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        this.onWorldReady = null;
+        this.onError = null;
+        reject(new Error('Timeout vào phòng'));
+      }, 10000);
+      this.onWorldReady = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        this.onWorldReady = null;
+        this.onError = null;
+        initInv();
+        startGame('client');
+        resolve();
+      };
+      this.onError = (errMsg) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        this.onWorldReady = null;
+        this.onError = null;
+        reject(new Error(errMsg));
+      };
+      this.send({ t: 'join_room', code, name, x: player.x, y: player.y, level: player.level || 1 });
+    });
+  },
+
+  broadcastPos(){
+    if (!this.active) return;
+    this.send({
+      t: 'move',
+      x: Math.round(player.x), y: Math.round(player.y),
+      facing: player.facing, anim: player.currentAnim,
+      hp: player.hp, sitting: player.sitting
+    });
+  },
+  attack(angle, dmg){
+    if (!this.active) return;
+    this.send({ t: 'attack', angle, dmg });
+  },
+  disconnect(){
+    this.active = false;
+    this._stopPing();
+    if (this.reconnectTimer){ clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
+    this.reconnectAttempts = 0;
+    if (this.ws){
+      try { this.send({ t: 'leave_room' }); } catch(e){}
+      try { this.ws.close(); } catch(e){}
+      this.ws = null;
+    }
+    this.players.clear();
+    this.roomCode = null;
+    updateNetHud();
+    updateWsStatus('offline');
+  },
+  _tryReconnect(){
+    if (this.reconnectTimer) return;
+    this.reconnectAttempts++;
+    if (this.reconnectAttempts > 5) return;
+    const delay = Math.min(30000, 1000 * Math.pow(2, this.reconnectAttempts));
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      this.connect().catch(() => {});
+    }, delay);
+  }
+};
+
+function updateWsStatus(state, latency){
+  const dot = $('wsDot');
+  const val = $('wsLatency');
+  if (!dot || !val) return;
+  dot.className = 'dot ' + (state === 'online' ? 'on' : state === 'connecting' ? 'connecting' : 'off');
+  if (state === 'online' && latency != null){
+    val.textContent = latency + 'ms';
+  } else if (state === 'online'){
+    val.textContent = '--';
+  } else if (state === 'connecting'){
+    val.textContent = '...';
+  } else {
+    val.textContent = 'off';
+  }
+}
+
 let netSyncTimer = null;
 function startNetSync(){
   if (netSyncTimer) return;
@@ -2169,13 +2660,19 @@ function startNetSync(){
 }
 function updateNetHud(){
   const el = $('netInfo');
-  if (!net.active){ el.classList.remove('show'); return; }
-  el.classList.add('show');
-  $('netCode').textContent = net.roomCode || '-----';
-  $('netCount').textContent = 1 + net.players.size;
+  if (el){
+    if (!net.active){ el.classList.remove('show'); }
+    else {
+      el.classList.add('show');
+      $('netCode').textContent = net.roomCode || '-----';
+      $('netCount').textContent = 1 + net.players.size;
+    }
+  }
 }
 
-/* RENDER */
+/* ============================================================
+   RENDER
+   ============================================================ */
 function drawTile(x, y, id, sx, sy){
   const def = TILES[id];
   if (!def) return;
@@ -2210,8 +2707,7 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
 
   let anchorX, anchorY;
   if (s.anchorMode === 'stable' && s.stableAnchor){
-    anchorX = s.stableAnchor.x;
-    anchorY = s.stableAnchor.y;
+    anchorX = s.stableAnchor.x; anchorY = s.stableAnchor.y;
   } else if (s.anchorMode === 'stable-x' && s.stableAnchor){
     anchorX = s.stableAnchor.x;
     const a = s.anchors && s.anchors[idx];
@@ -2219,14 +2715,11 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
   } else {
     const a = s.anchors && s.anchors[idx];
     if (a && a.x != null && a.y != null){
-      anchorX = a.x - srcX;
-      anchorY = a.y;
+      anchorX = a.x - srcX; anchorY = a.y;
     } else if (s.stableAnchor){
-      anchorX = s.stableAnchor.x;
-      anchorY = s.stableAnchor.y;
+      anchorX = s.stableAnchor.x; anchorY = s.stableAnchor.y;
     } else {
-      anchorX = srcW / 2;
-      anchorY = srcH;
+      anchorX = srcW / 2; anchorY = srcH;
     }
   }
   anchorY = Math.max(0, Math.min(srcH, anchorY));
@@ -2235,8 +2728,7 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
 
   ctx.save();
   if (facing < 0){
-    ctx.translate(cx, 0);
-    ctx.scale(-1, 1);
+    ctx.translate(cx, 0); ctx.scale(-1, 1);
     const flippedLocalX = srcW - anchorX;
     const dX = Math.round(-flippedLocalX * scale);
     ctx.drawImage(s.renderImg, srcX, 0, srcW, srcH, dX, drawY, drawW, drawH);
@@ -2245,14 +2737,12 @@ function drawSpriteAt(sprite, idx, cx, cy, facing){
   }
   ctx.restore();
 }
-
 function drawWeaponFromTuning(weapon, t, sx, syGround, facing){
   const wFrameIdx = t.weaponFrame || 0;
   const bb = weapon.frameBBoxes && weapon.frameBBoxes[wFrameIdx];
   let srcX, srcY, srcW, srcH;
-  if (bb && bb.w > 0){
-    srcX = bb.x; srcY = bb.y; srcW = bb.w; srcH = bb.h;
-  } else {
+  if (bb && bb.w > 0){ srcX = bb.x; srcY = bb.y; srcW = bb.w; srcH = bb.h; }
+  else {
     srcX = weapon.vLines[wFrameIdx]; srcY = 0;
     srcW = weapon.vLines[wFrameIdx + 1] - srcX; srcH = weapon.spriteH;
   }
@@ -2275,42 +2765,32 @@ function drawWeaponFromTuning(weapon, t, sx, syGround, facing){
   ctx.drawImage(weapon.canvas, srcX, srcY, srcW, srcH, pivotX, pivotY, dw, dh);
   ctx.restore();
 }
-
 function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facing){
   const fallbackAnim = WEAPON_CONFIG.fallback[anim] || 'idle';
   let weapon = Models.get('weapon', anim);
   if (!weapon) weapon = Models.get('weapon', fallbackAnim);
   if (!weapon) weapon = Models.get('weapon', 'idle');
   if (!weapon) return;
-
   const tuning = getFrameTuning(anim, playerFrameIdx);
-  if (tuning){
-    drawWeaponFromTuning(weapon, tuning, sx, syGround, facing);
-    return;
-  }
-
+  if (tuning){ drawWeaponFromTuning(weapon, tuning, sx, syGround, facing); return; }
   const frames = weapon.frames || (weapon.vLines.length - 1);
   if (frames < 1) return;
   const cfg = WEAPON_CONFIG.angles[anim] || WEAPON_CONFIG.angles[fallbackAnim] || WEAPON_CONFIG.angles.idle;
   const wFrameIdx = Math.min(frames - 1,
     Math.floor((playerFrameIdx / Math.max(1, playerTotalFrames)) * frames));
   const angle = cfg[wFrameIdx] !== undefined ? cfg[wFrameIdx] : 0;
-
   const bb = weapon.frameBBoxes && weapon.frameBBoxes[wFrameIdx];
   let srcX, srcY, srcW, srcH;
-  if (bb && bb.w > 0){
-    srcX = bb.x; srcY = bb.y; srcW = bb.w; srcH = bb.h;
-  } else {
+  if (bb && bb.w > 0){ srcX = bb.x; srcY = bb.y; srcW = bb.w; srcH = bb.h; }
+  else {
     srcX = weapon.vLines[wFrameIdx]; srcY = 0;
     srcW = weapon.vLines[wFrameIdx + 1] - srcX; srcH = weapon.spriteH;
   }
   const contentH = weapon.contentMaxH || srcH;
   const scale = (DEST_HEIGHT * WEAPON_CONFIG.scale) / contentH;
-  const dw = srcW * scale;
-  const dh = srcH * scale;
+  const dw = srcW * scale; const dh = srcH * scale;
   const pivotX = -dw * WEAPON_CONFIG.pivotX;
   const pivotY = -dh * WEAPON_CONFIG.pivotY;
-
   ctx.save();
   ctx.translate(sx, syGround);
   if (facing < 0) ctx.scale(-1, 1);
@@ -2319,738 +2799,30 @@ function drawWeapon(anim, playerFrameIdx, playerTotalFrames, sx, syGround, facin
   ctx.drawImage(weapon.canvas, srcX, srcY, srcW, srcH, pivotX, pivotY, dw, dh);
   ctx.restore();
 }
-
 function drawPlayer(){
   const sx = Math.round(player.x - cam.x);
   const syGround = Math.round(player.y - cam.y + FOOT_OFFSET);
   const sySprite = syGround + player.jumpY;
-
   const shadowScale = 1 - Math.abs(player.jumpY) / 70;
   ctx.fillStyle = `rgba(0,0,0,${0.4 * shadowScale})`;
   ctx.beginPath();
   ctx.ellipse(sx, syGround, 8 * shadowScale, 3 * shadowScale, 0, 0, Math.PI*2);
   ctx.fill();
-
   const sprite = getPlayerSprite(player.currentAnim);
   if (!sprite){
     drawFallbackBody(sx, sySprite, player.animT, player.currentAnim, player.facing, LOCAL_COLORS);
     return;
   }
   const rawIdx = Math.floor(player.animTime * sprite.fps);
-  const total = sprite.frames || (sprite.vLines ? sprite.vLines.length - 1 : 8);
+  const total = sprite.frames || 8;
   let idx;
-  if (player.hp <= 0 && !sprite.loop){
-    idx = total - 1;
-  } else if (sprite.loop){
-    idx = ((rawIdx % total) + total) % total;
-  } else {
-    idx = Math.max(0, Math.min(total - 1, rawIdx));
-  }
+  if (player.hp <= 0 && !sprite.loop) idx = total - 1;
+  else if (sprite.loop) idx = ((rawIdx % total) + total) % total;
+  else idx = Math.max(0, Math.min(total - 1, rawIdx));
   drawSpriteAt(sprite, idx, sx, sySprite, player.facing);
-
   const weaponAnim = player.hp <= 0 ? 'death' : player.currentAnim;
   drawWeapon(weaponAnim, idx, total, sx, sySprite, player.facing);
 }
 const LOCAL_COLORS = { body:'#3a5a9a', skin:'#f0c8a0' };
 function drawFallbackBody(sx, sy, animT, animName, facing, colors){
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.beginPath(); ctx.ellipse(sx, sy+8, 8, 3, 0, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = colors.body; ctx.fillRect(sx-6, sy-10, 12, 13);
-  ctx.fillStyle = colors.skin; ctx.fillRect(sx-5, sy-18, 10, 8);
-}
-const REMOTE_PALETTE = [
-  { body:'#d04a5a' }, { body:'#4a6ad0' }, { body:'#6ad04a' },
-  { body:'#d0b04a' }, { body:'#b04ad0' }
-];
-function hashCode(s){ let h = 0; for (let i=0;i<s.length;i++) h = ((h<<5) - h) + s.charCodeAt(i) | 0; return h; }
-function drawRemotePlayer(p){
-  const sx = p.x - cam.x, sy = p.y - cam.y;
-  if (sx < -80 || sx > VW+80 || sy < -80 || sy > VH+80) return;
-  const pal = REMOTE_PALETTE[Math.abs(hashCode(p.name || '?')) % REMOTE_PALETTE.length];
-  const animName = (p.hp <= 0) ? 'death' : (p.sitting ? 'sit' : (p.anim || 'idle'));
-  const sprite = getPlayerSprite(animName);
-  if (sprite){
-    const rawIdx = Math.floor((p.animT || 0) * sprite.fps);
-    const total = sprite.frames || 1;
-    let idx;
-    if (p.hp <= 0 && !sprite.loop) idx = total - 1;
-    else if (sprite.loop) idx = ((rawIdx % total) + total) % total;
-    else idx = Math.max(0, Math.min(total-1, rawIdx));
-    drawSpriteAt(sprite, idx, sx, sy + FOOT_OFFSET, p.facing);
-    drawWeapon(animName, idx, total, sx, sy + FOOT_OFFSET, p.facing);
-  } else {
-    ctx.fillStyle = pal.body; ctx.fillRect(sx-6, sy-10, 12, 13);
-    ctx.fillStyle = '#f0c8a0'; ctx.fillRect(sx-5, sy-18, 10, 8);
-  }
-  if (p.sitting && p.hp > 0){
-    ctx.font = 'bold 12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🪑', sx, sy - 40);
-  }
-  ctx.font = 'bold 10px Consolas, monospace';
-  ctx.textAlign = 'center';
-  const w = ctx.measureText(p.name || '?').width + 8;
-  ctx.fillStyle = 'rgba(0,0,0,0.65)';
-  ctx.fillRect(sx - w/2, sy - 36, w, 13);
-  ctx.fillStyle = '#88ffd8';
-  ctx.fillText(p.name || '?', sx, sy - 26);
-  const hpPct = Math.max(0, Math.min(1, (p.hp ?? 20) / 20));
-  const bw = 24;
-  ctx.fillStyle = 'rgba(0,0,0,0.8)';
-  ctx.fillRect(sx - bw/2 - 1, sy - 22, bw + 2, 5);
-  ctx.fillStyle = hpPct > 0.5 ? '#4ade4a' : hpPct > 0.25 ? '#ffcc40' : '#e8503a';
-  ctx.fillRect(sx - bw/2, sy - 21, bw * hpPct, 3);
-  ctx.textAlign = 'left';
-}
-
-function drawAimArrow(){
-  if (!gameStarted || paused) return;
-  if (player.hp <= 0) return;
-  const sx = Math.round(player.x - cam.x);
-  const syBelly = Math.round(player.y - cam.y - 14);
-  const a = aim.angle;
-  const cosA = Math.cos(a), sinA = Math.sin(a);
-  const px = -sinA, py = cosA;
-  const orbitR = 42;
-  const cx = sx + cosA * orbitR;
-  const cy = syBelly + sinA * orbitR;
-  const headLen = 10, headW = 6;
-  const tipX = cx + cosA * (headLen * 0.6);
-  const tipY = cy + sinA * (headLen * 0.6);
-  const b1X = cx - cosA * (headLen * 0.4) + px * headW;
-  const b1Y = cy - sinA * (headLen * 0.4) + py * headW;
-  const b2X = cx - cosA * (headLen * 0.4) - px * headW;
-  const b2Y = cy - sinA * (headLen * 0.4) - py * headW;
-  const midX = (tipX + b1X + b2X) / 3;
-  const midY = (tipY + b1Y + b2Y) / 3;
-  ctx.save();
-  ctx.globalAlpha = 0.4;
-  ctx.fillStyle = '#000';
-  ctx.beginPath();
-  ctx.moveTo(tipX + 1.5, tipY + 2);
-  ctx.lineTo(b1X + 1.5, b1Y + 2);
-  ctx.lineTo(b2X + 1.5, b2Y + 2);
-  ctx.closePath();
-  ctx.fill();
-  ctx.globalAlpha = 1;
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 2.5;
-  ctx.lineJoin = 'round';
-  ctx.beginPath();
-  ctx.moveTo(tipX, tipY); ctx.lineTo(b1X, b1Y); ctx.lineTo(b2X, b2Y);
-  ctx.closePath();
-  ctx.stroke();
-  const grad = ctx.createLinearGradient(b2X, b2Y, tipX, tipY);
-  grad.addColorStop(0, '#c8d8c0');
-  grad.addColorStop(0.5, '#fff');
-  grad.addColorStop(1, '#f0f4e8');
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.moveTo(tipX, tipY); ctx.lineTo(b1X, b1Y); ctx.lineTo(b2X, b2Y);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,.9)';
-  ctx.beginPath();
-  ctx.moveTo(tipX, tipY); ctx.lineTo(b1X, b1Y); ctx.lineTo(midX, midY);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = 'rgba(0,0,0,.25)';
-  ctx.beginPath();
-  ctx.moveTo(tipX, tipY); ctx.lineTo(b2X, b2Y); ctx.lineTo(midX, midY);
-  ctx.closePath();
-  ctx.fill();
-  if (aim.joyId !== null){
-    const t = performance.now() / 150;
-    const pulse = 1 + Math.sin(t) * 0.2;
-    ctx.globalAlpha = 0.35;
-    ctx.fillStyle = '#88ff60';
-    ctx.beginPath(); ctx.arc(tipX, tipY, 5 * pulse, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-  if (aim.autoAttack){
-    ctx.strokeStyle = '#ff5050';
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.7;
-    ctx.beginPath();
-    ctx.arc(sx, syBelly, orbitR + 8, a - 0.4, a + 0.4);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-  ctx.restore();
-}
-
-function render(){
-  const nightFactor = getNightFactor();
-  const cx0 = Math.max(0, Math.floor(cam.x / TILE));
-  const cy0 = Math.max(0, Math.floor(cam.y / TILE));
-  const cx1 = Math.min(WORLD_W, Math.ceil((cam.x + VW) / TILE));
-  const cy1 = Math.min(WORLD_H, Math.ceil((cam.y + VH) / TILE));
-  ctx.fillStyle = nightFactor > 0.6 ? '#0a0a14' : '#0f180f';
-  ctx.fillRect(0, 0, VW, VH);
-  for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
-    drawTile(x, y, wGet(x, y), x*TILE - cam.x, y*TILE - cam.y);
-  }
-  const ents = [];
-  for (const [id, p] of net.players) ents.push({ y: p.y, draw: () => drawRemotePlayer(p) });
-  ents.push({ y: player.y, draw: () => drawPlayer() });
-  ents.sort((a,b) => a.y - b.y);
-  for (const e of ents) e.draw();
-  drawAimArrow();
-  for (const p of G.particles){
-    const a = p.life / p.maxLife;
-    ctx.globalAlpha = a;
-    ctx.fillStyle = p.color;
-    ctx.fillRect(p.x - cam.x - p.size/2, p.y - cam.y - p.size/2, p.size, p.size);
-  }
-  ctx.globalAlpha = 1;
-  if (nightFactor > 0.05){
-    ctx.fillStyle = `rgba(5, 8, 25, ${nightFactor * 0.75})`;
-    ctx.fillRect(0, 0, VW, VH);
-  }
-  $('time').textContent = `${nightFactor > 0.6 ? '🌙' : '☀'} ${getClockString()} · Ngày ${dayCount}`;
-  $('coords').innerHTML = `XYZ: <b>${(player.x/TILE).toFixed(1)} ${(player.y/TILE).toFixed(1)}</b>`;
-}
-function updateCam(){
-  const targetX = player.x - VW/2;
-  const targetY = player.y - VH/2;
-  cam.x += (targetX - cam.x) * 0.15;
-  cam.y += (targetY - cam.y) * 0.15;
-  cam.x = Math.max(0, Math.min(WORLD_W*TILE - VW, cam.x));
-  cam.y = Math.max(0, Math.min(WORLD_H*TILE - VH, cam.y));
-}
-let worldTime = 0.25;
-const DAY_DURATION = 1200;
-let dayCount = 1;
-function updateDayNight(dt){
-  worldTime += dt / DAY_DURATION;
-  if (worldTime >= 1){ worldTime -= 1; dayCount++; }
-  Audio2D.setNight(getNightFactor() > 0.6);
-}
-function getClockString(){
-  const h = Math.floor(worldTime * 24);
-  const m = Math.floor((worldTime * 24 - h) * 60);
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-}
-
-/* HUD */
-const hotbarEl = $('hotbar');
-function renderHotbar(){
-  hotbarEl.innerHTML = '';
-  for (let i=0;i<9;i++){
-    const slot = document.createElement('div');
-    slot.className = 'hslot' + (i === player.selected ? ' active' : '');
-    const item = inv.hotbar[i];
-    if (item){
-      const def = defOf(item.id);
-      const ic = document.createElement('div');
-      ic.className = 'ic';
-      ic.style.background = `linear-gradient(180deg, transparent 20%, ${def.color} 20%, ${def.color} 80%, transparent 80%)`;
-      slot.appendChild(ic);
-      const lbl = document.createElement('span');
-      lbl.className = 'lbl'; lbl.textContent = (i+1);
-      slot.appendChild(lbl);
-    }
-    slot.addEventListener('click', () => { player.selected = i; renderHotbar(); Audio2D.sfx.click(); });
-    hotbarEl.appendChild(slot);
-  }
-}
-function updateHpBar(){
-  const pct = Math.max(0, player.hp / player.maxHp * 100);
-  $('hpFillInner').style.width = pct + '%';
-  $('hpText').textContent = Math.max(0, player.hp) + '/' + player.maxHp;
-}
-function flashDamage(){
-  const bar = $('hpBar');
-  bar.style.boxShadow = '0 0 20px 4px #ff3030';
-  setTimeout(() => { bar.style.boxShadow = '0 2px 0 rgba(0,0,0,.5)'; }, 200);
-}
-let toastTimer = null;
-function toast(msg){
-  const el = $('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
-}
-
-/* BUTTON SETTINGS */
-const ButtonSettings = (() => {
-  const KEY = 'dh_btn_position_v2';
-  const KEYS = ['moveJoy', 'aimJoy', 'jump', 'sit'];
-  let offsets = { moveJoy:{dx:0,dy:0}, aimJoy:{dx:0,dy:0}, jump:{dx:0,dy:0}, sit:{dx:0,dy:0} };
-  let backup = null;
-  let editMode = false;
-  const VARS = {
-    moveJoy: ['--mjoy-tx', '--mjoy-ty'],
-    aimJoy:  ['--ajoy-tx', '--ajoy-ty'],
-    jump:    ['--jump-tx', '--jump-ty'],
-    sit:     ['--sit-tx', '--sit-ty']
-  };
-  const ELEMS = { moveJoy: 'moveJoystick', aimJoy: 'aimJoystick', jump: 'btnJump', sit: 'btnSit' };
-  function load(){
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw){
-        const data = JSON.parse(raw);
-        for (const k of KEYS) if (data[k]) offsets[k] = { dx: +data[k].dx || 0, dy: +data[k].dy || 0 };
-      }
-    } catch(e){}
-  }
-  function save(){ try { localStorage.setItem(KEY, JSON.stringify(offsets)); } catch(e){} }
-  function applyOne(key){
-    const root = document.documentElement;
-    const [vx, vy] = VARS[key];
-    const o = offsets[key];
-    root.style.setProperty(vx, o.dx + 'px');
-    root.style.setProperty(vy, o.dy + 'px');
-  }
-  function applyAll(){ for (const k of KEYS) applyOne(k); }
-  function makeDraggable(key){
-    const el = $(ELEMS[key]);
-    if (!el) return;
-    let dragging = false, startX = 0, startY = 0, startDx = 0, startDy = 0;
-    el.addEventListener('pointerdown', e => {
-      if (!editMode) return;
-      e.preventDefault(); e.stopPropagation();
-      dragging = true;
-      startX = e.clientX; startY = e.clientY;
-      startDx = offsets[key].dx; startDy = offsets[key].dy;
-      el.style.zIndex = '99999';
-      try { el.setPointerCapture(e.pointerId); } catch(err){}
-    }, true);
-    el.addEventListener('pointermove', e => {
-      if (!dragging) return;
-      e.preventDefault();
-      offsets[key].dx = startDx + (e.clientX - startX);
-      offsets[key].dy = startDy + (e.clientY - startY);
-      applyOne(key);
-    }, true);
-    const stop = () => { dragging = false; el.style.zIndex = ''; };
-    el.addEventListener('pointerup', stop, true);
-    el.addEventListener('pointercancel', stop, true);
-  }
-  function openEditor(){
-    load();
-    backup = JSON.parse(JSON.stringify(offsets));
-    editMode = true;
-    document.body.classList.add('edit-btn-mode');
-    $('menu').classList.add('hidden');
-  }
-  function commitSave(){
-    editMode = false;
-    document.body.classList.remove('edit-btn-mode');
-    save();
-    toast('💾 Đã lưu');
-    if (gameStarted){ paused = false; } else $('menu').classList.remove('hidden');
-  }
-  function cancelEdit(){
-    if (backup) offsets = JSON.parse(JSON.stringify(backup));
-    applyAll();
-    editMode = false;
-    document.body.classList.remove('edit-btn-mode');
-    if (!gameStarted) $('menu').classList.remove('hidden');
-  }
-  function reset(){
-    localStorage.removeItem(KEY);
-    for (const k of KEYS) offsets[k] = { dx: 0, dy: 0 };
-    applyAll();
-    toast('↺ Đã reset');
-  }
-  function init(){
-    load(); applyAll();
-    for (const k of KEYS) makeDraggable(k);
-    $('editSave').addEventListener('click', commitSave);
-    $('editCancel').addEventListener('click', cancelEdit);
-    $('editReset').addEventListener('click', () => {
-      for (const k of KEYS) offsets[k] = { dx: 0, dy: 0 };
-      applyAll();
-    });
-  }
-  return { init, openEditor, reset };
-})();
-
-/* NAME + JOIN */
-function getPlayerName(){
-  const el = $('playerName');
-  let name = (el && el.value.trim()) || 'Hunter';
-  if (AUTH.user && AUTH.user.displayName) name = AUTH.user.displayName;
-  if (name.length > 12) return name.slice(0, 12);
-  return name;
-}
-
-async function joinRoomDirect(code, hostName){
-  if (net.active){ toast('⚠ Đang trong phòng khác', true); return; }
-  try { net.disconnect(); } catch(e){}
-  await new Promise(r => setTimeout(r, 100));
-
-  const overlay = document.createElement('div');
-  overlay.id = 'joinOverlay';
-  overlay.style.cssText =
-    'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);' +
-    'background:rgba(20,24,16,.98);padding:26px 34px;' +
-    'border:2px solid #4a8a30;border-radius:12px;z-index:99999;' +
-    'color:#e8f0d8;font-family:Consolas,monospace;text-align:center;' +
-    'box-shadow:0 12px 60px rgba(0,0,0,.9);min-width:320px;max-width:90vw';
-  overlay.innerHTML =
-    '<div style="font-size:15px;font-weight:bold;color:#88ff60;margin-bottom:14px">' +
-      '🔗 Đang vào phòng <span style="color:#ffd060">' + code + '</span>' +
-    '</div>' +
-    '<div id="joinElapsed" style="font-size:10px;color:#586850;margin-bottom:12px">Đã chờ: 0.0s</div>' +
-    '<button id="joinCancelBtn" style="background:#5a5850;border:2px solid #0a0d08;' +
-      'color:#e8f0d8;border-radius:5px;padding:8px 16px;font-size:11px;' +
-      'cursor:pointer;font-family:inherit;font-weight:bold">✕ Hủy</button>';
-  document.body.appendChild(overlay);
-
-  let cancelled = false;
-  overlay.querySelector('#joinCancelBtn').addEventListener('click', () => {
-    cancelled = true;
-    overlay.remove();
-    try { net.disconnect(); } catch(e){}
-    toast('↩ Đã hủy');
-  });
-
-  const startTime = Date.now();
-  const elapsedTimer = setInterval(() => {
-    if (cancelled || !document.body.contains(overlay)){ clearInterval(elapsedTimer); return; }
-    const el = overlay.querySelector('#joinElapsed');
-    if (el) el.textContent = 'Đã chờ: ' + ((Date.now() - startTime) / 1000).toFixed(1) + 's';
-  }, 100);
-
-  try {
-    const name = getPlayerName();
-    await net.joinRoom(code, name);
-    clearInterval(elapsedTimer);
-    if (document.body.contains(overlay)) overlay.remove();
-    toast('✓ Đã vào phòng ' + code);
-  } catch(e){
-    clearInterval(elapsedTimer);
-    if (document.body.contains(overlay)) overlay.remove();
-    if (!cancelled){
-      toast('❌ ' + (e.message || 'Không vào được'), true);
-      if (AUTH.token) AUTH.triggerSave();
-    }
-  }
-}
-
-async function joinRoomByCode(){
-  const code = ($('joinCode').value || '').trim().toUpperCase();
-  const status = $('joinStatus');
-  if (code.length < 4){ status.textContent = '❌ Mã không hợp lệ'; return; }
-  if (net.active){ status.textContent = '⚠ Đang trong phòng khác'; return; }
-  const name = getPlayerName();
-  status.textContent = 'Đang kết nối...';
-  try {
-    await net.joinRoom(code, name);
-    status.textContent = '✓ Đã kết nối';
-  } catch(e){ status.textContent = '❌ ' + (e.message || e); }
-}
-
-/* Backend UI */
-function refreshBackendUI(){
-  const label = $('currentBackendLabel');
-  const select = $('backendSelect');
-  if (!label || !select) return;
-  label.textContent = (BACKEND && (BACKEND.name || BACKEND.host)) || '—';
-  select.innerHTML = '';
-  BACKEND_POOL.forEach((b, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = (b.name || b.host) + ' — ' + b.host;
-    if (BACKEND && BACKEND.host === b.host) opt.selected = true;
-    select.appendChild(opt);
-  });
-  if (BACKEND && !BACKEND_POOL.some(b => b.host === BACKEND.host)){
-    const opt = document.createElement('option');
-    opt.value = 'custom';
-    opt.textContent = '🌐 Custom: ' + BACKEND.host;
-    opt.selected = true;
-    select.appendChild(opt);
-  }
-  select.onchange = (e) => {
-    const val = e.target.value;
-    if (val === 'custom') return;
-    const b = BACKEND_POOL[parseInt(val)];
-    if (!b) return;
-    if (confirm('Đổi server sang ' + (b.name || b.host) + '?\nReload?')){
-      setBackend(b); saveBackend(b);
-      location.reload();
-    }
-  };
-}
-window.recheckBackend = async function(){
-  toast('🔄 Đang kiểm tra...');
-  const results = await Promise.all(BACKEND_POOL.map(async b => {
-    const t0 = performance.now();
-    const ok = await quickHealthCheck(b, 5000);
-    return { b, ok, ms: Math.round(performance.now() - t0) };
-  }));
-  const alive = results.filter(r => r.ok);
-  if (!alive.length){ toast('❌ Không server nào phản hồi', true); return; }
-  alive.sort((a, b) => a.ms - b.ms);
-  const best = alive[0];
-  toast('✓ Nhanh nhất: ' + best.b.host + ' (' + best.ms + 'ms)');
-  if (best.b.host !== BACKEND.host){
-    if (confirm('Đổi sang ' + best.b.host + '?')){
-      setBackend(best.b); saveBackend(best.b);
-      location.reload();
-    }
-  }
-};
-window.clearBackendCache = function(){
-  localStorage.removeItem('dh_backend_host');
-  toast('🗑 Đã xóa cache');
-  setTimeout(() => location.reload(), 500);
-};
-
-/* MENU */
-window.Game = {
-  startSingleplayer: () => startSingleplayer(),
-  showMP: () => showMenuPage('mp'),
-  showSettings: () => {
-    if (gameStarted){ paused = true; $('pause').classList.add('hidden'); }
-    $('menu').classList.remove('hidden');
-    showMenuPage('settings');
-    setTimeout(refreshBackendUI, 100);
-  },
-  backMain: () => {
-    showMenuPage('main');
-    if (gameStarted){ $('menu').classList.add('hidden'); paused = false; }
-  },
-  hostRoom: () => hostRoom(),
-  joinRoom: () => joinRoomByCode(),
-  resumeGame: () => togglePause(),
-  pauseSettings: () => {
-    paused = false;
-    $('pause').classList.add('hidden');
-    backToMenu(); showMenuPage('settings');
-  },
-  quitToMenu: () => backToMenu(),
-  joinFromList: (code, hostName) => joinRoomDirect(code, hostName),
-  refreshRooms: () => {
-    const btn = $('roomRefreshBtn');
-    if (btn) btn.classList.add('spinning');
-    fetchAndRenderRooms().finally(() => {
-      if (btn) setTimeout(() => btn.classList.remove('spinning'), 300);
-    });
-  },
-  toggleJoinByCode: () => {
-    const p = $('joinPanel');
-    const hp = $('hostPanel');
-    hp.classList.add('hidden');
-    p.classList.toggle('hidden');
-    if (!p.classList.contains('hidden')) setTimeout(() => $('joinCode').focus(), 100);
-  }
-};
-const menuPages = {
-  main: $('menuMain'),
-  mp: $('menuMP'),
-  settings: $('menuSettings')
-};
-function showMenuPage(name){
-  if (!menuPages[name]) return;
-  for (const k in menuPages) menuPages[k].classList.toggle('hidden', k !== name);
-  if (name === 'mp') startRoomPolling();
-  else stopRoomPolling();
-}
-async function hostRoom(){
-  if (net.active){ toast('⚠ Đang trong phòng khác', true); return; }
-  $('hostPanel').classList.remove('hidden');
-  $('joinPanel').classList.add('hidden');
-  const name = getPlayerName();
-  const status = $('hostStatus');
-  const codeEl = $('roomCodeDisplay');
-  status.textContent = '📡 Đang tạo phòng...';
-
-  try {
-    const code = await net.createRoom(name);
-    codeEl.textContent = code;
-    codeEl.classList.remove('hidden');
-    status.innerHTML =
-      '✓ Đã tạo phòng · <span style="color:#ffd060">' + code + '</span><br>' +
-      '<small style="color:#889878">🎧 Chờ đối thủ (tối đa ' + MAX_PLAYERS + ')...</small>';
-
-    initRNG(Date.now() & 0x7fffffff);
-    world.fill(0); generateWorld();
-    resetPlayerPosition(); initInv();
-    setTimeout(() => startGame('host'), 500);
-  } catch(e){
-    status.textContent = '❌ ' + (e.message || e);
-  }
-}
-function bindSlider(id, valId, cb){
-  const s = $(id), v = $(valId);
-  if (!s) return;
-  s.addEventListener('input', e => { v.textContent = e.target.value; cb(+e.target.value/100); });
-  v.textContent = s.value; cb(+s.value/100);
-}
-bindSlider('setMaster', 'valMaster', v => Audio2D.setMasterVolume(v));
-bindSlider('setMusic', 'valMusic', v => Audio2D.setMusicVolume(v));
-bindSlider('setSfx', 'valSfx', v => Audio2D.setSfxVolume(v));
-function toggleSettings(){
-  if (gameStarted){
-    paused = true;
-    $('pause').classList.add('hidden');
-    $('menu').classList.remove('hidden');
-    showMenuPage('settings');
-    setTimeout(refreshBackendUI, 100);
-  } else {
-    showMenuPage('settings');
-    setTimeout(refreshBackendUI, 100);
-  }
-}
-
-/* ROOM POLLING (lobby listing) */
-let roomPollingTimer = null;
-function startRoomPolling(){
-  if (roomPollingTimer) return;
-  fetchAndRenderRooms();
-  roomPollingTimer = setInterval(fetchAndRenderRooms, 5000);
-}
-function stopRoomPolling(){
-  if (roomPollingTimer){ clearInterval(roomPollingTimer); roomPollingTimer = null; }
-}
-async function fetchAndRenderRooms(){
-  try {
-    const res = await fetch(BACKEND_URL + '/rooms', {
-      cache: 'no-store',
-      signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    renderRoomList(data.rooms || []);
-  } catch(e){
-    renderRoomListError();
-  }
-}
-function renderRoomListError(){
-  const el = $('roomList');
-  const cnt = $('roomListCount');
-  if (!el) return;
-  cnt.textContent = '!';
-  el.innerHTML = '<div class="room-empty" style="color:#ff9898">⚠ Không kết nối server<br>' +
-    '<small style="color:#889878">Render khởi động (~30s) — thử lại sau</small></div>';
-}
-function renderRoomList(rooms){
-  const el = $('roomList');
-  const cnt = $('roomListCount');
-  if (!el) return;
-  cnt.textContent = rooms.length;
-  if (!rooms.length){
-    el.innerHTML = '<div class="room-empty">Chưa có phòng nào</div>';
-    return;
-  }
-  const now = Date.now();
-  el.innerHTML = '';
-  for (const r of rooms){
-    const isFull = r.count >= (r.max || MAX_PLAYERS);
-    const item = document.createElement('div');
-    item.className = 'room-item' + (isFull ? ' full' : '');
-    const countClass = isFull ? 'full' : (r.count <= 1 ? 'low' : '');
-    item.innerHTML =
-      '<span class="code">' + r.code + '</span>' +
-      '<span class="host">' + (r.name || 'Host') + '</span>' +
-      '<span class="count ' + countClass + '">' + r.count + '/' + (r.max || MAX_PLAYERS) + '</span>' +
-      '<span class="age">' + formatAge(now - r.ts) + '</span>';
-    if (!isFull) item.addEventListener('click', () => Game.joinFromList(r.code, r.name));
-    el.appendChild(item);
-  }
-}
-function formatAge(ms){
-  const s = Math.floor(ms / 1000);
-  if (s < 60) return s + 's';
-  const m = Math.floor(s / 60);
-  if (m < 60) return m + 'm';
-  return Math.floor(m / 60) + 'h';
-}
-
-/* GAME LIFECYCLE */
-function startSingleplayer(){
-  net.disconnect();
-  initRNG(Date.now() & 0x7fffffff);
-  world.fill(0); generateWorld();
-  resetPlayerPosition(); initInv();
-  startGame('sp');
-}
-function startGame(mode){
-  $('menu').classList.add('hidden');
-  $('pause').classList.add('hidden');
-  $('settingsBtn').classList.add('show');
-  gameStarted = true; paused = false;
-  Audio2D.init(); Audio2D.startMusic();
-  renderHotbar(); updateHpBar();
-  startNetSync(); updateNetHud();
-  toast(mode === 'sp' ? '🎮 Chơi đơn' :
-        mode === 'host' ? '🏠 Phòng: ' + net.roomCode : '⚔️ Đã vào phòng');
-}
-function togglePause(){
-  if (!gameStarted) return;
-  paused = !paused;
-  $('pause').classList.toggle('hidden', !paused);
-  $('settingsBtn').classList.toggle('show', !paused);
-}
-function backToMenu(){
-  gameStarted = false; paused = false;
-  $('pause').classList.add('hidden');
-  $('settingsBtn').classList.remove('show');
-  stopRoomPolling();
-  net.disconnect();
-  $('menu').classList.remove('hidden');
-  showMenuPage('main');
-  if (netSyncTimer){ clearInterval(netSyncTimer); netSyncTimer = null; }
-  if (AUTH.token) AUTH.save(collectSaveData());
-}
-function resetPlayerPosition(){
-  player.hp = player.maxHp;
-  player.x = WORLD_W*TILE/2; player.y = WORLD_H*TILE/2;
-  player.jumpT = 0; player.jumpY = 0;
-  player.attackT = 0; player.hurtT = 0;
-  player.deathT = 0;
-  player.sitting = false;
-  player.currentAnim = 'idle'; player.animTime = 0;
-  cam.x = player.x - VW/2; cam.y = player.y - VH/2;
-}
-
-/* MAIN LOOP */
-const G = { particles: [] };
-let lastT = performance.now();
-function loop(now){
-  try {
-    const dt = Math.min((now - lastT) / 1000, 0.05);
-    lastT = now;
-    if (gameStarted && !paused){
-      updatePlayer(dt); updateDayNight(dt);
-    }
-    for (const [id, p] of net.players){
-      p.animT = (p.animT || 0) + dt;
-    }
-    for (const p of G.particles){
-      p.life -= dt;
-      p.x += p.vx * dt; p.y += p.vy * dt;
-      p.vx *= 0.94; p.vy *= 0.94;
-    }
-    G.particles = G.particles.filter(p => p.life > 0);
-    if (gameStarted){
-      updateCam(); render(); updateHpBar();
-    }
-  } catch(e){ console.error(e); }
-  requestAnimationFrame(loop);
-}
-mouse.x = VW/2; mouse.y = VH/2;
-
-ButtonSettings.init();
-$('roomRefreshBtn').addEventListener('click', () => Game.refreshRooms());
-$('joinCode').addEventListener('keydown', e => {
-  if (e.key === 'Enter'){ e.preventDefault(); joinRoomByCode(); }
-});
-
-loadProject().then(async () => {
-  const authed = await initAuth();
-  if (authed) showMenuPage('main');
-  else $('menu').classList.add('hidden');
-  requestAnimationFrame(loop);
-});
-
-console.log('%c🐉 Dragon Hunter v3.0 — WebSocket + Postgres', 'color:#88ff60;font-weight:bold;font-size:14px');
-</script>
-</body>
-                     </html>
+  ctx.fillStyle
