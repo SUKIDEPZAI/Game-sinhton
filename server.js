@@ -1,10 +1,11 @@
 /* ============================================================
-   Dragon Hunter Backend v4.2
+   Dragon Hunter Backend v4.3
    ============================================================
    - Express (REST: auth, save, rooms list, tuning, health)
    - WebSocket (game state, realtime)
    - PostgreSQL (persistent data — optional, fallback in-memory)
    - Prompt Builder API (via ./public/prompt.routes)
+   - Admin API (via ./public/admin.routes) — OP account riêng
    ============================================================ */
 
 const express = require('express');
@@ -15,6 +16,7 @@ const cors = require('cors');
 const { WebSocketServer } = require('ws');
 const { Pool } = require('pg');
 const mountPromptRoutes = require('./public/prompt.routes');
+const mountAdminRoutes = require('./public/admin.routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -34,7 +36,7 @@ app.use(express.json({ limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 /* ============================================================
-   DATABASE
+   DATABASE + ROUTES INIT
    ============================================================ */
 let db = null;
 
@@ -43,34 +45,43 @@ async function initDB(){
   if (!url){
     console.log('[DB] No DATABASE_URL — running in memory mode');
     console.log('[DB] Accounts disabled · Prompt API disabled');
-    return;
+  } else {
+    try {
+      /* Auto-migrate before connecting */
+      const migrate = require('./db/migrate');
+      await migrate();
+
+      db = new Pool({
+        connectionString: url,
+        ssl: url.includes('localhost') || url.includes('127.0.0.1')
+          ? false
+          : { rejectUnauthorized: false },
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000
+      });
+      await db.query('SELECT 1');
+      console.log('[DB] ✓ Connected');
+
+      /* Mount Prompt Routes AFTER DB ready */
+      mountPromptRoutes(app, db, requireAuth);
+      console.log('[Routes] ✓ Prompt API mounted');
+
+    } catch(e){
+      console.error('[DB] ✗ Fail:', e.message);
+      console.error('[DB] Running in memory mode');
+      db = null;
+    }
   }
-  try {
-    /* Auto-migrate before connecting */
-    const migrate = require('./db/migrate');
-    await migrate();
 
-    db = new Pool({
-      connectionString: url,
-      ssl: url.includes('localhost') || url.includes('127.0.0.1')
-        ? false
-        : { rejectUnauthorized: false },
-      max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000
-    });
-    await db.query('SELECT 1');
-    console.log('[DB] ✓ Connected');
-
-    /* Mount Prompt Routes AFTER DB ready — BEFORE 404 handler */
-    mountPromptRoutes(app, db, requireAuth);
-    console.log('[Routes] ✓ Prompt API mounted');
-
-  } catch(e){
-    console.error('[DB] ✗ Fail:', e.message);
-    console.error('[DB] Running in memory mode — accounts disabled');
-    db = null;
-  }
+  /* ---------- Mount Admin Routes (độc lập DB) ---------- */
+  mountAdminRoutes(app, db, {
+    user: process.env.ADMIN_USER || 'op',
+    pass: process.env.ADMIN_PASS || null,
+    secret: process.env.ADMIN_SECRET || crypto.randomBytes(32).toString('hex'),
+    root: __dirname
+  });
+  console.log('[Routes] ✓ Admin API mounted');
 }
 
 /* ============================================================
@@ -338,7 +349,6 @@ app.post('/save', requireAuth, async (req, res) => {
 app.get('/rooms', async (req, res) => {
   try {
     if (!db){
-      /* In-memory mode */
       const list = [];
       rooms.forEach(function(r){
         list.push({
@@ -352,7 +362,6 @@ app.get('/rooms', async (req, res) => {
       return res.json({ rooms: list, total: list.length, maxPlayers: MAX_PLAYERS });
     }
 
-    /* Cleanup old rooms */
     await db.query("DELETE FROM rooms WHERE updated_at < NOW() - INTERVAL '30 minutes'");
 
     const r = await db.query(
@@ -461,7 +470,7 @@ app.get('/', function(req, res){
     '.ok{background:rgba(74,222,128,.15);color:#4ade80}' +
     '.off{background:rgba(248,113,113,.15);color:#f87171}</style>' +
     '</head><body>' +
-    '<h1>🐉 Dragon Hunter Backend v4.2</h1>' +
+    '<h1>🐉 Dragon Hunter Backend v4.3</h1>' +
     '<h3>Endpoints:</h3>' +
     '<ul>' +
     '<li><a href="/health">/health</a></li>' +
@@ -469,7 +478,7 @@ app.get('/', function(req, res){
     '<li><a href="/tuning">/tuning</a></li>' +
     '<li><a href="/editor.html">editor.html</a></li>' +
     '<li><a href="/weapon-tuner.html">weapon-tuner.html</a></li>' +
-    '<li><a href="/prompt-manager.html">prompt-manager.html</a></li>' +
+    '<li><a href="/prompt-manager.html">🔐 Admin Panel</a></li>' +
     '</ul>' +
     '<h3>Prompt API:</h3>' +
     '<ul>' +
@@ -478,6 +487,13 @@ app.get('/', function(req, res){
     '<li>/prompt/version/:id (GET)</li>' +
     '<li>/prompt/diff?a=&b= (GET)</li>' +
     '<li>/prompt/analytics (GET)</li>' +
+    '</ul>' +
+    '<h3>Admin API (OP only):</h3>' +
+    '<ul>' +
+    '<li>/admin/login (POST)</li>' +
+    '<li>/admin/build (GET)</li>' +
+    '<li>/admin/versions (GET)</li>' +
+    '<li>/admin/analytics (GET)</li>' +
     '</ul>' +
     '<div class="meta">' +
     '<p>WebSocket: wss://' + req.headers.host + '/ws</p>' +
@@ -496,11 +512,12 @@ app.get('/health', async function(req, res){
   }
   res.json({
     ok: true,
-    version: '4.2',
+    version: '4.3',
     ts: Date.now(),
     db: db ? (dbOk ? 'connected' : 'error') : 'memory',
     accounts: db ? 'enabled' : 'disabled',
     promptApi: db ? 'enabled' : 'disabled',
+    adminApi: process.env.ADMIN_PASS ? 'enabled' : 'disabled',
     wsClients: wss.clients.size,
     activeRooms: rooms.size,
     maxPlayers: MAX_PLAYERS,
@@ -940,40 +957,46 @@ setInterval(async function(){
 }, 60 * 60 * 1000);
 
 /* ============================================================
-   BOOT SEQUENCE (FIXED)
+   BOOT SEQUENCE
    ============================================================
    Thứ tự QUAN TRỌNG:
      1. initDB()        → migrate + connect + MOUNT prompt routes
-     2. 404 handler     → phải đăng ký SAU khi mount prompt routes
+                          + MOUNT admin routes
+     2. 404 handler     → đăng ký SAU khi mount tất cả routes
      3. server.listen() → khởi động sau khi mọi thứ sẵn sàng
    ============================================================ */
 (async function boot(){
   console.log('');
   console.log('🐉 ═══════════════════════════════════════════');
-  console.log('   DRAGON HUNTER BACKEND v4.2');
+  console.log('   DRAGON HUNTER BACKEND v4.3');
   console.log('   Booting...');
   console.log('🐉 ═══════════════════════════════════════════');
   console.log('');
 
-  /* 1. Init DB + mount prompt routes */
+  /* 1. Init DB + mount all routes */
   try {
     await initDB();
   } catch(e){
     console.error('[Boot] initDB failed:', e.message);
   }
 
-  /* 2. 404 handler — MUST be last route */
+  /* 2. 404 handler — MUST be last */
   app.use(function(req, res){
     res.status(404).json({ error: 'Not found', path: req.path });
   });
 
   /* 3. Listen */
   server.listen(PORT, function(){
+    const adminEnabled = process.env.ADMIN_PASS ? 'enabled' : 'disabled';
     console.log('');
     console.log('🐉 ═══════════════════════════════════════════');
     console.log('   ✓ Listening on port ' + PORT);
     console.log('   ✓ DB: ' + (db ? 'PostgreSQL' : 'in-memory'));
     console.log('   ✓ Prompt API: ' + (db ? 'enabled' : 'disabled'));
+    console.log('   ✓ Admin API: ' + adminEnabled);
+    if (process.env.ADMIN_USER) {
+      console.log('   ✓ Admin user: ' + process.env.ADMIN_USER);
+    }
     console.log('🐉 ═══════════════════════════════════════════');
     console.log('');
   });
