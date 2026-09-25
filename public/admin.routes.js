@@ -866,11 +866,17 @@ module.exports = function mountAdminRoutes(app, db, config) {
 
     const fullPath = path.join(ROOT, filePath);
     /* Security */
-    if (!path.resolve(fullPath).startsWith(path.resolve(ROOT))) {
+    if (path.relative(path.resolve(ROOT), path.resolve(fullPath)).startsWith("..") ||
+        path.isAbsolute(path.relative(path.resolve(ROOT), path.resolve(fullPath)))) {
       return res.status(403).json({ error: "path outside root" });
     }
     try {
-      const content = await fs.readFile(fullPath, "utf8");
+      const realRoot = await fs.realpath(ROOT);
+      const realFile = await fs.realpath(fullPath);
+      const rel = path.relative(realRoot, realFile);
+      if (rel.startsWith("..") || path.isAbsolute(rel))
+        return res.status(403).json({ error: "path outside root" });
+      const content = await fs.readFile(realFile, "utf8");
       res.setHeader("Content-Type", "text/plain; charset=utf-8");
       res.send(content);
     } catch (e) {
@@ -951,6 +957,8 @@ module.exports = function mountAdminRoutes(app, db, config) {
     const id = parseInt(req.params.id);
     if (!id) return res.status(400).json({ error: "bad id" });
     try {
+      const dependents = await db.query("SELECT 1 FROM prompt_versions WHERE base_version = $1 LIMIT 1", [id]);
+      if (dependents.rowCount) return res.status(409).json({ error: "Version has dependent deltas" });
       const r = await db.query("DELETE FROM prompt_versions WHERE id = $1", [id]);
       res.json({ ok: true, deleted: r.rowCount });
     } catch (e) {
@@ -1027,3 +1035,4 @@ module.exports = function mountAdminRoutes(app, db, config) {
 
   console.log("[admin.routes] ✓ Mounted v2 · Deep analysis · user: " + ADMIN_USER);
 };
+

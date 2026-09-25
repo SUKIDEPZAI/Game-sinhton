@@ -70,6 +70,30 @@
         return content;
       }
 
+      // All prompt projects are private to their creating account.
+      // Existing global slug uniqueness is retained for compatibility.
+      app.use("/prompt", requireAuth, async function (req, res, next) {
+        try {
+          var slug = (req.body && req.body.project) || req.query.project;
+          if (slug) {
+            var project = await db.query("SELECT owner_id FROM prompt_projects WHERE slug = $1", [slug]);
+            if (project.rowCount && Number(project.rows[0].owner_id) !== Number(req.userId))
+              return res.status(403).json({ error: "Project belongs to another account" });
+          }
+          var ids = [req.query.id, req.query.a, req.query.b];
+          var match = req.path.match(/^\/version\/(\d+)$/);
+          if (match) ids.push(match[1]);
+          for (var id of ids.filter(Boolean)) {
+            if (!/^\d+$/.test(String(id))) return res.status(400).json({ error: "Invalid version id" });
+            var version = await db.query(
+              "SELECT pp.owner_id FROM prompt_versions pv JOIN prompt_projects pp ON pp.id = pv.project_id WHERE pv.id = $1", [id]);
+            if (version.rowCount && Number(version.rows[0].owner_id) !== Number(req.userId))
+              return res.status(403).json({ error: "Version belongs to another account" });
+          }
+          next();
+        } catch (e) { res.status(500).json({ error: "Permission check failed" }); }
+      });
+
       /* ----------------------------------------------------------
          POST /prompt/snapshot
          Body: { project, label, files[], fullText, changes[] }
@@ -82,12 +106,15 @@
         var fullText = body.fullText;
         var changes = body.changes || [];
 
-        if (!project || !Array.isArray(files) || !fullText) {
+        if (typeof project !== "string" || !project || !Array.isArray(files) ||
+            typeof fullText !== "string" || !fullText) {
           return res.status(400).json({
             error: "Missing project/files/fullText"
           });
         }
 
+        if (fullText.length > 2 * 1024 * 1024 || files.length > 100)
+          return res.status(413).json({ error: "Snapshot exceeds size limit" });
         try {
           var proj = await getOrCreateProject(project, req.userId);
           var hash = ALGO.hashContent(fullText);
@@ -107,7 +134,7 @@
 
           /* Prev version → delta */
           var prev = await db.query(
-            "SELECT id, content FROM prompt_versions WHERE project_id = $1 ORDER BY ts DESC LIMIT 1",
+            "SELECT id, content, is_delta FROM prompt_versions WHERE project_id = $1 ORDER BY ts DESC, id DESC LIMIT 1",
             [proj.id]
           );
 
@@ -116,14 +143,21 @@
           var isDelta = false;
           var baseVersion = null;
 
-          if (prev.rowCount > 0 && prev.rows[0].content) {
-            var ops = ALGO.myersDiff(prev.rows[0].content, fullText);
+          if (prev.rowCount > 0) {
+            var previousContent = prev.rows[0].is_delta
+              ? await reconstructContent(prev.rows[0].id) : prev.rows[0].content;
+            if (previousContent != null && previousContent.length < 300000 &&
+                fullText.length < 300000 && previousContent.split("\n").length < 2000 &&
+                fullText.split("\n").length < 2000) {
+            var ops = ALGO.myersDiff(previousContent, fullText);
             delta = ALGO.compressDelta(ops);
             deltaSize = delta.length;
             baseVersion = prev.rows[0].id;
 
             var totalLines = fullText.split("\n").length;
-            if (deltaSize * 3 < totalLines) isDelta = true;
+            if (JSON.stringify(delta).length < fullText.length * 0.6 &&
+                ALGO.applyDelta(previousContent.split("\n"), delta).join("\n") === fullText) isDelta = true;
+            }
           }
 
           /* Insert version */
@@ -381,6 +415,8 @@
 
         try {
           if (id) {
+            var dependents = await db.query("SELECT 1 FROM prompt_versions WHERE base_version = $1 LIMIT 1", [id]);
+            if (dependents.rowCount) return res.status(409).json({ error: "Version has dependent deltas" });
             var r = await db.query(
               "DELETE FROM prompt_versions WHERE id = $1",
               [id]
@@ -614,3 +650,4 @@
     applyDelta: applyDelta
   };
 });
+
