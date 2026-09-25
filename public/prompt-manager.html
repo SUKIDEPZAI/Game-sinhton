@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>📄 Prompt Manager · Dragon Hunter</title>
+<title>🔐 Admin · Dragon Hunter</title>
 <style>
 :root{
   --bg-0:#05080d;--bg-1:#0a0f16;--bg-2:#121a24;--bg-3:#1a2430;
@@ -24,7 +24,6 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;color:inhe
 input,select{font-family:inherit;color:inherit}
 a{color:var(--primary);text-decoration:none}
 
-/* HEADER */
 header{background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
   border-bottom:1px solid var(--border);padding:16px 24px;
   display:flex;align-items:center;gap:16px;
@@ -33,7 +32,7 @@ header{background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
 .logo-icon{width:40px;height:40px;border-radius:var(--r);
   background:linear-gradient(135deg,var(--gold),var(--primary));
   display:flex;align-items:center;justify-content:center;font-size:22px}
-.logo-text{font-size:18px;font-weight:800;letter-spacing:1px;
+.logo-text{font-size:16px;font-weight:800;letter-spacing:1px;
   background:linear-gradient(135deg,var(--primary),var(--gold));
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   font-family:'JetBrains Mono',Consolas,monospace}
@@ -45,7 +44,7 @@ header{background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
   border-radius:999px;font-size:12px;
   font-family:'JetBrains Mono',Consolas,monospace}
 .user-box .avatar{width:26px;height:26px;border-radius:50%;
-  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  background:linear-gradient(135deg,var(--gold),var(--primary));
   display:flex;align-items:center;justify-content:center;
   font-weight:800;font-size:12px;color:#05080d}
 .btn{padding:10px 18px;border-radius:var(--r);font-size:13px;font-weight:600;
@@ -59,28 +58,29 @@ header{background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
   color:#05080d;border-color:var(--primary);font-weight:800;
   box-shadow:0 4px 20px var(--primary-glow)}
 .btn.primary:hover{box-shadow:0 6px 30px var(--primary-glow)}
+.btn.gold{background:linear-gradient(180deg,var(--gold),#f59e0b);
+  color:#05080d;border-color:var(--gold);font-weight:800}
 .btn.danger{background:linear-gradient(180deg,var(--danger),#dc2626);
   color:#fff;border-color:var(--danger)}
 .btn.sm{padding:6px 12px;font-size:11px}
+.btn.lg{padding:14px 28px;font-size:15px}
 
-/* MAIN */
 main{max-width:1200px;margin:0 auto;padding:32px 24px 80px}
 h2{font-size:13px;letter-spacing:2px;color:var(--text-dim);
   font-family:'JetBrains Mono',Consolas,monospace;
-  text-transform:uppercase;margin:24px 0 14px;
+  text-transform:uppercase;margin:28px 0 14px;
   display:flex;align-items:center;gap:10px}
 h2::after{content:'';flex:1;height:1px;
   background:linear-gradient(90deg,var(--border),transparent)}
 h2:first-child{margin-top:0}
 
-/* LOGIN PANEL */
 #loginPanel{max-width:420px;margin:80px auto;
   background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
   border:1px solid var(--border);border-radius:var(--r-xl);
   padding:40px 32px;text-align:center;
   box-shadow:var(--shadow-lg),0 0 80px rgba(94,234,212,.1)}
 #loginPanel h1{font-size:26px;letter-spacing:3px;margin-bottom:8px;
-  background:linear-gradient(135deg,var(--primary),var(--gold));
+  background:linear-gradient(135deg,var(--gold),var(--primary));
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   font-family:'JetBrains Mono',Consolas,monospace}
 #loginPanel p{font-size:12px;color:var(--text-dim);margin-bottom:24px;
@@ -101,8 +101,19 @@ h2:first-child{margin-top:0}
   display:none;font-family:'JetBrains Mono',Consolas,monospace}
 .error.show{display:block}
 
-/* STATS GRID */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+.hero{background:linear-gradient(135deg,rgba(94,234,212,.08),rgba(251,191,36,.05));
+  border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:24px 28px;margin-bottom:24px;
+  display:flex;flex-wrap:wrap;align-items:center;gap:20px}
+.hero-icon{font-size:48px;line-height:1}
+.hero-content{flex:1;min-width:200px}
+.hero-title{font-size:20px;font-weight:800;margin-bottom:6px;
+  color:var(--text);font-family:'JetBrains Mono',Consolas,monospace}
+.hero-desc{font-size:12px;color:var(--text-dim);line-height:1.6;
+  font-family:'JetBrains Mono',Consolas,monospace}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
   gap:12px;margin-bottom:24px}
 .stat-card{background:var(--bg-glass);backdrop-filter:blur(12px);
   border:1px solid var(--border);border-radius:var(--r-lg);
@@ -111,42 +122,40 @@ h2:first-child{margin-top:0}
 .stat-label{font-size:10px;color:var(--text-dim);letter-spacing:1.5px;
   text-transform:uppercase;font-weight:700;margin-bottom:8px;
   font-family:'JetBrains Mono',Consolas,monospace}
-.stat-value{font-size:26px;font-weight:800;color:var(--primary);
+.stat-value{font-size:24px;font-weight:800;color:var(--primary);
   font-family:'JetBrains Mono',Consolas,monospace;line-height:1.1}
 .stat-value.gold{color:var(--gold)}
 .stat-value.green{color:var(--success)}
-.stat-value.small{font-size:18px}
+.stat-value.small{font-size:16px}
 .stat-sub{font-size:11px;color:var(--text-dim);margin-top:6px;
   font-family:'JetBrains Mono',Consolas,monospace}
 
-/* VERSIONS LIST */
 .version-list{display:flex;flex-direction:column;gap:10px}
 .version-card{background:var(--bg-glass);backdrop-filter:blur(12px);
   border:1px solid var(--border);border-radius:var(--r-lg);
   padding:16px 20px;display:flex;align-items:center;gap:16px;
-  transition:all .15s;cursor:pointer}
-.version-card:hover{border-color:var(--primary);background:rgba(94,234,212,.05);
-  transform:translateX(4px)}
+  transition:all .15s}
+.version-card:hover{border-color:var(--primary);
+  background:rgba(94,234,212,.05);transform:translateX(4px)}
 .version-id{font-family:'JetBrains Mono',Consolas,monospace;
-  font-size:18px;font-weight:800;color:var(--primary);
-  min-width:60px;text-shadow:0 0 12px var(--primary-glow)}
+  font-size:16px;font-weight:800;color:var(--primary);
+  min-width:56px;text-shadow:0 0 12px var(--primary-glow)}
 .version-info{flex:1;min-width:0}
 .version-label{font-size:13px;font-weight:600;color:var(--text);
-  margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .version-meta{font-size:11px;color:var(--text-dim);
   font-family:'JetBrains Mono',Consolas,monospace;
-  display:flex;gap:12px;flex-wrap:wrap}
-.version-meta span{display:flex;align-items:center;gap:4px}
+  display:flex;gap:14px;flex-wrap:wrap;align-items:center}
 .version-actions{display:flex;gap:6px;flex-shrink:0}
+
 .badge{padding:3px 9px;border-radius:999px;font-size:9px;
   font-weight:800;letter-spacing:.5px;text-transform:uppercase;
   font-family:'JetBrains Mono',Consolas,monospace}
 .badge.delta{background:rgba(251,191,36,.15);color:var(--gold)}
 .badge.full{background:rgba(94,234,212,.15);color:var(--primary)}
-.badge.server{background:rgba(94,234,212,.15);color:var(--primary)}
-.badge.local{background:rgba(251,191,36,.15);color:var(--gold)}
+.badge.project{background:rgba(96,165,250,.15);color:#60a5fa}
 
-/* TOAST */
 #toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
   background:var(--bg-glass-hi);backdrop-filter:blur(16px);
   color:var(--text);padding:14px 24px;border-radius:var(--r);
@@ -159,12 +168,9 @@ h2:first-child{margin-top:0}
 #toast.warning{border-left-color:var(--gold);color:#fcd34d}
 #toast.success{border-left-color:var(--success);color:#86efac}
 
-/* EMPTY STATE */
 .empty{padding:60px 20px;text-align:center;color:var(--text-dim);
   font-family:'JetBrains Mono',Consolas,monospace;font-size:12px;line-height:2}
 .empty .icon{font-size:48px;opacity:.4;margin-bottom:16px}
-
-/* LOADING */
 .loading{padding:40px;text-align:center;color:var(--text-dim);
   font-family:'JetBrains Mono',Consolas,monospace;font-size:12px}
 .spinner{display:inline-block;width:20px;height:20px;
@@ -173,7 +179,6 @@ h2:first-child{margin-top:0}
   margin-right:10px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* HOT FILES */
 .hot-files{display:flex;flex-direction:column;gap:8px}
 .hot-file{display:flex;align-items:center;gap:12px;
   font-family:'JetBrains Mono',Consolas,monospace;font-size:11px}
@@ -185,18 +190,6 @@ h2:first-child{margin-top:0}
   border-radius:4px;transition:width .5s ease}
 .hot-file-count{min-width:40px;text-align:right;color:var(--gold);font-weight:700}
 
-/* HOURLY CHART */
-.hourly{display:flex;gap:2px;align-items:flex-end;height:60px;
-  margin-top:12px;padding:8px 0;border-top:1px solid var(--border);
-  border-bottom:1px solid var(--border)}
-.hourly-bar{flex:1;background:linear-gradient(180deg,var(--primary),var(--primary-2));
-  border-radius:2px 2px 0 0;min-height:2px;transition:all .3s}
-.hourly-bar.empty{background:rgba(255,255,255,.08)}
-.hourly-labels{display:flex;justify-content:space-between;
-  font-size:9px;color:var(--text-dim);margin-top:4px;
-  font-family:'JetBrains Mono',Consolas,monospace}
-
-/* LOADING OVERLAY */
 #loadingOverlay{position:fixed;inset:0;background:rgba(3,6,10,.9);
   backdrop-filter:blur(8px);z-index:999;display:none;
   align-items:center;justify-content:center;flex-direction:column;gap:20px}
@@ -210,13 +203,16 @@ h2:first-child{margin-top:0}
 
 @media (max-width:600px){
   header{padding:12px 16px;gap:10px}
-  .logo-text{font-size:14px}
+  .logo-text{font-size:13px}
   .logo-sub{display:none}
   main{padding:20px 16px 60px}
   .version-card{padding:12px 14px;gap:10px;flex-wrap:wrap}
-  .version-id{font-size:14px;min-width:44px}
+  .version-id{font-size:13px;min-width:44px}
   .btn{padding:8px 12px;font-size:12px}
   .stat-value{font-size:20px}
+  .hero{padding:18px 20px}
+  .hero-icon{font-size:36px}
+  .hero-title{font-size:16px}
 }
 </style>
 </head>
@@ -224,55 +220,72 @@ h2:first-child{margin-top:0}
 
 <header>
   <div class="logo">
-    <div class="logo-icon">📄</div>
+    <div class="logo-icon">🔐</div>
     <div>
-      <div class="logo-text">PROMPT MANAGER</div>
-      <div class="logo-sub">Dragon Hunter · Admin</div>
+      <div class="logo-text">ADMIN PANEL</div>
+      <div class="logo-sub">Dragon Hunter · OP</div>
     </div>
   </div>
   <div class="spacer"></div>
   <div id="userBox" class="user-box" style="display:none">
-    <div class="avatar" id="userAvatar">H</div>
-    <span id="userName">Hunter</span>
+    <div class="avatar">O</div>
+    <span id="userName">op</span>
     <button class="btn sm" onclick="logout()" style="padding:4px 10px;font-size:10px">
       Đăng xuất
     </button>
   </div>
-  <a href="/" class="btn sm" style="text-decoration:none">🎮 Về game</a>
+  <a href="/" class="btn sm">🎮 Về game</a>
 </header>
 
 <main>
   <!-- LOGIN -->
   <div id="loginPanel">
-    <h1>📄 PROMPT MANAGER</h1>
-    <p>Đăng nhập để quản lý backups dự án</p>
+    <h1>🔐 ADMIN ACCESS</h1>
+    <p>Tài khoản OP riêng · Không dùng account game</p>
     <div class="field">
-      <label>Tên đăng nhập</label>
-      <input type="text" id="loginUser" placeholder="hunter" autocomplete="username">
+      <label>Tài khoản OP</label>
+      <input type="text" id="loginUser" placeholder="op" autocomplete="username">
     </div>
     <div class="field">
-      <label>Mật khẩu</label>
-      <input type="password" id="loginPass" placeholder="••••••" autocomplete="current-password">
+      <label>Mật khẩu OP</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
     </div>
     <div class="error" id="loginError"></div>
-    <button class="btn primary" style="width:100%;padding:14px;font-size:14px" id="loginBtn">
+    <button class="btn primary lg" style="width:100%" id="loginBtn">
       🔓 Đăng nhập
     </button>
   </div>
 
-  <!-- CONTENT -->
+  <!-- DASHBOARD -->
   <div id="content" style="display:none">
 
-    <h2>📊 Tổng quan</h2>
+    <div class="hero">
+      <div class="hero-icon">📦</div>
+      <div class="hero-content">
+        <div class="hero-title">Build & Download Full Source</div>
+        <div class="hero-desc">
+          Đọc trực tiếp source code từ server → Build prompt.txt đầy đủ.<br>
+          Gửi file cho AI/dev khác → hiểu hết dự án trong 1 lần đọc.
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="btn primary lg" onclick="buildAndDownload()" id="buildBtn">
+          🔄 Build & Tải ngay
+        </button>
+        <button class="btn lg" onclick="previewBuild()">👁 Xem trước</button>
+      </div>
+    </div>
+
+    <h2>📊 Tổng quan hệ thống</h2>
     <div class="stats-grid" id="statsGrid">
       <div class="loading"><span class="spinner"></span>Đang tải...</div>
     </div>
 
-    <h2>📦 Danh sách Backups</h2>
+    <h2>📁 Danh sách Versions</h2>
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-      <button class="btn primary" onclick="downloadLatest()">⬇️ Tải bản mới nhất</button>
       <button class="btn" onclick="loadVersions()">🔄 Refresh</button>
-      <button class="btn danger" onclick="clearAll()">🗑️ Xoá tất cả</button>
+      <button class="btn" onclick="loadFiles()">📋 File có thể build</button>
+      <button class="btn danger" onclick="clearAll()">🗑 Xoá tất cả</button>
     </div>
     <div class="version-list" id="versionList">
       <div class="loading"><span class="spinner"></span>Đang tải...</div>
@@ -280,11 +293,6 @@ h2:first-child{margin-top:0}
 
     <h2>🔥 File thay đổi nhiều nhất</h2>
     <div class="hot-files" id="hotFiles">
-      <div class="loading">Chưa có dữ liệu</div>
-    </div>
-
-    <h2>🕐 Hoạt động theo giờ</h2>
-    <div id="hourlyChart">
       <div class="loading">Chưa có dữ liệu</div>
     </div>
 
@@ -310,14 +318,13 @@ h2:first-child{margin-top:0}
    CONFIG
    ============================================================ */
 const BACKEND_POOL = [
-  { host:'game-sinhton.onrender.com', secure:true, name:'Render · main' },
-  { host:'game-sinhton-1.onrender.com', secure:true, name:'Render · backup' }
+  { host:'game-sinhton.onrender.com', secure:true },
+  { host:'game-sinhton-1.onrender.com', secure:true }
 ];
-const PROJECT_SLUG = 'dragon-hunter';
-
 let BACKEND_URL = 'https://' + BACKEND_POOL[0].host;
-let AUTH = {
-  token: localStorage.getItem('dh_auth_token') || null,
+
+let ADMIN = {
+  token: localStorage.getItem('dh_admin_token') || null,
   user: null
 };
 
@@ -363,16 +370,16 @@ function escapeHtml(s){
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[c]));
 }
-async function api(path, options = {}){
+async function adminApi(path, options = {}){
   const headers = { ...(options.headers || {}) };
-  if (AUTH.token) headers['Authorization'] = 'Bearer ' + AUTH.token;
+  if (ADMIN.token) headers['Authorization'] = 'Bearer ' + ADMIN.token;
   if (options.body && typeof options.body !== 'string'){
     headers['Content-Type'] = 'application/json';
     options.body = JSON.stringify(options.body);
   }
   const res = await fetch(BACKEND_URL + path, {
     ...options, headers,
-    signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined
+    signal: AbortSignal.timeout ? AbortSignal.timeout(60000) : undefined
   });
   let data = null;
   try { data = await res.json(); } catch(e){}
@@ -396,25 +403,21 @@ function downloadText(content, filename){
    AUTH
    ============================================================ */
 async function checkAuth(){
-  if (!AUTH.token){
-    showLogin();
-    return false;
-  }
+  if (!ADMIN.token){ showLogin(); return false; }
   try {
-    const r = await api('/auth/me');
-    AUTH.user = r.user;
+    const r = await adminApi('/admin/me');
+    ADMIN.user = r.user;
     showContent();
     return true;
   } catch(e){
     if (e.status === 401){
-      AUTH.token = null;
-      localStorage.removeItem('dh_auth_token');
+      ADMIN.token = null;
+      localStorage.removeItem('dh_admin_token');
     }
     showLogin();
     return false;
   }
 }
-
 function showLogin(){
   $('loginPanel').style.display = 'block';
   $('content').style.display = 'none';
@@ -424,9 +427,7 @@ function showContent(){
   $('loginPanel').style.display = 'none';
   $('content').style.display = 'block';
   $('userBox').style.display = 'flex';
-  const name = AUTH.user.displayName || AUTH.user.username || 'User';
-  $('userAvatar').textContent = name.charAt(0).toUpperCase();
-  $('userName').textContent = name;
+  $('userName').textContent = ADMIN.user.username;
   loadAll();
 }
 
@@ -442,12 +443,15 @@ $('loginBtn').addEventListener('click', async () => {
   $('loginBtn').disabled = true;
   $('loginBtn').innerHTML = '<span class="spinner"></span>Đang đăng nhập...';
   try {
-    const r = await api('/auth/login', { method:'POST', body:{ username:u, password:p } });
-    AUTH.token = r.token;
-    AUTH.user = r.user;
-    localStorage.setItem('dh_auth_token', AUTH.token);
+    const r = await adminApi('/admin/login', {
+      method:'POST',
+      body:{ username:u, password:p }
+    });
+    ADMIN.token = r.token;
+    ADMIN.user = r.user;
+    localStorage.setItem('dh_admin_token', ADMIN.token);
     showContent();
-    toast('✓ Đăng nhập thành công', 'success');
+    toast('✓ Đăng nhập OK', 'success');
   } catch(e){
     $('loginError').textContent = '❌ ' + e.message;
     $('loginError').classList.add('show');
@@ -459,13 +463,14 @@ $('loginBtn').addEventListener('click', async () => {
 $('loginPass').addEventListener('keydown', e => {
   if (e.key === 'Enter') $('loginBtn').click();
 });
+$('loginUser').addEventListener('keydown', e => {
+  if (e.key === 'Enter') $('loginPass').focus();
+});
 
 function logout(){
   if (!confirm('Đăng xuất?')) return;
-  api('/auth/logout', { method:'POST' }).catch(() => {});
-  AUTH.token = null;
-  AUTH.user = null;
-  localStorage.removeItem('dh_auth_token');
+  ADMIN.token = null; ADMIN.user = null;
+  localStorage.removeItem('dh_admin_token');
   location.reload();
 }
 
@@ -475,30 +480,111 @@ function logout(){
 async function loadAll(){
   showLoading('Đang tải dữ liệu...');
   try {
-    await Promise.all([
-      loadStats(),
-      loadVersions(),
-      loadAnalytics()
-    ]);
+    await Promise.all([ loadAnalytics(), loadVersions() ]);
   } catch(e){
     console.error(e);
-    toast('❌ Lỗi tải: ' + e.message, 'error');
   } finally {
     hideLoading();
   }
 }
 
 /* ============================================================
-   STATS OVERVIEW
+   BUILD & DOWNLOAD
    ============================================================ */
-async function loadStats(){
+async function buildAndDownload(){
+  showLoading('Đang build prompt từ server...');
+  $('buildBtn').disabled = true;
+  try {
+    const res = await fetch(BACKEND_URL + '/admin/build', {
+      headers: { 'Authorization': 'Bearer ' + ADMIN.token },
+      signal: AbortSignal.timeout ? AbortSignal.timeout(120000) : undefined
+    });
+    if (!res.ok){
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || ('HTTP ' + res.status));
+    }
+    const content = await res.text();
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    downloadText(content, `prompt_fullsource_${ts}.txt`);
+    toast('✓ Đã tải ' + formatSize(content.length), 'success');
+  } catch(e){
+    toast('❌ ' + e.message, 'error');
+  } finally {
+    hideLoading();
+    $('buildBtn').disabled = false;
+  }
+}
+
+async function previewBuild(){
+  showLoading('Đang lấy preview...');
+  try {
+    const res = await fetch(BACKEND_URL + '/admin/build', {
+      headers: { 'Authorization': 'Bearer ' + ADMIN.token },
+      signal: AbortSignal.timeout ? AbortSignal.timeout(120000) : undefined
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const content = await res.text();
+    hideLoading();
+    /* Mở tab mới với preview */
+    const w = window.open('', '_blank');
+    w.document.write(`
+      <html><head><title>Preview · Full Source</title>
+      <style>
+        body{background:#0a0f16;color:#e8f0e0;font-family:Consolas,monospace;
+          padding:24px;font-size:12px;line-height:1.6;max-width:1100px;margin:0 auto}
+        h1{color:#5eead4;font-size:18px;margin-bottom:8px}
+        .meta{color:#7a8a90;font-size:11px;margin-bottom:20px;
+          padding:12px;border-left:3px solid #5eead4;background:rgba(94,234,212,.05)}
+        pre{background:#05080d;padding:16px;border-radius:8px;
+          border:1px solid rgba(94,234,212,.15);
+          overflow-x:auto;white-space:pre-wrap;word-break:break-word;
+          max-height:80vh;overflow-y:auto;font-size:11px}
+        button{background:linear-gradient(180deg,#5eead4,#22d3ee);color:#05080d;
+          border:none;padding:10px 20px;border-radius:8px;font-weight:700;
+          cursor:pointer;font-family:inherit;margin-right:8px;margin-top:16px}
+      </style></head><body>
+        <h1>📄 Preview · Full Source</h1>
+        <div class="meta">
+          ${formatSize(content.length)} · ${content.split('\\n').length} lines
+        </div>
+        <button onclick="dl()">⬇️ Tải về</button>
+        <button onclick="cp()">📋 Copy</button>
+        <pre id="c"></pre>
+        <script>
+          const content = ${JSON.stringify(content)};
+          document.getElementById('c').textContent = content;
+          function dl(){
+            const b = new Blob([content], {type:'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(b);
+            a.download = 'prompt_fullsource_${Date.now()}.txt';
+            a.click();
+          }
+          function cp(){
+            navigator.clipboard.writeText(content).then(() => alert('✓ Copied!'));
+          }
+        <\/script>
+      </body></html>
+    `);
+  } catch(e){
+    hideLoading();
+    toast('❌ ' + e.message, 'error');
+  }
+}
+
+/* ============================================================
+   ANALYTICS
+   ============================================================ */
+async function loadAnalytics(){
   const grid = $('statsGrid');
   try {
-    const data = await api('/prompt/analytics?project=' + encodeURIComponent(PROJECT_SLUG));
+    const data = await adminApi('/admin/analytics');
     if (!data || data.empty){
       grid.innerHTML = '<div class="empty" style="grid-column:1/-1">' +
         '<div class="icon">📭</div>Chưa có snapshot nào<br>' +
-        '<span style="font-size:10px">Mở game + đăng nhập → snapshot sẽ tự động lưu</span></div>';
+        '<span style="font-size:10px">Vào game → auto-snapshot sẽ tạo version đầu tiên</span></div>';
+      $('hotFiles').innerHTML = '<div class="loading">Chưa có dữ liệu</div>';
+      $('compressionStats').innerHTML = '<div class="loading">Chưa có dữ liệu</div>';
       return;
     }
     const ov = data.overview || {};
@@ -516,7 +602,7 @@ async function loadStats(){
       <div class="stat-card">
         <div class="stat-label">Files trung bình</div>
         <div class="stat-value gold">${ov.avg_files || 0}</div>
-        <div class="stat-sub">Tổng instances: ${ov.total_file_instances || 0}</div>
+        <div class="stat-sub">Total: ${ov.total_file_instances || 0}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Size trung bình</div>
@@ -530,238 +616,29 @@ async function loadStats(){
       </div>
     `;
 
-    /* Update compression section */
     $('compressionStats').innerHTML = `
       <div class="stat-card">
         <div class="stat-label">Uncompressed</div>
         <div class="stat-value small">${formatSize(comp.avg_uncompressed)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Compressed (PG TOAST)</div>
+        <div class="stat-label">Compressed (TOAST)</div>
         <div class="stat-value small green">${formatSize(comp.avg_compressed)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Tổng delta lines</div>
+        <div class="stat-label">Delta lines</div>
         <div class="stat-value gold">${comp.total_delta_lines || 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Khoảng tg trung bình</div>
+        <div class="stat-label">Snapshot interval</div>
         <div class="stat-value small">
           ${data.intervals && data.intervals.avg_interval_seconds
             ? Math.round(data.intervals.avg_interval_seconds/60) + ' phút'
             : '—'}
         </div>
-        <div class="stat-sub">giữa các snapshot</div>
       </div>
     `;
 
-  } catch(e){
-    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;color:var(--danger)">' +
-      '⚠ Lỗi: ' + escapeHtml(e.message) + '</div>';
-  }
-}
-
-/* ============================================================
-   VERSIONS LIST
-   ============================================================ */
-async function loadVersions(){
-  const list = $('versionList');
-  list.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
-  try {
-    const data = await api('/prompt/versions?project=' + encodeURIComponent(PROJECT_SLUG) + '&limit=50');
-    const versions = data.versions || [];
-    if (!versions.length){
-      list.innerHTML = '<div class="empty"><div class="icon">📭</div>' +
-        'Chưa có version nào<br>' +
-        '<span style="font-size:10px;color:var(--text-dim)">Mở game + thay đổi file → snapshot tự động tạo</span></div>';
-      return;
-    }
-    const now = Date.now();
-    list.innerHTML = '';
-    for (const v of versions){
-      const card = document.createElement('div');
-      card.className = 'version-card';
-      const ts = new Date(v.ts).getTime();
-      card.innerHTML = `
-        <div class="version-id">#${v.id}</div>
-        <div class="version-info">
-          <div class="version-label">
-            ${escapeHtml(v.label || 'auto')}
-            <span class="badge ${v.is_delta ? 'delta' : 'full'}">${v.is_delta ? '⚡ delta' : '📦 full'}</span>
-          </div>
-          <div class="version-meta">
-            <span>⏱ ${formatAge(now - ts)}</span>
-            <span>📅 ${formatTime(ts)}</span>
-            <span>📁 ${v.files_count} files</span>
-            <span>💾 ${formatSize(v.total_size)}</span>
-            ${v.is_delta ? `<span>⚡ ${v.delta_size} dòng</span>` : ''}
-          </div>
-        </div>
-        <div class="version-actions">
-          <button class="btn primary sm" data-action="download" data-id="${v.id}">
-            ⬇️ Tải
-          </button>
-          <button class="btn danger sm" data-action="delete" data-id="${v.id}">
-            🗑
-          </button>
-        </div>
-      `;
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('button')) return;
-        previewVersion(v.id);
-      });
-      list.appendChild(card);
-    }
-    list.querySelectorAll('button[data-action="download"]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        downloadVersion(parseInt(btn.dataset.id));
-      });
-    });
-    list.querySelectorAll('button[data-action="delete"]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        deleteVersion(parseInt(btn.dataset.id));
-      });
-    });
-  } catch(e){
-    list.innerHTML = '<div class="empty" style="color:var(--danger)">⚠ Lỗi: ' +
-      escapeHtml(e.message) + '</div>';
-  }
-}
-
-/* ============================================================
-   DOWNLOAD
-   ============================================================ */
-async function downloadVersion(id){
-  showLoading('Đang tải version #' + id + '...');
-  try {
-    const data = await api('/prompt/version/' + id);
-    if (!data || !data.content){
-      toast('❌ Không lấy được nội dung', 'error');
-      return;
-    }
-    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0,19);
-    downloadText(data.content, `prompt_v${id}_${ts}.txt`);
-    toast('✓ Đã tải version #' + id + ' · ' + formatSize(data.content.length), 'success');
-  } catch(e){
-    toast('❌ ' + e.message, 'error');
-  } finally {
-    hideLoading();
-  }
-}
-
-async function downloadLatest(){
-  try {
-    const data = await api('/prompt/versions?project=' + encodeURIComponent(PROJECT_SLUG) + '&limit=1');
-    if (!data.versions || !data.versions.length){
-      toast('⚠ Chưa có version nào', 'warning');
-      return;
-    }
-    await downloadVersion(data.versions[0].id);
-  } catch(e){
-    toast('❌ ' + e.message, 'error');
-  }
-}
-
-async function previewVersion(id){
-  showLoading('Đang lấy version #' + id + '...');
-  try {
-    const data = await api('/prompt/version/' + id);
-    hideLoading();
-    /* Mở preview trong tab mới */
-    const w = window.open('', '_blank');
-    w.document.write(`
-      <html><head><title>Preview v${id}</title>
-      <style>
-        body{background:#0a0f16;color:#e8f0e0;font-family:'JetBrains Mono',Consolas,monospace;
-          padding:24px;font-size:13px;line-height:1.6;max-width:1000px;margin:0 auto}
-        h1{color:#5eead4;font-size:18px;margin-bottom:8px}
-        .meta{color:#7a8a90;font-size:11px;margin-bottom:20px;
-          padding:12px;border-left:3px solid #5eead4;background:rgba(94,234,212,.05)}
-        pre{background:#05080d;padding:16px;border-radius:8px;border:1px solid rgba(94,234,212,.15);
-          overflow-x:auto;white-space:pre-wrap;word-break:break-word;font-size:12px;
-          max-height:80vh;overflow-y:auto}
-        button{background:linear-gradient(180deg,#5eead4,#22d3ee);color:#05080d;
-          border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;
-          font-family:inherit;margin-right:8px;margin-top:16px}
-      </style></head><body>
-        <h1>📄 Version #${id}</h1>
-        <div class="meta">
-          ${data.files ? data.files.length : 0} files ·
-          ${formatSize(data.content.length)}
-        </div>
-        <button onclick="downloadText()">⬇️ Tải về</button>
-        <button onclick="copyText()">📋 Copy</button>
-        <pre id="content">${escapeHtml(data.content)}</pre>
-        <script>
-          const content = document.getElementById('content').textContent;
-          function downloadText(){
-            const blob = new Blob([content], {type:'text/plain'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'prompt_v${id}.txt';
-            a.click();
-          }
-          function copyText(){
-            navigator.clipboard.writeText(content).then(() => alert('✓ Đã copy!'));
-          }
-        <\/script>
-      </body></html>
-    `);
-  } catch(e){
-    hideLoading();
-    toast('❌ ' + e.message, 'error');
-  }
-}
-
-/* ============================================================
-   DELETE
-   ============================================================ */
-async function deleteVersion(id){
-  if (!confirm('Xoá version #' + id + '?\nKhông thể khôi phục.')) return;
-  showLoading('Đang xoá...');
-  try {
-    await api('/prompt/versions?id=' + id, { method:'DELETE' });
-    toast('✓ Đã xoá version #' + id, 'success');
-    loadVersions();
-  } catch(e){
-    toast('❌ ' + e.message, 'error');
-  } finally {
-    hideLoading();
-  }
-}
-
-async function clearAll(){
-  if (!confirm('Xoá TẤT CẢ versions của dự án?\nKhông thể khôi phục!')) return;
-  if (!confirm('Bạn CHẮC CHẮN muốn xoá hết?')) return;
-  showLoading('Đang xoá tất cả...');
-  try {
-    await api('/prompt/versions?project=' + encodeURIComponent(PROJECT_SLUG), {
-      method:'DELETE'
-    });
-    toast('✓ Đã xoá tất cả versions', 'success');
-    loadAll();
-  } catch(e){
-    toast('❌ ' + e.message, 'error');
-  } finally {
-    hideLoading();
-  }
-}
-
-/* ============================================================
-   ANALYTICS
-   ============================================================ */
-async function loadAnalytics(){
-  try {
-    const data = await api('/prompt/analytics?project=' + encodeURIComponent(PROJECT_SLUG));
-    if (!data || data.empty){
-      $('hotFiles').innerHTML = '<div class="loading">Chưa có dữ liệu</div>';
-      $('hourlyChart').innerHTML = '<div class="loading">Chưa có dữ liệu</div>';
-      return;
-    }
-
-    /* Hot files */
     const hot = data.hotFiles || [];
     if (!hot.length){
       $('hotFiles').innerHTML = '<div class="loading">Chưa có dữ liệu</div>';
@@ -780,24 +657,119 @@ async function loadAnalytics(){
         `;
       }).join('');
     }
-
-    /* Hourly chart */
-    const hourly = data.hourlyActivity || [];
-    const hours = new Array(24).fill(0);
-    for (const h of hourly) hours[+h.hour] = +h.cnt;
-    const maxH = Math.max(...hours, 1);
-    let html = '<div class="hourly">';
-    for (let i = 0; i < 24; i++){
-      const h = hours[i] ? Math.round(hours[i] / maxH * 58) : 2;
-      html += `<div class="hourly-bar ${hours[i] ? '' : 'empty'}"
-        style="height:${h}px" title="${i}h: ${hours[i]} snapshot"></div>`;
-    }
-    html += '</div>';
-    html += '<div class="hourly-labels"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div>';
-    $('hourlyChart').innerHTML = html;
-
   } catch(e){
-    console.error('[Analytics]', e);
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;color:var(--danger)">' +
+      '⚠ Lỗi: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+/* ============================================================
+   VERSIONS
+   ============================================================ */
+async function loadVersions(){
+  const list = $('versionList');
+  list.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const data = await adminApi('/admin/versions?limit=50');
+    const versions = data.versions || [];
+    if (!versions.length){
+      list.innerHTML = '<div class="empty"><div class="icon">📭</div>Chưa có version nào</div>';
+      return;
+    }
+    const now = Date.now();
+    list.innerHTML = '';
+    for (const v of versions){
+      const card = document.createElement('div');
+      card.className = 'version-card';
+      const ts = new Date(v.ts).getTime();
+      card.innerHTML = `
+        <div class="version-id">#${v.id}</div>
+        <div class="version-info">
+          <div class="version-label">
+            ${escapeHtml(v.label || 'auto')}
+            <span class="badge ${v.is_delta ? 'delta' : 'full'}">${v.is_delta ? '⚡ delta' : '📦 full'}</span>
+            <span class="badge project">${escapeHtml(v.project_slug || '—')}</span>
+          </div>
+          <div class="version-meta">
+            <span>⏱ ${formatAge(now - ts)}</span>
+            <span>📅 ${formatTime(ts)}</span>
+            <span>📁 ${v.files_count} files</span>
+            <span>💾 ${formatSize(v.total_size)}</span>
+          </div>
+        </div>
+        <div class="version-actions">
+          <button class="btn primary sm" data-action="download" data-id="${v.id}">⬇️</button>
+          <button class="btn danger sm" data-action="delete" data-id="${v.id}">🗑</button>
+        </div>
+      `;
+      list.appendChild(card);
+    }
+    list.querySelectorAll('button[data-action="download"]').forEach(btn => {
+      btn.addEventListener('click', () => downloadVersion(parseInt(btn.dataset.id)));
+    });
+    list.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+      btn.addEventListener('click', () => deleteVersion(parseInt(btn.dataset.id)));
+    });
+  } catch(e){
+    list.innerHTML = '<div class="empty" style="color:var(--danger)">⚠ ' +
+      escapeHtml(e.message) + '</div>';
+  }
+}
+
+async function downloadVersion(id){
+  showLoading('Đang tải version #' + id);
+  try {
+    const res = await fetch(BACKEND_URL + '/admin/version/' + id, {
+      headers: { 'Authorization': 'Bearer ' + ADMIN.token }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const content = await res.text();
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    downloadText(content, `prompt_v${id}_${ts}.txt`);
+    toast('✓ Đã tải v#' + id + ' · ' + formatSize(content.length), 'success');
+  } catch(e){
+    toast('❌ ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function deleteVersion(id){
+  if (!confirm('Xoá version #' + id + '?')) return;
+  try {
+    await adminApi('/admin/version/' + id, { method:'DELETE' });
+    toast('✓ Đã xoá v#' + id, 'success');
+    loadVersions();
+  } catch(e){
+    toast('❌ ' + e.message, 'error');
+  }
+}
+
+async function clearAll(){
+  if (!confirm('Xoá TẤT CẢ versions?\nKhông thể khôi phục!')) return;
+  if (!confirm('CHẮC CHẮN?')) return;
+  try {
+    const r = await adminApi('/admin/all', { method:'DELETE' });
+    toast('✓ Đã xoá ' + r.deleted + ' versions', 'success');
+    loadAll();
+  } catch(e){
+    toast('❌ ' + e.message, 'error');
+  }
+}
+
+async function loadFiles(){
+  showLoading('Đang tải danh sách file...');
+  try {
+    const data = await adminApi('/admin/files');
+    hideLoading();
+    const list = data.files.map(f =>
+      `  • ${f.path.padEnd(32)} — ${f.desc}`
+    ).join('\n');
+    alert('📋 FILES CÓ THỂ BUILD:\n\n' + list +
+      '\n\nTổng: ' + data.files.length + ' files');
+  } catch(e){
+    hideLoading();
+    toast('❌ ' + e.message, 'error');
   }
 }
 
@@ -805,30 +777,22 @@ async function loadAnalytics(){
    INIT
    ============================================================ */
 (async function init(){
-  /* Resolve best backend */
+  /* Resolve backend */
   for (const b of BACKEND_POOL){
     try {
       const url = (b.secure ? 'https://' : 'http://') + b.host + '/health';
-      const r = await fetch(url, { signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined });
+      const r = await fetch(url, {
+        signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined
+      });
       if (r.ok){
         BACKEND_URL = (b.secure ? 'https://' : 'http://') + b.host;
-        console.log('[Backend]', b.host);
         break;
       }
     } catch(e){}
   }
-
-  /* Auth check */
-  const authed = await checkAuth();
-  if (authed){
-    console.log('✓ Prompt Manager ready');
-  }
-
-  /* Auto-refresh analytics mỗi 30s */
-  setInterval(() => {
-    if (AUTH.token) loadAnalytics();
-  }, 30000);
+  await checkAuth();
+  console.log('[Admin] Ready · backend:', BACKEND_URL);
 })();
 </script>
 </body>
-  </html>
+          </html>
