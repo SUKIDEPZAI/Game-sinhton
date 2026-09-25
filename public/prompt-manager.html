@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📄 Prompt Manager · Dragon Hunter</title>
+<style>
+:root{
+  --bg-0:#05080d;--bg-1:#0a0f16;--bg-2:#121a24;--bg-3:#1a2430;
+  --border:rgba(94,234,212,.15);--border-hi:rgba(94,234,212,.4);
+  --text:#e8f0e0;--text-dim:#7a8a90;
+  --primary:#5eead4;--primary-2:#22d3ee;--primary-glow:rgba(94,234,212,.5);
+  --gold:#fbbf24;--danger:#f87171;--success:#4ade80;
+  --bg-glass:rgba(10,15,22,.85);--bg-glass-hi:rgba(15,22,32,.92);
+  --shadow:0 8px 24px rgba(0,0,0,.6);
+  --shadow-lg:0 20px 60px rgba(0,0,0,.8);
+  --r:10px;--r-lg:16px;--r-xl:24px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;min-height:100vh;background:var(--bg-0);color:var(--text);
+  font-family:'Inter','Segoe UI',-apple-system,Arial,sans-serif;font-size:14px;
+  -webkit-font-smoothing:antialiased}
+button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
+input,select{font-family:inherit;color:inherit}
+a{color:var(--primary);text-decoration:none}
+
+/* HEADER */
+header{background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+  border-bottom:1px solid var(--border);padding:16px 24px;
+  display:flex;align-items:center;gap:16px;
+  position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:40px;height:40px;border-radius:var(--r);
+  background:linear-gradient(135deg,var(--gold),var(--primary));
+  display:flex;align-items:center;justify-content:center;font-size:22px}
+.logo-text{font-size:18px;font-weight:800;letter-spacing:1px;
+  background:linear-gradient(135deg,var(--primary),var(--gold));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  font-family:'JetBrains Mono',Consolas,monospace}
+.logo-sub{font-size:10px;color:var(--text-dim);letter-spacing:2px;
+  font-family:'JetBrains Mono',Consolas,monospace}
+.spacer{flex:1}
+.user-box{display:flex;align-items:center;gap:10px;padding:6px 14px;
+  background:var(--bg-glass);border:1px solid var(--border);
+  border-radius:999px;font-size:12px;
+  font-family:'JetBrains Mono',Consolas,monospace}
+.user-box .avatar{width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:12px;color:#05080d}
+.btn{padding:10px 18px;border-radius:var(--r);font-size:13px;font-weight:600;
+  border:1px solid var(--border);background:var(--bg-3);color:var(--text);
+  transition:all .15s;display:inline-flex;align-items:center;gap:8px;
+  white-space:nowrap}
+.btn:hover{background:var(--bg-2);border-color:var(--border-hi);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:linear-gradient(180deg,var(--primary),var(--primary-2));
+  color:#05080d;border-color:var(--primary);font-weight:800;
+  box-shadow:0 4px 20px var(--primary-glow)}
+.btn.primary:hover{box-shadow:0 6px 30px var(--primary-glow)}
+.btn.danger{background:linear-gradient(180deg,var(--danger),#dc2626);
+  color:#fff;border-color:var(--danger)}
+.btn.sm{padding:6px 12px;font-size:11px}
+
+/* MAIN */
+main{max-width:1200px;margin:0 auto;padding:32px 24px 80px}
+h2{font-size:13px;letter-spacing:2px;color:var(--text-dim);
+  font-family:'JetBrains Mono',Consolas,monospace;
+  text-transform:uppercase;margin:24px 0 14px;
+  display:flex;align-items:center;gap:10px}
+h2::after{content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,var(--border),transparent)}
+h2:first-child{margin-top:0}
+
+/* LOGIN PANEL */
+#loginPanel{max-width:420px;margin:80px auto;
+  background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+  border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:40px 32px;text-align:center;
+  box-shadow:var(--shadow-lg),0 0 80px rgba(94,234,212,.1)}
+#loginPanel h1{font-size:26px;letter-spacing:3px;margin-bottom:8px;
+  background:linear-gradient(135deg,var(--primary),var(--gold));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  font-family:'JetBrains Mono',Consolas,monospace}
+#loginPanel p{font-size:12px;color:var(--text-dim);margin-bottom:24px;
+  font-family:'JetBrains Mono',Consolas,monospace}
+.field{text-align:left;margin-bottom:14px}
+.field label{display:block;font-size:10px;color:var(--text-dim);
+  letter-spacing:1.5px;text-transform:uppercase;font-weight:700;
+  margin-bottom:6px;font-family:'JetBrains Mono',Consolas,monospace}
+.field input{width:100%;padding:12px 14px;background:var(--bg-0);color:var(--text);
+  border:1.5px solid var(--border);border-radius:var(--r);
+  font-size:13px;font-family:'JetBrains Mono',Consolas,monospace;
+  transition:all .15s}
+.field input:focus{outline:none;border-color:var(--primary);
+  box-shadow:0 0 0 4px var(--primary-glow)}
+.error{padding:10px 14px;background:rgba(248,113,113,.12);
+  border-left:3px solid var(--danger);border-radius:6px;
+  color:#fca5a5;font-size:11px;text-align:left;margin-bottom:12px;
+  display:none;font-family:'JetBrains Mono',Consolas,monospace}
+.error.show{display:block}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:12px;margin-bottom:24px}
+.stat-card{background:var(--bg-glass);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:18px;transition:all .15s}
+.stat-card:hover{border-color:var(--border-hi);transform:translateY(-2px)}
+.stat-label{font-size:10px;color:var(--text-dim);letter-spacing:1.5px;
+  text-transform:uppercase;font-weight:700;margin-bottom:8px;
+  font-family:'JetBrains Mono',Consolas,monospace}
+.stat-value{font-size:26px;font-weight:800;color:var(--primary);
+  font-family:'JetBrains Mono',Consolas,monospace;line-height:1.1}
+.stat-value.gold{color:var(--gold)}
+.stat-value.green{color:var(--success)}
+.stat-value.small{font-size:18px}
+.stat-sub{font-size:11px;color:var(--text-dim);margin-top:6px;
+  font-family:'JetBrains Mono',Consolas,monospace}
+
+/* VERSIONS LIST */
+.version-list{display:flex;flex-direction:column;gap:10px}
+.version-card{background:var(--bg-glass);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:16px 20px;display:flex;align-items:center;gap:16px;
+  transition:all .15s;cursor:pointer}
+.version-card:hover{border-color:var(--primary);background:rgba(94,234,212,.05);
+  transform:translateX(4px)}
+.version-id{font-family:'JetBrains Mono',Consolas,monospace;
+  font-size:18px;font-weight:800;color:var(--primary);
+  min-width:60px;text-shadow:0 0 12px var(--primary-glow)}
+.version-info{flex:1;min-width:0}
+.version-label{font-size:13px;font-weight:600;color:var(--text);
+  margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.version-meta{font-size:11px;color:var(--text-dim);
+  font-family:'JetBrains Mono',Consolas,monospace;
+  display:flex;gap:12px;flex-wrap:wrap}
+.version-meta span{display:flex;align-items:center;gap:4px}
+.version-actions{display:flex;gap:6px;flex-shrink:0}
+.badge{padding:3px 9px;border-radius:999px;font-size:9px;
+  font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  font-family:'JetBrains Mono',Consolas,monospace}
+.badge.delta{background:rgba(251,191,36,.15);color:var(--gold)}
+.badge.full{background:rgba(94,234,212,.15);color:var(--primary)}
+.badge.server{background:rgba(94,234,212,.15);color:var(--primary)}
+.badge.local{background:rgba(251,191,36,.15);color:var(--gold)}
+
+/* TOAST */
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+  background:var(--bg-glass-hi);backdrop-filter:blur(16px);
+  color:var(--text);padding:14px 24px;border-radius:var(--r);
+  font-size:13px;z-index:1000;opacity:0;pointer-events:none;
+  border:1px solid var(--border);border-left:3px solid var(--primary);
+  box-shadow:var(--shadow-lg);transition:all .3s;
+  transform:translateX(-50%) translateY(20px);max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.error{border-left-color:var(--danger);color:#fca5a5}
+#toast.warning{border-left-color:var(--gold);color:#fcd34d}
+#toast.success{border-left-color:var(--success);color:#86efac}
+
+/* EMPTY STATE */
+.empty{padding:60px 20px;text-align:center;color:var(--text-dim);
+  font-family:'JetBrains Mono',Consolas,monospace;font-size:12px;line-height:2}
+.empty .icon{font-size:48px;opacity:.4;margin-bottom:16px}
+
+/* LOADING */
+.loading{padding:40px;text-align:center;color:var(--text-dim);
+  font-family:'JetBrains Mono',Consolas,monospace;font-size:12px}
+.spinner{display:inline-block;width:20px;height:20px;
+  border:2px solid var(--border);border-top-color:var(--primary);
+  border-radius:50%;animation:spin .8s linear infinite;
+  margin-right:10px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* HOT FILES */
+.hot-files{display:flex;flex-direction:column;gap:8px}
+.hot-file{display:flex;align-items:center;gap:12px;
+  font-family:'JetBrains Mono',Consolas,monospace;font-size:11px}
+.hot-file-name{min-width:140px;color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hot-file-bar{flex:1;height:8px;background:rgba(0,0,0,.4);
+  border-radius:4px;overflow:hidden}
+.hot-file-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--gold));
+  border-radius:4px;transition:width .5s ease}
+.hot-file-count{min-width:40px;text-align:right;color:var(--gold);font-weight:700}
+
+/* HOURLY CHART */
+.hourly{display:flex;gap:2px;align-items:flex-end;height:60px;
+  margin-top:12px;padding:8px 0;border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border)}
+.hourly-bar{flex:1;background:linear-gradient(180deg,var(--primary),var(--primary-2));
+  border-radius:2px 2px 0 0;min-height:2px;transition:all .3s}
+.hourly-bar.empty{background:rgba(255,255,255,.08)}
+.hourly-labels{display:flex;justify-content:space-between;
+  font-size:9px;color:var(--text-dim);margin-top:4px;
+  font-family:'JetBrains Mono',Consolas,monospace}
+
+/* LOADING OVERLAY */
+#loadingOverlay{position:fixed;inset:0;background:rgba(3,6,10,.9);
+  backdrop-filter:blur(8px);z-index:999;display:none;
+  align-items:center;justify-content:center;flex-direction:column;gap:20px}
+#loadingOverlay.show{display:flex}
+#loadingOverlay .text{font-family:'JetBrains Mono',Consolas,monospace;
+  font-size:13px;color:var(--primary);letter-spacing:1px}
+#loadingOverlay .big-spinner{width:48px;height:48px;
+  border:3px solid var(--border);border-top-color:var(--primary);
+  border-radius:50%;animation:spin .8s linear infinite;
+  box-shadow:0 0 40px var(--primary-glow)}
+
+@media (max-width:600px){
+  header{padding:12px 16px;gap:10px}
+  .logo-text{font-size:14px}
+  .logo-sub{display:none}
+  main{padding:20px 16px 60px}
+  .version-card{padding:12px 14px;gap:10px;flex-wrap:wrap}
+  .version-id{font-size:14px;min-width:44px}
+  .btn{padding:8px 12px;font-size:12px}
+  .stat-value{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📄</div>
+    <div>
+      <div class="logo-text">PROMPT MANAGER</div>
+      <div class="logo-sub">Dragon Hunter · Admin</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div id="userBox" class="user-box" style="display:none">
+    <div class="avatar" id="userAvatar">H</div>
+    <span id="userName">Hunter</span>
+    <button class="btn sm" onclick="logout()" style="padding:4px 10px;font-size:10px">
+      Đăng xuất
+    </button>
+  </div>
+  <a href="/" class="btn sm" style="text-decoration:none">🎮 Về game</a>
+</header>
+
+<main>
+  <!-- LOGIN -->
+  <div id="loginPanel">
+    <h1>📄 PROMPT MANAGER</h1>
+    <p>Đăng nhập để quản lý backups dự án</p>
+    <div class="field">
+      <label>Tên đăng nhập</label>
+      <input type="text" id="loginUser" placeholder="hunter" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>Mật khẩu</label>
+      <input type="password" id="loginPass" placeholder="••••••" autocomplete="current-password">
+    </div>
+    <div class="error" id="loginError"></div>
+    <button class="btn primary" style="width:100%;padding:14px;font-size:14px" id="loginBtn">
+      🔓 Đăng nhập
+    </button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content" style="display:none">
+
+    <h2>📊 Tổng quan</h2>
+    <div class="stats-grid" id="statsGrid">
+      <div class="loading"><span class="spinner"></span>Đang tải...</div>
+    </div>
+
+    <h2>📦 Danh sách Backups</h2>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn primary" onclick="downloadLatest()">⬇️ Tải bản mới nhất</button>
+      <button class="btn" onclick="loadVersions()">🔄 Refresh</button>
+      <button class="btn danger" onclick="clearAll()">🗑️ Xoá tất cả</button>
+    </div>
+    <div class="version-list" id="versionList">
+      <div class="loading"><span class="spinner"></span>Đang tải...</div>
+    </div>
+
+    <h2>🔥 File thay đổi nhiều nhất</h2>
+    <div class="hot-files" id="hotFiles">
+      <div class="loading">Chưa có dữ liệu</div>
+    </div>
+
+    <h2>🕐 Hoạt động theo giờ</h2>
+    <div id="hourlyChart">
+      <div class="loading">Chưa có dữ liệu</div>
+    </div>
+
+    <h2>💾 Nén dữ liệu</h2>
+    <div class="stats-grid" id="compressionStats">
+      <div class="loading">Chưa có dữ liệu</div>
+    </div>
+
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<div id="loadingOverlay">
+  <div class="big-spinner"></div>
+  <div class="text" id="loadingText">Đang xử lý...</div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const BACKEND_POOL = [
+  { host:'game-sinhton.onrender.com', secure:true, name:'Render · main' },
+  { host:'game-sinhton-1.onrender.com', secure:true, name:'Render · backup' }
+];
+const PROJECT_SLUG = 'dragon-hunter';
+
+let BACKEND_URL = 'https://' + BACKEND_POOL[0].host;
+let AUTH = {
+  token: localStorage.getItem('dh_auth_token') || null,
+  user: null
+};
+
+const $ = id => document.getElementById(id);
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function toast(msg, type){
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = 'show ' + (type || '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 2800);
+}
+function showLoading(text){
+  $('loadingText').textContent = text || 'Đang xử lý...';
+  $('loadingOverlay').classList.add('show');
+}
+function hideLoading(){ $('loadingOverlay').classList.remove('show'); }
+function formatSize(bytes){
+  if (!bytes || bytes < 0) return '—';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1024/1024).toFixed(2) + ' MB';
+}
+function formatAge(ms){
+  const s = Math.floor(ms/1000);
+  if (s < 60) return s + 's trước';
+  const m = Math.floor(s/60);
+  if (m < 60) return m + 'm trước';
+  const h = Math.floor(m/60);
+  if (h < 24) return h + 'h trước';
+  const d = Math.floor(h/24);
+  if (d < 30) return d + 'd trước';
+  return new Date(Date.now() - ms).toLocaleDateString('vi-VN');
+}
+function formatTime(ts){
+  return new Date(ts).toLocaleString('vi-VN');
+}
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+async function api(path, options = {}){
+  const headers = { ...(options.headers || {}) };
+  if (AUTH.token) headers['Authorization'] = 'Bearer ' + AUTH.token;
+  if (options.body && typeof options.body !== 'string'){
+    headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(options.body);
+  }
+  const res = await fetch(BACKEND_URL + path, {
+    ...options, headers,
+    signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined
+  });
+  let data = null;
+  try { data = await res.json(); } catch(e){}
+  if (!res.ok){
+    const err = new Error((data && data.error) || ('HTTP ' + res.status));
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+function downloadText(content, filename){
+  const blob = new Blob([content], { type:'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+async function checkAuth(){
+  if (!AUTH.token){
+    showLogin();
+    return false;
+  }
+  try {
+    const r = await api('/auth/me');
+    AUTH.user = r.user;
+    showContent();
+    return true;
+  } catch(e){
+    if (e.status === 401){
+      AUTH.token = null;
+      localStorage.removeItem('dh_auth_token');
+    }
+    showLogin();
+    return false;
+  }
+}
+
+function showLogin(){
+  $('loginPanel').style.display = 'block';
+  $('content').style.display = 'none';
+  $('userBox').style.display = 'none';
+}
+function showContent(){
+  $('loginPanel').style.display = 'none';
+  $('content').style.display = 'block';
+  $('userBox').style.display = 'flex';
+  const name = AUTH.user.displayName || AUTH.user.username || 'User';
+  $('userAvatar').textContent = name.charAt(0).toUpperCase();
+  $('userName').textContent = name;
+  loadAll();
+}
+
+$('loginBtn').addEventListener('click', async () => {
+  const u = $('loginUser').value.trim();
+  const p = $('loginPass').value;
+  $('loginError').classList.remove('show');
+  if (!u || !p){
+    $('loginError').textContent = '❌ Nhập đầy đủ';
+    $('loginError').classList.add('show');
+    return;
+  }
+  $('loginBtn').disabled = true;
+  $('loginBtn').innerHTML = '<span class="spinner"></span>Đang đăng nhập...';
+  try {
+    const r = await api('/auth/login', { method:'POST', body:{ username:u, password:p } });
+    AUTH.token = r.token;
+    AUTH.user = r.user;
+    localStorage.setItem('dh_auth_token', AUTH.token);
+    showContent();
+    toast('✓ Đăng nhập thành công', 'success');
+  } catch(e){
+    $('loginError').textContent = '❌ ' + e.message;
+    $('loginError').classList.add('show');
+  } finally {
+    $('loginBtn').disabled = false;
+    $('loginBtn').innerHTML = '🔓 Đăng nhập';
+  }
+});
+$('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') $('loginBtn').click();
+});
+
+function logout(){
+  if (!confirm('Đăng xuất?')) return;
+  api('/auth/logout', { method:'POST' }).catch(() => {});
+  AUTH.token = null;
+  AUTH.user = null;
+  localStorage.removeItem('dh_auth_token');
+  location.reload();
+}
+
+/* ============================================================
+   LOAD ALL
+   ============================================================ */
+async function loadAll(){
+  showLoading('Đang tải dữ liệu...');
+  try {
+    await Promise.all([
+      loadStats(),
+      loadVersions(),
+      loadAnalytics()
+    ]);
+  } catch(e){
+    console.error(e);
+    toast('❌ Lỗi tải: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* ============================================================
+   STATS OVERVIEW
+   ============================================================ */
+async function loadStats(){
+  const grid = $('statsGrid');
+  try {
+    const data = await api('/prompt/analytics?project=' + encodeURIComponent(PROJECT_SLUG));
+    if (!data || data.empty){
+      grid.innerHTML = '<div class="empty" style="grid-column:1/-1">' +
+        '<div class="icon">📭</div>Chưa có snapshot nào<br>' +
+        '<span style="font-size:10px">Mở game + đăng nhập → snapshot sẽ tự động lưu</span></div>';
+      return;
+    }
+    const ov = data.overview || {};
+    const comp = data.compression || {};
+    const ratio = (comp.avg_uncompressed && comp.avg_compressed)
+      ? ((1 - comp.avg_compressed / comp.avg_uncompressed) * 100).toFixed(1)
+      : '0';
+
+    grid.innerHTML = `
+      <div class="stat-card">
+        <div class="stat-label">Tổng versions</div>
+        <div class="stat-value">${ov.total_versions || 0}</div>
+        <div class="stat-sub">Delta: ${ov.delta_count || 0} · Full: ${ov.full_count || 0}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Files trung bình</div>
+        <div class="stat-value gold">${ov.avg_files || 0}</div>
+        <div class="stat-sub">Tổng instances: ${ov.total_file_instances || 0}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Size trung bình</div>
+        <div class="stat-value small">${formatSize(ov.avg_size)}</div>
+        <div class="stat-sub">Max: ${formatSize(ov.max_size)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Nén tiết kiệm</div>
+        <div class="stat-value green">${ratio}%</div>
+        <div class="stat-sub">${formatSize(comp.avg_uncompressed)} → ${formatSize(comp.avg_compressed)}</div>
+      </div>
+    `;
+
+    /* Update compression section */
+    $('compressionStats').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-label">Uncompressed</div>
+        <div class="stat-value small">${formatSize(comp.avg_uncompressed)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Compressed (PG TOAST)</div>
+        <div class="stat-value small green">${formatSize(comp.avg_compressed)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tổng delta lines</div>
+        <div class="stat-value gold">${comp.total_delta_lines || 0}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Khoảng tg trung bình</div>
+        <div class="stat-value small">
+          ${data.intervals && data.intervals.avg_interval_seconds
+            ? Math.round(data.intervals.avg_interval_seconds/60) + ' phút'
+            : '—'}
+        </div>
+        <div class="stat-sub">giữa các snapshot</div>
+      </div>
+    `;
+
+  } catch(e){
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;color:var(--danger)">' +
+      '⚠ Lỗi: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+/* ============================================================
+   VERSIONS LIST
+   ============================================================ */
+async function loadVersions(){
+  const list = $('versionList');
+  list.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const data = await api('/prompt/versions?project=' + encodeURIComponent(PROJECT_SLUG) + '&limit=50');
+    const versions = data.versions || [];
+    if (!versions.length){
+      list.innerHTML = '<div class="empty"><div class="icon">📭</div>' +
+        'Chưa có version nào<br>' +
+        '<span style="font-size:10px;color:var(--text-dim)">Mở game + thay đổi file → snapshot tự động tạo</span></div>';
+      return;
+    }
+    const now = Date.now();
+    list.innerHTML = '';
+    for (const v of versions){
+      const card = document.createElement('div');
+      card.className = 'version-card';
+      const ts = new Date(v.ts).getTime();
+      card.innerHTML = `
+        <div class="version-id">#${v.id}</div>
+        <div class="version-info">
+          <div class="version-label">
+            ${escapeHtml(v.label || 'auto')}
+            <span class="badge ${v.is_delta ? 'delta' : 'full'}">${v.is_delta ? '⚡ delta' : '📦 full'}</span>
+          </div>
+          <div class="version-meta">
+            <span>⏱ ${formatAge(now - ts)}</span>
+            <span>📅 ${formatTime(ts)}</span>
+            <span>📁 ${v.files_count} files</span>
+            <span>💾 ${formatSize(v.total_size)}</span>
+            ${v.is_delta ? `<span>⚡ ${v.delta_size} dòng</span>` : ''}
+          </div>
+        </div>
+        <div class="version-actions">
+          <button class="btn primary sm" data-action="download" data-id="${v.id}">
+            ⬇️ Tải
+          </button>
+          <button class="btn danger sm" data-action="delete" data-id="${v.id}">
+            🗑
+          </button>
+        </div>
+      `;
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button')) return;
+        previewVersion(v.id);
+      });
+      list.appendChild(card);
+    }
+    list.querySelectorAll('button[data-action="download"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        downloadVersion(parseInt(btn.dataset.id));
+      });
+    });
+    list.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteVersion(parseInt(btn.dataset.id));
+      });
+    });
+  } catch(e){
+    list.innerHTML = '<div class="empty" style="color:var(--danger)">⚠ Lỗi: ' +
+      escapeHtml(e.message) + '</div>';
+  }
+}
+
+/* ============================================================
+   DOWNLOAD
+   ============================================================ */
+async function downloadVersion(id){
+  showLoading('Đang tải version #' + id + '...');
+  try {
+    const data = await api('/prompt/version/' + id);
+    if (!data || !data.content){
+      toast('❌ Không lấy được nội dung', 'error');
+      return;
+    }
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0,19);
+    downloadText(data.content, `prompt_v${id}_${ts}.txt`);
+    toast('✓ Đã tải version #' + id + ' · ' + formatSize(data.content.length), 'success');
+  } catch(e){
+    toast('❌ ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function downloadLatest(){
+  try {
+    const data = await api('/prompt/versions?project=' + encodeURIComponent(PROJECT_SLUG) + '&limit=1');
+    if (!data.versions || !data.versions.length){
+      toast('⚠ Chưa có version nào', 'warning');
+      return;
+    }
+    await downloadVersion(data.versions[0].id);
+  } catch(e){
+    toast('❌ ' + e.message, 'error');
+  }
+}
+
+async function previewVersion(id){
+  showLoading('Đang lấy version #' + id + '...');
+  try {
+    const data = await api('/prompt/version/' + id);
+    hideLoading();
+    /* Mở preview trong tab mới */
+    const w = window.open('', '_blank');
+    w.document.write(`
+      <html><head><title>Preview v${id}</title>
+      <style>
+        body{background:#0a0f16;color:#e8f0e0;font-family:'JetBrains Mono',Consolas,monospace;
+          padding:24px;font-size:13px;line-height:1.6;max-width:1000px;margin:0 auto}
+        h1{color:#5eead4;font-size:18px;margin-bottom:8px}
+        .meta{color:#7a8a90;font-size:11px;margin-bottom:20px;
+          padding:12px;border-left:3px solid #5eead4;background:rgba(94,234,212,.05)}
+        pre{background:#05080d;padding:16px;border-radius:8px;border:1px solid rgba(94,234,212,.15);
+          overflow-x:auto;white-space:pre-wrap;word-break:break-word;font-size:12px;
+          max-height:80vh;overflow-y:auto}
+        button{background:linear-gradient(180deg,#5eead4,#22d3ee);color:#05080d;
+          border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;
+          font-family:inherit;margin-right:8px;margin-top:16px}
+      </style></head><body>
+        <h1>📄 Version #${id}</h1>
+        <div class="meta">
+          ${data.files ? data.files.length : 0} files ·
+          ${formatSize(data.content.length)}
+        </div>
+        <button onclick="downloadText()">⬇️ Tải về</button>
+        <button onclick="copyText()">📋 Copy</button>
+        <pre id="content">${escapeHtml(data.content)}</pre>
+        <script>
+          const content = document.getElementById('content').textContent;
+          function downloadText(){
+            const blob = new Blob([content], {type:'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'prompt_v${id}.txt';
+            a.click();
+          }
+          function copyText(){
+            navigator.clipboard.writeText(content).then(() => alert('✓ Đã copy!'));
+          }
+        <\/script>
+      </body></html>
+    `);
+  } catch(e){
+    hideLoading();
+    toast('❌ ' + e.message, 'error');
+  }
+}
+
+/* ============================================================
+   DELETE
+   ============================================================ */
+async function deleteVersion(id){
+  if (!confirm('Xoá version #' + id + '?\nKhông thể khôi phục.')) return;
+  showLoading('Đang xoá...');
+  try {
+    await api('/prompt/versions?id=' + id, { method:'DELETE' });
+    toast('✓ Đã xoá version #' + id, 'success');
+    loadVersions();
+  } catch(e){
+    toast('❌ ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function clearAll(){
+  if (!confirm('Xoá TẤT CẢ versions của dự án?\nKhông thể khôi phục!')) return;
+  if (!confirm('Bạn CHẮC CHẮN muốn xoá hết?')) return;
+  showLoading('Đang xoá tất cả...');
+  try {
+    await api('/prompt/versions?project=' + encodeURIComponent(PROJECT_SLUG), {
+      method:'DELETE'
+    });
+    toast('✓ Đã xoá tất cả versions', 'success');
+    loadAll();
+  } catch(e){
+    toast('❌ ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* ============================================================
+   ANALYTICS
+   ============================================================ */
+async function loadAnalytics(){
+  try {
+    const data = await api('/prompt/analytics?project=' + encodeURIComponent(PROJECT_SLUG));
+    if (!data || data.empty){
+      $('hotFiles').innerHTML = '<div class="loading">Chưa có dữ liệu</div>';
+      $('hourlyChart').innerHTML = '<div class="loading">Chưa có dữ liệu</div>';
+      return;
+    }
+
+    /* Hot files */
+    const hot = data.hotFiles || [];
+    if (!hot.length){
+      $('hotFiles').innerHTML = '<div class="loading">Chưa có dữ liệu</div>';
+    } else {
+      const maxCnt = Math.max(...hot.map(f => f.change_count));
+      $('hotFiles').innerHTML = hot.map(f => {
+        const w = (f.change_count / maxCnt) * 100;
+        return `
+          <div class="hot-file">
+            <div class="hot-file-name">${escapeHtml(f.file_label)}</div>
+            <div class="hot-file-bar">
+              <div class="hot-file-fill" style="width:${w}%"></div>
+            </div>
+            <div class="hot-file-count">${f.change_count}×</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* Hourly chart */
+    const hourly = data.hourlyActivity || [];
+    const hours = new Array(24).fill(0);
+    for (const h of hourly) hours[+h.hour] = +h.cnt;
+    const maxH = Math.max(...hours, 1);
+    let html = '<div class="hourly">';
+    for (let i = 0; i < 24; i++){
+      const h = hours[i] ? Math.round(hours[i] / maxH * 58) : 2;
+      html += `<div class="hourly-bar ${hours[i] ? '' : 'empty'}"
+        style="height:${h}px" title="${i}h: ${hours[i]} snapshot"></div>`;
+    }
+    html += '</div>';
+    html += '<div class="hourly-labels"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div>';
+    $('hourlyChart').innerHTML = html;
+
+  } catch(e){
+    console.error('[Analytics]', e);
+  }
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+(async function init(){
+  /* Resolve best backend */
+  for (const b of BACKEND_POOL){
+    try {
+      const url = (b.secure ? 'https://' : 'http://') + b.host + '/health';
+      const r = await fetch(url, { signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined });
+      if (r.ok){
+        BACKEND_URL = (b.secure ? 'https://' : 'http://') + b.host;
+        console.log('[Backend]', b.host);
+        break;
+      }
+    } catch(e){}
+  }
+
+  /* Auth check */
+  const authed = await checkAuth();
+  if (authed){
+    console.log('✓ Prompt Manager ready');
+  }
+
+  /* Auto-refresh analytics mỗi 30s */
+  setInterval(() => {
+    if (AUTH.token) loadAnalytics();
+  }, 30000);
+})();
+</script>
+</body>
+  </html>
