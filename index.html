@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐉 Dragon Hunter v3.1</title>
+<title>🐉 Dragon Hunter v3.2</title>
 <script src="public/prompt.routes.js"></script>
 <style>
 :root{
@@ -35,6 +35,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-0);color:va
 canvas{display:block;image-rendering:pixelated;touch-action:none}
 button{cursor:pointer;font-family:inherit;touch-action:manipulation;border:none;background:none;color:inherit}
 input,select{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+
+/* HUD TOP */
 #coords{position:fixed;top:10px;left:10px;font-size:11px;
   font-family:'JetBrains Mono',Consolas,monospace;
   background:var(--bg-glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
@@ -57,10 +60,12 @@ input,select{font-family:inherit;color:inherit}
 #connBadge.show{display:block}
 #connBadge.on{color:var(--success);border-color:rgba(74,222,128,.4)}
 #connBadge.off{color:var(--danger);border-color:rgba(248,113,113,.4)}
+
+/* HUD RIGHT */
 #netInfo{position:fixed;top:10px;right:10px;
   color:var(--primary);font-size:11px;
   font-family:'JetBrains Mono',Consolas,monospace;
-  background:var(--bg-glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  background:var(--bg-glass);backdrop-filter:blur(12px);
   padding:8px 14px;border-radius:var(--r);z-index:6;pointer-events:none;
   border:1px solid var(--border);display:none;line-height:1.6}
 #netInfo.show{display:block}
@@ -68,7 +73,7 @@ input,select{font-family:inherit;color:inherit}
 #netInfo .lbl{color:var(--text-dim);font-size:10px;letter-spacing:.5px}
 #userHud{position:fixed;top:10px;right:10px;
   display:none;align-items:center;gap:8px;
-  background:var(--bg-glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  background:var(--bg-glass);backdrop-filter:blur(12px);
   border:1px solid var(--border);border-radius:999px;
   padding:4px 12px 4px 4px;font-size:11px;
   font-family:'JetBrains Mono',Consolas,monospace;
@@ -94,6 +99,8 @@ input,select{font-family:inherit;color:inherit}
   display:none;align-items:center;justify-content:center;transition:all .15s}
 #settingsBtn.show{display:flex}
 #settingsBtn:hover{border-color:var(--border-hi);transform:rotate(45deg)}
+
+/* HUD BOTTOM */
 #hudBottom{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
   display:flex;flex-direction:column;gap:8px;align-items:center;
   z-index:6;pointer-events:none;max-width:calc(100vw - 20px)}
@@ -147,6 +154,8 @@ input,select{font-family:inherit;color:inherit}
 .hslot.active::before{content:'';position:absolute;inset:0;
   background:linear-gradient(180deg,transparent 60%,rgba(94,234,212,.12));
   pointer-events:none}
+
+/* TOASTS */
 #toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);
   background:var(--bg-glass-hi);backdrop-filter:blur(16px);
   color:var(--text);padding:12px 22px;border-radius:var(--r);
@@ -160,6 +169,8 @@ input,select{font-family:inherit;color:inherit}
 #toast.error{border-left-color:var(--danger);color:#fca5a5}
 #toast.warning{border-left-color:var(--gold);color:#fcd34d}
 #toast.success{border-left-color:var(--success);color:#86efac}
+
+/* MODALS */
 .modal{position:fixed;inset:0;background:rgba(3,6,10,.88);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   z-index:100;display:flex;align-items:center;justify-content:center;
@@ -263,10 +274,11 @@ input,select{font-family:inherit;color:inherit}
   box-shadow:var(--shadow-lg),0 0 60px rgba(94,234,212,.15);
   animation:modal-in .25s}
 .pause-panel h2{font-family:'JetBrains Mono',Consolas,monospace;
-  font-size:26px;letter-spacing:6px;
-  margin-bottom:14px;
+  font-size:26px;letter-spacing:6px;margin-bottom:14px;
   background:linear-gradient(135deg,var(--primary),var(--gold));
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+/* AUTH */
 .auth-panel{background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
   border:1px solid var(--border);border-radius:var(--r-xl);
   padding:32px 30px;text-align:center;
@@ -316,6 +328,8 @@ input,select{font-family:inherit;color:inherit}
   border-radius:50%;animation:spinAuth .7s linear infinite;
   vertical-align:middle;margin-right:8px}
 @keyframes spinAuth{to{transform:rotate(360deg)}}
+
+/* ROOM LIST */
 .room-list-header{display:flex;align-items:center;gap:8px;
   font-size:11px;color:var(--text-dim);margin:14px 0 8px;
   padding:0 4px;font-family:'JetBrains Mono',Consolas,monospace;
@@ -351,6 +365,8 @@ input,select{font-family:inherit;color:inherit}
 .room-item .age{color:var(--text-dim);font-size:10px;
   min-width:36px;text-align:right;opacity:.6}
 .room-item.full{opacity:.35;cursor:not-allowed}
+
+/* RECONNECT OVERLAY */
 #reconnectOverlay{position:fixed;top:0;left:0;right:0;
   background:linear-gradient(180deg,rgba(251,191,36,.95),rgba(245,158,11,.85));
   color:#05080d;padding:10px 20px;z-index:200;
@@ -367,6 +383,8 @@ input,select{font-family:inherit;color:inherit}
   background:rgba(0,0,0,.15);border-radius:999px;font-weight:800}
 @keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
 #reconnectOverlay.hidden-ok{background:linear-gradient(180deg,rgba(74,222,128,.95),rgba(34,197,94,.85))}
+
+/* MOBILE CONTROLS */
 #touchUI{display:none;position:fixed;inset:0;pointer-events:none;z-index:8;touch-action:none}
 @media (pointer:coarse){#touchUI{display:block}}
 body.is-touch #touchUI{display:block}
@@ -450,24 +468,6 @@ body.edit-btn-mode #editOverlay{display:flex}
 #loadStatus .ok{color:var(--success)}
 #loadStatus .err{color:var(--danger)}
 #loadStatus .meta{color:var(--primary-2)}
-.pb-stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
-.pb-stat-card{background:rgba(94,234,212,.06);border:1px solid var(--border);
-  border-radius:var(--r-sm);padding:10px;text-align:center}
-.pb-stat-label{font-size:9px;color:var(--text-dim);letter-spacing:1px;
-  text-transform:uppercase;margin-bottom:4px;
-  font-family:'JetBrains Mono',Consolas,monospace}
-.pb-stat-value{font-size:18px;font-weight:800;color:var(--primary);
-  font-family:'JetBrains Mono',Consolas,monospace}
-.version-row{padding:8px 10px;margin-bottom:4px;
-  background:rgba(94,234,212,.05);
-  border:1px solid var(--border);border-radius:var(--r-sm);
-  display:flex;align-items:center;gap:8px;cursor:pointer;
-  transition:all .15s;font-size:10px}
-.version-row:hover{background:rgba(94,234,212,.12);border-color:var(--primary)}
-@keyframes pb-pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.pb-live-dot{display:inline-block;width:6px;height:6px;
-  background:var(--success);border-radius:50%;
-  animation:pb-pulse 1.5s infinite;margin-right:6px}
 @media (max-width:600px){
   #time{display:none}
   .logo{font-size:28px}
@@ -593,7 +593,7 @@ body.edit-btn-mode #editOverlay{display:flex}
 <div id="menu" class="modal">
   <div class="menu-panel">
     <div class="logo">DRAGON HUNTER</div>
-    <div class="logo-sub">Thợ Săn Rồng · v3.1</div>
+    <div class="logo-sub">Thợ Săn Rồng · v3.2</div>
 
     <div id="menuMain" class="menu-page">
       <button class="mbtn primary" onclick="Game.startSingleplayer()">🎮 Chơi đơn</button>
@@ -662,34 +662,12 @@ body.edit-btn-mode #editOverlay{display:flex}
       <button class="mbtn primary" onclick="ButtonSettings.openEditor()" style="padding:12px;font-size:13px">🎯 Chỉnh vị trí nút</button>
       <button class="mbtn" onclick="ButtonSettings.reset()" style="padding:10px;font-size:12px;margin-top:6px">↺ Reset vị trí nút</button>
 
-      <h3>📄 Chia sẻ dự án</h3>
+      <h3>📄 Backup dự án</h3>
       <div style="font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',Consolas,monospace;padding:12px 14px;background:rgba(0,0,0,.3);border-radius:var(--r);border-left:3px solid var(--primary);line-height:1.8;margin-bottom:12px;text-align:left">
-        <b style="color:var(--primary)">Prompt.txt</b> — tải toàn bộ context dự án.<br>
-        Bao gồm: source code, cấu trúc, models,<br>
-        animations, weapon config, API, DB schema.<br>
-        <b style="color:var(--gold)">→ Gửi cho AI/dev → hiểu hết.</b>
+        <b style="color:var(--primary)">Tự động lưu</b> — snapshot tạo ngầm khi phát hiện thay đổi file.<br>
+        Quản lý & tải backup tại <b style="color:var(--gold)">trang quản trị</b>.
       </div>
-      <button class="mbtn primary" onclick="PromptBuilder.download()" id="downloadPromptBtn" style="padding:12px;font-size:13px">📄 Tải Prompt.txt</button>
-      <div id="promptStatus" style="font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',Consolas,monospace;margin-top:8px;text-align:center;min-height:14px"></div>
-
-      <h3>🕒 Lịch sử Version</h3>
-      <div id="promptVersionPanel" style="background:rgba(0,0,0,.3);border-radius:var(--r);border:1px solid var(--border);max-height:280px;overflow-y:auto;padding:10px;font-family:'JetBrains Mono',Consolas,monospace;font-size:11px;text-align:left;color:var(--text-dim)">
-        <div style="text-align:center;padding:20px;opacity:.5">Đang tải...</div>
-      </div>
-      <div class="setting-row" style="margin-top:8px"><label></label>
-        <button class="mbtn" onclick="PromptBuilderUI.refresh()" style="flex:1;padding:8px;font-size:11px">🔄 Refresh</button>
-        <button class="mbtn danger" onclick="PromptBuilderUI.clearAll()" style="flex:1;padding:8px;font-size:11px">🗑 Xoá hết</button>
-      </div>
-      <div id="promptLiveBadge" style="font-size:10px;color:var(--success);font-family:'JetBrains Mono',Consolas,monospace;margin-top:8px;text-align:center;opacity:0;transition:opacity .3s">
-        <span class="pb-live-dot"></span>
-        Đang theo dõi realtime · <span id="promptLastCheck">--</span>
-      </div>
-
-      <h3>📊 Phân tích dự án</h3>
-      <div id="promptAnalyticsPanel" style="background:rgba(0,0,0,.3);border-radius:var(--r);border:1px solid var(--border);padding:14px;font-family:'JetBrains Mono',Consolas,monospace;font-size:11px;text-align:left;line-height:1.7;color:var(--text-dim);min-height:120px">
-        <div style="text-align:center;padding:20px;opacity:.5">Đang tải...</div>
-      </div>
-      <button class="mbtn" onclick="PromptAnalytics.refresh()" style="margin-top:8px;padding:8px;font-size:11px">🔄 Refresh phân tích</button>
+      <a href="prompt-manager.html" target="_blank" class="mbtn primary" style="padding:12px;font-size:13px">🚀 Mở trang quản lý Backup</a>
 
       <button class="mbtn back" onclick="Game.backMain()">← Quay lại</button>
     </div>
@@ -1120,9 +1098,7 @@ window.addEventListener('beforeunload', () => {
 
 setInterval(() => { if (AUTH.token && gameStarted && !paused) AUTH.flushSave(); }, 60000);
 
-/* ============================================================
-   WEBSOCKET NETWORK
-   ============================================================ */
+/* WEBSOCKET NETWORK */
 const net = {
   ws:null, active:false, connecting:false, myId:null,
   name:'Hunter', roomCode:null, players:new Map(),
@@ -1147,11 +1123,8 @@ const net = {
       }
       this.connecting = true;
       updateConnBadge('⚡ WS: connecting...');
-      console.log('[WS] Connecting to', this.url);
-
       try { this.ws = new WebSocket(this.url); }
       catch(e){ this.connecting = false; return reject(e); }
-
       let settled = false;
       const timer = setTimeout(() => {
         if (!settled){
@@ -1161,13 +1134,11 @@ const net = {
           reject(new Error('WS timeout 15s'));
         }
       }, 15000);
-
       this.ws.onopen = () => {
         clearTimeout(timer);
         this.connecting = false;
         this.reconnectAttempts = 0;
         hideReconnectUI();
-        console.log('[WS] ✓ Connected');
         updateConnBadge('⚡ WS: online', 'on');
         this._startPing();
         if (!settled){ settled = true; resolve(); }
@@ -1178,7 +1149,6 @@ const net = {
       this.ws.onerror = () => console.warn('[WS] Error');
       this.ws.onclose = () => {
         clearTimeout(timer);
-        console.log('[WS] Closed');
         this.active = false;
         this.connecting = false;
         this._stopPing();
@@ -1343,7 +1313,6 @@ const net = {
     this.reconnectAttempts++;
     if (this.reconnectAttempts > 5){ hideReconnectUI(); return; }
     const delay = Math.min(30000, 1000 * Math.pow(2, this.reconnectAttempts));
-    console.log('[WS] Reconnect in', delay + 'ms', 'attempt', this.reconnectAttempts);
     showReconnectUI(this.reconnectAttempts, delay);
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
@@ -1469,10 +1438,8 @@ async function loadProject(){
     if (!res.ok) throw new Error('no file');
     const project = await res.json();
     if (project.format !== 'dh-studio-project' || !project.models) throw new Error('bad');
-
     _spriteCacheVersion = 'v' + (project.version||3) + '-' +
       (project.exportedAt ? project.exportedAt.replace(/\D/g,'').slice(0,10) : Date.now().toString(36));
-
     const loadQueue = [];
     for (const m in project.models){
       const model = project.models[m];
@@ -1481,7 +1448,6 @@ async function loadProject(){
         loadQueue.push(() => loadSprite(`assets/${cfg.fileName}.png?v=${_spriteCacheVersion}`, m, a, cfg));
       }
     }
-
     const BATCH_SIZE = 4;
     const total = loadQueue.length;
     let loaded = 0;
@@ -1494,7 +1460,6 @@ async function loadProject(){
       await new Promise(r => setTimeout(r, 0));
     }
     hideLoadProgress();
-
     console.log('✓ Loaded ' + Models.data.size + ' models');
     await loadWeaponTuning();
     updateLoadStatus('ok');
@@ -1565,7 +1530,6 @@ function loadSprite(src, m, a, cfg){
       const cc = cnv.getContext('2d', { willReadFrequently:true });
       cc.imageSmoothingEnabled = false;
       cc.drawImage(img, 0, 0, img.width, spriteH, 0, 0, img.width, spriteH);
-
       if (!vLines || vLines.length < 3){
         let detected = autoDetectFrameLines(cnv, null);
         if (!detected || detected.length < 3){
@@ -2551,7 +2515,10 @@ const ButtonSettings = (() => {
   return { init, openEditor, reset };
 })();
 
-/* PROMPT BUILDER v3 */
+/* ============================================================
+   PROMPT BUILDER v3 — SILENT BACKGROUND SNAPSHOT
+   Không có UI, chỉ tự động sync lên server khi phát hiện đổi file
+   ============================================================ */
 const PromptBuilder = (() => {
   const VERSION = '3.0';
   const PROJECT_SLUG = 'dragon-hunter';
@@ -2570,6 +2537,7 @@ const PromptBuilder = (() => {
     { url:'db/schema.sql',      label:'DB_SCHEMA' },
     { url:'db/migrate.js',      label:'DB_MIGRATE' },
     { url:'server.js',          label:'SERVER_JS' },
+    { url:'public/prompt.routes.js', label:'PROMPT_ROUTES_JS' },
     { url:'public/PROJECT_PROMPT.md', label:'PROJECT_PROMPT' }
   ];
 
@@ -2676,23 +2644,12 @@ const PromptBuilder = (() => {
       req.onerror = () => reject(req.error);
     });
   }
-  async function dbClear(store){
-    return new Promise((resolve, reject) => {
-      const tx = state.db.transaction(store, 'readwrite');
-      const req = tx.objectStore(store).clear();
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
-  }
   async function enforceLRU(){
     const all = await dbGetAll(STORE_VERSIONS);
     if (all.length <= MAX_VERSIONS) return;
     all.sort((a, b) => a.ts - b.ts);
     const toRemove = all.slice(0, all.length - MAX_VERSIONS);
-    for (const v of toRemove){
-      await dbDelete(STORE_VERSIONS, v.id);
-      emit('purge', v);
-    }
+    for (const v of toRemove) await dbDelete(STORE_VERSIONS, v.id);
   }
   async function fetchAll(){
     const results = [];
@@ -2800,9 +2757,8 @@ const PromptBuilder = (() => {
     snapshot.id = id;
     state.lastSnapshot = { id, hash, content, ts, label };
     await enforceLRU();
-    emit('snapshot', snapshot);
     if (AUTH.token){
-      syncSnapshotToServer(files, content, changes).catch(e => console.warn('[Sync]', e.message));
+      syncSnapshotToServer(files, content, changes).catch(() => {});
     }
     return snapshot;
   }
@@ -2864,363 +2820,33 @@ const PromptBuilder = (() => {
         const changes = await detectChanges(files);
         if (!changes.length) return;
         state.changeLog.push({ ts: Date.now(), changes });
-        emit('changes', changes);
         if (changes.length >= 2){
           await createSnapshot(files, changes, 'auto');
-          toast(`📸 Snapshot mới · ${changes.length} file đổi`, 'success');
+          console.log('[PromptBuilder] 📸 Snapshot mới · ' + changes.length + ' file đổi');
         }
       } catch(e){ console.warn('[Watcher]', e.message); }
     }, POLL_INTERVAL);
   }
-  function stopWatcher(){
-    if (state.watcher){ clearInterval(state.watcher); state.watcher = null; }
-  }
-  function on(event, fn){ state.listeners.add({ event, fn }); }
-  function emit(event, data){
-    state.listeners.forEach(l => { if (l.event === event) l.fn(data); });
-  }
   async function init(){
     if (state.initialized) return;
-    state.db = await openDB();
-    state.initialized = true;
-    const meta = await dbGet(STORE_META, 'lastSnapshot');
-    if (meta && meta.value) state.lastSnapshot = meta.value;
-    startWatcher();
-    setInterval(flushOfflineQueue, 60000);
-    console.log('[PromptBuilder v3] Initialized · poll every ' + POLL_INTERVAL + 'ms');
-  }
-  async function download(){
-    const status = $('promptStatus');
-    const btn = $('downloadPromptBtn');
-    if (btn) btn.disabled = true;
-    if (status) status.textContent = '⏳ Đang thu thập file...';
     try {
-      const files = await fetchAll();
-      await detectChanges(files);
-      const content = buildPromptText(files);
-      await createSnapshot(files, [], 'manual');
-      const blob = new Blob([content], { type:'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `prompt_${Date.now()}.txt`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      if (status) status.textContent = `✅ Đã tải · ${formatSize(content.length)}`;
-      toast('📄 Đã tải prompt.txt · ' + formatSize(content.length), 'success');
+      state.db = await openDB();
+      state.initialized = true;
+      const meta = await dbGet(STORE_META, 'lastSnapshot');
+      if (meta && meta.value) state.lastSnapshot = meta.value;
+      startWatcher();
+      setInterval(flushOfflineQueue, 60000);
+      console.log('[PromptBuilder v3] Silent sync initialized · poll every ' + POLL_INTERVAL + 'ms');
     } catch(e){
-      if (status) status.textContent = '❌ ' + e.message;
-      toast('❌ ' + e.message, 'error');
-    } finally {
-      if (btn) btn.disabled = false;
+      console.warn('[PromptBuilder] init failed:', e.message);
     }
   }
-  async function listVersions(){
-    const all = await dbGetAll(STORE_VERSIONS);
-    return all.sort((a, b) => b.ts - a.ts);
-  }
-  function getChangeLog(){ return [...state.changeLog].reverse(); }
-  async function clearAll(){
-    await dbClear(STORE_VERSIONS);
-    await dbClear(STORE_META);
-    state.fileHashes.clear();
-    state.lastSnapshot = null;
-    state.changeLog = [];
-    if (AUTH.token){
-      try {
-        await fetch(BACKEND_URL + '/prompt/versions?project=' + PROJECT_SLUG, {
-          method: 'DELETE',
-          headers: { 'Authorization': 'Bearer ' + AUTH.token }
-        });
-      } catch(e){}
-    }
-    toast('🗑 Đã xoá toàn bộ version history', 'success');
-  }
-  async function restore(id){
-    const v = await dbGet(STORE_VERSIONS, id);
-    if (!v) return toast('❌ Không tìm thấy version', 'error');
-    let content = v.content;
-    if (v.isDelta && v.delta && v.baseId){
-      const base = await dbGet(STORE_VERSIONS, v.baseId);
-      if (base && base.content){
-        const lines = base.content.split('\n');
-        let off = 0;
-        for (const d of v.delta){
-          const idx = d.line + off;
-          if (d.op === 'add'){ lines.splice(idx, 0, d.value); off++; }
-          else if (d.op === 'del'){ lines.splice(idx, 1); off--; }
-        }
-        content = lines.join('\n');
-      }
-    }
-    if (!content) return toast('❌ Không khôi phục được', 'error');
-    const blob = new Blob([content], { type:'text/plain' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `prompt_restored_${id}.txt`;
-    a.click();
-    toast('♻️ Đã khôi phục version ' + id, 'success');
-  }
-  return {
-    init, download, listVersions, getChangeLog, clearAll, restore, on,
-    CONFIG: { VERSION, PROJECT_SLUG },
-    _algo: { sha256, myersDiff, compressDelta }
-  };
+  return { init, CONFIG: { VERSION, PROJECT_SLUG } };
 })();
 
-const PromptBuilderUI = (() => {
-  function formatAge(ms){
-    const s = Math.floor(ms/1000);
-    if (s < 60) return s + 's trước';
-    const m = Math.floor(s/60);
-    if (m < 60) return m + 'm trước';
-    const h = Math.floor(m/60);
-    if (h < 24) return h + 'h trước';
-    return Math.floor(h/24) + 'd trước';
-  }
-  function formatSize(bytes){
-    if (!bytes || bytes < 0) return '—';
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
-    return (bytes/1024/1024).toFixed(2) + ' MB';
-  }
-  function escapeHtml(s){
-    return String(s||'').replace(/[&<>"']/g, c => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[c]));
-  }
-  async function fetchServerVersions(limit){
-    if (!AUTH.token) return [];
-    try {
-      const res = await fetch(
-        BACKEND_URL + '/prompt/versions?project=' +
-        encodeURIComponent(PromptBuilder.CONFIG.PROJECT_SLUG) + '&limit=' + (limit||30),
-        { headers: { 'Authorization': 'Bearer ' + AUTH.token } }
-      );
-      if (!res.ok) return [];
-      const d = await res.json();
-      return d.versions || [];
-    } catch(e){ return []; }
-  }
-  async function restoreFromServer(id){
-    if (!AUTH.token) return null;
-    try {
-      const res = await fetch(BACKEND_URL + '/prompt/version/' + id, {
-        headers: { 'Authorization': 'Bearer ' + AUTH.token }
-      });
-      if (!res.ok) return null;
-      const d = await res.json();
-      return d.content;
-    } catch(e){ return null; }
-  }
-  function downloadText(content, filename){
-    const blob = new Blob([content], { type:'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-  async function refresh(){
-    const panel = $('promptVersionPanel');
-    if (!panel) return;
-    const [local, server] = await Promise.all([
-      PromptBuilder.listVersions(),
-      fetchServerVersions(30)
-    ]);
-    const merged = new Map();
-    for (const v of local) merged.set(v.hash, { ...v, source:'local' });
-    for (const v of server){
-      merged.set(v.hash, {
-        id: v.id, hash: v.hash, ts: new Date(v.ts).getTime(),
-        totalSize: v.total_size, filesCount: v.files_count,
-        isDelta: v.is_delta, deltaSize: v.delta_size,
-        label: v.label, source:'server'
-      });
-    }
-    const versions = [...merged.values()].sort((a,b) => b.ts - a.ts);
-    if (!versions.length){
-      panel.innerHTML = '<div style="text-align:center;padding:20px;opacity:.5">' +
-        'Chưa có version · Click "Tải Prompt.txt" để tạo snapshot đầu tiên</div>';
-      return;
-    }
-    const now = Date.now();
-    let html = '';
-    for (const v of versions){
-      const srcBadge = v.source === 'server'
-        ? '<span style="color:var(--primary);font-size:9px">☁</span>'
-        : '<span style="color:var(--gold);font-size:9px">💾</span>';
-      html += `<div class="version-row" data-id="${v.id}" data-source="${v.source}">
-        ${srcBadge}
-        <span style="color:var(--primary);font-weight:700;min-width:50px">#${v.id}</span>
-        <span style="color:var(--gold);font-size:10px;min-width:60px">${formatAge(now - v.ts)}</span>
-        <span style="flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-          ${escapeHtml(v.label || 'auto')} · ${v.filesCount || 0} file
-        </span>
-        <span style="color:var(--text-dim)">${v.isDelta ? '⚡' : '📦'}</span>
-        <span style="color:var(--text-dim)">${formatSize(v.totalSize || 0)}</span>
-        <button class="restore-btn" data-id="${v.id}" data-source="${v.source}"
-          style="background:var(--primary);color:#05080d;border:none;
-          border-radius:3px;padding:3px 8px;font-size:10px;
-          font-weight:700;cursor:pointer">↓</button>
-      </div>`;
-    }
-    panel.innerHTML = html;
-    panel.querySelectorAll('.restore-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const id = parseInt(btn.dataset.id);
-        const source = btn.dataset.source;
-        if (source === 'server'){
-          const content = await restoreFromServer(id);
-          if (content) downloadText(content, `prompt_restored_${id}.txt`);
-          else toast('❌ Không tải được', 'error');
-        } else {
-          PromptBuilder.restore(id);
-        }
-      });
-    });
-    PromptAnalytics.refresh();
-  }
-  async function clearAll(){
-    if (!confirm('Xoá toàn bộ version history?\nKhông thể khôi phục.')) return;
-    await PromptBuilder.clearAll();
-    refresh();
-  }
-  function setupLive(){
-    const badge = $('promptLiveBadge');
-    const last = $('promptLastCheck');
-    if (!badge) return;
-    badge.style.opacity = '1';
-    setInterval(() => {
-      if (last) last.textContent = new Date().toLocaleTimeString('vi-VN');
-    }, 1000);
-    PromptBuilder.on('changes', (changes) => {
-      toast(`⚡ Phát hiện ${changes.length} file thay đổi`, 'warning');
-      refresh();
-    });
-    PromptBuilder.on('snapshot', () => refresh());
-  }
-  async function init(){
-    try {
-      await PromptBuilder.init();
-      await refresh();
-      setupLive();
-    } catch(e){ console.warn('[PromptBuilderUI]', e); }
-  }
-  return { init, refresh, clearAll };
-})();
-
-const PromptAnalytics = (() => {
-  function fmtSize(b){
-    if (!b || b < 0) return '—';
-    if (b < 1024) return b + 'B';
-    if (b < 1024*1024) return (b/1024).toFixed(1) + 'KB';
-    return (b/1024/1024).toFixed(2) + 'MB';
-  }
-  async function fetchAnalytics(){
-    if (!AUTH.token) return null;
-    try {
-      const res = await fetch(
-        BACKEND_URL + '/prompt/analytics?project=' +
-        encodeURIComponent(PromptBuilder.CONFIG.PROJECT_SLUG),
-        { headers: { 'Authorization': 'Bearer ' + AUTH.token } }
-      );
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return await res.json();
-    } catch(e){
-      console.warn('[Analytics]', e.message);
-      return null;
-    }
-  }
-  function renderPanel(data){
-    const panel = $('promptAnalyticsPanel');
-    if (!panel) return;
-    if (!data || data.empty){
-      panel.innerHTML = '<div style="text-align:center;padding:20px;opacity:.5">' +
-        'Chưa có dữ liệu · Cần login + tạo ít nhất 1 snapshot</div>';
-      return;
-    }
-    const ov = data.overview || {};
-    const comp = data.compression || {};
-    const ratio = (comp.avg_uncompressed && comp.avg_compressed)
-      ? ((1 - comp.avg_compressed / comp.avg_uncompressed) * 100).toFixed(1)
-      : '0';
-    let html = `
-      <div class="pb-stat-grid">
-        <div class="pb-stat-card">
-          <div class="pb-stat-label">VERSIONS</div>
-          <div class="pb-stat-value">${ov.total_versions || 0}</div>
-        </div>
-        <div class="pb-stat-card">
-          <div class="pb-stat-label">AVG FILES</div>
-          <div class="pb-stat-value">${ov.avg_files || 0}</div>
-        </div>
-        <div class="pb-stat-card">
-          <div class="pb-stat-label">AVG SIZE</div>
-          <div class="pb-stat-value" style="color:var(--gold);font-size:15px">${fmtSize(ov.avg_size)}</div>
-        </div>
-        <div class="pb-stat-card">
-          <div class="pb-stat-label">DELTA / TOTAL</div>
-          <div class="pb-stat-value" style="color:var(--success);font-size:15px">${ov.delta_count || 0}/${ov.total_versions || 0}</div>
-        </div>
-      </div>
-      <div style="font-size:10px;color:var(--text-dim);margin-bottom:12px;
-        padding:8px;background:rgba(94,234,212,.05);border-left:2px solid var(--primary);
-        border-radius:3px">
-        <b style="color:var(--primary)">Compression:</b> ${ratio}% ·
-        ${fmtSize(comp.avg_uncompressed)} → ${fmtSize(comp.avg_compressed)}<br>
-        <b style="color:var(--primary)">Delta lines:</b> ${comp.total_delta_lines || 0}
-      </div>
-    `;
-    if (data.hotFiles && data.hotFiles.length){
-      html += `<div style="font-size:10px;color:var(--text-dim);letter-spacing:1px;margin:10px 0 6px">🔥 TOP FILE THAY ĐỔI</div>`;
-      for (const f of data.hotFiles){
-        const w = Math.min(100, f.change_count * 8);
-        html += `<div style="display:flex;align-items:center;gap:6px;margin:3px 0">
-          <span style="min-width:100px;color:var(--text);font-size:10px;
-            overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.file_label}</span>
-          <div style="flex:1;height:6px;background:rgba(0,0,0,.4);border-radius:3px;overflow:hidden">
-            <div style="height:100%;width:${w}%;background:linear-gradient(90deg,var(--primary),var(--gold));border-radius:3px"></div>
-          </div>
-          <span style="color:var(--gold);font-size:10px;min-width:20px;text-align:right">${f.change_count}×</span>
-        </div>`;
-      }
-    }
-    if (data.hourlyActivity && data.hourlyActivity.length){
-      html += `<div style="font-size:10px;color:var(--text-dim);letter-spacing:1px;margin:12px 0 6px">🕐 GIỜ HOẠT ĐỘNG</div>`;
-      const hours = new Array(24).fill(0);
-      for (const h of data.hourlyActivity) hours[+h.hour] = +h.cnt;
-      const maxH = Math.max(...hours, 1);
-      html += '<div style="display:flex;gap:1px;align-items:flex-end;height:40px">';
-      for (let i = 0; i < 24; i++){
-        const h = Math.round(hours[i] / maxH * 38);
-        const bg = hours[i]
-          ? 'linear-gradient(180deg,var(--primary),var(--primary-2))'
-          : 'rgba(255,255,255,.08)';
-        html += `<div style="flex:1;height:${Math.max(2,h)}px;
-          background:${bg};border-radius:2px 2px 0 0" title="${i}h: ${hours[i]}"></div>`;
-      }
-      html += '</div>';
-      html += `<div style="display:flex;justify-content:space-between;
-        font-size:8px;color:var(--text-dim);margin-top:2px">
-        <span>0h</span><span>12h</span><span>23h</span></div>`;
-    }
-    panel.innerHTML = html;
-  }
-  async function refresh(){
-    const panel = $('promptAnalyticsPanel');
-    if (panel) panel.innerHTML = '<div style="text-align:center;padding:20px;opacity:.5">Đang tải...</div>';
-    if (!AUTH.token){
-      if (panel) panel.innerHTML = '<div style="text-align:center;padding:20px;opacity:.5">Cần đăng nhập để xem phân tích</div>';
-      return;
-    }
-    const data = await fetchAnalytics();
-    renderPanel(data);
-  }
-  return { refresh, renderPanel };
-})();
-
+/* ============================================================
+   ROOM + JOIN LOGIC
+   ============================================================ */
 function getPlayerName(){
   let name = ($('playerName')?.value.trim()) || 'Hunter';
   if (AUTH.user?.displayName) name = AUTH.user.displayName;
@@ -3292,6 +2918,7 @@ async function joinRoomByCode(){
   } catch(e){ status.textContent = '❌ ' + (e.message||e); }
 }
 
+/* BACKEND UI */
 function refreshBackendUI(){
   const label = $('currentBackendLabel');
   const select = $('backendSelect');
@@ -3348,6 +2975,7 @@ window.clearBackendCache = function(){
   setTimeout(() => location.reload(), 500);
 };
 
+/* MENU */
 window.Game = {
   startSingleplayer: () => startSingleplayer(),
   showMP: () => showMenuPage('mp'),
@@ -3356,7 +2984,6 @@ window.Game = {
     $('menu').classList.remove('hidden');
     showMenuPage('settings');
     setTimeout(refreshBackendUI, 100);
-    setTimeout(() => PromptBuilderUI.refresh(), 200);
   },
   backMain: () => {
     showMenuPage('main');
@@ -3430,11 +3057,9 @@ function toggleSettings(){
     $('menu').classList.remove('hidden');
     showMenuPage('settings');
     setTimeout(refreshBackendUI, 100);
-    setTimeout(() => PromptBuilderUI.refresh(), 200);
   } else {
     showMenuPage('settings');
     setTimeout(refreshBackendUI, 100);
-    setTimeout(() => PromptBuilderUI.refresh(), 200);
   }
 }
 
@@ -3579,11 +3204,14 @@ loadProject().then(async () => {
   if (authed) showMenuPage('main');
   else $('menu').classList.add('hidden');
   requestAnimationFrame(loop);
-  setTimeout(() => PromptBuilderUI.init().catch(e => console.warn('[PB]', e)), 1500);
+  /* Silent snapshot builder — không UI, chỉ sync ngầm */
+  setTimeout(() => PromptBuilder.init().catch(e => console.warn('[PB]', e)), 1500);
 });
 
-console.log('%c🐉 Dragon Hunter v3.1 — Postgres + PromptBuilder v3',
+console.log('%c🐉 Dragon Hunter v3.2 — Silent Sync + Postgres',
   'color:#5eead4;font-weight:bold;font-size:14px');
+console.log('%c📄 Prompt Manager: ' + location.origin + '/prompt-manager.html',
+  'color:#fbbf24;font-weight:bold');
 </script>
 </body>
-   </html>
+  </html>
