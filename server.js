@@ -1,8 +1,9 @@
 /* ============================================================
    Dragon Hunter Backend v4.1
-   - Express (REST: auth, save, rooms list, tuning)
+   ============================================================
+   - Express (REST: auth, save, rooms list, tuning, health)
    - WebSocket (game state, realtime)
-   - PostgreSQL (persistent data)
+   - PostgreSQL (persistent data — optional, fallback in-memory)
    - Prompt Builder API (via ./public/prompt.routes)
    ============================================================ */
 
@@ -25,21 +26,27 @@ const TOKEN_TTL_DAYS = 30;
 
 let SEED = Date.now() & 0x7fffffff;
 
-/* MIDDLEWARE */
+/* ============================================================
+   MIDDLEWARE
+   ============================================================ */
 app.use(cors());
 app.use(express.json({ limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-/* DATABASE */
+/* ============================================================
+   DATABASE
+   ============================================================ */
 let db = null;
 
 async function initDB(){
   const url = process.env.DATABASE_URL;
   if (!url){
-    console.log('[DB] No DATABASE_URL — accounts disabled');
+    console.log('[DB] No DATABASE_URL — running in memory mode');
+    console.log('[DB] Accounts disabled · Prompt API disabled');
     return;
   }
   try {
+    /* Auto-migrate before connecting */
     const migrate = require('./db/migrate');
     await migrate();
 
@@ -49,20 +56,26 @@ async function initDB(){
         ? false
         : { rejectUnauthorized: false },
       max: 10,
-      idleTimeoutMillis: 30000
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000
     });
     await db.query('SELECT 1');
-    console.log('[DB] Connected');
+    console.log('[DB] ✓ Connected');
 
     /* Mount Prompt Routes sau khi DB sẵn sàng */
     mountPromptRoutes(app, db, requireAuth);
+    console.log('[Routes] ✓ Prompt API mounted');
+
   } catch(e){
-    console.error('[DB] Fail:', e.message);
+    console.error('[DB] ✗ Fail:', e.message);
+    console.error('[DB] Running in memory mode — accounts disabled');
     db = null;
   }
 }
 
-/* HELPERS */
+/* ============================================================
+   HELPERS
+   ============================================================ */
 function hashPassword(password, salt){
   return crypto.scryptSync(password, salt, 64).toString('hex');
 }
@@ -85,7 +98,9 @@ function genPlayerId(){
   return 'p' + crypto.randomBytes(6).toString('hex');
 }
 
-/* AUTH MIDDLEWARE */
+/* ============================================================
+   AUTH MIDDLEWARE
+   ============================================================ */
 async function requireAuth(req, res, next){
   if (!db) return res.status(503).json({ error: 'accounts disabled' });
   const auth = req.headers.authorization || '';
@@ -110,12 +125,14 @@ async function requireAuth(req, res, next){
     req.token = token;
     next();
   } catch(e){
-    console.error('auth:', e.message);
+    console.error('[auth]', e.message);
     res.status(500).json({ error: 'auth error' });
   }
 }
 
-/* AUTH ROUTES */
+/* ============================================================
+   AUTH ROUTES
+   ============================================================ */
 app.post('/auth/register', async (req, res) => {
   if (!db) return res.status(503).json({ error: 'accounts disabled' });
   const body = req.body || {};
@@ -123,25 +140,38 @@ app.post('/auth/register', async (req, res) => {
   const password = body.password;
   const displayName = body.displayName;
   if (!username || !password) return res.status(400).json({ error: 'missing' });
+
   const u = String(username).trim().toLowerCase();
-  if (!/^[a-z0-9_]{3,20}$/.test(u)) return res.status(400).json({ error: 'username 3-20 chars [a-z0-9_]' });
-  if (String(password).length < 6) return res.status(400).json({ error: 'password min 6' });
+  if (!/^[a-z0-9_]{3,20}$/.test(u))
+    return res.status(400).json({ error: 'username 3-20 chars [a-z0-9_]' });
+  if (String(password).length < 6)
+    return res.status(400).json({ error: 'password min 6' });
+
   const dn = String(displayName || u).trim().slice(0, 20) || u;
+
   try {
     const check = await db.query('SELECT id FROM users WHERE username = $1', [u]);
-    if (check.rowCount > 0) return res.status(409).json({ error: 'username exists' });
+    if (check.rowCount > 0)
+      return res.status(409).json({ error: 'username exists' });
+
     const salt = genSalt();
     const hash = hashPassword(String(password), salt);
+
     const ins = await db.query(
       'INSERT INTO users (username, display_name, password_hash, password_salt, last_login) ' +
       'VALUES ($1, $2, $3, $4, NOW()) RETURNING id',
       [u, dn, hash, salt]
     );
     const userId = ins.rows[0].id;
+
+    /* Default save data (v2 schema) */
     const defaultSave = {
       version: 2,
       createdAt: new Date().toISOString(),
-      player: { level: 1, exp: 0, hp: 20, maxHp: 20, selected: 0, stamina: 100, maxStamina: 100 },
+      player: {
+        level: 1, exp: 0, hp: 20, maxHp: 20, selected: 0,
+        stamina: 100, maxStamina: 100
+      },
       inventory: { hotbar: [] },
       stats: { kills: 0, deaths: 0, damageDealt: 0, damageTaken: 0 },
       achievements: {}
@@ -150,16 +180,22 @@ app.post('/auth/register', async (req, res) => {
       'INSERT INTO user_saves (user_id, data) VALUES ($1, $2) ON CONFLICT (user_id) DO NOTHING',
       [userId, JSON.stringify(defaultSave)]
     );
+
     const token = genToken();
     const expires = new Date(Date.now() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
     await db.query(
       'INSERT INTO auth_tokens (token, user_id, expires_at) VALUES ($1, $2, $3)',
       [token, userId, expires]
     );
-    console.log('Registered:', u);
-    res.json({ ok: true, token, user: { id: userId, username: u, displayName: dn } });
+
+    console.log('[Auth] Registered:', u);
+    res.json({
+      ok: true,
+      token,
+      user: { id: userId, username: u, displayName: dn }
+    });
   } catch(e){
-    console.error('register:', e.message);
+    console.error('[register]', e.message);
     res.status(500).json({ error: 'register failed' });
   }
 });
@@ -169,35 +205,52 @@ app.post('/auth/login', async (req, res) => {
   const body = req.body || {};
   const username = body.username;
   const password = body.password;
-  if (!username || !password) return res.status(400).json({ error: 'missing' });
+  if (!username || !password)
+    return res.status(400).json({ error: 'missing' });
+
   const u = String(username).trim().toLowerCase();
+
   try {
     const r = await db.query(
       'SELECT id, username, display_name, password_hash, password_salt FROM users WHERE username = $1',
       [u]
     );
-    if (r.rowCount === 0) return res.status(401).json({ error: 'sai tài khoản hoặc mật khẩu' });
-    const user = r.rows[0];
-    if (!verifyPassword(String(password), user.password_salt, user.password_hash)){
+    if (r.rowCount === 0)
       return res.status(401).json({ error: 'sai tài khoản hoặc mật khẩu' });
-    }
+
+    const user = r.rows[0];
+    if (!verifyPassword(String(password), user.password_salt, user.password_hash))
+      return res.status(401).json({ error: 'sai tài khoản hoặc mật khẩu' });
+
     await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
+
+    /* Log session */
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '?';
     const ua = (req.headers['user-agent'] || '').substring(0, 200);
     await db.query(
       'INSERT INTO user_sessions (user_id, ip, ua) VALUES ($1, $2, $3)',
       [user.id, String(ip).substring(0, 60), ua]
     );
+
     const token = genToken();
     const expires = new Date(Date.now() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
     await db.query(
       'INSERT INTO auth_tokens (token, user_id, expires_at) VALUES ($1, $2, $3)',
       [token, user.id, expires]
     );
-    console.log('Login:', u);
-    res.json({ ok: true, token, user: { id: user.id, username: user.username, displayName: user.display_name } });
+
+    console.log('[Auth] Login:', u);
+    res.json({
+      ok: true,
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        displayName: user.display_name
+      }
+    });
   } catch(e){
-    console.error('login:', e.message);
+    console.error('[login]', e.message);
     res.status(500).json({ error: 'login failed' });
   }
 });
@@ -208,7 +261,9 @@ app.get('/auth/me', requireAuth, async (req, res) => {
       'SELECT id, username, display_name, created_at, last_login FROM users WHERE id = $1',
       [req.userId]
     );
-    if (r.rowCount === 0) return res.status(404).json({ error: 'user not found' });
+    if (r.rowCount === 0)
+      return res.status(404).json({ error: 'user not found' });
+
     const row = r.rows[0];
     res.json({
       ok: true,
@@ -234,12 +289,22 @@ app.post('/auth/logout', requireAuth, async (req, res) => {
   }
 });
 
-/* SAVE DATA */
+/* ============================================================
+   SAVE DATA
+   ============================================================ */
 app.get('/save', requireAuth, async (req, res) => {
   try {
-    const r = await db.query('SELECT data, updated_at FROM user_saves WHERE user_id = $1', [req.userId]);
-    if (r.rowCount === 0) return res.json({ ok: true, data: {}, updatedAt: null });
-    res.json({ ok: true, data: r.rows[0].data, updatedAt: r.rows[0].updated_at });
+    const r = await db.query(
+      'SELECT data, updated_at FROM user_saves WHERE user_id = $1',
+      [req.userId]
+    );
+    if (r.rowCount === 0)
+      return res.json({ ok: true, data: {}, updatedAt: null });
+    res.json({
+      ok: true,
+      data: r.rows[0].data,
+      updatedAt: r.rows[0].updated_at
+    });
   } catch(e){
     res.status(500).json({ error: 'load failed' });
   }
@@ -248,9 +313,13 @@ app.get('/save', requireAuth, async (req, res) => {
 app.post('/save', requireAuth, async (req, res) => {
   const body = req.body || {};
   const data = body.data;
-  if (!data || typeof data !== 'object') return res.status(400).json({ error: 'missing data' });
+  if (!data || typeof data !== 'object')
+    return res.status(400).json({ error: 'missing data' });
+
   const size = JSON.stringify(data).length;
-  if (size > 1024 * 1024) return res.status(413).json({ error: 'save too large' });
+  if (size > 1024 * 1024)
+    return res.status(413).json({ error: 'save too large (max 1MB)' });
+
   try {
     await db.query(
       'INSERT INTO user_saves (user_id, data, updated_at) VALUES ($1, $2, NOW()) ' +
@@ -263,10 +332,13 @@ app.post('/save', requireAuth, async (req, res) => {
   }
 });
 
-/* ROOMS */
+/* ============================================================
+   ROOMS LIST
+   ============================================================ */
 app.get('/rooms', async (req, res) => {
   try {
     if (!db){
+      /* In-memory mode */
       const list = [];
       rooms.forEach(function(r){
         list.push({
@@ -279,7 +351,10 @@ app.get('/rooms', async (req, res) => {
       });
       return res.json({ rooms: list, total: list.length, maxPlayers: MAX_PLAYERS });
     }
+
+    /* Cleanup old rooms */
     await db.query("DELETE FROM rooms WHERE updated_at < NOW() - INTERVAL '30 minutes'");
+
     const r = await db.query(
       'SELECT code, name, count, max_players AS max, ' +
       'EXTRACT(EPOCH FROM updated_at) * 1000 AS ts ' +
@@ -296,16 +371,21 @@ app.get('/rooms', async (req, res) => {
     });
     res.json({ rooms: list, total: list.length, maxPlayers: MAX_PLAYERS });
   } catch(e){
+    console.error('[rooms]', e.message);
     res.json({ rooms: [], total: 0, maxPlayers: MAX_PLAYERS });
   }
 });
 
-/* WEAPON TUNING */
+/* ============================================================
+   WEAPON TUNING
+   ============================================================ */
 app.post('/tuning', async (req, res) => {
   const body = req.body || {};
   const name = body.name;
   const config = body.config;
-  if (!name || !config) return res.status(400).json({ error: 'missing' });
+  if (!name || !config)
+    return res.status(400).json({ error: 'missing name or config' });
+
   try {
     if (db){
       await db.query(
@@ -315,9 +395,9 @@ app.post('/tuning', async (req, res) => {
       );
     } else {
       if (!global.__memTuning) global.__memTuning = new Map();
-      global.__memTuning.set(name, { name: name, config: config, ts: Date.now() });
+      global.__memTuning.set(name, { name, config, ts: Date.now() });
     }
-    res.json({ ok: true, name: name });
+    res.json({ ok: true, name });
   } catch(e){
     res.status(500).json({ error: 'db error' });
   }
@@ -326,8 +406,12 @@ app.post('/tuning', async (req, res) => {
 app.get('/tuning/:name', async (req, res) => {
   try {
     if (db){
-      const r = await db.query('SELECT config FROM weapon_tuning WHERE name = $1', [req.params.name]);
-      if (r.rowCount === 0) return res.status(404).json({ error: 'not found' });
+      const r = await db.query(
+        'SELECT config FROM weapon_tuning WHERE name = $1',
+        [req.params.name]
+      );
+      if (r.rowCount === 0)
+        return res.status(404).json({ error: 'not found' });
       res.json({ ok: true, config: r.rows[0].config });
     } else {
       const item = global.__memTuning && global.__memTuning.get(req.params.name);
@@ -343,7 +427,9 @@ app.get('/tuning', async (req, res) => {
   try {
     let list = [];
     if (db){
-      const r = await db.query('SELECT name, updated_at FROM weapon_tuning ORDER BY updated_at DESC');
+      const r = await db.query(
+        'SELECT name, updated_at FROM weapon_tuning ORDER BY updated_at DESC'
+      );
       list = r.rows.map(function(row){
         return { name: row.name, updatedAt: row.updated_at };
       });
@@ -358,20 +444,43 @@ app.get('/tuning', async (req, res) => {
   }
 });
 
-/* HEALTH */
+/* ============================================================
+   HEALTH
+   ============================================================ */
 app.get('/', function(req, res){
   res.send(
-    '<h1>Dragon Hunter Backend v4.1</h1>' +
+    '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+    '<title>Dragon Hunter Backend</title>' +
+    '<style>body{font-family:Consolas,monospace;background:#0a0f16;color:#5eead4;' +
+    'padding:30px;line-height:1.7}h1{color:#fbbf24;font-size:24px}' +
+    'a{color:#5eead4;text-decoration:none;padding:4px 10px;background:rgba(94,234,212,.1);' +
+    'border-radius:6px;margin-right:6px;display:inline-block;margin-bottom:6px}' +
+    'a:hover{background:rgba(94,234,212,.2)}ul{list-style:none;padding:0}' +
+    '.meta{color:#7a8a90;font-size:12px;margin-top:20px}</style>' +
+    '</head><body>' +
+    '<h1>🐉 Dragon Hunter Backend v4.1</h1>' +
+    '<h3>Endpoints:</h3>' +
     '<ul>' +
     '<li><a href="/health">/health</a></li>' +
     '<li><a href="/rooms">/rooms</a></li>' +
     '<li><a href="/tuning">/tuning</a></li>' +
-    '<li><a href="/weapon-tuner.html">/weapon-tuner.html</a></li>' +
-    '<li><a href="/editor.html">/editor.html</a></li>' +
-    '<li><a href="/prompt.routes.js">/prompt.routes.js</a></li>' +
+    '<li><a href="/editor.html">editor.html</a></li>' +
+    '<li><a href="/weapon-tuner.html">weapon-tuner.html</a></li>' +
+    '<li><a href="/prompt-manager.html">prompt-manager.html</a></li>' +
     '</ul>' +
-    '<p>WebSocket: wss://game-sinhton.onrender.com/ws</p>' +
-    '<p>Prompt API: /prompt/snapshot · /prompt/versions · /prompt/analytics</p>'
+    '<h3>Prompt API:</h3>' +
+    '<ul>' +
+    '<li>/prompt/snapshot (POST)</li>' +
+    '<li>/prompt/versions (GET)</li>' +
+    '<li>/prompt/version/:id (GET)</li>' +
+    '<li>/prompt/diff?a=&b= (GET)</li>' +
+    '<li>/prompt/analytics (GET)</li>' +
+    '</ul>' +
+    '<div class="meta">' +
+    '<p>WebSocket: wss://' + req.headers.host + '/ws</p>' +
+    '<p>DB: ' + (db ? 'PostgreSQL' : 'In-memory (no DATABASE_URL)') + '</p>' +
+    '</div>' +
+    '</body></html>'
   );
 });
 
@@ -389,11 +498,14 @@ app.get('/health', async function(req, res){
     promptApi: db ? 'enabled' : 'disabled',
     wsClients: wss.clients.size,
     activeRooms: rooms.size,
-    maxPlayers: MAX_PLAYERS
+    maxPlayers: MAX_PLAYERS,
+    uptime: Math.floor(process.uptime())
   });
 });
 
-/* GAME STATE */
+/* ============================================================
+   GAME STATE — ROOMS
+   ============================================================ */
 const rooms = new Map();
 
 function playerToJson(p){
@@ -471,7 +583,9 @@ Room.prototype.getPlayerList = function(){
   return list;
 };
 
-/* WEBSOCKET */
+/* ============================================================
+   WEBSOCKET SERVER
+   ============================================================ */
 const wss = new WebSocketServer({ server: server, path: '/ws' });
 
 wss.on('connection', function(ws, req){
@@ -540,7 +654,7 @@ function handleMessage(ws, msg){
       handleChat(ws, msg);
       break;
     default:
-      console.warn('[WS] Unknown:', msg.t);
+      console.warn('[WS] Unknown type:', msg.t);
   }
 }
 
@@ -559,13 +673,15 @@ async function handleCreateRoom(ws, msg){
 
   console.log('[Room] Created', code, 'by', name);
 
+  /* Register in DB */
   if (db){
     try {
       await db.query(
         'INSERT INTO rooms (code, name, count, max_players, status, updated_at) ' +
         "VALUES ($1, $2, 1, $3, 'open', NOW()) " +
-        'ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, count = 1, status = $4, updated_at = NOW()',
-        [code, name, MAX_PLAYERS, 'open']
+        'ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, count = 1, ' +
+        "status = 'open', updated_at = NOW()",
+        [code, name, MAX_PLAYERS]
       );
     } catch(e){
       console.warn('[DB] register room:', e.message);
@@ -587,12 +703,14 @@ async function handleJoinRoom(ws, msg){
   }
   var code = String(msg.code || '').toUpperCase();
   var room = rooms.get(code);
+
   if (!room){
     return send(ws, { t: 'error', msg: 'Không tìm thấy phòng' });
   }
   if (room.players.size >= MAX_PLAYERS){
     return send(ws, { t: 'error', msg: 'Phòng đã đầy' });
   }
+
   var name = String(msg.name || 'Hunter').slice(0, 16);
   var player = createPlayer(ws, name, msg);
   room.addPlayer(player);
@@ -616,7 +734,10 @@ async function handleJoinRoom(ws, msg){
 
   if (db){
     try {
-      await db.query('UPDATE rooms SET count = $1, updated_at = NOW() WHERE code = $2', [room.players.size, code]);
+      await db.query(
+        'UPDATE rooms SET count = $1, updated_at = NOW() WHERE code = $2',
+        [room.players.size, code]
+      );
     } catch(e){}
   }
 }
@@ -634,11 +755,16 @@ function handleMove(ws, msg){
   var newX = Number(msg.x) || 0;
   var newY = Number(msg.y) || 0;
 
+  /* Anti speed-hack: max distance = 500*dt + 100px */
   if (dt > 0 && dt < 1){
     var dist = Math.hypot(newX - player.x, newY - player.y);
     var maxDist = 500 * dt + 100;
     if (dist > maxDist){
-      send(ws, { t: 'pos_correct', x: Math.round(player.x), y: Math.round(player.y) });
+      send(ws, {
+        t: 'pos_correct',
+        x: Math.round(player.x),
+        y: Math.round(player.y)
+      });
       return;
     }
   }
@@ -648,7 +774,8 @@ function handleMove(ws, msg){
   player.facing = msg.facing === -1 ? -1 : 1;
   player.anim = msg.anim || 'idle';
   player.sitting = !!msg.sitting;
-  if (msg.hp != null) player.hp = Math.max(0, Math.min(100, Number(msg.hp)));
+  if (msg.hp != null)
+    player.hp = Math.max(0, Math.min(100, Number(msg.hp)));
   player.lastSeen = now;
 
   room.broadcast({
@@ -671,6 +798,7 @@ function handleAttack(ws, msg){
   var attacker = room.players.get(ws.id);
   if (!attacker) return;
 
+  /* Cooldown 500ms */
   var now = Date.now();
   if (now - (attacker.lastAttack || 0) < 500) return;
   attacker.lastAttack = now;
@@ -680,6 +808,7 @@ function handleAttack(ws, msg){
   var hitX = attacker.x + Math.cos(angle) * 50;
   var hitY = attacker.y + Math.sin(angle) * 50;
 
+  /* Find nearest target within range */
   var target = null;
   var minD = range;
   room.players.forEach(function(p){
@@ -726,8 +855,10 @@ function handleChat(ws, msg){
   if (!room) return;
   var player = room.players.get(ws.id);
   if (!player) return;
+
   var text = String(msg.text || '').slice(0, 200);
   if (!text) return;
+
   room.broadcast({
     t: 'chat',
     from: player.name,
@@ -757,14 +888,20 @@ async function handleDisconnect(ws){
     if (room.players.size > 0){
       if (db){
         try {
-          await db.query('UPDATE rooms SET count = $1, updated_at = NOW() WHERE code = $2', [room.players.size, code]);
+          await db.query(
+            'UPDATE rooms SET count = $1, updated_at = NOW() WHERE code = $2',
+            [room.players.size, code]
+          );
         } catch(e){}
       }
     } else {
       rooms.delete(code);
       if (db){
         try {
-          await db.query("UPDATE rooms SET status = 'closed', updated_at = NOW() WHERE code = $1", [code]);
+          await db.query(
+            "UPDATE rooms SET status = 'closed', updated_at = NOW() WHERE code = $1",
+            [code]
+          );
         } catch(e){}
       }
       console.log('[Room] Closed', code);
@@ -772,7 +909,9 @@ async function handleDisconnect(ws){
   }
 }
 
-/* HEARTBEAT */
+/* ============================================================
+   HEARTBEAT + CLEANUP
+   ============================================================ */
 setInterval(function(){
   wss.clients.forEach(function(ws){
     if (ws.isAlive === false) return ws.terminate();
@@ -799,14 +938,21 @@ setInterval(async function(){
 }, 60 * 60 * 1000);
 
 /* ============================================================
-   START
+   START SERVER
    ============================================================ */
 server.listen(PORT, function(){
-  console.log('🐉 Dragon Hunter v4.1 · Listening on ' + PORT);
+  console.log('');
+  console.log('🐉 ═══════════════════════════════════════════');
+  console.log('   DRAGON HUNTER BACKEND v4.1');
+  console.log('   Listening on port ' + PORT);
+  console.log('🐉 ═══════════════════════════════════════════');
+  console.log('');
   initDB();
 });
 
-/* 404 */
+/* ============================================================
+   404
+   ============================================================ */
 app.use(function(req, res){
   res.status(404).json({ error: 'Not found', path: req.path });
 });
