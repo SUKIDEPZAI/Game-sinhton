@@ -1,5 +1,5 @@
 /* ============================================================
-   Dragon Hunter Backend v4.1
+   Dragon Hunter Backend v4.2
    ============================================================
    - Express (REST: auth, save, rooms list, tuning, health)
    - WebSocket (game state, realtime)
@@ -62,7 +62,7 @@ async function initDB(){
     await db.query('SELECT 1');
     console.log('[DB] ✓ Connected');
 
-    /* Mount Prompt Routes sau khi DB sẵn sàng */
+    /* Mount Prompt Routes AFTER DB ready — BEFORE 404 handler */
     mountPromptRoutes(app, db, requireAuth);
     console.log('[Routes] ✓ Prompt API mounted');
 
@@ -445,7 +445,7 @@ app.get('/tuning', async (req, res) => {
 });
 
 /* ============================================================
-   HEALTH
+   HEALTH + HOME
    ============================================================ */
 app.get('/', function(req, res){
   res.send(
@@ -456,9 +456,12 @@ app.get('/', function(req, res){
     'a{color:#5eead4;text-decoration:none;padding:4px 10px;background:rgba(94,234,212,.1);' +
     'border-radius:6px;margin-right:6px;display:inline-block;margin-bottom:6px}' +
     'a:hover{background:rgba(94,234,212,.2)}ul{list-style:none;padding:0}' +
-    '.meta{color:#7a8a90;font-size:12px;margin-top:20px}</style>' +
+    '.meta{color:#7a8a90;font-size:12px;margin-top:20px}' +
+    '.status{padding:4px 10px;border-radius:6px;font-size:12px;margin-left:6px}' +
+    '.ok{background:rgba(74,222,128,.15);color:#4ade80}' +
+    '.off{background:rgba(248,113,113,.15);color:#f87171}</style>' +
     '</head><body>' +
-    '<h1>🐉 Dragon Hunter Backend v4.1</h1>' +
+    '<h1>🐉 Dragon Hunter Backend v4.2</h1>' +
     '<h3>Endpoints:</h3>' +
     '<ul>' +
     '<li><a href="/health">/health</a></li>' +
@@ -478,7 +481,9 @@ app.get('/', function(req, res){
     '</ul>' +
     '<div class="meta">' +
     '<p>WebSocket: wss://' + req.headers.host + '/ws</p>' +
-    '<p>DB: ' + (db ? 'PostgreSQL' : 'In-memory (no DATABASE_URL)') + '</p>' +
+    '<p>DB: ' + (db ? 'PostgreSQL' : 'In-memory (no DATABASE_URL)') +
+    '<span class="status ' + (db ? 'ok' : 'off') + '">' +
+    (db ? 'ONLINE' : 'OFFLINE') + '</span></p>' +
     '</div>' +
     '</body></html>'
   );
@@ -491,7 +496,7 @@ app.get('/health', async function(req, res){
   }
   res.json({
     ok: true,
-    version: '4.1',
+    version: '4.2',
     ts: Date.now(),
     db: db ? (dbOk ? 'connected' : 'error') : 'memory',
     accounts: db ? 'enabled' : 'disabled',
@@ -673,7 +678,6 @@ async function handleCreateRoom(ws, msg){
 
   console.log('[Room] Created', code, 'by', name);
 
-  /* Register in DB */
   if (db){
     try {
       await db.query(
@@ -755,7 +759,7 @@ function handleMove(ws, msg){
   var newX = Number(msg.x) || 0;
   var newY = Number(msg.y) || 0;
 
-  /* Anti speed-hack: max distance = 500*dt + 100px */
+  /* Anti speed-hack */
   if (dt > 0 && dt < 1){
     var dist = Math.hypot(newX - player.x, newY - player.y);
     var maxDist = 500 * dt + 100;
@@ -798,7 +802,6 @@ function handleAttack(ws, msg){
   var attacker = room.players.get(ws.id);
   if (!attacker) return;
 
-  /* Cooldown 500ms */
   var now = Date.now();
   if (now - (attacker.lastAttack || 0) < 500) return;
   attacker.lastAttack = now;
@@ -808,7 +811,6 @@ function handleAttack(ws, msg){
   var hitX = attacker.x + Math.cos(angle) * 50;
   var hitY = attacker.y + Math.sin(angle) * 50;
 
-  /* Find nearest target within range */
   var target = null;
   var minD = range;
   room.players.forEach(function(p){
@@ -938,21 +940,41 @@ setInterval(async function(){
 }, 60 * 60 * 1000);
 
 /* ============================================================
-   START SERVER
+   BOOT SEQUENCE (FIXED)
+   ============================================================
+   Thứ tự QUAN TRỌNG:
+     1. initDB()        → migrate + connect + MOUNT prompt routes
+     2. 404 handler     → phải đăng ký SAU khi mount prompt routes
+     3. server.listen() → khởi động sau khi mọi thứ sẵn sàng
    ============================================================ */
-server.listen(PORT, function(){
+(async function boot(){
   console.log('');
   console.log('🐉 ═══════════════════════════════════════════');
-  console.log('   DRAGON HUNTER BACKEND v4.1');
-  console.log('   Listening on port ' + PORT);
+  console.log('   DRAGON HUNTER BACKEND v4.2');
+  console.log('   Booting...');
   console.log('🐉 ═══════════════════════════════════════════');
   console.log('');
-  initDB();
-});
 
-/* ============================================================
-   404
-   ============================================================ */
-app.use(function(req, res){
-  res.status(404).json({ error: 'Not found', path: req.path });
-});
+  /* 1. Init DB + mount prompt routes */
+  try {
+    await initDB();
+  } catch(e){
+    console.error('[Boot] initDB failed:', e.message);
+  }
+
+  /* 2. 404 handler — MUST be last route */
+  app.use(function(req, res){
+    res.status(404).json({ error: 'Not found', path: req.path });
+  });
+
+  /* 3. Listen */
+  server.listen(PORT, function(){
+    console.log('');
+    console.log('🐉 ═══════════════════════════════════════════');
+    console.log('   ✓ Listening on port ' + PORT);
+    console.log('   ✓ DB: ' + (db ? 'PostgreSQL' : 'in-memory'));
+    console.log('   ✓ Prompt API: ' + (db ? 'enabled' : 'disabled'));
+    console.log('🐉 ═══════════════════════════════════════════');
+    console.log('');
+  });
+})();
