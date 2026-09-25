@@ -715,6 +715,11 @@ $('gameUrlInput').addEventListener('keydown', e => {
 });
 
 async function connectToGame(baseUrl){
+  try {
+    const parsed = new URL(baseUrl);
+    if (!['https:', 'http:'].includes(parsed.protocol)) throw new Error('URL phải dùng HTTP(S)');
+    baseUrl = parsed.origin + parsed.pathname.replace(/\/+$/, '');
+  } catch (error) { toast('❌ URL không hợp lệ', 'err'); return; }
   state.baseUrl = baseUrl;
   setConnStatus('loading', 'Đang kết nối...');
 
@@ -722,7 +727,7 @@ async function connectToGame(baseUrl){
     const url = baseUrl + '/sprites.json';
     toast('⏳ Đang tải sprites.json...');
 
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined });
     if (!res.ok) throw new Error('HTTP ' + res.status + ' — kiểm tra URL');
     const project = await res.json();
 
@@ -1763,7 +1768,7 @@ $('exportBtn').addEventListener('click', () => {
   a.href = url;
   a.download = 'weapon-tuning.json';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
   toast('💾 Đã export weapon-tuning.json');
 });
 
@@ -1803,6 +1808,7 @@ $('loadTuningBtn').addEventListener('click', async () => {
     const res = await fetch(BACKEND + '/tuning', {
       signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined
     });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const list = $('tuningList');
 
@@ -1815,9 +1821,13 @@ $('loadTuningBtn').addEventListener('click', async () => {
     for (const item of data.tunings){
       const el = document.createElement('div');
       el.className = 'list-item';
-      el.innerHTML =
-        `<span class="name">${item.name}</span>` +
-        `<span class="meta">${item.updatedAt ? new Date(item.updatedAt).toLocaleString() : ''}</span>`;
+      const nameEl = document.createElement('span');
+      nameEl.className = 'name';
+      nameEl.textContent = String(item.name || '');
+      const dateEl = document.createElement('span');
+      dateEl.className = 'meta';
+      dateEl.textContent = item.updatedAt ? new Date(item.updatedAt).toLocaleString('vi-VN') : '';
+      el.append(nameEl, dateEl);
       const loadBtn = document.createElement('button');
       loadBtn.className = 'btn primary small';
       loadBtn.textContent = 'Load';
@@ -1830,7 +1840,12 @@ $('loadTuningBtn').addEventListener('click', async () => {
       list.appendChild(el);
     }
   } catch(e){
-    $('tuningList').innerHTML = '<div class="empty-msg" style="color:var(--danger)">❌ Lỗi: ' + e.message + '</div>';
+    $('tuningList').replaceChildren();
+    const errorEl = document.createElement('div');
+    errorEl.className = 'empty-msg';
+    errorEl.style.color = 'var(--danger)';
+    errorEl.textContent = '❌ Lỗi: ' + e.message;
+    $('tuningList').appendChild(errorEl);
   }
 });
 
@@ -1850,7 +1865,7 @@ async function loadTuningFromServer(name){
 }
 
 function applyTuningConfig(config){
-  if (!config || !config.animations){
+  if (!config || !config.animations || typeof config.animations !== 'object' || Array.isArray(config.animations)){
     toast('Config sai định dạng', 'err');
     return;
   }
@@ -1872,8 +1887,16 @@ function applyTuningConfig(config){
     const src = config.animations[anim];
     const dst = state.tuning.get(anim);
     if (!dst) continue;
+    if (!Array.isArray(src)) continue;
+    const allowed = ['handX','handY','offsetX','offsetY','rotation','scale','pivotX','pivotY','weaponFrame'];
     for (let i = 0; i < Math.min(src.length, dst.length); i++){
-      Object.assign(dst[i], src[i]);
+      if (!src[i] || typeof src[i] !== 'object') continue;
+      for (const key of allowed){
+        const value = src[i][key];
+        if (typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 100000){
+          dst[i][key] = value;
+        }
+      }
     }
   }
 

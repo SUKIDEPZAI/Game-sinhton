@@ -324,7 +324,7 @@ const BACKEND_POOL = [
 let BACKEND_URL = 'https://' + BACKEND_POOL[0].host;
 
 let ADMIN = {
-  token: localStorage.getItem('dh_admin_token') || null,
+  token: sessionStorage.getItem('dh_admin_token') || null,
   user: null
 };
 
@@ -379,7 +379,7 @@ async function adminApi(path, options = {}){
   }
   const res = await fetch(BACKEND_URL + path, {
     ...options, headers,
-    signal: AbortSignal.timeout ? AbortSignal.timeout(60000) : undefined
+    signal: options.signal || (AbortSignal.timeout ? AbortSignal.timeout(60000) : undefined)
   });
   let data = null;
   try { data = await res.json(); } catch(e){}
@@ -412,7 +412,7 @@ async function checkAuth(){
   } catch(e){
     if (e.status === 401){
       ADMIN.token = null;
-      localStorage.removeItem('dh_admin_token');
+      sessionStorage.removeItem('dh_admin_token');
     }
     showLogin();
     return false;
@@ -449,7 +449,7 @@ $('loginBtn').addEventListener('click', async () => {
     });
     ADMIN.token = r.token;
     ADMIN.user = r.user;
-    localStorage.setItem('dh_admin_token', ADMIN.token);
+    sessionStorage.setItem('dh_admin_token', ADMIN.token);
     showContent();
     toast('✓ Đăng nhập OK', 'success');
   } catch(e){
@@ -470,7 +470,7 @@ $('loginUser').addEventListener('keydown', e => {
 function logout(){
   if (!confirm('Đăng xuất?')) return;
   ADMIN.token = null; ADMIN.user = null;
-  localStorage.removeItem('dh_admin_token');
+  sessionStorage.removeItem('dh_admin_token');
   location.reload();
 }
 
@@ -527,6 +527,8 @@ async function previewBuild(){
     hideLoading();
     /* Mở tab mới với preview */
     const w = window.open('', '_blank');
+    if (!w) { toast('Trình duyệt chặn cửa sổ preview', 'error'); return; }
+    // Source is inserted as text after the preview document is created.
     w.document.write(`
       <html><head><title>Preview · Full Source</title>
       <style>
@@ -550,22 +552,16 @@ async function previewBuild(){
         <button onclick="dl()">⬇️ Tải về</button>
         <button onclick="cp()">📋 Copy</button>
         <pre id="c"></pre>
-        <script>
-          const content = ${JSON.stringify(content)};
-          document.getElementById('c').textContent = content;
-          function dl(){
-            const b = new Blob([content], {type:'text/plain'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(b);
-            a.download = 'prompt_fullsource_${Date.now()}.txt';
-            a.click();
-          }
-          function cp(){
-            navigator.clipboard.writeText(content).then(() => alert('✓ Copied!'));
-          }
-        <\/script>
+
       </body></html>
     `);
+    w.document.close();
+    w.document.getElementById('c').textContent = content;
+    // Attach handlers without embedding source code in an executable script.
+    w.__previewDownload = () => downloadText(content, 'prompt_fullsource_' + Date.now() + '.txt');
+    w.__previewCopy = () => navigator.clipboard.writeText(content);
+    w.document.querySelector('button[onclick="dl()"]').onclick = w.__previewDownload;
+    w.document.querySelector('button[onclick="cp()"]').onclick = w.__previewCopy;
   } catch(e){
     hideLoading();
     toast('❌ ' + e.message, 'error');

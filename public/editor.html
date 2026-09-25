@@ -1605,6 +1605,9 @@ function encodeMetadata(obj){
 }
 function writeMetaRow(canvas, y, bytes){
   const cx = canvas.getContext('2d', { willReadFrequently: true });
+  if (bytes.length > canvas.width * 3) {
+    throw new Error('Metadata vượt dung lượng PNG (' + bytes.length + '/' + (canvas.width * 3) + ' bytes). Hãy giảm metadata hoặc tăng chiều rộng sprite.');
+  }
   const imgData = cx.createImageData(canvas.width, 1);
   const d = imgData.data;
   for (let i = 0; i < bytes.length; i++){
@@ -2802,7 +2805,7 @@ function buildProjectJson(){
 }
 
 function exportSpritePNG(s, withMeta){
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const out = document.createElement('canvas');
     out.width = s.canvas.width;
     out.height = s.canvas.height + (withMeta ? 1 : 0);
@@ -2821,15 +2824,17 @@ function exportSpritePNG(s, withMeta){
         stableAnchor: s.stableAnchor ? [s.stableAnchor.x, s.stableAnchor.y] : null,
         anchorMode: s.anchorMode || 'stable-x'
       };
-      writeMetaRow(out, s.canvas.height, encodeMetadata(meta));
+      try { writeMetaRow(out, s.canvas.height, encodeMetadata(meta)); }
+      catch (error) { reject(error); return; }
     }
     out.toBlob(blob => {
+      if (!blob) { reject(new Error('Không thể tạo PNG')); return; }
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = s.fileName + '.png';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 15000);
       resolve();
     }, 'image/png');
   });
@@ -2838,8 +2843,10 @@ function exportSpritePNG(s, withMeta){
 $('exportBtn').addEventListener('click', async () => {
   const s = currentSprite();
   if (!s) return;
-  await exportSpritePNG(s, true);
-  toast('💾 Saved ' + s.fileName + '.png', 'ok');
+  try {
+    await exportSpritePNG(s, true);
+    toast('💾 Saved ' + s.fileName + '.png', 'ok');
+  } catch (error) { toast('❌ ' + error.message, 'err'); }
 });
 
 $('exportAllBtn').addEventListener('click', showExportPreview);
@@ -2886,9 +2893,14 @@ async function doExportAll(){
   $('exportModal').classList.remove('show');
   const sprites = [...state.sprites.values()];
   toast('📦 Downloading ' + sprites.length + ' files...', 'ok');
-  for (let i = 0; i < sprites.length; i++){
-    await exportSpritePNG(sprites[i], true);
-    await new Promise(r => setTimeout(r, 250));
+  try {
+    for (let i = 0; i < sprites.length; i++){
+      await exportSpritePNG(sprites[i], true);
+      await new Promise(r => setTimeout(r, 250));
+    }
+  } catch (error) {
+    toast('❌ Export dừng: ' + error.message, 'err');
+    return;
   }
   const project = buildProjectJson();
   const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
@@ -2896,7 +2908,7 @@ async function doExportAll(){
   const a = document.createElement('a');
   a.href = url; a.download = 'sprites.json';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
   toast('📦 Exported ' + sprites.length + ' PNG + sprites.json', 'ok');
 }
 
@@ -3659,6 +3671,7 @@ $('helpBtn').addEventListener('click', () => {
    KEYBOARD
    ============================================================ */
 document.addEventListener('keydown', e => {
+  if (e.target.closest('input, textarea, select, [contenteditable=true]')) return;
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey){
     e.preventDefault(); undo(); return;
   }
