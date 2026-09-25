@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐉 Dragon Hunter v3.3</title>
+<title>🐉 Dragon Hunter v3.4</title>
 <script src="public/prompt.routes.js"></script>
 <style>
 :root{
@@ -575,7 +575,7 @@ body.edit-btn-mode #editOverlay{display:flex}
 <div id="menu" class="modal">
   <div class="menu-panel">
     <div class="logo">DRAGON HUNTER</div>
-    <div class="logo-sub">Thợ Săn Rồng · v3.3</div>
+    <div class="logo-sub">Thợ Săn Rồng · v3.4</div>
 
     <div id="menuMain" class="menu-page">
       <button class="mbtn primary" onclick="Game.startSingleplayer()">🎮 Chơi đơn</button>
@@ -663,9 +663,7 @@ body.edit-btn-mode #editOverlay{display:flex}
 window.addEventListener('error', e => console.error('[ERROR]', e.error || e.message));
 window.addEventListener('unhandledrejection', e => console.error('[PROMISE]', e.reason));
 
-/* ============================================================
-   BACKEND POOL
-   ============================================================ */
+/* BACKEND POOL */
 const BACKEND_POOL = [
   { host:'game-sinhton.onrender.com', port:443, secure:true, name:'Render · main' },
   { host:'game-sinhton-1.onrender.com', port:443, secure:true, name:'Render · backup' }
@@ -1080,7 +1078,7 @@ window.addEventListener('beforeunload', () => {
 
 setInterval(() => { if (AUTH.token && gameStarted && !paused) AUTH.flushSave(); }, 60000);
 
-/* WEBSOCKET NETWORK */
+/* WEBSOCKET */
 const net = {
   ws:null, active:false, connecting:false, myId:null,
   name:'Hunter', roomCode:null, players:new Map(),
@@ -2051,16 +2049,14 @@ function updateNetHud(){
 }
 
 /* ============================================================
-   GRASS TEXTURE GENERATOR
-   Tạo texture đất chi tiết như ảnh grass patch
-   - 32 variants (mỗi vị trí tile chọn 1 variant theo hash)
-   - Nền gradient xanh tự nhiên + noise patches
-   - Cỏ lai tạo (grass blades) + bụi cỏ
-   - 4 loại hoa: vàng, trắng, xanh dương, kem
+   GRASS TILES — Load từ ảnh assets/grass.png
+   Random crop 32×32 từ ảnh gốc → mỗi vị trí có texture khác nhau
    ============================================================ */
-const GrassTexture = (() => {
-  const TILE_VARIANTS = 32;
+const GrassTiles = (() => {
+  const VARIANTS = 64;
   const cache = new Map();
+  let img = null;
+  let loaded = false;
 
   function mulberry32(a){
     return function(){
@@ -2071,190 +2067,77 @@ const GrassTexture = (() => {
     };
   }
 
-  /* ---------- Palette ---------- */
-  const BASE_COLORS = [
-    '#4a8a32', '#529038', '#4d8f36', '#57973d',
-    '#43812c', '#5a9d42', '#4a8833', '#4f9038'
-  ];
-  const LIGHT_PATCHES = 'rgba(120,200,80,0.18)';
-  const MID_PATCHES   = 'rgba(70,140,45,0.20)';
-  const DARK_PATCHES  = 'rgba(30,70,20,0.25)';
-  const GRASS_DARK    = 'rgba(45,90,25,0.75)';
-  const GRASS_LIGHT   = 'rgba(110,180,65,0.65)';
-
-  const FLOWER_TYPES = [
-    { petal: '#f5e26a', center: '#c9a20a', shadow: 'rgba(100,80,10,.4)' },
-    { petal: '#f5f5e8', center: '#c9c090', shadow: 'rgba(120,110,80,.4)' },
-    { petal: '#a8c8f5', center: '#4a6a90', shadow: 'rgba(40,70,120,.4)' },
-    { petal: '#e8d5a8', center: '#a08040', shadow: 'rgba(80,60,20,.4)' }
-  ];
-
-  /* ---------- Draw 1 flower ---------- */
-  function drawFlower(ctx, x, y, type, rnd, sizeMul){
-    const size = (0.9 + rnd() * 1.0) * (sizeMul || 1);
-    const petals = 4 + Math.floor(rnd() * 2);
-
-    ctx.fillStyle = type.shadow;
-    ctx.beginPath();
-    ctx.arc(x, y + size * 0.3, size * 0.9, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = type.petal;
-    for (let i = 0; i < petals; i++){
-      const angle = (i / petals) * Math.PI * 2 + rnd() * 0.3;
-      const px = x + Math.cos(angle) * size * 0.85;
-      const py = y + Math.sin(angle) * size * 0.85;
-      ctx.beginPath();
-      ctx.arc(px, py, size * 0.65, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    ctx.fillStyle = 'rgba(255,255,255,.35)';
-    for (let i = 0; i < petals; i++){
-      const angle = (i / petals) * Math.PI * 2 + rnd() * 0.3;
-      const px = x + Math.cos(angle) * size * 0.85;
-      const py = y + Math.sin(angle) * size * 0.85 - size * 0.2;
-      ctx.beginPath();
-      ctx.arc(px, py, size * 0.35, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    ctx.fillStyle = type.center;
-    ctx.beginPath();
-    ctx.arc(x, y, size * 0.55, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = 'rgba(255,255,255,.4)';
-    ctx.beginPath();
-    ctx.arc(x - size * 0.15, y - size * 0.15, size * 0.2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  /* ---------- Draw 1 grass blade ---------- */
-  function drawBlade(ctx, x, y, rnd){
-    const len = 2.5 + rnd() * 3.5;
-    const angle = -Math.PI / 2 + (rnd() - 0.5) * 1.0;
-    const lean = (rnd() - 0.5) * 0.5;
-    const cx = x + Math.cos(angle) * len * 0.5 + lean;
-    const cy = y + Math.sin(angle) * len * 0.5;
-
-    const dark = rnd() > 0.5;
-    ctx.strokeStyle = dark ? GRASS_DARK : GRASS_LIGHT;
-    ctx.lineWidth = 0.9 + rnd() * 0.5;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.quadraticCurveTo(cx, cy,
-      x + Math.cos(angle) * len + lean,
-      y + Math.sin(angle) * len);
-    ctx.stroke();
-  }
-
-  /* ---------- Generate 1 tile variant ---------- */
-  function generateTile(variant){
-    const c = document.createElement('canvas');
-    c.width = TILE;
-    c.height = TILE;
-    const cx = c.getContext('2d');
-    cx.imageSmoothingEnabled = false;
-
-    const rnd = mulberry32(variant * 9176 + 1301);
-
-    /* 1. Base color */
-    const base = BASE_COLORS[Math.floor(rnd() * BASE_COLORS.length)];
-    cx.fillStyle = base;
-    cx.fillRect(0, 0, TILE, TILE);
-
-    /* 2. Noise patches */
-    for (let i = 0; i < 60; i++){
-      const x = rnd() * TILE;
-      const y = rnd() * TILE;
-      const r = 1 + rnd() * 4;
-      const roll = rnd();
-      cx.fillStyle = roll > 0.66 ? LIGHT_PATCHES :
-                     roll > 0.33 ? MID_PATCHES : DARK_PATCHES;
-      cx.beginPath();
-      cx.arc(x, y, r, 0, Math.PI * 2);
-      cx.fill();
-    }
-
-    /* 3. Gradient overlay */
-    const grad = cx.createLinearGradient(0, 0, 0, TILE);
-    grad.addColorStop(0, 'rgba(180,220,140,0.06)');
-    grad.addColorStop(1, 'rgba(20,60,10,0.10)');
-    cx.fillStyle = grad;
-    cx.fillRect(0, 0, TILE, TILE);
-
-    /* 4. Grass blades */
-    const bladeCount = 25 + Math.floor(rnd() * 10);
-    for (let i = 0; i < bladeCount; i++){
-      const x = rnd() * TILE;
-      const y = rnd() * TILE;
-      drawBlade(cx, x, y, rnd);
-    }
-
-    /* 5. Grass clusters */
-    const clusters = 2 + Math.floor(rnd() * 2);
-    for (let i = 0; i < clusters; i++){
-      const clx = 4 + rnd() * (TILE - 8);
-      const cly = 4 + rnd() * (TILE - 8);
-      const clusterSize = 3 + Math.floor(rnd() * 3);
-      for (let j = 0; j < clusterSize; j++){
-        const bx = clx + (rnd() - 0.5) * 4;
-        const by = cly + (rnd() - 0.5) * 4;
-        drawBlade(cx, bx, by, rnd);
-      }
-    }
-
-    /* 6. Flowers */
-    const flowerCount = 1 + Math.floor(rnd() * 4);
-    for (let i = 0; i < flowerCount; i++){
-      const type = FLOWER_TYPES[Math.floor(rnd() * FLOWER_TYPES.length)];
-      const x = 4 + rnd() * (TILE - 8);
-      const y = 4 + rnd() * (TILE - 8);
-      drawFlower(cx, x, y, type, rnd, 1);
-    }
-
-    /* 7. Tiny grass dots */
-    for (let i = 0; i < 20; i++){
-      const x = rnd() * TILE;
-      const y = rnd() * TILE;
-      cx.fillStyle = rnd() > 0.5
-        ? 'rgba(120,190,80,0.5)'
-        : 'rgba(40,90,25,0.5)';
-      cx.fillRect(x, y, 1, 1);
-    }
-
-    return c;
+  async function load(url){
+    return new Promise((resolve) => {
+      const i = new Image();
+      i.crossOrigin = 'anonymous';
+      i.onload = () => {
+        img = i;
+        loaded = true;
+        console.log('[GrassTiles] ✓ Loaded ' + img.width + '×' + img.height + 'px');
+        resolve(true);
+      };
+      i.onerror = () => {
+        console.warn('[GrassTiles] ✗ Failed to load: ' + url);
+        resolve(false);
+      };
+      i.src = url;
+    });
   }
 
   function get(variant){
-    const v = ((variant % TILE_VARIANTS) + TILE_VARIANTS) % TILE_VARIANTS;
-    if (!cache.has(v)){
-      cache.set(v, generateTile(v));
-    }
-    return cache.get(v);
+    if (!img) return null;
+    const v = ((variant % VARIANTS) + VARIANTS) % VARIANTS;
+    if (cache.has(v)) return cache.get(v);
+
+    /* Deterministic random crop cho mỗi variant */
+    const rnd = mulberry32(v * 7919 + 1301);
+    const maxX = Math.max(1, img.width - TILE);
+    const maxY = Math.max(1, img.height - TILE);
+    const cropX = Math.floor(rnd() * maxX);
+    const cropY = Math.floor(rnd() * maxY);
+
+    const cnv = document.createElement('canvas');
+    cnv.width = TILE;
+    cnv.height = TILE;
+    const cx = cnv.getContext('2d');
+    cx.imageSmoothingEnabled = false;
+    cx.drawImage(img, cropX, cropY, TILE, TILE, 0, 0, TILE, TILE);
+
+    cache.set(v, cnv);
+    return cnv;
   }
 
   function preload(){
-    for (let i = 0; i < TILE_VARIANTS; i++) get(i);
-    console.log('[GrassTexture] ✓ Preloaded ' + TILE_VARIANTS + ' variants');
+    if (!img) return;
+    for (let i = 0; i < VARIANTS; i++) get(i);
+    console.log('[GrassTiles] ✓ Preloaded ' + VARIANTS + ' variants');
   }
 
-  return { get, preload, TILE_VARIANTS };
+  return {
+    load,
+    get,
+    preload,
+    isLoaded: () => loaded,
+    VARIANTS
+  };
 })();
 
 /* RENDER */
 function drawTile(x, y, id, sx, sy){
-  /* GRASS — dùng texture generator */
+  /* GRASS — dùng ảnh assets/grass.png */
   if (id === T.GRASS){
-    const h = (x * 73856093 ^ y * 19349663) >>> 0;
-    const variant = h % GrassTexture.TILE_VARIANTS;
-    const tile = GrassTexture.get(variant);
-    ctx.drawImage(tile, sx, sy);
+    if (GrassTiles.isLoaded()){
+      const h = (x * 73856093 ^ y * 19349663) >>> 0;
+      const tile = GrassTiles.get(h);
+      if (tile){ ctx.drawImage(tile, sx, sy); return; }
+    }
+    /* Fallback nếu chưa load xong */
+    ctx.fillStyle = '#4a8a32';
+    ctx.fillRect(sx, sy, TILE, TILE);
     return;
   }
-  /* Fallback cho tile khác */
+  /* Tile khác */
   const def = TILES[id];
   if (!def) return;
   ctx.fillStyle = def.colors[0];
@@ -2695,9 +2578,7 @@ const ButtonSettings = (() => {
   return { init, openEditor, reset };
 })();
 
-/* ============================================================
-   PROMPT BUILDER v3 — SILENT BACKGROUND SNAPSHOT
-   ============================================================ */
+/* PROMPT BUILDER v3 — SILENT BACKGROUND SNAPSHOT */
 const PromptBuilder = (() => {
   const VERSION = '3.0';
   const PROJECT_SLUG = 'dragon-hunter';
@@ -3016,7 +2897,7 @@ const PromptBuilder = (() => {
       if (meta && meta.value) state.lastSnapshot = meta.value;
       startWatcher();
       setInterval(flushOfflineQueue, 60000);
-      console.log('[PromptBuilder v3] Silent sync initialized · poll every ' + POLL_INTERVAL + 'ms');
+      console.log('[PromptBuilder v3] Silent sync initialized');
     } catch(e){
       console.warn('[PromptBuilder] init failed:', e.message);
     }
@@ -3024,9 +2905,7 @@ const PromptBuilder = (() => {
   return { init, CONFIG: { VERSION, PROJECT_SLUG } };
 })();
 
-/* ============================================================
-   ROOM + JOIN LOGIC
-   ============================================================ */
+/* ROOM + JOIN */
 function getPlayerName(){
   let name = ($('playerName')?.value.trim()) || 'Hunter';
   if (AUTH.user?.displayName) name = AUTH.user.displayName;
@@ -3047,7 +2926,7 @@ async function joinRoomDirect(code, hostName){
     'border-radius:var(--r-lg);z-index:99999;color:var(--text);' +
     'font-family:"JetBrains Mono",Consolas,monospace;text-align:center;' +
     'box-shadow:var(--shadow-lg),0 0 40px var(--primary-glow);' +
-    'min-width:320px;max-width:90vw;animation:modal-in .25s';
+    'min-width:320px;max-width:90vw';
   overlay.innerHTML =
     '<div style="font-size:15px;font-weight:bold;color:var(--primary);margin-bottom:14px">' +
       '🔗 Đang vào phòng <span style="color:var(--gold)">' + code + '</span></div>' +
@@ -3378,7 +3257,8 @@ $('joinCode').addEventListener('keydown', e => {
 });
 
 loadProject().then(async () => {
-  GrassTexture.preload();   /* Preload grass textures trước khi vào game */
+  await GrassTiles.load('assets/grass.png');
+  GrassTiles.preload();
   const authed = await initAuth();
   if (authed) showMenuPage('main');
   else $('menu').classList.add('hidden');
@@ -3386,10 +3266,10 @@ loadProject().then(async () => {
   setTimeout(() => PromptBuilder.init().catch(e => console.warn('[PB]', e)), 1500);
 });
 
-console.log('%c🐉 Dragon Hunter v3.3 — Grass Texture + Silent Sync',
+console.log('%c🐉 Dragon Hunter v3.4 — Grass Image + Silent Sync',
   'color:#5eead4;font-weight:bold;font-size:14px');
 console.log('%c📄 Prompt Manager: ' + location.origin + '/prompt-manager.html',
   'color:#fbbf24;font-weight:bold');
 </script>
 </body>
-                               </html>
+  </html>
