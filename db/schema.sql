@@ -68,3 +68,4 @@ CREATE TABLE IF NOT EXISTS match_history (
   data JSONB,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
