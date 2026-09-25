@@ -31,7 +31,9 @@ let SEED = Date.now() & 0x7fffffff;
 /* ============================================================
    MIDDLEWARE
    ============================================================ */
-app.use(cors());
+// Restrict cross-origin browser API access when CORS_ORIGINS is configured.
+const allowedOrigins = (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+app.use(cors({ origin: allowedOrigins.length ? allowedOrigins : false }));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -49,7 +51,7 @@ async function initDB(){
     try {
       /* Auto-migrate before connecting */
       const migrate = require('./db/migrate');
-      await migrate();
+      if (!await migrate()) throw new Error('Database migration failed');
 
       db = new Pool({
         connectionString: url,
@@ -102,7 +104,7 @@ function genSalt(){ return crypto.randomBytes(16).toString('hex'); }
 function genRoomCode(){
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let s = '';
-  for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  for (let i = 0; i < 6; i++) s += chars[crypto.randomInt(chars.length)];
   return s;
 }
 function genPlayerId(){
@@ -550,14 +552,14 @@ function createPlayer(ws, name, msg){
     id: ws.id,
     ws: ws,
     name: String(name || 'Hunter').slice(0, 16),
-    x: Number(msg.x) || 2048,
-    y: Number(msg.y) || 2048,
+    x: 2048,
+    y: 2048,
     hp: 20,
     maxHp: 20,
     facing: 1,
     anim: 'idle',
     sitting: false,
-    level: Number(msg.level) || 1,
+    level: 1, // Do not trust unverified client progression
     lastSeen: Date.now(),
     lastMoveTime: Date.now()
   };
@@ -608,13 +610,13 @@ Room.prototype.getPlayerList = function(){
 /* ============================================================
    WEBSOCKET SERVER
    ============================================================ */
-const wss = new WebSocketServer({ server: server, path: '/ws' });
+const wss = new WebSocketServer({ server: server, path: '/ws', maxPayload: 16 * 1024 });
 
 wss.on('connection', function(ws, req){
   ws.id = genPlayerId();
   ws.roomCode = null;
   ws.isAlive = true;
-  ws.ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '?';
+  ws.ip = req.socket.remoteAddress || '?';
 
   console.log('[WS] +', ws.id);
 
@@ -622,7 +624,9 @@ wss.on('connection', function(ws, req){
 
   ws.on('message', function(data){
     try {
+      if (data.length > 16 * 1024) return ws.close(1009, 'Message too large');
       var msg = JSON.parse(data.toString());
+      if (!msg || typeof msg !== 'object' || Array.isArray(msg) || typeof msg.t !== 'string') return;
       handleMessage(ws, msg);
     } catch(e){
       console.warn('[WS] Bad msg:', e.message);
@@ -685,6 +689,7 @@ async function handleCreateRoom(ws, msg){
     return send(ws, { t: 'error', msg: 'already in room' });
   }
   var code = genRoomCode();
+  while (rooms.has(code)) code = genRoomCode();
   var name = String(msg.name || 'Host').slice(0, 16);
   var room = new Room(code, ws, name);
   rooms.set(code, room);
@@ -770,16 +775,27 @@ function handleMove(ws, msg){
   if (!player) return;
 
   var now = Date.now();
+  // Existing client respawns after 0.8 seconds and reports full HP.
+  // Only allow that transition after a server-observed death.
+  var respawned = player.hp === 0 && Number(msg.hp) === player.maxHp &&
+    now - (player.diedAt || now) >= 800;
+  if (player.hp === 0 && !respawned) return;
+  if (respawned) {
+    player.hp = player.maxHp;
+    player.x = 2048; player.y = 2048;
+  }
   var dt = (now - player.lastMoveTime) / 1000;
   player.lastMoveTime = now;
 
-  var newX = Number(msg.x) || 0;
-  var newY = Number(msg.y) || 0;
+  var newX = Number(msg.x);
+  var newY = Number(msg.y);
+  if (!Number.isFinite(newX) || !Number.isFinite(newY) ||
+      newX < 0 || newY < 0 || newX > 4096 || newY > 4096) return;
 
   /* Anti speed-hack */
-  if (dt > 0 && dt < 1){
+  if (!respawned && dt >= 0){
     var dist = Math.hypot(newX - player.x, newY - player.y);
-    var maxDist = 500 * dt + 100;
+    var maxDist = 500 * Math.min(dt, 1) + 100;
     if (dist > maxDist){
       send(ws, {
         t: 'pos_correct',
@@ -790,13 +806,14 @@ function handleMove(ws, msg){
     }
   }
 
-  player.x = newX;
-  player.y = newY;
+  player.x = respawned ? 2048 : newX;
+  player.y = respawned ? 2048 : newY;
   player.facing = msg.facing === -1 ? -1 : 1;
   player.anim = msg.anim || 'idle';
   player.sitting = !!msg.sitting;
-  if (msg.hp != null)
-    player.hp = Math.max(0, Math.min(100, Number(msg.hp)));
+  // Only the server changes combat HP. Permit a timed respawn compatible
+  // with the existing client, but never accept arbitrary healing.
+
   player.lastSeen = now;
 
   room.broadcast({
@@ -823,7 +840,9 @@ function handleAttack(ws, msg){
   if (now - (attacker.lastAttack || 0) < 500) return;
   attacker.lastAttack = now;
 
-  var angle = Number(msg.angle) || 0;
+  if (attacker.hp <= 0) return;
+  var angle = Number(msg.angle);
+  if (!Number.isFinite(angle)) return;
   var range = 80;
   var hitX = attacker.x + Math.cos(angle) * 50;
   var hitY = attacker.y + Math.sin(angle) * 50;
@@ -845,7 +864,9 @@ function handleAttack(ws, msg){
   });
 
   if (target){
-    var dmg = Math.max(1, Math.min(20, Number(msg.dmg) || 1));
+    // Client-supplied damage is clamped; a full server-side inventory
+    // authority model is needed before weapon tiers can be trusted.
+    var dmg = Math.max(1, Math.min(7, Number(msg.dmg) || 1));
     target.hp = Math.max(0, target.hp - dmg);
     console.log('[Hit]', attacker.name, '->', target.name, dmg);
 
@@ -858,6 +879,7 @@ function handleAttack(ws, msg){
     });
 
     if (target.hp <= 0){
+      target.diedAt = now;
       room.broadcast({
         t: 'player_died',
         id: target.id,
@@ -942,7 +964,7 @@ setInterval(function(){
 setInterval(function(){
   var now = Date.now();
   rooms.forEach(function(room, code){
-    if (now - room.lastActivity > ROOM_TTL || room.isEmpty()){
+    if (room.isEmpty()){
       rooms.delete(code);
       console.log('[Room] Cleanup', code);
     }
@@ -1001,3 +1023,4 @@ setInterval(async function(){
     console.log('');
   });
 })();
+
