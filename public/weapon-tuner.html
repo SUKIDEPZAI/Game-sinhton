@@ -1,99 +1,1968 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0f16">
-<title>DH Studio · Animation Composer</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Weapon Tuner · DH Studio v2</title>
 <style>
-:root{--bg:#0a0f16;--p:#111823;--p2:#182131;--line:#2a374c;--txt:#edf2f8;--muted:#8d9ab0;--a:#63e486;--w:#ff9b68;--b:#63adff}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font:13px system-ui,-apple-system,Segoe UI,sans-serif}button,input,select{font:inherit;color:inherit}button{height:32px;padding:0 9px;border:1px solid var(--line);border-radius:7px;background:var(--p2);cursor:pointer}button:hover{background:#243047}button.on{background:#1d4c30;border-color:var(--a)}button.primary{background:#216b3b;border-color:#45c56a}.small{height:27px;font-size:11px}.icon{width:31px;padding:0}.grow{flex:1}.row{display:flex;gap:5px;align-items:center}
-.app{height:100%;display:grid;grid-template-rows:50px 1fr 27px}.top{display:flex;align-items:center;gap:6px;padding:6px 9px;background:var(--p);border-bottom:1px solid var(--line);overflow:auto}.brand{font-weight:900;white-space:nowrap}.brand b{color:var(--a)}
-.main{min-height:0;display:grid;grid-template-columns:210px 1fr 270px}.side{background:var(--p);overflow:auto}.left{border-right:1px solid var(--line)}.right{border-left:1px solid var(--line)}.sec{padding:9px;border-bottom:1px solid var(--line)}.title{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px}
-.field{display:grid;grid-template-columns:75px 1fr;gap:6px;align-items:center;margin:6px 0}.field label{font-size:10px;color:var(--muted)}input[type=number],input[type=text],select{height:30px;width:100%;background:#0a1018;border:1px solid var(--line);border-radius:6px;padding:0 7px}input[type=range]{width:100%}
-.stage{min-width:0;min-height:0;position:relative;background:#090d13}.canvasWrap{position:absolute;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#141c28,#080b10)}
-#cv{image-rendering:pixelated;touch-action:none;box-shadow:0 0 0 1px #55627a,0 20px 70px #000}.tools{position:absolute;left:8px;top:8px;z-index:5;display:flex;gap:4px;flex-wrap:wrap;max-width:80%;padding:5px;background:#111823e8;border:1px solid var(--line);border-radius:9px}.zoom{position:absolute;right:8px;bottom:8px;z-index:5;display:flex;gap:4px;padding:5px;background:#111823e8;border:1px solid var(--line);border-radius:9px}
-.timeline{position:absolute;left:8px;right:8px;bottom:8px;height:74px;background:#111823ed;border:1px solid var(--line);border-radius:9px;padding:6px;z-index:4;display:flex;gap:5px;align-items:center;overflow:auto}.frame{flex:0 0 58px;height:58px;border:1px solid var(--line);border-radius:6px;background:#0a1018;position:relative;cursor:pointer;overflow:hidden}.frame.on{border-color:var(--a);box-shadow:0 0 0 1px #1b6c39}.frame canvas{width:100%;height:100%;image-rendering:pixelated}.frame span{position:absolute;left:3px;top:2px;background:#000b;padding:1px 3px;font-size:9px}
-.badge{padding:4px 7px;border:1px solid var(--line);border-radius:6px;color:var(--muted);font-size:10px;white-space:nowrap}
-.layer{display:flex;align-items:center;gap:6px;padding:6px;border:1px solid transparent;border-radius:6px;cursor:pointer}.layer:hover{background:var(--p2)}.layer.on{background:#183321;border-color:#326b47}.dot{width:8px;height:8px;border-radius:50%;background:var(--b)}.layer.weapon .dot{background:var(--w)}
-.help{font-size:10px;line-height:1.55;color:var(--muted)}
-input[type=file]{display:none}
-@media(max-width:900px){.main{grid-template-columns:1fr}.side{display:none}.top{gap:4px}.top button{height:30px}}
-@media(max-width:900px) and (orientation:landscape){.app{grid-template-rows:43px 1fr 23px}.main{display:block}.stage{height:calc(100vh - 66px)}.tools{max-width:76vw}.timeline{height:61px}.frame{flex-basis:50px;height:50px}}
+:root{
+  --bg:#0d1117;--panel:#161b22;--panel2:#1c2128;--hover:#21262d;
+  --border:#30363d;--text:#e6edf3;--dim:#8b949e;--dim2:#6e7681;
+  --accent:#3fb950;--accent2:#56d364;--accent3:#238636;
+  --info:#58a6ff;--danger:#f85149;--warn:#d29922;
+  --weapon:#ff8a65;--enemy:#f85149;--boss:#d29922;--npc:#58a6ff;
+  --header-h:48px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
+  font-family:-apple-system,'Segoe UI',Roboto,sans-serif;font-size:13px;
+  user-select:none;-webkit-user-select:none;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+input,select{font:inherit;color:inherit}
+canvas{display:block;image-rendering:pixelated}
+
+.app{display:flex;flex-direction:column;height:100%}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header{height:var(--header-h);background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:100}
+.brand{font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.brand .dot{width:10px;height:10px;background:var(--accent);border-radius:50%;
+  box-shadow:0 0 8px var(--accent)}
+.brand .ver{font-size:10px;color:var(--dim);font-weight:400}
+.conn-badge{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--panel2);
+  color:var(--dim);font-family:monospace;display:flex;align-items:center;gap:4px}
+.conn-badge.on{background:#0d2818;color:var(--accent2)}
+.conn-badge.on::before{content:'';width:6px;height:6px;background:var(--accent);border-radius:50%;
+  box-shadow:0 0 6px var(--accent)}
+.hspace{flex:1}
+
+.btn{padding:6px 12px;background:var(--panel2);border:1px solid var(--border);
+  border-radius:6px;font-size:12px;font-weight:500;transition:all .12s;
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{background:var(--hover);border-color:var(--dim)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--accent3);border-color:#2ea043;color:#fff}
+.btn.primary:hover{background:#2ea043}
+.btn.danger{background:#8a1a1a;border-color:#da3633;color:#fff}
+.btn.small{padding:4px 9px;font-size:11px}
+.btn.icon{padding:6px 8px}
+.btn.on{background:var(--accent3);border-color:var(--accent);color:#fff}
+
+/* Selectors in header */
+.selector-group{display:flex;gap:4px;align-items:center}
+.selector-group .lbl{font-size:10px;color:var(--dim);font-family:monospace;margin-right:2px}
+.sel{padding:5px 24px 5px 10px;background:#000;color:var(--accent2);border:1px solid var(--border);
+  border-radius:5px;font-size:11px;font-family:monospace;font-weight:600;
+  cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%238b949e' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 6px center;background-size:10px}
+.sel:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(63,185,80,.2)}
+.sel option{background:#161b22;color:var(--text)}
+
+/* ============================================================
+   MAIN
+   ============================================================ */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* ============================================================
+   SIDEBAR — Model browser
+   ============================================================ */
+.sidebar{width:230px;background:var(--panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.sidebar-tabs{display:flex;background:var(--panel2);border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-tab{flex:1;padding:9px 4px;text-align:center;font-size:10px;font-weight:700;
+  color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;
+  font-family:monospace;letter-spacing:.5px}
+.sidebar-tab:hover{color:var(--text);background:var(--hover)}
+.sidebar-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--panel)}
+.sidebar-body{flex:1;overflow-y:auto;padding:6px}
+
+.model-group{margin-bottom:8px}
+.model-group-header{display:flex;align-items:center;gap:6px;padding:6px 8px;
+  background:var(--panel2);border-radius:5px;cursor:pointer;font-size:11px;
+  font-weight:600;border-left:3px solid transparent;transition:all .12s}
+.model-group-header:hover{background:var(--hover)}
+.model-group-header[data-type="player"]{border-left-color:var(--accent);color:var(--accent)}
+.model-group-header[data-type="weapon"]{border-left-color:var(--weapon);color:var(--weapon)}
+.model-group-header[data-type="enemy"]{border-left-color:var(--enemy);color:var(--enemy)}
+.model-group-header[data-type="boss"]{border-left-color:var(--boss);color:var(--boss)}
+.model-group-header[data-type="npc"]{border-left-color:var(--npc);color:var(--npc)}
+.model-group-header .arrow{font-size:9px;color:var(--dim);transition:transform .15s;width:10px}
+.model-group-header.collapsed .arrow{transform:rotate(-90deg)}
+.model-group-header .count{margin-left:auto;font-size:10px;color:var(--dim2);font-weight:400}
+.model-group-body{padding-left:6px;margin-top:3px}
+.model-group-body.hidden{display:none}
+
+.model-item{display:flex;align-items:center;gap:6px;padding:5px 8px;margin-top:2px;
+  border-radius:4px;cursor:pointer;font-size:10px;transition:all .1s;
+  border-left:2px solid transparent}
+.model-item:hover{background:var(--hover)}
+.model-item.active{background:var(--accent3);color:#fff;border-left-color:var(--accent2)}
+.model-item .dot{width:5px;height:5px;background:var(--dim2);border-radius:50%;flex-shrink:0}
+.model-item.active .dot{background:var(--accent2)}
+.model-item .name{flex:1;font-family:monospace;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.model-item .frames{font-size:9px;color:var(--dim);font-family:monospace}
+.model-item.active .frames{color:#c8ffb8}
+
+.empty-msg{padding:36px 16px;text-align:center;color:var(--dim);font-size:11px;line-height:1.8}
+
+/* ============================================================
+   STAGE
+   ============================================================ */
+.stage{flex:1;background:#0a0d12;display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+.stage-toolbar{height:40px;background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 10px;gap:6px;flex-shrink:0;overflow-x:auto}
+.stage-toolbar::-webkit-scrollbar{height:2px}
+.toolbar-sep{width:1px;height:22px;background:var(--border);margin:0 4px;flex-shrink:0}
+.playback-info{font-size:10px;color:var(--dim);font-family:monospace;margin-left:auto;
+  white-space:nowrap;padding:0 8px}
+
+.canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;padding:20px;background:
+    radial-gradient(circle at center, #12171d 0%, #0a0d12 100%)}
+.canvas-wrap.preview-mode .hint-overlay{display:none}
+.canvas-wrap.preview-mode #debugBadge{display:none}
+
+#stageCanvas{image-rendering:pixelated;
+  box-shadow:0 0 0 1px var(--border),0 0 60px rgba(0,0,0,.8);
+  background:#111;cursor:grab}
+#stageCanvas:active{cursor:grabbing}
+#stageCanvas.preview{cursor:default}
+
+.hint-overlay{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  background:rgba(22,27,34,.9);padding:5px 12px;border-radius:6px;
+  font-size:10px;color:var(--dim);font-family:monospace;
+  border:1px solid var(--border);pointer-events:none;opacity:.8}
+.hint-overlay b{color:var(--accent)}
+
+#debugBadge{position:absolute;top:12px;left:12px;background:rgba(22,27,34,.9);
+  padding:4px 10px;border-radius:4px;font-size:10px;color:var(--info);
+  font-family:monospace;border:1px solid var(--border);pointer-events:none}
+
+/* Timeline (video editor style) */
+.timeline{height:80px;background:var(--panel);border-top:1px solid var(--border);
+  flex-shrink:0;display:flex;flex-direction:column;padding:6px 10px;gap:4px}
+.timeline-top{display:flex;align-items:center;gap:6px;font-size:10px;
+  color:var(--dim);font-family:monospace;flex-shrink:0}
+.timeline-top b{color:var(--accent2)}
+.timeline-top .time{color:var(--info)}
+
+.timeline-track{flex:1;display:flex;gap:2px;align-items:stretch;
+  background:var(--bg);border-radius:4px;padding:2px;position:relative;overflow-x:auto}
+.timeline-track::-webkit-scrollbar{height:6px}
+.tl-frame{flex:1;min-width:24px;background:var(--panel2);border-radius:3px;cursor:pointer;
+  position:relative;transition:all .1s;border:1px solid transparent;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:var(--dim2);font-family:monospace}
+.tl-frame:hover{background:var(--hover)}
+.tl-frame.active{background:var(--accent3);border-color:var(--accent);color:#fff;font-weight:600}
+.tl-frame.tuned{background:#4a3510;border-color:var(--warn)}
+.tl-frame.active.tuned{background:#7d5a00;border-color:var(--warn);color:#fff}
+.tl-frame .keyframe{position:absolute;top:2px;right:3px;width:5px;height:5px;
+  background:var(--warn);border-radius:50%}
+.tl-frame.active .keyframe{background:#fff}
+
+/* ============================================================
+   TUNER PANEL
+   ============================================================ */
+.tuner{width:290px;background:var(--panel);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+
+.sec{padding:12px 14px;border-bottom:1px solid var(--border)}
+.sec:last-child{border-bottom:none}
+.sec-title{font-size:10px;font-weight:700;color:var(--dim);letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;
+  justify-content:space-between;font-family:monospace}
+.sec-title .badge{background:var(--panel2);color:var(--info);padding:2px 8px;
+  border-radius:10px;font-size:9px;font-weight:700;letter-spacing:0;text-transform:none}
+.sec-title .badge.warn{background:#7d5a00;color:#fff}
+
+.field{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.field:last-child{margin-bottom:0}
+.field label{flex:0 0 76px;font-size:10px;color:var(--dim);font-family:monospace}
+.field input[type=range]{flex:1;height:4px;-webkit-appearance:none;
+  background:var(--panel2);border-radius:2px;outline:none;cursor:pointer}
+.field input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;
+  width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:pointer;
+  box-shadow:0 0 0 2px var(--bg)}
+.field input[type=range]::-moz-range-thumb{width:14px;height:14px;
+  background:var(--accent);border:none;border-radius:50%;cursor:pointer}
+.field input[type=number]{width:68px;padding:4px 6px;background:#000;color:var(--accent);
+  border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:monospace;
+  text-align:center}
+.field input[type=number]:focus{outline:none;border-color:var(--accent)}
+
+.row{display:flex;gap:6px;margin-top:8px}
+.row .btn{flex:1;justify-content:center}
+
+.stats{font-family:monospace;font-size:11px;color:var(--dim);line-height:1.8}
+.stats b{color:var(--text)}
+.stats .accent{color:var(--accent)}
+.stats .info{color:var(--info)}
+.stats .warn{color:var(--warn)}
+
+/* Toggle */
+.toggle{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;
+  background:var(--panel2);border:1px solid var(--border);border-radius:5px;
+  cursor:pointer;font-size:10px;font-family:monospace;transition:all .12s;color:var(--dim)}
+.toggle:hover{background:var(--hover);color:var(--text)}
+.toggle.on{background:var(--accent3);border-color:var(--accent);color:#fff}
+.toggle .sw{width:16px;height:10px;background:var(--dim2);border-radius:5px;position:relative;
+  transition:all .15s;flex-shrink:0}
+.toggle .sw::after{content:'';position:absolute;top:1px;left:1px;width:8px;height:8px;
+  background:#fff;border-radius:50%;transition:all .15s}
+.toggle.on .sw{background:rgba(255,255,255,.3)}
+.toggle.on .sw::after{left:7px}
+
+/* Speed control */
+.speed-control{display:flex;align-items:center;gap:4px;font-size:10px;
+  font-family:monospace;color:var(--dim)}
+.speed-control button{padding:3px 7px;background:var(--panel2);border:1px solid var(--border);
+  border-radius:3px;font-size:10px;color:var(--dim);cursor:pointer}
+.speed-control button.on{background:var(--accent3);color:#fff;border-color:var(--accent)}
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
+.modal.show{display:flex}
+.modal-box{background:var(--panel);border:1px solid var(--border);
+  border-radius:10px;padding:22px 26px;max-width:520px;width:100%;
+  box-shadow:0 12px 60px rgba(0,0,0,.8);max-height:90vh;overflow-y:auto}
+.modal-box h3{margin-bottom:14px;color:var(--accent);font-size:14px;display:flex;align-items:center;gap:8px}
+.modal-box p{font-size:12px;color:var(--dim);line-height:1.7;margin-bottom:12px}
+.modal-box input[type=text]{width:100%;padding:10px 12px;background:#000;color:var(--text);
+  border:1px solid var(--border);border-radius:5px;font-family:monospace;
+  font-size:12px;margin-bottom:12px}
+.modal-box input[type=text]:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(63,185,80,.2)}
+.modal-box .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;
+  padding-top:14px;border-top:1px solid var(--border)}
+
+.list-box{max-height:260px;overflow-y:auto;background:var(--bg);
+  border:1px solid var(--border);border-radius:6px;padding:6px}
+.list-item{display:flex;align-items:center;gap:8px;padding:8px 10px;
+  border-radius:5px;cursor:pointer;font-family:monospace;font-size:11px;
+  transition:all .12s;border:1px solid transparent}
+.list-item:hover{background:var(--hover);border-color:var(--border)}
+.list-item .name{color:var(--accent2);font-weight:600;flex:1}
+.list-item .meta{color:var(--dim);font-size:10px}
+.list-item .btn{padding:3px 8px;font-size:10px}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);
+  background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);
+  padding:10px 18px;border-radius:6px;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,.6);
+  opacity:0;pointer-events:none;transition:all .2s;z-index:1000;
+  max-width:90vw;font-family:monospace;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-left-color:var(--danger)}
+#toast.warn{border-left-color:var(--warn)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--dim)}
+
+/* ============================================================
+   MOBILE LANDSCAPE
+   ============================================================ */
+@media (max-width:1100px) and (orientation:landscape){
+  :root{--header-h:40px}
+  .header{padding:0 10px;gap:6px}
+  .brand .ver{display:none}
+  .conn-badge{font-size:9px;padding:2px 6px}
+  .btn{padding:5px 9px;font-size:11px;gap:4px}
+  .btn.icon{padding:5px 6px}
+  .sel{font-size:10px;padding:4px 22px 4px 8px}
+  .sidebar{width:150px}
+  .sidebar-tab{padding:7px 2px;font-size:9px}
+  .model-item{padding:4px 6px;font-size:9px}
+  .model-group-header{padding:5px 6px;font-size:10px}
+  .tuner{width:220px}
+  .sec{padding:9px 10px}
+  .field label{flex:0 0 60px;font-size:9px}
+  .field input[type=number]{width:56px;font-size:10px}
+  .field{margin-bottom:6px}
+  .sec-title{font-size:9px;margin-bottom:6px}
+  .stats{font-size:9px}
+  .timeline{height:60px}
+  .tl-frame{min-width:20px;font-size:8px}
+  .stage-toolbar{height:34px;padding:0 6px}
+  .playback-info{font-size:9px}
+}
+@media (max-width:800px) and (orientation:landscape){
+  .sidebar{width:110px}
+  .tuner{width:180px}
+  .brand span:nth-child(2){display:none}
+  .model-item .frames{display:none}
+}
 </style>
 </head>
 <body>
 <div class="app">
-<header class="top">
- <div class="brand">⚔️ DH <b>ANIMATION</b></div>
- <button class="small" onclick="pick('char')">🎮 Player</button><button class="small" onclick="pick('weapon')">🗡️ Kiếm</button>
- <input id="charFile" type="file" accept="image/*"><input id="weaponFile" type="file" accept="image/*">
- <select id="anim" class="small" style="width:92px"><option>idle</option><option>run</option><option>attack</option><option>jump</option><option>sit</option><option>death</option></select>
- <button class="small" onclick="setFrames()">Frames</button><button class="small" onclick="addLayer()">＋ Layer</button>
- <div class="grow"></div><button class="small" onclick="play()">▶</button><button class="small" onclick="stop()">■</button><button class="small primary" onclick="exportTuning()">💾 Tuning</button>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="header">
+  <div class="brand">
+    <div class="dot"></div>
+    <span>WEAPON TUNER</span>
+    <span class="ver">v2.0</span>
+  </div>
+
+  <div class="conn-badge" id="connBadge">⚠ Chưa kết nối</div>
+
+  <div class="selector-group">
+    <span class="lbl">CHAR:</span>
+    <select class="sel" id="charSelect" disabled><option>—</option></select>
+  </div>
+
+  <div class="selector-group">
+    <span class="lbl">WEAPON:</span>
+    <select class="sel" id="weaponSelect" disabled><option>—</option></select>
+  </div>
+
+  <div class="hspace"></div>
+
+  <button class="btn" id="connectBtn">🔌 Kết nối game</button>
+  <button class="btn" id="loadFileBtn" title="Load sprites.json từ file">📁</button>
+  <button class="btn" id="loadTuningBtn" title="Load tuning đã lưu" disabled>📥</button>
+  <button class="btn primary" id="saveTuningBtn" title="Save to server" disabled>☁</button>
+  <button class="btn primary" id="exportBtn" title="Export weapon-tuning.json" disabled>💾</button>
+  <button class="btn icon" id="helpBtn" title="Hướng dẫn">❓</button>
 </header>
+
+<!-- ============================================================
+     MAIN
+     ============================================================ -->
 <main class="main">
-<aside class="side left">
- <div class="sec"><div class="title">Layers</div><div id="layers"><div class="layer on" data-layer="char"><span class="dot"></span>Player</div><div class="layer weapon" data-layer="weapon"><span class="dot"></span>Weapon</div></div></div>
- <div class="sec"><div class="title">Frame</div><div class="field"><label>Current</label><input id="frameNo" type="number" min="0" value="0"></div><div class="field"><label>FPS</label><input id="fps" type="number" min="1" max="60" value="12"></div></div>
- <div class="sec"><div class="title">Tips</div><div class="help">Chọn Player/Weapon để chỉnh layer. Kéo ảnh trực tiếp trên canvas. Có thể dùng ngón tay khi điện thoại xoay ngang.</div></div>
-</aside>
-<section class="stage">
- <div class="tools">
-  <button class="small on" id="move">🖐 Di chuyển</button><button class="small" onclick="centerWeapon()">🎯 Center</button><button class="small" onclick="resetTransform()">↺ Reset</button>
-  <span class="badge" id="info">0 / 0</span>
- </div>
- <div class="canvasWrap"><canvas id="cv"></canvas></div>
- <div class="zoom"><button class="icon" onclick="zoomBy(.8)">−</button><button class="small" id="z">100%</button><button class="icon" onclick="zoomBy(1.25)">＋</button><button class="small" onclick="fit()">Fit</button></div>
- <div class="timeline" id="timeline"></div>
-</section>
-<aside class="side right">
- <div class="sec"><div class="title">Player</div><div class="help">Ảnh player là layer nền. Tool tự chia frame theo số frame bạn nhập.</div></div>
- <div class="sec"><div class="title">Weapon transform</div>
-  <div class="field"><label>Hand X</label><input id="handX" type="number" step=".1"></div>
-  <div class="field"><label>Hand Y</label><input id="handY" type="number" step=".1"></div>
-  <div class="field"><label>Offset X</label><input id="offX" type="number" step=".1"></div>
-  <div class="field"><label>Offset Y</label><input id="offY" type="number" step=".1"></div>
-  <div class="field"><label>Rotation</label><input id="rot" type="number" step=".01"></div>
-  <div class="field"><label>Scale</label><input id="scale" type="number" step=".01" min=".01"></div>
-  <div class="field"><label>Pivot X</label><input id="px" type="number" step=".01" min="0" max="1"></div>
-  <div class="field"><label>Pivot Y</label><input id="py" type="number" step=".01" min="0" max="1"></div>
-  <div class="field"><label>Weapon frame</label><input id="wf" type="number" min="0" value="0"></div>
- </div>
- <div class="sec"><div class="title">Xuất</div><div class="help">Xuất đúng schema <b>dh-weapon-tuning v1</b>, dùng trực tiếp với renderer hiện tại của game.</div></div>
-</aside>
+
+  <!-- SIDEBAR: Model browser -->
+  <aside class="sidebar">
+    <div class="sidebar-tabs">
+      <div class="sidebar-tab active" data-tab="models">MODELS</div>
+      <div class="sidebar-tab" data-tab="anims">ANIMS</div>
+    </div>
+    <div class="sidebar-body" id="sidebarBody">
+      <div class="empty-msg">
+        Chưa kết nối<br><br>
+        Bấm <b style="color:var(--accent)">🔌 Kết nối game</b><br>
+        hoặc <b style="color:var(--accent)">📁</b> load file
+      </div>
+    </div>
+  </aside>
+
+  <!-- STAGE -->
+  <section class="stage">
+
+    <div class="stage-toolbar">
+      <button class="btn small" id="prevFrameBtn" title="Frame trước">◀</button>
+      <button class="btn small" id="playBtn" title="Play/Pause (Space)">▶</button>
+      <button class="btn small" id="nextFrameBtn" title="Frame sau">▶</button>
+      <button class="btn small" id="stopBtn" title="Stop">⏹</button>
+
+      <div class="toolbar-sep"></div>
+
+      <div class="speed-control">
+        <span style="margin-right:2px">Speed:</span>
+        <button data-speed="0.25">0.25×</button>
+        <button data-speed="0.5">0.5×</button>
+        <button data-speed="1" class="on">1×</button>
+        <button data-speed="2">2×</button>
+        <button data-speed="4">4×</button>
+      </div>
+
+      <button class="toggle on" id="loopToggle" title="Loop animation">
+        <span class="sw"></span>Loop
+      </button>
+
+      <button class="toggle" id="previewToggle" title="Chế độ xem trước">
+        <span class="sw"></span>Preview
+      </button>
+
+      <span class="playback-info" id="playbackInfo">—</span>
+    </div>
+
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="stageCanvas" width="400" height="400"></canvas>
+      <div id="debugBadge">—</div>
+      <div class="hint-overlay">
+        <b>Drag</b> để di chuyển · <b>Shift+Drag</b> để xoay · <b>Space</b> play/pause
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline">
+      <div class="timeline-top">
+        <span>Timeline: <b id="tlAnimName">—</b></span>
+        <span class="time" id="tlTimeInfo">0.00s / 0.00s</span>
+        <span>FPS: <b id="tlFps">—</b></span>
+        <span style="margin-left:auto">
+          Frame <b id="tlFrameInfo">0/0</b>
+        </span>
+      </div>
+      <div class="timeline-track" id="timelineTrack"></div>
+    </div>
+
+  </section>
+
+  <!-- TUNER PANEL -->
+  <aside class="tuner">
+
+    <div class="sec">
+      <div class="sec-title">
+        <span>🎯 Vị trí</span>
+        <span class="badge" id="frameBadge">—</span>
+      </div>
+      <div class="field">
+        <label>Hand X</label>
+        <input type="range" id="handX" min="-120" max="120" value="4">
+        <input type="number" id="handXNum" value="4">
+      </div>
+      <div class="field">
+        <label>Hand Y</label>
+        <input type="range" id="handY" min="-120" max="120" value="-32">
+        <input type="number" id="handYNum" value="-32">
+      </div>
+      <div class="field">
+        <label>Offset X</label>
+        <input type="range" id="offX" min="-40" max="40" step="0.5" value="0">
+        <input type="number" id="offXNum" value="0" step="0.5">
+      </div>
+      <div class="field">
+        <label>Offset Y</label>
+        <input type="range" id="offY" min="-40" max="40" step="0.5" value="0">
+        <input type="number" id="offYNum" value="0" step="0.5">
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title"><span>⚙️ Xoay + Scale</span></div>
+      <div class="field">
+        <label>Rotation°</label>
+        <input type="range" id="rot" min="-180" max="180" value="0">
+        <input type="number" id="rotNum" value="0">
+      </div>
+      <div class="field">
+        <label>Scale</label>
+        <input type="range" id="sc" min="0.2" max="3" step="0.05" value="1">
+        <input type="number" id="scNum" value="1" step="0.05">
+      </div>
+      <div class="field">
+        <label>Pivot X</label>
+        <input type="range" id="pivotX" min="-0.5" max="1.5" step="0.05" value="0.5">
+        <input type="number" id="pivotXNum" value="0.5" step="0.05">
+      </div>
+      <div class="field">
+        <label>Pivot Y</label>
+        <input type="range" id="pivotY" min="-0.5" max="1.5" step="0.05" value="0.12">
+        <input type="number" id="pivotYNum" value="0.12" step="0.05">
+      </div>
+      <div class="field">
+        <label>W.Frame</label>
+        <input type="range" id="wFrame" min="0" max="10" step="1" value="0">
+        <input type="number" id="wFrameNum" value="0" min="0" step="1">
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title"><span>⚡ Hành động</span></div>
+      <div class="row">
+        <button class="btn small" id="applyAnimBtn" title="Áp dụng vị trí cho toàn bộ frame trong anim">↕ Cả anim</button>
+        <button class="btn small" id="applyAllBtn" title="Áp dụng cho toàn bộ animation">↔ Tất cả</button>
+      </div>
+      <div class="row">
+        <button class="btn small" id="copyPrevBtn" title="Copy từ frame trước">📋 Copy prev</button>
+        <button class="btn small" id="resetFrameBtn">↺ Reset</button>
+      </div>
+      <div class="row">
+        <button class="btn small danger" id="resetAnimBtn" style="flex:1">🗑 Reset anim</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title"><span>📊 Thông tin</span></div>
+      <div class="stats" id="stats">
+        Chưa load sprite
+      </div>
+    </div>
+
+  </aside>
+
 </main>
-<footer style="display:flex;align-items:center;padding:0 8px;border-top:1px solid var(--line);color:var(--muted);font-size:10px"><span id="status">Sẵn sàng</span><span class="grow"></span><span>Mobile landscape ✓</span></footer>
 </div>
+
+<!-- ============================================================
+     MODAL: Connect game
+     ============================================================ -->
+<div class="modal" id="connectModal">
+  <div class="modal-box">
+    <h3>🔌 Kết nối tới game</h3>
+    <p>Nhập URL của game (đã deploy trên GitHub Pages / Render):</p>
+    <input type="text" id="gameUrlInput" placeholder="https://dragon.dragonhunter.gamer.free" value="https://dragon.dragonhunter.gamer.free">
+    <p style="font-size:11px;color:var(--dim2);margin-bottom:0">
+      Tool sẽ fetch <code>sprites.json</code> từ <code>URL/sprites.json</code> và load tất cả model.
+    </p>
+    <div class="actions">
+      <button class="btn" onclick="closeModal('connectModal')">Hủy</button>
+      <button class="btn primary" id="connectConfirmBtn">🔌 Kết nối</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Save tuning
+     ============================================================ -->
+<div class="modal" id="saveModal">
+  <div class="modal-box">
+    <h3>☁ Lưu tuning lên server</h3>
+    <p>Nhập tên (không dấu, không space):</p>
+    <input type="text" id="saveNameInput" placeholder="katana_v1" value="katana_v1">
+    <div class="actions">
+      <button class="btn" onclick="closeModal('saveModal')">Hủy</button>
+      <button class="btn primary" id="saveConfirmBtn">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Load tuning
+     ============================================================ -->
+<div class="modal" id="loadTuningModal">
+  <div class="modal-box">
+    <h3>📥 Load tuning từ server</h3>
+    <div class="list-box" id="tuningList">
+      <div class="empty-msg">Đang tải...</div>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="closeModal('loadTuningModal')">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Help
+     ============================================================ -->
+<div class="modal" id="helpModal">
+  <div class="modal-box">
+    <h3>❓ Hướng dẫn</h3>
+    <p style="text-align:left;line-height:1.9">
+      <b style="color:var(--accent)">1. Kết nối</b><br>
+      • Bấm <b>🔌 Kết nối game</b> → nhập URL game (VD: <code>https://dragon.dragonhunter.gamer.free</code>)<br>
+      • Tool tự fetch <code>sprites.json</code> → load tất cả model<br>
+      • Hoặc bấm <b>📁</b> để load file từ máy<br><br>
+
+      <b style="color:var(--accent)">2. Chọn combo</b><br>
+      • Dropdown <b>CHAR</b> ở header → chọn model nhân vật (player/enemy/boss...)<br>
+      • Dropdown <b>WEAPON</b> → chọn model vũ khí<br><br>
+
+      <b style="color:var(--accent)">3. Chỉnh vị trí</b><br>
+      • <b>Kéo chuột</b> trên canvas → di chuyển vũ khí<br>
+      • <b>Shift + kéo</b> → xoay<br>
+      • Hoặc dùng sliders bên phải<br><br>
+
+      <b style="color:var(--accent)">4. Timeline</b><br>
+      • Click frame trên timeline → nhảy tới frame đó<br>
+      • Frame có <b style="color:var(--warn)">keyframe vàng</b> = đã chỉnh riêng<br>
+      • <b>Space</b> = play/pause animation<br>
+      • Speed 0.25× - 4× để xem chi tiết<br><br>
+
+      <b style="color:var(--accent)">5. Preview mode</b><br>
+      • Bật <b>Preview</b> → ẩn hint + debug, xem animation thực tế như trong game<br><br>
+
+      <b style="color:var(--accent)">6. Export</b><br>
+      • <b>☁</b> → lưu lên server (Postgres)<br>
+      • <b>💾</b> → tải <code>weapon-tuning.json</code> → copy vào repo game<br>
+      • Game tự load khi mở → vũ khí hiển thị đúng vị trí từng frame
+    </p>
+    <div class="actions">
+      <button class="btn primary" onclick="closeModal('helpModal')">Đã hiểu</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept=".json,application/json" style="display:none">
+<div id="toast"></div>
+
 <script>
 "use strict";
-const $=id=>document.getElementById(id),cv=$("cv"),ctx=cv.getContext("2d");ctx.imageSmoothingEnabled=false;
-let charImg=null,weaponImg=null,charFrames=1,weaponFrames=1,frame=0,zoom=1,playing=false,timer=0,layer="weapon";
-let tuning={},drag=false,last=null;
-const defaults=()=>({handX:0,handY:0,offsetX:0,offsetY:0,rotation:0,scale:1,pivotX:.5,pivotY:.12,weaponFrame:0});
-function pick(which){$(which==="char"?"charFile":"weaponFile").click()}
-$("charFile").onchange=e=>loadImg(e.target.files[0],"char");$("weaponFile").onchange=e=>loadImg(e.target.files[0],"weapon");
-function loadImg(f,which){if(!f)return;let im=new Image;im.onload=()=>{if(which==="char")charImg=im;else weaponImg=im;fit();buildFrames();render();};im.src=URL.createObjectURL(f)}
-function setFrames(){let n=+prompt("Số frame Player",charFrames)||1;charFrames=Math.max(1,Math.min(128,n));for(let i=0;i<charFrames;i++)if(!tuning[i])tuning[i]=defaults();frame=Math.min(frame,charFrames-1);buildFrames();render()}
-function buildFrames(){let t=$("timeline");t.innerHTML="";for(let i=0;i<charFrames;i++){let b=document.createElement("button");b.className="frame"+(i===frame?" on":"");b.innerHTML=`<canvas width="64" height="64"></canvas><span>${i}</span>`;b.onclick=()=>{frame=i;sync();render()};t.append(b);let x=b.firstChild,xc=x.getContext("2d");if(charImg){let fw=charImg.width/charFrames;xc.clearRect(0,0,64,64);xc.drawImage(charImg,i*fw,0,fw,charImg.height,0,0,64,64)} }$("info").textContent=(frame+1)+" / "+charFrames}
-function cfg(){if(!tuning[frame])tuning[frame]=defaults();return tuning[frame]}
-function sync(){let t=cfg();["handX","handY","offX","offY","rot","scale","px","py","wf"].forEach((id,i)=>$(id).value=[t.handX,t.handY,t.offsetX,t.offsetY,t.rotation,t.scale,t.pivotX,t.pivotY,t.weaponFrame][i]);$("frameNo").value=frame;$("info").textContent=(frame+1)+" / "+charFrames}
-["handX","handY","offX","offY","rot","scale","px","py","wf"].forEach((id,i)=>$(id).oninput=()=>{let t=cfg();let v=+$(id).value;if(i===2)t.offsetX=v;else if(i===3)t.offsetY=v;else if(i===4)t.rotation=v;else if(i===5)t.scale=Math.max(.01,v);else if(i===6)t.pivotX=v;else if(i===7)t.pivotY=v;else if(i===8)t.weaponFrame=Math.max(0,v|0);else if(i===0)t.handX=v;else t.handY=v;render()});
-$("frameNo").onchange=()=>{frame=Math.max(0,Math.min(charFrames-1,+$("frameNo").value|0));sync();render()};
-function fit(){let w=charImg?charImg.width/charFrames:256,h=charImg?charImg.height:256,box=document.querySelector(".canvasWrap");zoom=Math.max(.15,Math.min(6,Math.min((box.clientWidth-20)/w,(box.clientHeight-100)/h)));render()}
-function zoomBy(k){zoom=Math.max(.1,Math.min(10,zoom*k));render()}
-function render(){let w=charImg?charImg.width/charFrames:256,h=charImg?charImg.height:256;cv.width=w;cv.height=h;cv.style.width=Math.round(w*zoom)+"px";cv.style.height=Math.round(h*zoom)+"px";ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=false;if(charImg){ctx.drawImage(charImg,frame*(charImg.width/charFrames),0,charImg.width/charFrames,charImg.height,0,0,w,h)}if(weaponImg){let t=cfg(),fw=weaponImg.width/weaponFrames,wi=Math.max(0,Math.min(weaponFrames-1,t.weaponFrame|0)),sw=fw,sh=weaponImg.height;let scale=(t.scale||1)*(h*.55/sh),dw=sw*scale,dh=sh*scale,ax=w/2+t.handX+t.offsetX,ay=h*.82+t.handY+t.offsetY;ctx.save();ctx.translate(ax,ay);ctx.rotate(t.rotation||0);ctx.drawImage(weaponImg,wi*fw,0,fw,sh,-dw*(t.pivotX??.5),-dh*(t.pivotY??.12),dw,dh);ctx.restore()}$("z").textContent=Math.round(zoom*100)+"%";sync()}
-function centerWeapon(){let t=cfg();t.handX=0;t.handY=0;t.offsetX=0;t.offsetY=0;sync();render()}
-function resetTransform(){tuning[frame]=defaults();sync();render()}
-cv.onpointerdown=e=>{e.preventDefault();cv.setPointerCapture?.(e.pointerId);drag=true;last={x:e.clientX,y:e.clientY}}
-cv.onpointermove=e=>{if(!drag||!weaponImg)return;e.preventDefault();let dx=(e.clientX-last.x)/zoom,dy=(e.clientY-last.y)/zoom,last2={x:e.clientX,y:e.clientY};last=last2;let t=cfg();t.offsetX+=dx;t.offsetY+=dy;sync();render()}
-cv.onpointerup=cv.onpointercancel=()=>drag=false;
-function play(){playing=!playing;if(playing){clearInterval(timer);timer=setInterval(()=>{frame=(frame+1)%charFrames;sync();render()},1000/(+$("fps").value||12))}}
-function stop(){playing=false;clearInterval(timer)}
-function exportTuning(){let animations={};animations[$("anim").value]=Array.from({length:charFrames},(_,i)=>({...defaults(),...(tuning[i]||{})}));let out={format:"dh-weapon-tuning",version:1,exportedAt:new Date().toISOString(),charModel:"player",weaponModel:"weapon",defaults:{scale:.85},animations};let b=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});let u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download="weapon-tuning.json";a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-document.querySelectorAll(".layer").forEach(x=>x.onclick=()=>{layer=x.dataset.layer;document.querySelectorAll(".layer").forEach(y=>y.classList.toggle("on",y===x))});
-$("anim").onchange=()=>{tuning={};frame=0;buildFrames();sync();render()}
-window.addEventListener("resize",()=>fit());sync();buildFrames();fit();
+
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const BACKEND = 'https://game-sinhton.onrender.com';
+const DEST_HEIGHT = 55;
+const FOOT_OFFSET = 8;
+
+const MODEL_META = {
+  player: { icon: '🎮', color: 'var(--accent)', isCharacter: true },
+  enemy:  { icon: '👹', color: 'var(--enemy)', isCharacter: true },
+  boss:   { icon: '🐉', color: 'var(--boss)', isCharacter: true },
+  npc:    { icon: '🧑', color: 'var(--npc)', isCharacter: true },
+  weapon: { icon: '⚔️', color: 'var(--weapon)', isCharacter: false },
+  skill:  { icon: '✨', color: '#a371f7', isCharacter: false },
+  effect: { icon: '💥', color: '#a371f7', isCharacter: false },
+  item:   { icon: '💎', color: 'var(--info)', isCharacter: false }
+};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  connected: false,
+  baseUrl: '',
+  project: null,
+  models: new Map(),           /* modelName → Map(animName → sprite) */
+  charModel: null,
+  weaponModel: null,
+  currentAnim: 'idle',
+  currentFrame: 0,
+  playing: false,
+  playTime: 0,
+  speed: 1,
+  loop: true,
+  previewMode: false,
+  tuning: new Map(),           /* anim → [ frameConfig ] */
+  drag: null,
+  sidebarTab: 'models'
+};
+
+const $ = id => document.getElementById(id);
+const cv = $('stageCanvas');
+const ctx = cv.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+/* ============================================================
+   UTILS
+   ============================================================ */
+function toast(msg, type){
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = 'show ' + (type || '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 2600);
+}
+function closeModal(id){ $(id).classList.remove('show'); }
+
+function decodeMetadata(img){
+  try {
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = 1;
+    const cx = c.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(img, 0, img.height - 1, img.width, 1, 0, 0, img.width, 1);
+    const d = cx.getImageData(0, 0, img.width, 1).data;
+    if (d[0] !== 0x44 || d[1] !== 0x48 || d[2] !== 0x55 || d[3] !== 0x4E) return null;
+    const len = d[6] | (d[7] << 8) | (d[8] << 16) | (d[9] << 24);
+    if (len <= 0 || len > 300000) return null;
+    const bytes = [];
+    for (let i = 0; i < len; i++){
+      const pos = 10 + i;
+      const p = Math.floor(pos/3), ch = pos%3;
+      if (p*4+ch >= d.length) break;
+      bytes.push(d[p*4+ch]);
+    }
+    return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
+  } catch(e){ return null; }
+}
+
+function detectBBox(canvas, x1, y1, x2, y2){
+  const W = canvas.width;
+  const cx = canvas.getContext('2d', { willReadFrequently: true });
+  const d = cx.getImageData(x1, y1, x2-x1, y2-y1).data;
+  const w = x2-x1, h = y2-y1;
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++){
+    for (let x = 0; x < w; x++){
+      if (d[(y*w+x)*4+3] > 10){
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) return null;
+  return { x: x1+minX, y: y1+minY, w: maxX-minX+1, h: maxY-minY+1 };
+}
+
+/* ============================================================
+   CONNECT / LOAD
+   ============================================================ */
+$('connectBtn').addEventListener('click', () => {
+  $('connectModal').classList.add('show');
+  setTimeout(() => $('gameUrlInput').select(), 100);
+});
+$('connectConfirmBtn').addEventListener('click', async () => {
+  const url = $('gameUrlInput').value.trim().replace(/\/+$/, '');
+  if (!url){ toast('URL trống', 'err'); return; }
+  closeModal('connectModal');
+  await connectToGame(url);
+});
+$('gameUrlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter'){ e.preventDefault(); $('connectConfirmBtn').click(); }
+});
+
+async function connectToGame(baseUrl){
+  try {
+    const parsed = new URL(baseUrl);
+    if (!['https:', 'http:'].includes(parsed.protocol)) throw new Error('URL phải dùng HTTP(S)');
+    baseUrl = parsed.origin + parsed.pathname.replace(/\/+$/, '');
+  } catch (error) { toast('❌ URL không hợp lệ', 'err'); return; }
+  state.baseUrl = baseUrl;
+  setConnStatus('loading', 'Đang kết nối...');
+
+  try {
+    const url = baseUrl + '/sprites.json';
+    toast('⏳ Đang tải sprites.json...');
+
+    const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' — kiểm tra URL');
+    const project = await res.json();
+
+    if (project.format !== 'dh-studio-project' || !project.models){
+      throw new Error('Sai định dạng sprites.json');
+    }
+
+    await loadAllModelsFromProject(project, baseUrl + '/assets/');
+    state.connected = true;
+    setConnStatus('on', '✓ ' + baseUrl.replace(/^https?:\/\//, ''));
+    toast('✓ Kết nối thành công: ' + state.models.size + ' model');
+  } catch(e){
+    console.error(e);
+    setConnStatus('off', '❌ Lỗi');
+    toast('❌ Kết nối fail: ' + e.message, 'err');
+  }
+}
+
+function setConnStatus(mode, text){
+  const b = $('connBadge');
+  b.className = 'conn-badge' + (mode === 'on' ? ' on' : '');
+  b.textContent = text;
+}
+
+$('loadFileBtn').addEventListener('click', () => $('fileInput').click());
+$('fileInput').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+  try {
+    const text = await file.text();
+    const project = JSON.parse(text);
+    if (project.format !== 'dh-studio-project' || !project.models){
+      toast('❌ File sai định dạng', 'err'); return;
+    }
+    state.baseUrl = prompt('URL assets (nơi chứa ảnh PNG):', './assets') || './assets';
+    if (!state.baseUrl.endsWith('/')) state.baseUrl += '/';
+    await loadAllModelsFromProject(project, state.baseUrl);
+    state.connected = true;
+    setConnStatus('on', '✓ File local');
+    toast('✓ Đã load ' + state.models.size + ' model');
+  } catch(e){
+    toast('❌ Load fail: ' + e.message, 'err');
+  }
+});
+
+async function loadAllModelsFromProject(project, assetsPath){
+  state.project = project;
+  state.models.clear();
+  state.tuning.clear();
+
+  /* Collect all load promises */
+  const tasks = [];
+  for (const modelName in project.models){
+    const model = project.models[modelName];
+    const map = new Map();
+    state.models.set(modelName, map);
+
+    for (const animName in model.animations){
+      const cfg = model.animations[animName];
+      tasks.push(
+        loadSpriteFromProject(assetsPath, cfg.fileName, cfg)
+          .then(sprite => {
+            if (sprite) map.set(animName, sprite);
+          })
+      );
+    }
+  }
+
+  toast('⏳ Đang load ảnh...');
+  await Promise.all(tasks);
+
+  /* Log kết quả */
+  const summary = [];
+  for (const [name, map] of state.models){
+    if (map.size > 0) summary.push(name + '(' + map.size + ')');
+  }
+  console.log('✓ Loaded models:', summary.join(', '));
+
+  /* Auto-pick player + weapon */
+  autoPickModels();
+
+  /* Render */
+  renderSidebar();
+  renderHeaderSelectors();
+}
+
+function loadSpriteFromProject(assetsPath, fileName, cfg){
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const meta = decodeMetadata(img);
+      const cnv = document.createElement('canvas');
+      cnv.width = img.width;
+      const spriteH = meta && meta.spriteH ? meta.spriteH : img.height;
+      cnv.height = spriteH;
+      const cc = cnv.getContext('2d', { willReadFrequently: true });
+      cc.imageSmoothingEnabled = false;
+      cc.drawImage(img, 0, 0, img.width, spriteH, 0, 0, img.width, spriteH);
+
+      let vLines = meta && meta.vLines && meta.vLines.length >= 2 ? meta.vLines : null;
+      if (!vLines){
+        /* Fallback: even split */
+        const n = cfg.frames || 1;
+        vLines = [0];
+        for (let i = 1; i < n; i++) vLines.push(Math.round(i * img.width / n));
+        vLines.push(img.width);
+      }
+
+      const frames = vLines.length - 1;
+      const frameBBoxes = [];
+      let maxH = 0, maxW = 0;
+      for (let i = 0; i < frames; i++){
+        const bb = detectBBox(cnv, vLines[i], 0, vLines[i+1], spriteH);
+        frameBBoxes.push(bb);
+        if (bb){
+          if (bb.h > maxH) maxH = bb.h;
+          if (bb.w > maxW) maxW = bb.w;
+        }
+      }
+
+      /* Anchors */
+      const anchors = (meta && meta.anchors || []).map(a =>
+        Array.isArray(a) ? { x: a[0], y: a[1] } : (a ? { x: a.x, y: a.y } : null));
+      const stableAnchor = meta && meta.stableAnchor
+        ? { x: meta.stableAnchor[0], y: meta.stableAnchor[1] }
+        : null;
+
+      resolve({
+        canvas: cnv, img, spriteH, vLines, frames,
+        frameBBoxes,
+        contentMaxH: maxH || spriteH,
+        contentMaxW: maxW || 100,
+        anchors, stableAnchor,
+        anchorMode: (meta && meta.anchorMode) || cfg.anchorMode || 'stable-x',
+        fps: (meta && meta.fps) || cfg.fps || 10,
+        loop: (meta && meta.loop !== undefined) ? meta.loop : (cfg.loop !== false),
+        fileName
+      });
+    };
+    img.onerror = () => { console.warn('  ✗ ' + assetsPath + fileName + '.png'); resolve(null); };
+    img.src = assetsPath + fileName + '.png';
+  });
+}
+
+function autoPickModels(){
+  /* Pick first character model */
+  const charModels = [...state.models.keys()].filter(m => MODEL_META[m] && MODEL_META[m].isCharacter);
+  if (charModels.length > 0){
+    state.charModel = charModels.includes('player') ? 'player' : charModels[0];
+  } else {
+    state.charModel = [...state.models.keys()][0] || null;
+  }
+
+  /* Pick weapon */
+  state.weaponModel = state.models.has('weapon') ? 'weapon' : null;
+
+  /* Pick default anim from char model */
+  if (state.charModel && state.models.get(state.charModel)){
+    const anims = [...state.models.get(state.charModel).keys()];
+    state.currentAnim = anims.includes('idle') ? 'idle' : anims[0];
+    state.currentFrame = 0;
+  }
+
+  initTuningForCurrentCombo();
+}
+
+/* ============================================================
+   TUNING INIT
+   ============================================================ */
+function initTuningForCurrentCombo(){
+  if (!state.charModel || !state.weaponModel) return;
+  const charMap = state.models.get(state.charModel);
+  if (!charMap) return;
+
+  state.tuning.clear();
+
+  for (const [anim, charSprite] of charMap){
+    const frames = charSprite.frames;
+    const arr = [];
+    for (let i = 0; i < frames; i++){
+      arr.push(defaultFrameConfig(anim, i, frames));
+    }
+    state.tuning.set(anim, arr);
+  }
+}
+
+function defaultFrameConfig(anim, frameIdx, totalFrames){
+  const weaponMap = state.weaponModel ? state.models.get(state.weaponModel) : null;
+  const weaponSprite = weaponMap ? (weaponMap.get(anim) || weaponMap.get('idle')) : null;
+
+  let wFrameIdx = 0;
+  if (weaponSprite){
+    const wFrames = weaponSprite.frames;
+    wFrameIdx = Math.min(wFrames - 1, Math.floor((frameIdx / Math.max(1, totalFrames)) * wFrames));
+  }
+
+  return {
+    handX: 4,
+    handY: -32,
+    offsetX: 0,
+    offsetY: 0,
+    rotation: 0,
+    scale: 1,
+    pivotX: 0.5,
+    pivotY: 0.12,
+    weaponFrame: wFrameIdx
+  };
+}
+
+/* ============================================================
+   HEADER SELECTORS
+   ============================================================ */
+function renderHeaderSelectors(){
+  const charSel = $('charSelect');
+  const weaponSel = $('weaponSelect');
+
+  /* Char models */
+  charSel.innerHTML = '';
+  const charModels = [...state.models.keys()].filter(m => MODEL_META[m] && MODEL_META[m].isCharacter);
+  const otherModels = [...state.models.keys()].filter(m => !MODEL_META[m] || !MODEL_META[m].isCharacter);
+
+  if (charModels.length === 0 && otherModels.length === 0){
+    charSel.innerHTML = '<option>—</option>';
+    charSel.disabled = true;
+  } else {
+    for (const m of charModels){
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = (MODEL_META[m].icon || '📦') + ' ' + m;
+      charSel.appendChild(opt);
+    }
+    for (const m of otherModels){
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = '📦 ' + m;
+      charSel.appendChild(opt);
+    }
+    charSel.disabled = false;
+    if (state.charModel) charSel.value = state.charModel;
+  }
+
+  /* Weapon models */
+  weaponSel.innerHTML = '<option value="">— Không có —</option>';
+  const weaponModels = [...state.models.keys()].filter(m =>
+    m === 'weapon' || (MODEL_META[m] && !MODEL_META[m].isCharacter && m !== 'skill' && m !== 'effect' && m !== 'item'));
+  for (const m of weaponModels){
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = '⚔️ ' + m;
+    weaponSel.appendChild(opt);
+  }
+  weaponSel.disabled = false;
+  if (state.weaponModel) weaponSel.value = state.weaponModel;
+
+  /* Enable tuning buttons */
+  $('loadTuningBtn').disabled = false;
+  $('saveTuningBtn').disabled = false;
+  $('exportBtn').disabled = false;
+}
+
+$('charSelect').addEventListener('change', e => {
+  state.charModel = e.target.value;
+  /* Reset anim to idle */
+  const charMap = state.models.get(state.charModel);
+  if (charMap){
+    const anims = [...charMap.keys()];
+    state.currentAnim = anims.includes('idle') ? 'idle' : anims[0];
+    state.currentFrame = 0;
+    state.playing = false;
+  }
+  initTuningForCurrentCombo();
+  renderSidebar();
+  renderTimeline();
+  render();
+  toast('👤 Char: ' + state.charModel);
+});
+
+$('weaponSelect').addEventListener('change', e => {
+  state.weaponModel = e.target.value || null;
+  initTuningForCurrentCombo();
+  renderTimeline();
+  render();
+  toast('⚔️ Weapon: ' + (state.weaponModel || 'không có'));
+});
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+document.querySelectorAll('.sidebar-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.sidebarTab = tab.dataset.tab;
+    renderSidebar();
+  });
+});
+
+function renderSidebar(){
+  const body = $('sidebarBody');
+  if (!state.connected || state.models.size === 0){
+    body.innerHTML = '<div class="empty-msg">Chưa kết nối<br><br>Bấm <b style="color:var(--accent)">🔌 Kết nối game</b></div>';
+    return;
+  }
+
+  if (state.sidebarTab === 'models') renderSidebarModels(body);
+  else renderSidebarAnims(body);
+}
+
+function renderSidebarModels(body){
+  body.innerHTML = '';
+
+  for (const [modelName, animMap] of state.models){
+    if (animMap.size === 0) continue;
+
+    const meta = MODEL_META[modelName] || { icon: '📦', color: 'var(--text)', isCharacter: false };
+    const isActive = modelName === state.charModel || modelName === state.weaponModel;
+
+    const group = document.createElement('div');
+    group.className = 'model-group';
+
+    const header = document.createElement('div');
+    header.className = 'model-group-header';
+    header.dataset.type = modelName;
+    header.innerHTML = `<span class="arrow">▼</span><span>${meta.icon} ${modelName}</span><span class="count">${animMap.size}</span>`;
+    header.addEventListener('click', () => {
+      header.classList.toggle('collapsed');
+      group.querySelector('.model-group-body').classList.toggle('hidden');
+    });
+    group.appendChild(header);
+
+    const groupBody = document.createElement('div');
+    groupBody.className = 'model-group-body';
+    for (const [animName, sprite] of animMap){
+      const item = document.createElement('div');
+      item.className = 'model-item' +
+        (modelName === state.charModel && animName === state.currentAnim && MODEL_META[modelName]?.isCharacter ? ' active' : '');
+      item.innerHTML =
+        `<span class="dot"></span>` +
+        `<span class="name">${animName}</span>` +
+        `<span class="frames">${sprite.frames}f</span>`;
+
+      item.addEventListener('click', () => {
+        /* Nếu là character model → đổi char + anim */
+        if (meta.isCharacter || modelName === state.charModel){
+          if (state.charModel !== modelName){
+            state.charModel = modelName;
+            state.tuning.clear();
+            initTuningForCurrentCombo();
+            $('charSelect').value = modelName;
+          }
+          state.currentAnim = animName;
+          state.currentFrame = 0;
+          state.playing = false;
+          renderSidebar();
+          renderTimeline();
+          render();
+        } else {
+          /* Weapon/skill/etc → switch weapon model */
+          if (state.weaponModel !== modelName){
+            state.weaponModel = modelName;
+            state.tuning.clear();
+            initTuningForCurrentCombo();
+            $('weaponSelect').value = modelName;
+          }
+          state.currentAnim = animName;
+          state.currentFrame = 0;
+          state.playing = false;
+          renderSidebar();
+          renderTimeline();
+          render();
+        }
+      });
+
+      groupBody.appendChild(item);
+    }
+    group.appendChild(groupBody);
+    body.appendChild(group);
+  }
+}
+
+function renderSidebarAnims(body){
+  body.innerHTML = '';
+  if (!state.charModel){ body.innerHTML = '<div class="empty-msg">Chưa chọn character model</div>'; return; }
+  const charMap = state.models.get(state.charModel);
+  if (!charMap) return;
+
+  for (const [animName, sprite] of charMap){
+    const item = document.createElement('div');
+    item.className = 'model-item' + (animName === state.currentAnim ? ' active' : '');
+    const tuning = state.tuning.get(animName) || [];
+    const tunedCount = tuning.filter(t =>
+      t.offsetX !== 0 || t.offsetY !== 0 || t.rotation !== 0 || t.scale !== 1
+    ).length;
+    item.innerHTML =
+      `<span class="dot"></span>` +
+      `<span class="name">${animName}</span>` +
+      `<span class="frames">${sprite.frames}f${tunedCount > 0 ? ' ⚡' + tunedCount : ''}</span>`;
+    item.addEventListener('click', () => {
+      state.currentAnim = animName;
+      state.currentFrame = 0;
+      state.playing = false;
+      renderSidebar();
+      renderTimeline();
+      render();
+    });
+    body.appendChild(item);
+  }
+}
+
+/* ============================================================
+   RENDER TIMELINE
+   ============================================================ */
+function renderTimeline(){
+  const track = $('timelineTrack');
+  track.innerHTML = '';
+
+  if (!state.charModel){
+    $('tlAnimName').textContent = '—';
+    $('tlFrameInfo').textContent = '0/0';
+    return;
+  }
+
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  if (!charSprite){ return; }
+
+  const frames = charSprite.frames;
+  const tuning = state.tuning.get(state.currentAnim) || [];
+
+  $('tlAnimName').textContent = state.charModel + ' · ' + state.currentAnim;
+  $('tlFps').textContent = charSprite.fps;
+  $('tlFrameInfo').textContent = (state.currentFrame + 1) + '/' + frames;
+  $('frameBadge').textContent = 'Frame ' + state.currentFrame;
+
+  const frameDuration = 1 / charSprite.fps;
+  const totalDuration = frames * frameDuration;
+  $('tlTimeInfo').textContent =
+    (state.currentFrame * frameDuration).toFixed(2) + 's / ' + totalDuration.toFixed(2) + 's';
+
+  for (let i = 0; i < frames; i++){
+    const el = document.createElement('div');
+    const t = tuning[i];
+    const isTuned = t && (t.offsetX !== 0 || t.offsetY !== 0 || t.rotation !== 0 ||
+                          t.scale !== 1 || t.handX !== 4 || t.handY !== -32);
+    el.className = 'tl-frame' +
+      (i === state.currentFrame ? ' active' : '') +
+      (isTuned ? ' tuned' : '');
+    el.textContent = i;
+    if (isTuned){
+      const kf = document.createElement('span');
+      kf.className = 'keyframe';
+      el.appendChild(kf);
+    }
+    el.addEventListener('click', () => {
+      state.currentFrame = i;
+      updateTunerUIFromFrame();
+      renderTimeline();
+      render();
+    });
+    track.appendChild(el);
+  }
+}
+
+/* ============================================================
+   RENDER STAGE
+   ============================================================ */
+function render(){
+  const canvasWrap = $('canvasWrap');
+  if (state.previewMode) canvasWrap.classList.add('preview-mode');
+  else canvasWrap.classList.remove('preview-mode');
+
+  cv.classList.toggle('preview', state.previewMode);
+
+  if (!state.charModel){ return; }
+
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  if (!charSprite){
+    cv.width = 400; cv.height = 400;
+    ctx.fillStyle = '#111'; ctx.fillRect(0, 0, 400, 400);
+    return;
+  }
+
+  const cellX = charSprite.vLines[state.currentFrame];
+  const cellW = charSprite.vLines[state.currentFrame + 1] - cellX;
+  const cellH = charSprite.spriteH;
+
+  /* Canvas size */
+  const wrapW = canvasWrap.clientWidth - 40;
+  const wrapH = canvasWrap.clientHeight - 40;
+  const scale = Math.max(1, Math.min(wrapW / cellW, wrapH / cellH, 8));
+  const dw = Math.round(cellW * scale);
+  const dh = Math.round(cellH * scale);
+
+  cv.width = dw;
+  cv.height = dh;
+  cv.style.width = dw + 'px';
+  cv.style.height = dh + 'px';
+  ctx.imageSmoothingEnabled = false;
+
+  /* Background */
+  ctx.fillStyle = '#111';
+  ctx.fillRect(0, 0, dw, dh);
+
+  /* Grid */
+  if (!state.previewMode){
+    ctx.strokeStyle = 'rgba(63,185,80,.06)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < dw; x += scale * 8){
+      ctx.beginPath(); ctx.moveTo(x+.5, 0); ctx.lineTo(x+.5, dh); ctx.stroke();
+    }
+    for (let y = 0; y < dh; y += scale * 8){
+      ctx.beginPath(); ctx.moveTo(0, y+.5); ctx.lineTo(dw, y+.5); ctx.stroke();
+    }
+  }
+
+  /* Draw player */
+  ctx.drawImage(charSprite.canvas, cellX, 0, cellW, cellH, 0, 0, dw, dh);
+
+  /* Draw weapon */
+  if (state.weaponModel){
+    const weaponMap = state.models.get(state.weaponModel);
+    const weaponSprite = weaponMap && (weaponMap.get(state.currentAnim) || weaponMap.get('idle'));
+
+    if (weaponSprite){
+      const tuning = state.tuning.get(state.currentAnim) || [];
+      const t = tuning[state.currentFrame];
+      if (t) drawWeaponOnCanvas(weaponSprite, t, dw, dh, cellH);
+    }
+  }
+
+  /* Debug badge */
+  if (!state.previewMode){
+    const tuning = state.tuning.get(state.currentAnim) || [];
+    const t = tuning[state.currentFrame];
+    if (t){
+      $('debugBadge').textContent =
+        `🎯 Hand(${t.handX.toFixed(0)},${t.handY.toFixed(0)}) · ` +
+        `Off(${t.offsetX.toFixed(1)},${t.offsetY.toFixed(1)}) · ` +
+        `Rot${(t.rotation * 180 / Math.PI).toFixed(0)}° · ` +
+        `Scale${t.scale.toFixed(2)} · WF${t.weaponFrame}`;
+    }
+  }
+}
+
+function drawWeaponOnCanvas(weaponSprite, t, canvasW, canvasH, playerCellH){
+  const wFrameIdx = Math.max(0, Math.min(weaponSprite.frames - 1, t.weaponFrame || 0));
+  const bb = weaponSprite.frameBBoxes[wFrameIdx];
+
+  let srcX, srcY, srcW, srcH;
+  if (bb && bb.w > 0){
+    srcX = bb.x; srcY = bb.y; srcW = bb.w; srcH = bb.h;
+  } else {
+    srcX = weaponSprite.vLines[wFrameIdx]; srcY = 0;
+    srcW = weaponSprite.vLines[wFrameIdx + 1] - srcX;
+    srcH = weaponSprite.spriteH;
+  }
+
+  /* Scale weapon theo DEST_HEIGHT like in-game */
+  const contentH = weaponSprite.contentMaxH || srcH;
+  const baseScale = (DEST_HEIGHT * 0.85) / contentH;
+  const finalScale = baseScale * (t.scale || 1);
+  const wdw = srcW * finalScale;
+  const wdh = srcH * finalScale;
+
+  /* Player scale (canvas space / game space) */
+  const playerScale = canvasH / playerCellH;
+
+  /* Player anchor on canvas = center X, bottom Y */
+  const pAnchorX = canvasW / 2;
+  const pAnchorY = canvasH;
+
+  /* Hand position in game space → canvas space */
+  const handGameX = t.handX + t.offsetX;
+  const handGameY = t.handY + t.offsetY;
+  const handCvX = pAnchorX + handGameX * playerScale;
+  const handCvY = pAnchorY + handGameY * playerScale;
+
+  /* Weapon size in canvas */
+  const finalWdw = wdw * playerScale;
+  const finalWdh = wdh * playerScale;
+
+  const pivotX = -finalWdw * t.pivotX;
+  const pivotY = -finalWdh * t.pivotY;
+
+  ctx.save();
+  ctx.translate(handCvX, handCvY);
+  ctx.rotate(t.rotation || 0);
+  ctx.drawImage(weaponSprite.canvas, srcX, srcY, srcW, srcH,
+                pivotX, pivotY, finalWdw, finalWdh);
+  ctx.restore();
+
+  /* Debug: chấm đỏ tại hand (chỉ khi không preview) */
+  if (!state.previewMode){
+    ctx.fillStyle = 'rgba(248,81,73,.9)';
+    ctx.beginPath();
+    ctx.arc(handCvX, handCvY, 3, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    /* Vẽ pivot */
+    ctx.fillStyle = 'rgba(88,166,255,.9)';
+    ctx.beginPath();
+    ctx.arc(handCvX + pivotX, handCvY + pivotY, 2, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+/* ============================================================
+   DRAG WEAPON ON CANVAS
+   ============================================================ */
+cv.addEventListener('mousedown', e => {
+  if (state.previewMode) return;
+  if (!state.charModel || !state.weaponModel) return;
+
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning) return;
+  const t = tuning[state.currentFrame];
+  if (!t) return;
+
+  state.drag = {
+    startX: e.clientX,
+    startY: e.clientY,
+    origHandX: t.handX,
+    origHandY: t.handY,
+    origOffX: t.offsetX,
+    origOffY: t.offsetY,
+    origRot: t.rotation,
+    isRotate: e.shiftKey
+  };
+  e.preventDefault();
+});
+
+cv.addEventListener('touchstart', e => {
+  if (state.previewMode) return;
+  if (e.touches.length !== 1) return;
+  if (!state.charModel || !state.weaponModel) return;
+
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning) return;
+  const t = tuning[state.currentFrame];
+  if (!t) return;
+
+  const touch = e.touches[0];
+  state.drag = {
+    startX: touch.clientX,
+    startY: touch.clientY,
+    origHandX: t.handX,
+    origHandY: t.handY,
+    origOffX: t.offsetX,
+    origOffY: t.offsetY,
+    origRot: t.rotation,
+    isRotate: false
+  };
+  e.preventDefault();
+}, { passive: false });
+
+function handleDragMove(clientX, clientY){
+  if (!state.drag) return;
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning) return;
+  const t = tuning[state.currentFrame];
+  if (!t) return;
+
+  const dx = clientX - state.drag.startX;
+  const dy = clientY - state.drag.startY;
+
+  /* Convert to game-space delta */
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap.get(state.currentAnim);
+  const playerScale = cv.height / charSprite.spriteH;
+
+  if (state.drag.isRotate){
+    t.rotation = state.drag.origRot + dx * 0.02;
+  } else {
+    t.offsetX = state.drag.origOffX + dx / playerScale;
+    t.offsetY = state.drag.origOffY + dy / playerScale;
+  }
+
+  updateTunerUIFromFrame();
+  renderTimeline();
+  render();
+}
+
+window.addEventListener('mousemove', e => {
+  if (state.drag) handleDragMove(e.clientX, e.clientY);
+});
+window.addEventListener('touchmove', e => {
+  if (state.drag && e.touches.length === 1){
+    handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
+    e.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('mouseup', () => { state.drag = null; });
+window.addEventListener('touchend', () => { state.drag = null; });
+
+/* ============================================================
+   SLIDERS
+   ============================================================ */
+const SLIDERS = ['handX', 'handY', 'offX', 'offY', 'rot', 'sc', 'pivotX', 'pivotY', 'wFrame'];
+SLIDERS.forEach(id => {
+  const slider = $(id);
+  const num = $(id + 'Num');
+  if (!slider || !num) return;
+
+  slider.addEventListener('input', e => {
+    num.value = e.target.value;
+    applySliderChange(id, parseFloat(e.target.value));
+  });
+  num.addEventListener('input', e => {
+    const v = parseFloat(e.target.value);
+    if (isNaN(v)) return;
+    slider.value = v;
+    applySliderChange(id, v);
+  });
+});
+
+function applySliderChange(id, val){
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning) return;
+  const t = tuning[state.currentFrame];
+  if (!t) return;
+
+  switch(id){
+    case 'handX':  t.handX = val; break;
+    case 'handY':  t.handY = val; break;
+    case 'offX':   t.offsetX = val; break;
+    case 'offY':   t.offsetY = val; break;
+    case 'rot':    t.rotation = val * Math.PI / 180; break;
+    case 'sc':     t.scale = val; break;
+    case 'pivotX': t.pivotX = val; break;
+    case 'pivotY': t.pivotY = val; break;
+    case 'wFrame': t.weaponFrame = val; break;
+  }
+
+  renderTimeline();
+  updateStats();
+  render();
+}
+
+function updateTunerUIFromFrame(){
+  const tuning = state.tuning.get(state.currentAnim) || [];
+  const t = tuning[state.currentFrame];
+  if (!t) return;
+
+  setField('handX', t.handX);
+  setField('handY', t.handY);
+  setField('offX', t.offsetX);
+  setField('offY', t.offsetY);
+  setField('rot', Math.round(t.rotation * 180 / Math.PI));
+  setField('sc', t.scale);
+  setField('pivotX', t.pivotX);
+  setField('pivotY', t.pivotY);
+  setField('wFrame', t.weaponFrame);
+
+  /* Weapon frame slider max */
+  if (state.weaponModel){
+    const wMap = state.models.get(state.weaponModel);
+    const wSprite = wMap && (wMap.get(state.currentAnim) || wMap.get('idle'));
+    if (wSprite){
+      $('wFrame').max = Math.max(0, wSprite.frames - 1);
+      $('wFrameNum').max = Math.max(0, wSprite.frames - 1);
+    }
+  }
+
+  updateStats();
+}
+
+function setField(id, val){
+  const s = $(id), n = $(id + 'Num');
+  if (s) s.value = val;
+  if (n) n.value = Math.round(val * 100) / 100;
+}
+
+function updateStats(){
+  const charMap = state.charModel ? state.models.get(state.charModel) : null;
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  if (!charSprite){
+    $('stats').innerHTML = '—';
+    return;
+  }
+
+  const tuning = state.tuning.get(state.currentAnim) || [];
+  const tunedCount = tuning.filter(t =>
+    t.offsetX !== 0 || t.offsetY !== 0 || t.rotation !== 0 ||
+    t.scale !== 1 || t.handX !== 4 || t.handY !== -32
+  ).length;
+
+  const weaponMap = state.weaponModel ? state.models.get(state.weaponModel) : null;
+  const weaponSprite = weaponMap && (weaponMap.get(state.currentAnim) || weaponMap.get('idle'));
+
+  $('stats').innerHTML =
+    `Char: <b>${state.charModel}/${state.currentAnim}</b><br>` +
+    `Size: <b>${charSprite.spriteH}px · ${charSprite.frames}f</b><br>` +
+    `Weapon: <b>${state.weaponModel || '—'}</b><br>` +
+    (weaponSprite
+      ? `W.Size: <b>${weaponSprite.contentMaxW}×${weaponSprite.contentMaxH}</b><br>` +
+        `W.Frames: <b>${weaponSprite.frames}f</b><br>`
+      : '') +
+    `Tuned: <span class="warn">${tunedCount}/${tuning.length}</span> frames`;
+}
+
+/* ============================================================
+   PLAYBACK
+   ============================================================ */
+$('playBtn').addEventListener('click', togglePlay);
+$('stopBtn').addEventListener('click', stopAnim);
+$('prevFrameBtn').addEventListener('click', () => stepFrame(-1));
+$('nextFrameBtn').addEventListener('click', () => stepFrame(1));
+
+function togglePlay(){
+  if (state.playing) stopAnim();
+  else startAnim();
+}
+function startAnim(){
+  if (!state.charModel) return;
+  state.playing = true;
+  state.playTime = state.currentFrame / getCurrentFps();
+  $('playBtn').textContent = '⏸';
+  loopPlayback();
+}
+function stopAnim(){
+  state.playing = false;
+  if (state.raf) cancelAnimationFrame(state.raf);
+  $('playBtn').textContent = '▶';
+}
+function loopPlayback(){
+  if (!state.playing) return;
+
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  if (!charSprite){ stopAnim(); return; }
+
+  const fps = charSprite.fps;
+  const frames = charSprite.frames;
+
+  state.playTime += (1/60) * state.speed;
+  let f = Math.floor(state.playTime * fps);
+
+  if (state.loop){
+    f = ((f % frames) + frames) % frames;
+  } else {
+    if (f >= frames){
+      state.currentFrame = frames - 1;
+      stopAnim();
+      updateTunerUIFromFrame();
+      renderTimeline();
+      render();
+      return;
+    }
+    f = Math.max(0, f);
+  }
+
+  if (f !== state.currentFrame){
+    state.currentFrame = f;
+    updateTunerUIFromFrame();
+    renderTimeline();
+  }
+  render();
+  state.raf = requestAnimationFrame(loopPlayback);
+}
+function stepFrame(dir){
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  if (!charSprite) return;
+  const frames = charSprite.frames;
+  state.currentFrame = ((state.currentFrame + dir) % frames + frames) % frames;
+  updateTunerUIFromFrame();
+  renderTimeline();
+  render();
+}
+function getCurrentFps(){
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap && charMap.get(state.currentAnim);
+  return charSprite ? charSprite.fps : 10;
+}
+
+/* Speed buttons */
+document.querySelectorAll('.speed-control button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.speed-control button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    state.speed = parseFloat(btn.dataset.speed);
+  });
+});
+
+/* Loop toggle */
+$('loopToggle').addEventListener('click', () => {
+  state.loop = !state.loop;
+  $('loopToggle').classList.toggle('on', state.loop);
+});
+
+/* Preview toggle */
+$('previewToggle').addEventListener('click', () => {
+  state.previewMode = !state.previewMode;
+  $('previewToggle').classList.toggle('on', state.previewMode);
+  render();
+});
+
+/* Keyboard shortcuts */
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+
+  if (e.code === 'Space'){
+    e.preventDefault();
+    togglePlay();
+  }
+  if (e.code === 'ArrowLeft'){ e.preventDefault(); stepFrame(-1); }
+  if (e.code === 'ArrowRight'){ e.preventDefault(); stepFrame(1); }
+  if (e.code === 'KeyP'){ e.preventDefault(); $('previewToggle').click(); }
+  if (e.code === 'KeyL'){ e.preventDefault(); $('loopToggle').click(); }
+  if (e.key === 'Escape'){
+    closeModal('connectModal');
+    closeModal('saveModal');
+    closeModal('loadTuningModal');
+    closeModal('helpModal');
+  }
+});
+
+/* ============================================================
+   ACTION BUTTONS
+   ============================================================ */
+$('applyAnimBtn').addEventListener('click', () => {
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning) return;
+  const src = tuning[state.currentFrame];
+  for (const t of tuning){
+    t.handX = src.handX;
+    t.handY = src.handY;
+    t.scale = src.scale;
+    t.pivotX = src.pivotX;
+    t.pivotY = src.pivotY;
+    /* Giữ offset và rotation riêng */
+  }
+  renderTimeline(); render();
+  toast('✓ Áp dụng vị trí cho cả anim');
+});
+
+$('applyAllBtn').addEventListener('click', () => {
+  const src = state.tuning.get(state.currentAnim);
+  if (!src) return;
+  const srcFrame = src[state.currentFrame];
+  for (const [anim, tuning] of state.tuning){
+    for (const t of tuning){
+      t.handX = srcFrame.handX;
+      t.handY = srcFrame.handY;
+      t.scale = srcFrame.scale;
+      t.pivotX = srcFrame.pivotX;
+      t.pivotY = srcFrame.pivotY;
+    }
+  }
+  renderTimeline(); render();
+  toast('✓ Áp dụng cho toàn bộ animations');
+});
+
+$('copyPrevBtn').addEventListener('click', () => {
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning || state.currentFrame === 0) return;
+  const prev = tuning[state.currentFrame - 1];
+  const cur = tuning[state.currentFrame];
+  cur.handX = prev.handX;
+  cur.handY = prev.handY;
+  cur.offsetX = prev.offsetX;
+  cur.offsetY = prev.offsetY;
+  cur.rotation = prev.rotation;
+  cur.scale = prev.scale;
+  cur.pivotX = prev.pivotX;
+  cur.pivotY = prev.pivotY;
+  cur.weaponFrame = prev.weaponFrame;
+  updateTunerUIFromFrame();
+  renderTimeline(); render();
+  toast('📋 Copy từ frame ' + (state.currentFrame - 1));
+});
+
+$('resetFrameBtn').addEventListener('click', () => {
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning) return;
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap.get(state.currentAnim);
+  tuning[state.currentFrame] = defaultFrameConfig(state.currentAnim, state.currentFrame, charSprite.frames);
+  updateTunerUIFromFrame();
+  renderTimeline(); render();
+  toast('↺ Reset frame ' + state.currentFrame);
+});
+
+$('resetAnimBtn').addEventListener('click', () => {
+  if (!confirm('Reset toàn bộ anim "' + state.currentAnim + '"?')) return;
+  const tuning = state.tuning.get(state.currentAnim);
+  if (!tuning) return;
+  const charMap = state.models.get(state.charModel);
+  const charSprite = charMap.get(state.currentAnim);
+  for (let i = 0; i < tuning.length; i++){
+    tuning[i] = defaultFrameConfig(state.currentAnim, i, charSprite.frames);
+  }
+  updateTunerUIFromFrame();
+  renderTimeline(); render();
+  toast('🗑 Reset anim ' + state.currentAnim);
+});
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+$('exportBtn').addEventListener('click', () => {
+  if (!state.charModel){ toast('Chưa load dữ liệu', 'err'); return; }
+
+  const output = {
+    format: 'dh-weapon-tuning',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    charModel: state.charModel,
+    weaponModel: state.weaponModel,
+    defaults: { scale: 0.85 },
+    animations: {}
+  };
+
+  for (const [anim, tuning] of state.tuning){
+    output.animations[anim] = tuning.map(t => ({
+      handX: Math.round(t.handX * 10) / 10,
+      handY: Math.round(t.handY * 10) / 10,
+      offsetX: Math.round(t.offsetX * 10) / 10,
+      offsetY: Math.round(t.offsetY * 10) / 10,
+      rotation: Math.round(t.rotation * 1000) / 1000,
+      scale: Math.round(t.scale * 100) / 100,
+      pivotX: Math.round(t.pivotX * 100) / 100,
+      pivotY: Math.round(t.pivotY * 100) / 100,
+      weaponFrame: t.weaponFrame
+    }));
+  }
+
+  const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'weapon-tuning.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
+  toast('💾 Đã export weapon-tuning.json');
+});
+
+/* ============================================================
+   SAVE / LOAD TUNING
+   ============================================================ */
+$('saveTuningBtn').addEventListener('click', () => {
+  if (!state.charModel){ toast('Chưa load dữ liệu', 'err'); return; }
+  $('saveModal').classList.add('show');
+  setTimeout(() => { $('saveNameInput').focus(); $('saveNameInput').select(); }, 100);
+});
+
+$('saveConfirmBtn').addEventListener('click', async () => {
+  const name = $('saveNameInput').value.trim();
+  if (!name){ toast('Tên trống', 'err'); return; }
+
+  const output = buildTuningOutput();
+  try {
+    const res = await fetch(BACKEND + '/tuning', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, config: output }),
+      signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    toast('☁ Đã lưu: ' + name);
+    closeModal('saveModal');
+  } catch(e){
+    toast('❌ Save fail: ' + e.message, 'err');
+  }
+});
+
+$('loadTuningBtn').addEventListener('click', async () => {
+  $('loadTuningModal').classList.add('show');
+  $('tuningList').innerHTML = '<div class="empty-msg">Đang tải...</div>';
+  try {
+    const res = await fetch(BACKEND + '/tuning', {
+      signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const list = $('tuningList');
+
+    if (!data.tunings || data.tunings.length === 0){
+      list.innerHTML = '<div class="empty-msg">Chưa có tuning nào trên server</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    for (const item of data.tunings){
+      const el = document.createElement('div');
+      el.className = 'list-item';
+      const nameEl = document.createElement('span');
+      nameEl.className = 'name';
+      nameEl.textContent = String(item.name || '');
+      const dateEl = document.createElement('span');
+      dateEl.className = 'meta';
+      dateEl.textContent = item.updatedAt ? new Date(item.updatedAt).toLocaleString('vi-VN') : '';
+      el.append(nameEl, dateEl);
+      const loadBtn = document.createElement('button');
+      loadBtn.className = 'btn primary small';
+      loadBtn.textContent = 'Load';
+      loadBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        loadTuningFromServer(item.name);
+      });
+      el.appendChild(loadBtn);
+      el.addEventListener('click', () => loadTuningFromServer(item.name));
+      list.appendChild(el);
+    }
+  } catch(e){
+    $('tuningList').replaceChildren();
+    const errorEl = document.createElement('div');
+    errorEl.className = 'empty-msg';
+    errorEl.style.color = 'var(--danger)';
+    errorEl.textContent = '❌ Lỗi: ' + e.message;
+    $('tuningList').appendChild(errorEl);
+  }
+});
+
+async function loadTuningFromServer(name){
+  try {
+    const res = await fetch(BACKEND + '/tuning/' + encodeURIComponent(name), {
+      signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    applyTuningConfig(data.config);
+    closeModal('loadTuningModal');
+    toast('📥 Đã load: ' + name);
+  } catch(e){
+    toast('❌ Load fail: ' + e.message, 'err');
+  }
+}
+
+function applyTuningConfig(config){
+  if (!config || !config.animations || typeof config.animations !== 'object' || Array.isArray(config.animations)){
+    toast('Config sai định dạng', 'err');
+    return;
+  }
+
+  /* Try to match char/weapon model */
+  if (config.charModel && state.models.has(config.charModel)){
+    state.charModel = config.charModel;
+    $('charSelect').value = config.charModel;
+  }
+  if (config.weaponModel && state.models.has(config.weaponModel)){
+    state.weaponModel = config.weaponModel;
+    $('weaponSelect').value = config.weaponModel;
+  }
+
+  /* Reset tuning */
+  initTuningForCurrentCombo();
+
+  for (const anim in config.animations){
+    const src = config.animations[anim];
+    const dst = state.tuning.get(anim);
+    if (!dst) continue;
+    if (!Array.isArray(src)) continue;
+    const allowed = ['handX','handY','offsetX','offsetY','rotation','scale','pivotX','pivotY','weaponFrame'];
+    for (let i = 0; i < Math.min(src.length, dst.length); i++){
+      if (!src[i] || typeof src[i] !== 'object') continue;
+      for (const key of allowed){
+        const value = src[i][key];
+        if (typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 100000){
+          dst[i][key] = value;
+        }
+      }
+    }
+  }
+
+  if (!state.tuning.has(state.currentAnim)){
+    const anims = [...state.tuning.keys()];
+    state.currentAnim = anims[0] || 'idle';
+    state.currentFrame = 0;
+  }
+
+  updateTunerUIFromFrame();
+  renderTimeline(); render();
+}
+
+function buildTuningOutput(){
+  const output = {
+    format: 'dh-weapon-tuning',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    charModel: state.charModel,
+    weaponModel: state.weaponModel,
+    defaults: { scale: 0.85 },
+    animations: {}
+  };
+  for (const [anim, tuning] of state.tuning){
+    output.animations[anim] = tuning.map(t => ({
+      handX: Math.round(t.handX * 10) / 10,
+      handY: Math.round(t.handY * 10) / 10,
+      offsetX: Math.round(t.offsetX * 10) / 10,
+      offsetY: Math.round(t.offsetY * 10) / 10,
+      rotation: Math.round(t.rotation * 1000) / 1000,
+      scale: Math.round(t.scale * 100) / 100,
+      pivotX: Math.round(t.pivotX * 100) / 100,
+      pivotY: Math.round(t.pivotY * 100) / 100,
+      weaponFrame: t.weaponFrame
+    }));
+  }
+  return output;
+}
+
+/* ============================================================
+   HELP
+   ============================================================ */
+$('helpBtn').addEventListener('click', () => {
+  $('helpModal').classList.add('show');
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+setTimeout(() => {
+  cv.width = 400; cv.height = 400;
+  ctx.fillStyle = '#111'; ctx.fillRect(0, 0, 400, 400);
+  ctx.fillStyle = '#666';
+  ctx.font = '13px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔌 Kết nối game để bắt đầu', 200, 200);
+}, 100);
+
+/* Handle resize */
+window.addEventListener('resize', () => { render(); });
+window.addEventListener('orientationchange', () => {
+  setTimeout(render, 200);
+});
+
+console.log('%c🎯 Weapon Tuner v2.0 — Game-connected', 'color:#3fb950;font-weight:bold;font-size:14px');
 </script>
 </body>
-</html>
+    </html>
+

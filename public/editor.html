@@ -1,134 +1,3738 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0f16">
-<title>DH Studio · Image Editor</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DH Studio · Sprite Editor</title>
 <style>
-:root{--bg:#0b0f16;--panel:#111722;--panel2:#171e2b;--line:#293449;--txt:#e8edf5;--muted:#8c98ab;--a:#5ee27a;--blue:#61a8ff;--red:#ff6472}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font:13px system-ui,-apple-system,Segoe UI,sans-serif}
-button,input,select{font:inherit;color:inherit}button{border:1px solid var(--line);background:var(--panel2);border-radius:8px;height:34px;padding:0 10px;cursor:pointer}button:hover{border-color:#52627d;background:#202a3a}button.on{background:#204b31;border-color:var(--a);color:#fff}button.danger{color:#ff9aa3}.icon{width:34px;padding:0}.primary{background:#1e6b38;border-color:#42bd63}.row{display:flex;gap:6px;align-items:center}.grow{flex:1}
-.app{height:100%;display:grid;grid-template-rows:52px 1fr 28px}
-.top{display:flex;align-items:center;gap:7px;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--panel);overflow:auto}
-.brand{font-weight:800;letter-spacing:.5px;white-space:nowrap;margin-right:5px}.brand b{color:var(--a)}
-.main{min-height:0;display:grid;grid-template-columns:220px 1fr 250px}
-.left,.right{min-width:0;background:var(--panel);overflow:auto}.left{border-right:1px solid var(--line)}.right{border-left:1px solid var(--line)}
-.sec{padding:10px;border-bottom:1px solid var(--line)}.title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:800;margin-bottom:8px}
-.stage{min-width:0;min-height:0;position:relative;overflow:hidden;background:#090c12}
-.canvasWrap{position:absolute;inset:0;overflow:auto;display:flex;align-items:center;justify-content:center;padding:40px;background-image:linear-gradient(45deg,#0e131b 25%,transparent 25%),linear-gradient(-45deg,#0e131b 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#0e131b 75%),linear-gradient(-45deg,transparent 75%,#0e131b 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}
-.board{position:relative;flex:none;box-shadow:0 0 0 1px #536078,0 12px 60px #000;image-rendering:pixelated}
-canvas{image-rendering:pixelated}
-#view,#overlay{position:absolute;inset:0;display:block;touch-action:none}
-.tools{position:absolute;left:10px;top:10px;display:flex;gap:5px;flex-wrap:wrap;background:#111722e8;padding:6px;border:1px solid var(--line);border-radius:10px;backdrop-filter:blur(8px);z-index:3}
-.zoom{position:absolute;right:10px;bottom:10px;display:flex;gap:5px;background:#111722e8;padding:5px;border:1px solid var(--line);border-radius:10px;z-index:3}
-input[type=number],input[type=text],select{height:32px;background:#0b1018;border:1px solid var(--line);border-radius:7px;padding:0 8px;min-width:0}
-input[type=range]{width:100%}
-.field{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:center;margin:7px 0}.field label{color:var(--muted);font-size:11px}
-.help{font-size:11px;line-height:1.6;color:var(--muted)}.kbd{padding:2px 5px;border:1px solid var(--line);border-radius:4px;background:#0b1018;color:var(--txt)}
-.status{display:flex;align-items:center;gap:14px;padding:0 10px;border-top:1px solid var(--line);background:#0d131d;color:var(--muted);font-size:10px}.status b{color:var(--txt)}
-input[type=file]{display:none}
-.list{display:grid;gap:4px}.item{padding:7px 8px;border:1px solid transparent;border-radius:7px;cursor:pointer;color:var(--muted);font-size:11px}.item:hover{background:var(--panel2)}.item.on{background:#193522;border-color:#2d7545;color:#fff}
-.small{height:28px;font-size:11px;padding:0 8px}
-.swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}.sw{height:25px;border:1px solid #44506a;border-radius:5px;cursor:pointer}
-@media(max-width:900px){
- .main{grid-template-columns:1fr}.left,.right{display:none}.top{gap:5px}.brand{font-size:12px}.top button{height:31px}.tools{left:6px;right:6px}.tools button{height:30px}.canvasWrap{padding:55px 12px 50px}
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root{
+  /* Layout */
+  --header-h: 52px;
+  --status-h: 28px;
+  --lib-w: 260px;
+  --inspector-w: 340px;
+  --stage-bar-h: 44px;
+
+  /* Colors — GitHub Dark inspired */
+  --bg-base: #0d1117;
+  --bg-panel: #161b22;
+  --bg-elevated: #1c2128;
+  --bg-hover: #21262d;
+  --bg-active: #262c36;
+  --bg-input: #010409;
+
+  --border: #30363d;
+  --border-muted: #21262d;
+
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+
+  --accent: #3fb950;
+  --accent-bright: #56d364;
+  --accent-dim: #238636;
+  --accent-glow: rgba(63,185,80,.2);
+
+  --info: #58a6ff;
+  --warning: #d29922;
+  --danger: #f85149;
+  --danger-dim: #da3633;
+
+  --weapon: #ff8a65;
+  --weapon-dim: #5a2a20;
+  --skill: #a371f7;
+  --skill-dim: #2a1a4a;
+
+  --handle: #58a6ff;
+  --handle-active: #56d364;
+
+  /* Typography */
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+  --font-mono: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.5);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.5);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.7);
+
+  /* Radius */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
 }
-@media(max-width:900px) and (orientation:landscape){
- .app{grid-template-rows:44px 1fr 24px}.main{display:block}.stage{height:calc(100vh - 68px)}.top{padding:5px 7px}.tools{max-width:72vw}.tools .label{display:none}.zoom{bottom:6px;right:6px}
+
+/* ============================================================
+   RESET
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  background:var(--bg-base);color:var(--text-primary);
+  font-family:var(--font-ui);font-size:13px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  user-select:none;
+}
+button{font-family:inherit;cursor:pointer;color:inherit;border:none;background:none}
+input,select{font-family:inherit;color:inherit;outline:none}
+input[type=file]{display:none}
+
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;border:2px solid var(--bg-base)}
+::-webkit-scrollbar-thumb:hover{background:var(--text-tertiary)}
+
+/* ============================================================
+   APP LAYOUT
+   ============================================================ */
+.app{display:flex;flex-direction:column;height:100%}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header{
+  height:var(--header-h);
+  background:var(--bg-panel);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 16px;gap:12px;
+  flex-shrink:0;
+  z-index:100;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  padding-right:16px;border-right:1px solid var(--border-muted);
+  margin-right:4px;
+}
+.brand-icon{
+  width:28px;height:28px;border-radius:var(--r-md);
+  background:linear-gradient(135deg,var(--accent),var(--accent-dim));
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;
+  box-shadow:0 0 12px var(--accent-glow);
+}
+.brand-name{
+  font-family:var(--font-mono);font-size:13px;font-weight:700;
+  color:var(--text-primary);letter-spacing:.5px;
+}
+.brand-ver{
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--text-tertiary);font-weight:400;
+  padding:1px 6px;background:var(--bg-elevated);border-radius:10px;
+}
+
+.header-tools{display:flex;align-items:center;gap:6px;flex:1}
+.header-right{display:flex;align-items:center;gap:6px}
+
+/* Buttons */
+.btn{
+  height:32px;padding:0 12px;
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  font-size:12px;font-weight:500;
+  color:var(--text-primary);
+  display:inline-flex;align-items:center;gap:6px;
+  transition:all .12s ease;
+  white-space:nowrap;
+  box-shadow:var(--shadow-sm);
+}
+.btn:hover:not(:disabled){
+  background:var(--bg-hover);
+  border-color:var(--text-tertiary);
+}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.primary{
+  background:var(--accent-dim);
+  border-color:var(--accent);
+  color:#fff;
+}
+.btn.primary:hover:not(:disabled){
+  background:var(--accent);
+  border-color:var(--accent-bright);
+}
+.btn.danger{
+  background:var(--danger-dim);
+  border-color:var(--danger);
+  color:#fff;
+}
+.btn.danger:hover:not(:disabled){background:var(--danger)}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover:not(:disabled){background:var(--bg-hover)}
+.btn.icon{width:32px;padding:0;justify-content:center}
+.btn.sm{height:26px;font-size:11px;padding:0 9px}
+.btn.xs{height:22px;font-size:10px;padding:0 8px;border-radius:var(--r-sm)}
+.btn-group{display:flex}
+.btn-group .btn{border-radius:0;border-right-width:0}
+.btn-group .btn:first-child{border-radius:var(--r-md) 0 0 var(--r-md)}
+.btn-group .btn:last-child{border-radius:0 var(--r-md) var(--r-md) 0;border-right-width:1px}
+
+/* Model preset dropdown */
+.model-preset{
+  height:32px;padding:0 28px 0 10px;
+  background:var(--bg-input);color:var(--accent);
+  border:1px solid var(--border);border-radius:var(--r-md) 0 0 var(--r-md);
+  border-right:none;
+  font-family:var(--font-mono);font-size:11px;font-weight:600;
+  cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%238b949e' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;background-size:10px;
+  transition:all .12s;
+}
+.model-preset:hover{border-color:var(--text-tertiary)}
+.model-preset:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+
+/* ============================================================
+   MAIN
+   ============================================================ */
+.main{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* ============================================================
+   LIBRARY (Left sidebar)
+   ============================================================ */
+.library{
+  width:var(--lib-w);background:var(--bg-panel);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;
+}
+.panel-h{
+  height:40px;padding:0 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:600;
+  color:var(--text-secondary);
+  text-transform:uppercase;letter-spacing:.8px;
+  flex-shrink:0;
+}
+.panel-h .icon{font-size:14px;filter:grayscale(.3)}
+.panel-h .count{
+  margin-left:auto;
+  padding:2px 8px;border-radius:10px;
+  background:var(--bg-elevated);color:var(--text-primary);
+  font-family:var(--font-mono);font-size:10px;font-weight:600;
+}
+.library-body{flex:1;overflow-y:auto;padding:8px}
+
+.model-group{margin-bottom:6px}
+.model-header{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-radius:var(--r-md);
+  cursor:pointer;transition:background .12s;
+  font-size:12px;font-weight:600;
+  color:var(--text-primary);
+  background:var(--bg-elevated);
+  border-left:3px solid transparent;
+}
+.model-header:hover{background:var(--bg-hover)}
+.model-header[data-model="player"]{border-left-color:var(--accent)}
+.model-header[data-model="weapon"]{border-left-color:var(--weapon)}
+.model-header[data-model="skill"]{border-left-color:var(--skill)}
+.model-header[data-model="enemy"]{border-left-color:var(--danger)}
+.model-header[data-model="boss"]{border-left-color:var(--warning)}
+.model-header .arrow{
+  font-size:9px;color:var(--text-tertiary);
+  transition:transform .2s;width:10px;
+}
+.model-header.collapsed .arrow{transform:rotate(-90deg)}
+.model-header .count{
+  margin-left:auto;
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--text-tertiary);font-weight:400;
+}
+.model-body{padding-left:8px;margin-top:4px;overflow:hidden}
+.model-body.hidden{display:none}
+
+.anim-item{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 10px;margin-top:2px;
+  border-radius:var(--r-sm);
+  cursor:pointer;transition:all .12s;
+  border-left:2px solid transparent;
+  font-size:12px;
+}
+.anim-item:hover{background:var(--bg-hover)}
+.anim-item.active{
+  background:var(--bg-active);
+  border-left-color:var(--accent);
+}
+.anim-item .dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--text-tertiary);flex-shrink:0;
+}
+.anim-item.active .dot{
+  background:var(--accent);
+  box-shadow:0 0 8px var(--accent);
+}
+.anim-item .name{
+  flex:1;font-family:var(--font-mono);
+  font-size:11px;font-weight:500;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.anim-item.active .name{color:#fff;font-weight:600}
+.anim-item .meta{
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--text-tertiary);
+}
+.anim-item.dup-warn::after{
+  content:'⚠';color:var(--warning);font-size:12px;margin-left:4px;
+}
+
+.lib-empty{
+  padding:40px 20px;text-align:center;
+  color:var(--text-tertiary);
+  font-size:12px;line-height:1.8;
+}
+.lib-empty kbd{
+  display:inline-block;padding:2px 6px;margin:0 2px;
+  background:var(--bg-elevated);border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--accent);
+}
+
+/* ============================================================
+   STAGE (Center)
+   ============================================================ */
+.stage{
+  flex:1;display:flex;flex-direction:column;
+  overflow:hidden;background:var(--bg-base);
+  position:relative;
+}
+.stage-bar{
+  height:var(--stage-bar-h);
+  background:var(--bg-panel);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 12px;gap:4px;
+  flex-shrink:0;overflow-x:auto;
+}
+.stage-bar::-webkit-scrollbar{height:2px}
+.stage-bar .divider{
+  width:1px;height:22px;background:var(--border);
+  margin:0 8px;flex-shrink:0;
+}
+.stage-bar .zoom-display{
+  margin-left:auto;padding:0 12px;
+  font-family:var(--font-mono);font-size:12px;font-weight:600;
+  color:var(--accent);
+}
+
+/* Tool buttons */
+.tool-btn{
+  height:32px;min-width:36px;padding:0 10px;
+  background:transparent;
+  border:1px solid transparent;
+  border-radius:var(--r-md);
+  color:var(--text-secondary);
+  font-size:12px;font-weight:500;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .12s;
+}
+.tool-btn:hover{background:var(--bg-hover);color:var(--text-primary)}
+.tool-btn.active{
+  background:var(--accent-dim);color:#fff;
+  border-color:var(--accent);
+  box-shadow:0 0 12px var(--accent-glow);
+}
+.tool-btn .icon{font-size:14px}
+
+/* Checkbox pills */
+.toggle-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:var(--r-md);
+  font-size:11px;color:var(--text-secondary);
+  cursor:pointer;transition:all .12s;
+  user-select:none;
+}
+.toggle-pill:hover{background:var(--bg-hover);color:var(--text-primary)}
+.toggle-pill input{display:none}
+.toggle-pill .box{
+  width:14px;height:14px;
+  border:1.5px solid var(--border);
+  border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.toggle-pill input:checked + .box{
+  background:var(--accent);border-color:var(--accent);
+}
+.toggle-pill input:checked + .box::after{
+  content:'✓';color:#fff;font-size:10px;font-weight:bold;line-height:1;
+}
+
+/* Canvas area */
+.stage-canvas{
+  flex:1;position:relative;overflow:auto;
+  background-color:var(--bg-base);
+  background-image:
+    linear-gradient(45deg, #0f141a 25%, transparent 25%),
+    linear-gradient(-45deg, #0f141a 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #0f141a 75%),
+    linear-gradient(-45deg, transparent 75%, #0f141a 75%);
+  background-size:20px 20px;
+  background-position:0 0, 0 10px, 10px -10px, -10px 0;
+}
+.canvas-holder{
+  position:relative;display:inline-block;
+  margin:40px;
+}
+#mainCanvas,#overlayCanvas{
+  display:block;image-rendering:pixelated;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 0 0 4px var(--bg-base),
+    0 0 40px rgba(0,0,0,.8);
+}
+#overlayCanvas{
+  position:absolute;top:0;left:0;
+  pointer-events:auto;
+}
+
+/* Empty state */
+.empty-state{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:16px;pointer-events:none;text-align:center;
+  padding:40px;
+}
+.empty-state .icon{
+  font-size:64px;opacity:.25;
+  filter:grayscale(.5);
+}
+.empty-state .title{
+  font-family:var(--font-mono);
+  font-size:16px;font-weight:700;
+  color:var(--text-primary);letter-spacing:2px;
+}
+.empty-state .hint{
+  font-size:12px;color:var(--text-secondary);
+  max-width:440px;line-height:1.9;
+}
+.empty-state kbd{
+  display:inline-block;padding:3px 8px;margin:0 3px;
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--accent);
+}
+
+/* Floating controls */
+.float-panel{
+  position:absolute;
+  background:rgba(22,27,34,.95);
+  backdrop-filter:blur(12px);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:6px;
+  box-shadow:var(--shadow-lg);
+  z-index:10;
+  display:flex;gap:4px;
+}
+.zoom-panel{bottom:20px;right:20px;flex-direction:column}
+.zoom-panel button{
+  width:34px;height:34px;
+  background:transparent;
+  color:var(--text-secondary);
+  border-radius:var(--r-sm);
+  font-size:16px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.zoom-panel button:hover{
+  background:var(--bg-hover);color:var(--text-primary);
+}
+.zoom-panel .val{
+  width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:9px;
+  color:var(--accent);font-weight:700;
+}
+
+.hint-panel{
+  bottom:20px;left:20px;
+  padding:10px 14px;
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--text-tertiary);line-height:1.9;
+  opacity:.6;transition:opacity .2s;
+  flex-direction:column;gap:2px;
+}
+.hint-panel:hover{opacity:1}
+.hint-panel b{color:var(--accent);font-weight:700}
+.hint-panel span{display:block}
+
+/* ============================================================
+   INSPECTOR (Right)
+   ============================================================ */
+.inspector{
+  width:var(--inspector-w);
+  background:var(--bg-panel);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  flex-shrink:0;
+}
+
+/* Tabs */
+.tabs{
+  display:flex;background:var(--bg-panel);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;padding:0 4px;
+}
+.tab{
+  flex:1;padding:12px 4px;
+  font-family:var(--font-mono);
+  font-size:10px;font-weight:600;
+  color:var(--text-secondary);
+  letter-spacing:.5px;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all .15s;
+  text-align:center;
+  position:relative;
+}
+.tab:hover{color:var(--text-primary);background:var(--bg-hover)}
+.tab.active{
+  color:var(--accent);border-bottom-color:var(--accent);
+}
+.tab-panels{flex:1;overflow-y:auto}
+
+.panel{padding:16px;display:none}
+.panel.active{display:block;animation:fadeIn .18s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
+
+/* Sections */
+.section{margin-bottom:20px}
+.section-head{
+  display:flex;align-items:center;gap:6px;
+  margin-bottom:10px;padding-bottom:8px;
+  border-bottom:1px solid var(--border-muted);
+  font-family:var(--font-mono);
+  font-size:10px;font-weight:700;
+  color:var(--text-secondary);
+  text-transform:uppercase;letter-spacing:1px;
+}
+.section-head .badge{
+  margin-left:auto;
+  padding:2px 8px;border-radius:10px;
+  background:var(--bg-elevated);
+  color:var(--text-primary);
+  font-size:9px;font-weight:600;
+  text-transform:none;letter-spacing:0;
+}
+.section-head .badge.weapon{background:var(--weapon-dim);color:var(--weapon)}
+.section-head .badge.skill{background:var(--skill-dim);color:var(--skill)}
+
+/* Fields */
+.field{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:8px;
+}
+.field label{
+  flex:0 0 76px;
+  font-size:11px;color:var(--text-secondary);
+  font-weight:500;
+}
+.field input[type=number],
+.field input[type=text],
+.field select{
+  flex:1;height:30px;padding:0 10px;
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--accent);
+  transition:all .12s;
+}
+.field input:focus,
+.field select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+.field input[type=number]{text-align:center}
+.field input[type=range]{
+  flex:1;height:20px;
+  -webkit-appearance:none;
+  background:transparent;
+}
+.field input[type=range]::-webkit-slider-runnable-track{
+  height:4px;background:var(--bg-elevated);border-radius:2px;
+}
+.field input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:14px;height:14px;margin-top:-5px;
+  background:var(--accent);border-radius:50%;
+  cursor:pointer;box-shadow:0 0 8px var(--accent-glow);
+}
+.field .val{
+  flex:0 0 42px;text-align:right;
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--accent);font-weight:600;
+}
+.field .mini-btn{
+  height:26px;padding:0 10px;
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  font-size:10px;font-weight:600;
+  color:var(--text-primary);
+  transition:all .12s;
+}
+.field .mini-btn:hover{background:var(--bg-hover);border-color:var(--text-tertiary)}
+.field .mini-btn.warn{background:var(--weapon-dim);border-color:var(--weapon);color:var(--weapon)}
+.field .mini-btn.good{background:var(--accent-dim);border-color:var(--accent);color:#fff}
+.field .mini-btn.good:hover{background:var(--accent)}
+.field .mini-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* Lines list */
+.lines-box{
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:4px;
+  max-height:150px;overflow-y:auto;
+  margin-top:6px;
+}
+.line-row{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 6px;border-radius:var(--r-sm);
+  font-family:var(--font-mono);font-size:11px;
+  transition:background .12s;
+}
+.line-row:hover{background:var(--bg-hover)}
+.line-row.cur{
+  background:var(--bg-active);
+  box-shadow:inset 2px 0 0 var(--accent);
+}
+.line-row .handle{
+  width:12px;height:12px;
+  color:var(--handle);font-size:9px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:grab;
+}
+.line-row .idx{
+  color:var(--text-tertiary);width:26px;
+  font-size:10px;
+}
+.line-row input{
+  width:64px;height:22px;
+  background:var(--bg-base);
+  border:1px solid var(--border-muted);
+  border-radius:3px;
+  padding:0 6px;
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--accent);text-align:center;
+}
+.line-row input:focus{border-color:var(--accent)}
+.line-row input:disabled{opacity:.4}
+.line-row .del{
+  margin-left:auto;width:22px;height:22px;
+  color:var(--danger);font-size:12px;
+  border-radius:3px;opacity:.5;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.line-row .del:hover:not(:disabled){opacity:1;background:rgba(248,81,73,.15)}
+.line-row .del:disabled{opacity:.15;cursor:not-allowed}
+
+/* Anchor grid */
+.anchor-grid{
+  display:grid;
+  grid-template-columns:repeat(3,40px);
+  grid-template-rows:repeat(3,40px);
+  gap:4px;justify-content:center;
+  margin:10px 0;
+}
+.anchor-btn{
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  color:var(--text-secondary);
+  font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.anchor-btn:hover{background:var(--bg-hover);color:var(--text-primary)}
+.anchor-btn.on{
+  background:var(--accent-dim);
+  border-color:var(--accent);
+  color:#fff;
+  box-shadow:0 0 12px var(--accent-glow);
+}
+
+/* Swatch */
+.swatch{
+  width:36px;height:36px;
+  border:2px solid var(--border);
+  border-radius:var(--r-sm);
+  position:relative;overflow:hidden;
+  flex-shrink:0;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.3);
+}
+.swatch-fill{position:absolute;inset:0}
+
+/* Preview canvas */
+.preview-canvas{
+  width:100%;height:180px;
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  image-rendering:pixelated;
+  display:block;
+}
+
+/* Info box */
+.info-box{
+  background:var(--bg-input);
+  border-left:3px solid var(--accent);
+  border-radius:var(--r-sm);
+  padding:10px 12px;
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--text-secondary);
+  line-height:1.8;
+}
+.info-box b{color:var(--accent);font-weight:600}
+.info-box.weapon{border-left-color:var(--weapon)}
+.info-box.skill{border-left-color:var(--skill)}
+.info-box.warn{
+  border-left-color:var(--warning);
+  color:var(--warning);
+  background:rgba(210,153,34,.08);
+}
+.info-box kbd{
+  padding:1px 5px;
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:3px;
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--accent);
+}
+
+/* ============================================================
+   STATUS BAR
+   ============================================================ */
+.status-bar{
+  height:var(--status-h);
+  background:var(--bg-panel);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 16px;gap:20px;
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--text-secondary);
+  flex-shrink:0;
+}
+.status-bar .item{display:flex;gap:5px;align-items:center}
+.status-bar .item .lbl{color:var(--text-tertiary)}
+.status-bar .val{color:var(--text-primary);font-weight:600}
+.status-bar .val.ok{color:var(--accent)}
+.status-bar .val.weapon{color:var(--weapon)}
+.status-bar .val.skill{color:var(--skill)}
+.status-bar .val.err{color:var(--danger)}
+.status-bar .msg{margin-left:auto;color:var(--text-tertiary)}
+.status-bar .msg.err{color:var(--danger)}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast{
+  position:fixed;
+  bottom:60px;left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-left:3px solid var(--accent);
+  border-radius:var(--r-md);
+  padding:12px 20px;
+  font-size:12px;font-weight:500;
+  color:var(--text-primary);
+  box-shadow:var(--shadow-lg);
+  opacity:0;pointer-events:none;
+  transition:all .25s ease;
+  z-index:1000;
+  max-width:80vw;
+  text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-left-color:var(--danger)}
+#toast.warn{border-left-color:var(--warning)}
+#toast.ok{border-left-color:var(--accent)}
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+.modal-bg{
+  position:fixed;inset:0;
+  background:rgba(1,4,9,.8);
+  backdrop-filter:blur(8px);
+  z-index:500;
+  display:none;align-items:center;justify-content:center;
+  padding:24px;
+}
+.modal-bg.show{display:flex;animation:fadeIn .15s}
+.modal{
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:24px 28px;
+  max-width:560px;width:100%;
+  box-shadow:var(--shadow-lg);
+  max-height:90vh;overflow-y:auto;
+}
+.modal h3{
+  font-family:var(--font-mono);
+  font-size:14px;font-weight:700;
+  color:var(--text-primary);
+  margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+  letter-spacing:.5px;
+}
+.modal p{
+  font-size:12px;color:var(--text-secondary);
+  line-height:1.8;margin-bottom:14px;
+}
+.modal input[type=text]{
+  width:100%;height:38px;
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:0 14px;
+  font-family:var(--font-mono);font-size:12px;
+  color:var(--text-primary);
+  margin-bottom:14px;
+  transition:all .12s;
+}
+.modal input[type=text]:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+.modal .actions{
+  display:flex;gap:8px;justify-content:flex-end;
+  margin-top:20px;padding-top:16px;
+  border-top:1px solid var(--border-muted);
+}
+
+/* Load tabs */
+.load-tabs{
+  display:flex;gap:4px;margin-bottom:18px;
+  padding:4px;background:var(--bg-elevated);
+  border-radius:var(--r-md);
+}
+.load-tab{
+  flex:1;height:34px;
+  background:transparent;border:none;
+  border-radius:var(--r-sm);
+  font-family:var(--font-mono);
+  font-size:11px;font-weight:600;
+  color:var(--text-secondary);
+  transition:all .15s;
+  letter-spacing:.3px;
+}
+.load-tab:hover{color:var(--text-primary);background:var(--bg-hover)}
+.load-tab.active{
+  background:var(--bg-panel);
+  color:var(--accent);
+  box-shadow:var(--shadow-sm);
+}
+
+/* Drop zone */
+.drop-zone{
+  border:2px dashed var(--border);
+  border-radius:var(--r-lg);
+  padding:40px 24px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+  background:var(--bg-input);
+}
+.drop-zone:hover{
+  border-color:var(--accent);
+  background:rgba(63,185,80,.04);
+}
+.drop-zone.dragover{
+  border-color:var(--accent);
+  background:rgba(63,185,80,.1);
+  transform:scale(1.01);
+}
+.drop-zone .icon{font-size:44px;opacity:.4;margin-bottom:12px}
+.drop-zone .title{
+  font-family:var(--font-mono);font-size:12px;
+  color:var(--accent);font-weight:600;
+  margin-bottom:6px;
+}
+.drop-zone .subtitle{
+  font-size:10px;color:var(--text-tertiary);
+}
+
+/* File info */
+.file-info{
+  margin-top:14px;padding:12px;
+  background:var(--bg-input);
+  border-left:3px solid var(--accent);
+  border-radius:var(--r-sm);
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--text-secondary);line-height:1.8;
+}
+.file-info b{color:var(--accent)}
+
+/* Export list */
+.export-list{
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:12px;
+  max-height:280px;overflow-y:auto;
+  font-family:var(--font-mono);font-size:11px;
+  line-height:1.8;
+}
+.export-list .model-group{
+  color:var(--accent);font-weight:700;
+  margin-top:10px;padding-bottom:4px;
+  border-bottom:1px solid var(--border-muted);
+}
+.export-list .model-group:first-child{margin-top:0}
+.export-list .anim-item{
+  padding-left:16px;color:var(--text-secondary);
+  display:flex;gap:8px;align-items:center;
+  margin:2px 0;
+}
+.export-list .anim-item .fn{
+  color:var(--info);margin-left:auto;
+  font-size:10px;
+}
+
+/* ============================================================
+   LOADING SPINNER
+   ============================================================ */
+.spinner{
+  display:inline-block;
+  width:14px;height:14px;
+  border:2px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:1200px){
+  :root{--inspector-w:300px;--lib-w:220px}
+}
+@media (max-width:900px){
+  .library{display:none}
+  :root{--inspector-w:280px}
 }
 </style>
 </head>
 <body>
 <div class="app">
-<header class="top">
- <div class="brand">🐉 DH <b>IMAGE</b></div>
- <label><button class="small" onclick="pickImage()">📂 Mở ảnh</button><input id="file" type="file" accept="image/png,image/jpeg,image/webp"></label>
- <button class="small" onclick="newImage()">＋ Mới</button>
- <button class="small" onclick="undo()">↶</button><button class="small" onclick="redo()">↷</button>
- <div class="grow"></div>
- <button class="small primary" onclick="savePNG()">💾 PNG</button>
- <button class="small" onclick="saveJSON()">JSON</button>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="header">
+  <div class="brand">
+    <div class="brand-icon">🐉</div>
+    <div>
+      <div class="brand-name">DH STUDIO</div>
+      <div style="font-size:9px;color:var(--text-tertiary);font-family:var(--font-mono)">
+        Sprite Editor v5.0
+      </div>
+    </div>
+  </div>
+
+  <div class="header-tools">
+    <button class="btn icon" id="undoBtn" title="Undo (Ctrl+Z)" disabled>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+    </button>
+    <button class="btn icon" id="redoBtn" title="Redo (Ctrl+Y)" disabled>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/></svg>
+    </button>
+
+    <div class="divider" style="width:1px;height:24px;background:var(--border);margin:0 6px"></div>
+
+    <select class="model-preset" id="uploadModelPreset" title="Model preset khi upload">
+      <option value="auto">🤖 Auto</option>
+      <option value="player">🎮 Player</option>
+      <option value="weapon">⚔️ Weapon</option>
+      <option value="skill">✨ Skill</option>
+      <option value="effect">💥 Effect</option>
+      <option value="enemy">👹 Enemy</option>
+      <option value="npc">🧑 NPC</option>
+      <option value="boss">🐉 Boss</option>
+      <option value="item">💎 Item</option>
+    </select>
+    <button class="btn" id="uploadBtn" style="border-radius:0 var(--r-md) var(--r-md) 0;border-left:none">
+      📁 Upload
+    </button>
+
+    <button class="btn" id="loadProjectBtn" title="Load project từ file hoặc URL">
+      📂 Load
+    </button>
+  </div>
+
+  <div class="header-right">
+    <button class="btn primary" id="exportAllBtn">
+      📦 Export All
+    </button>
+    <button class="btn" id="exportBtn" disabled>
+      💾 Save
+    </button>
+    <button class="btn icon ghost" id="helpBtn" title="Trợ giúp (?)">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM1.5 8a6.5 6.5 0 1 1 13 0 6.5 6.5 0 0 1-13 0z"/><path d="M5.5 5.5a2.5 2.5 0 1 1 3.86 2.14c-.67.42-.86.63-.86 1.11v.5a.75.75 0 0 1-1.5 0v-.5c0-1.08.53-1.66 1.24-2.1a1 1 0 1 0-1.24-1.6.75.75 0 0 1-1.5-.05zM8 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+    </button>
+  </div>
 </header>
+
+<!-- ============================================================
+     MAIN
+     ============================================================ -->
 <main class="main">
-<aside class="left">
- <div class="sec"><div class="title">Tools</div><div class="list">
-  <div class="item on" data-tool="select">🖐 Chọn / kéo</div>
-  <div class="item" data-tool="brush">✏️ Vẽ</div>
-  <div class="item" data-tool="erase">🧹 Tẩy</div>
-  <div class="item" data-tool="crop">✂️ Cắt ảnh</div>
-  <div class="item" data-tool="fill">🪣 Đổ màu</div>
- </div></div>
- <div class="sec"><div class="title">Brush</div>
-  <div class="field"><label>Size</label><input id="size" type="range" min="1" max="80" value="4"></div>
-  <div class="field"><label>Opacity</label><input id="opacity" type="range" min="1" max="100" value="100"></div>
-  <div class="title">Màu</div><div class="swatches" id="swatches"></div>
-  <div class="field"><label>Màu</label><input id="color" type="color" value="#ffffff"></div>
- </div>
-</aside>
-<section class="stage">
- <div class="tools">
-  <button class="small on" id="tSelect">🖐 <span class="label">Chọn</span></button>
-  <button class="small" id="tBrush">✏️ <span class="label">Vẽ</span></button>
-  <button class="small" id="tErase">🧹 <span class="label">Tẩy</span></button>
-  <button class="small" id="tCrop">✂️ <span class="label">Cắt</span></button>
-  <button class="small" id="tFill">🪣 <span class="label">Đổ</span></button>
- </div>
- <div class="canvasWrap" id="wrap"><div class="board" id="board"><canvas id="view"></canvas><canvas id="overlay"></canvas></div></div>
- <div class="zoom"><button class="icon" onclick="zoomBy(.8)">−</button><button id="zoomVal" class="small">100%</button><button class="icon" onclick="zoomBy(1.25)">＋</button><button class="small" onclick="fit()">Fit</button></div>
-</section>
-<aside class="right">
- <div class="sec"><div class="title">Canvas</div>
-  <div class="field"><label>Width</label><input id="cw" type="number" min="1"></div>
-  <div class="field"><label>Height</label><input id="ch" type="number" min="1"></div>
-  <div class="row"><button class="small" onclick="resizeCanvas()">Resize</button><button class="small" onclick="trim()">Trim</button></div>
- </div>
- <div class="sec"><div class="title">Crop</div><div class="help">Chọn <b>Cắt</b>, kéo vùng cần giữ rồi bấm Apply. Hoạt động bằng chuột và cảm ứng.</div><div class="row" style="margin-top:8px"><button class="small primary" onclick="applyCrop()">✓ Apply</button><button class="small" onclick="cancelCrop()">Hủy</button></div></div>
- <div class="sec"><div class="title">Transform</div><div class="row"><button class="small" onclick="flipX()">↔ Flip X</button><button class="small" onclick="flipY()">↕ Flip Y</button><button class="small" onclick="rotate()">⟳ 90°</button></div></div>
- <div class="sec"><div class="title">PNG / Game</div><div class="help">PNG xuất ra nền trong suốt, giữ pixel-art. JSON lưu thông tin kích thước và công cụ.</div></div>
-</aside>
+
+  <!-- Library -->
+  <aside class="library">
+    <div class="panel-h">
+      <span class="icon">📚</span>
+      <span>Library</span>
+      <span class="count" id="libCount">0</span>
+    </div>
+    <div class="library-body" id="libraryBody">
+      <div class="lib-empty">
+        <div style="font-size:36px;opacity:.3;margin-bottom:12px">📁</div>
+        Chưa có sprite<br><br>
+        <kbd>📂 Load</kbd> hoặc <kbd>📁 Upload</kbd>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Stage -->
+  <section class="stage">
+    <div class="stage-bar">
+      <button class="tool-btn active" id="toolSelect" title="Select / Kéo line">
+        <span class="icon">🖱</span> Select
+      </button>
+      <button class="tool-btn" id="toolAddV" title="Thêm line dọc">
+        <span class="icon">┃</span> +V
+      </button>
+      <button class="tool-btn" id="toolAddH" title="Thêm line ngang">
+        <span class="icon">━</span> +H
+      </button>
+      <button class="tool-btn" id="toolPick" title="Pick màu">
+        <span class="icon">💧</span> Pick
+      </button>
+      <button class="tool-btn" id="toolPan" title="Pan canvas">
+        <span class="icon">✋</span> Pan
+      </button>
+
+      <div class="divider"></div>
+
+      <button class="tool-btn" id="autoDetect" title="Auto detect frames">
+        <span class="icon">🤖</span> Auto
+      </button>
+      <button class="tool-btn" id="computeAnchors" title="Recompute anchors">
+        <span class="icon">🎯</span> Anchors
+      </button>
+      <button class="tool-btn" id="mirrorBtn" title="Lật ngang">
+        <span class="icon">↔</span> Mirror
+      </button>
+
+      <div class="divider"></div>
+
+      <label class="toggle-pill">
+        <input type="checkbox" id="snapChk" checked>
+        <span class="box"></span>
+        Snap
+      </label>
+      <label class="toggle-pill">
+        <input type="checkbox" id="gridChk">
+        <span class="box"></span>
+        Grid
+      </label>
+
+      <span class="zoom-display" id="zoomLabel">100%</span>
+    </div>
+
+    <div class="stage-canvas" id="stageCanvas">
+      <div class="empty-state" id="emptyState">
+        <div class="icon">🎨</div>
+        <div class="title">SPRITE EDITOR</div>
+        <div class="hint">
+          <b>📂 Load</b> để load sprites.json có sẵn<br>
+          hoặc <b>📁 Upload</b> PNG để bắt đầu<br><br>
+          <kbd>Click</kbd> chọn line · <kbd>Kéo</kbd> di chuyển · <kbd>Right-click</kbd> xóa
+        </div>
+      </div>
+      <div class="canvas-holder" id="canvasHolder" style="display:none">
+        <canvas id="mainCanvas"></canvas>
+        <canvas id="overlayCanvas"></canvas>
+      </div>
+
+      <div class="float-panel zoom-panel">
+        <button id="zoomInBtn" title="Zoom in (Ctrl+=)">+</button>
+        <div class="val" id="zoomVal">100%</div>
+        <button id="zoomOutBtn" title="Zoom out (Ctrl+-)">−</button>
+        <button id="zoomFitBtn" title="Fit to view (Ctrl+0)" style="font-size:11px">⛶</button>
+      </div>
+
+      <div class="float-panel hint-panel">
+        <span><b>Space</b> + drag · pan</span>
+        <span><b>Ctrl+Z</b> · undo</span>
+        <span><b>Alt+Click</b> · pick màu</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Inspector -->
+  <aside class="inspector">
+    <div class="tabs">
+      <div class="tab active" data-tab="frame">FRAME</div>
+      <div class="tab" data-tab="anchor">ANCHOR</div>
+      <div class="tab" data-tab="bg">BG</div>
+      <div class="tab" data-tab="meta">META</div>
+      <div class="tab" data-tab="preview">PREVIEW</div>
+    </div>
+    <div class="tab-panels">
+
+      <!-- FRAME -->
+      <div class="panel active" data-panel="frame">
+        <div class="section">
+          <div class="section-head">
+            <span>📏 Frame Grid</span>
+            <span class="badge" id="gridBadge">0×0</span>
+          </div>
+          <div class="field">
+            <label>Vertical</label>
+            <button class="mini-btn" id="autoVBtn">Auto N</button>
+            <button class="mini-btn" id="addVBtn">+1</button>
+            <button class="mini-btn" id="clearVBtn">Reset</button>
+          </div>
+          <div class="lines-box" id="vList"></div>
+        </div>
+
+        <div class="section">
+          <div class="field">
+            <label>Horizontal</label>
+            <button class="mini-btn" id="autoHBtn">Auto N</button>
+            <button class="mini-btn" id="addHBtn">+1</button>
+            <button class="mini-btn" id="clearHBtn">Reset</button>
+          </div>
+          <div class="lines-box" id="hList"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <span>📐 Canvas Size</span>
+          </div>
+          <div class="field">
+            <label>Width</label>
+            <input type="number" id="canvasW" min="1" max="4096">
+            <label style="flex:0 0 auto;color:var(--text-secondary)">Height</label>
+            <input type="number" id="canvasH" min="1" max="4096">
+          </div>
+          <div class="anchor-grid" id="resizeAnchorGrid" style="grid-template-columns:repeat(3,36px);grid-template-rows:repeat(3,36px)">
+            <button class="anchor-btn" data-a="tl">↖</button>
+            <button class="anchor-btn" data-a="tc">↑</button>
+            <button class="anchor-btn" data-a="tr">↗</button>
+            <button class="anchor-btn" data-a="ml">←</button>
+            <button class="anchor-btn on" data-a="mc">●</button>
+            <button class="anchor-btn" data-a="mr">→</button>
+            <button class="anchor-btn" data-a="bl">↙</button>
+            <button class="anchor-btn" data-a="bc">↓</button>
+            <button class="anchor-btn" data-a="br">↘</button>
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini-btn good" id="resizeBtn" style="flex:1;height:30px">Apply Resize</button>
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini-btn" id="cropBtn" style="flex:1;height:30px">✂ Crop to Content</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANCHOR -->
+      <div class="panel" data-panel="anchor">
+        <div class="section">
+          <div class="section-head">
+            <span>🎯 Anchor</span>
+            <span class="badge" id="anchorBadge">0/0</span>
+          </div>
+          <div class="field">
+            <label>Mode</label>
+            <select id="anchorMode">
+              <option value="stable-x">Stable X + Foot Y ✓</option>
+              <option value="stable">Stable Both</option>
+              <option value="per-frame">Per Frame</option>
+              <option value="bottom-center">Bottom Center</option>
+              <option value="center">Center</option>
+              <option value="manual">Manual</option>
+            </select>
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini-btn" id="anchorRecompute" style="flex:1;height:30px">🔄 Recompute</button>
+            <button class="mini-btn" id="anchorClear">🗑</button>
+          </div>
+
+          <div class="field">
+            <label>Padding</label>
+            <input type="number" id="padXInput" value="12" min="0" max="64">
+            <label style="flex:0 0 auto;color:var(--text-secondary)">Gap</label>
+            <input type="number" id="gapXInput" value="6" min="0" max="64">
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini-btn good" id="alignFramesBtn" style="flex:1;height:34px;font-size:11px">
+              🎯 Expand & Align Frames
+            </button>
+          </div>
+          <div class="info-box">
+            <b>Stable X + Foot Y:</b> không trôi ngang<br>
+            <b>Expand & Align:</b> thêm padding, cắt bbox, đặt anchor cố định cho mọi frame
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <span>📋 Anchor List</span>
+          </div>
+          <div class="lines-box" id="anchorList" style="max-height:240px"></div>
+        </div>
+      </div>
+
+      <!-- BG -->
+      <div class="panel" data-panel="bg">
+        <div class="section">
+          <div class="section-head">
+            <span>🎨 Background Removal</span>
+          </div>
+          <div class="field">
+            <label>BG Color</label>
+            <div class="swatch" id="bgSwatch">
+              <div class="swatch-fill" id="bgFill"></div>
+            </div>
+            <button class="mini-btn" id="pickBtn">💧 Pick</button>
+          </div>
+          <div class="field">
+            <label>Tolerance</label>
+            <input type="range" id="bgTol" min="0" max="150" value="30">
+            <span class="val" id="bgTolVal">30</span>
+          </div>
+          <div class="field">
+            <label>Mode</label>
+            <select id="bgMode">
+              <option value="alpha">Transparent</option>
+              <option value="color">Recolor</option>
+              <option value="white">White</option>
+              <option value="black">Black</option>
+            </select>
+          </div>
+          <div class="field" id="bgColorRow" style="display:none">
+            <label>New Color</label>
+            <input type="color" id="bgNewColor" value="#ffffff"
+              style="width:50px;height:32px;background:var(--bg-input);
+              border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer">
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini-btn good" id="bgApplyAll" style="flex:1;height:30px">🌐 Apply to All</button>
+            <button class="mini-btn" id="bgApplyCell" style="flex:1;height:30px" disabled>▣ Apply to Cell</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- META -->
+      <div class="panel" data-panel="meta">
+        <div class="section">
+          <div class="section-head">
+            <span>📝 Metadata</span>
+            <span class="badge" id="modelBadge">—</span>
+          </div>
+          <div class="field">
+            <label>Model</label>
+            <select id="metaModel">
+              <option value="player">player</option>
+              <option value="weapon">weapon ⚔️</option>
+              <option value="skill">skill ✨</option>
+              <option value="enemy">enemy</option>
+              <option value="npc">npc</option>
+              <option value="boss">boss</option>
+              <option value="effect">effect</option>
+              <option value="item">item</option>
+              <option value="custom">custom...</option>
+            </select>
+          </div>
+          <div class="field" id="customModelRow" style="display:none">
+            <label>Custom</label>
+            <input type="text" id="metaModelCustom" placeholder="model_name">
+          </div>
+          <div class="field">
+            <label>Animation</label>
+            <select id="metaAnim">
+              <option value="idle">idle</option>
+              <option value="run">run</option>
+              <option value="walk">walk</option>
+              <option value="jump">jump</option>
+              <option value="attack">attack</option>
+              <option value="block">block</option>
+              <option value="hurt">hurt</option>
+              <option value="dash">dash</option>
+              <option value="cast">cast</option>
+              <option value="sit">sit</option>
+              <option value="death">death</option>
+              <option value="custom">custom...</option>
+            </select>
+          </div>
+          <div class="field" id="customAnimRow" style="display:none">
+            <label>Custom</label>
+            <input type="text" id="metaAnimCustom" placeholder="anim_name">
+          </div>
+          <div class="field">
+            <label>FPS</label>
+            <input type="number" id="metaFps" value="10" min="1" max="60">
+            <button class="mini-btn" id="autoFpsBtn" title="Auto FPS">⚡</button>
+          </div>
+          <div class="field">
+            <label>Loop</label>
+            <select id="metaLoop">
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>File Name</label>
+            <input type="text" id="metaFile" placeholder="player_idle">
+          </div>
+          <div class="field">
+            <label></label>
+            <button class="mini-btn warn" id="renameFileBtn" style="flex:1;height:30px">
+              ✏️ Rename with Model Prefix
+            </button>
+          </div>
+          <div class="info-box" id="metaHint">
+            <b>Auto-detect:</b> filename chứa <kbd>weapon</kbd>/<kbd>skill</kbd> sẽ tự chọn model.
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="panel" data-panel="preview">
+        <div class="section">
+          <div class="section-head">
+            <span>▶ Animation Preview</span>
+          </div>
+          <canvas id="previewCanvas" class="preview-canvas" width="280" height="180"></canvas>
+          <div class="field" style="margin-top:12px">
+            <label></label>
+            <button class="mini-btn good" id="previewPlayBtn" style="flex:1;height:30px">▶ Play</button>
+            <button class="mini-btn" id="previewStopBtn">⏸</button>
+          </div>
+          <div class="field">
+            <label>Frame</label>
+            <input type="range" id="previewFrameSlider" min="0" max="0" value="0">
+            <span class="val" id="previewFrameVal">0</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <span>📊 Info</span>
+          </div>
+          <div class="info-box" id="previewInfo">Chọn sprite để xem info.</div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
 </main>
-<footer class="status"><span>Tool: <b id="statusTool">Select</b></span><span>Canvas: <b id="statusSize">—</b></span><span>Zoom: <b id="statusZoom">100%</b></span><span class="grow"></span><span id="msg">Sẵn sàng</span></footer>
+
+<!-- ============================================================
+     STATUS BAR
+     ============================================================ -->
+<footer class="status-bar">
+  <div class="item">
+    <span class="lbl">Sprites</span>
+    <span class="val ok" id="statSprites">0</span>
+  </div>
+  <div class="item" id="projItem" style="display:none">
+    <span class="lbl">📂 JSON</span>
+    <span class="val" id="statProj" style="color:var(--info)">0</span>
+  </div>
+  <div class="item">
+    <span class="lbl">Current</span>
+    <span class="val" id="statCurrent">—</span>
+  </div>
+  <div class="item">
+    <span class="lbl">Size</span>
+    <span class="val" id="statSize">—</span>
+  </div>
+  <div class="item">
+    <span class="lbl">Lines</span>
+    <span class="val" id="statLines">0</span>
+  </div>
+  <div class="item">
+    <span class="lbl">Zoom</span>
+    <span class="val" id="statZoom">100%</span>
+  </div>
+  <div class="msg" id="statMsg">Ready</div>
+</footer>
 </div>
+
+<input type="file" id="fileInput" multiple accept="image/png,image/jpeg,image/webp,.json,application/json">
+<input type="file" id="jsonInput" accept=".json,application/json">
+<div id="toast"></div>
+
+<!-- ============================================================
+     MODAL: LOAD PROJECT
+     ============================================================ -->
+<div id="loadModal" class="modal-bg">
+  <div class="modal">
+    <h3>📂 Load Project</h3>
+
+    <div class="load-tabs">
+      <button class="load-tab active" data-load-tab="file">📁 Upload File</button>
+      <button class="load-tab" data-load-tab="url">🌐 From URL</button>
+    </div>
+
+    <!-- Tab File -->
+    <div id="loadTabFile">
+      <p>Chọn file <b style="color:var(--accent)">sprites.json</b> từ máy. Editor sẽ merge vào data hiện tại — <b>KHÔNG mất model cũ</b>.</p>
+      <div class="drop-zone" id="loadFileDrop">
+        <div class="icon">📄</div>
+        <div class="title">Click hoặc kéo file sprites.json vào đây</div>
+        <div class="subtitle">.json · dh-studio-project</div>
+        <input type="file" id="loadFileInput" accept=".json,application/json" style="display:none">
+      </div>
+      <div class="file-info" id="loadFileInfo" style="display:none"></div>
+      <div class="actions">
+        <button class="btn ghost" id="loadFileCancelBtn">✕ Hủy</button>
+        <button class="btn primary" id="loadFileConfirmBtn" disabled>📂 Merge File</button>
+      </div>
+    </div>
+
+    <!-- Tab URL -->
+    <div id="loadTabUrl" style="display:none">
+      <p>Nhập URL tới file <b style="color:var(--accent)">sprites.json</b>. Editor sẽ fetch và merge vào data hiện tại.</p>
+      <input type="text" id="loadUrlInput" placeholder="./sprites.json" value="./sprites.json">
+      <div class="actions">
+        <button class="btn ghost" id="loadCancelBtn">✕ Hủy</button>
+        <button class="btn primary" id="loadConfirmBtn">📂 Load URL</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: EXPORT PREVIEW
+     ============================================================ -->
+<div id="exportModal" class="modal-bg">
+  <div class="modal">
+    <h3>📦 Export Preview</h3>
+    <p>Bạn sẽ export <b id="exportCount" style="color:var(--accent)">0</b> sprites. Kiểm tra kỹ trước khi tải:</p>
+    <div class="export-list" id="exportList"></div>
+    <div class="info-box warn" id="exportWarn" style="display:none;margin-top:14px"></div>
+    <div class="actions">
+      <button class="btn ghost" id="exportCancelBtn">✕ Hủy</button>
+      <button class="btn" style="background:var(--warning);border-color:var(--warning);color:#000"
+        id="exportConfirmBtn">📦 Download All</button>
+    </div>
+  </div>
+</div>
+
 <script>
 "use strict";
-const $=id=>document.getElementById(id), view=$("view"), overlay=$("overlay"), v=view.getContext("2d"), o=overlay.getContext("2d");
-let imgCanvas=document.createElement("canvas"), c=imgCanvas.getContext("2d"), tool="select",zoom=1,down=false,start=null,last=null,crop=null,hist=[],future=[];
-const colors=["#ffffff","#000000","#ff4d5d","#ffb347","#ffe066","#5ee27a","#4da6ff","#b277ff","#ff70c8","#6ee7e7"];
-colors.forEach(x=>{let b=document.createElement("button");b.className="sw";b.style.background=x;b.onclick=()=>{$("color").value=x};$("swatches").append(b)});
-function pickImage(){$("file").click()}
-$("file").onchange=e=>{let f=e.target.files[0];if(!f)return;let im=new Image;im.onload=()=>{imgCanvas.width=im.naturalWidth;imgCanvas.height=im.naturalHeight;c.clearRect(0,0,imgCanvas.width,imgCanvas.height);c.drawImage(im,0,0);hist=[];future=[];fit();sync()};im.src=URL.createObjectURL(f)}
-function newImage(){let w=+prompt("Width","256"),h=+prompt("Height","256");if(!w||!h)return;imgCanvas.width=w;imgCanvas.height=h;c.clearRect(0,0,w,h);hist=[];future=[];fit();sync()}
-function snapshot(){hist.push(imgCanvas.toDataURL("image/png"));if(hist.length>30)hist.shift();future=[]}
-function restore(data){let im=new Image;im.onload=()=>{imgCanvas.width=im.width;imgCanvas.height=im.height;c.clearRect(0,0,im.width,im.height);c.drawImage(im,0,0);sync()};im.src=data}
-function undo(){if(!hist.length)return;future.push(imgCanvas.toDataURL("image/png"));restore(hist.pop())}
-function redo(){if(!future.length)return;hist.push(imgCanvas.toDataURL("image/png"));restore(future.pop())}
-function setTool(t){tool=t;document.querySelectorAll(".item").forEach(x=>x.classList.toggle("on",x.dataset.tool===t));["tSelect","tBrush","tErase","tCrop","tFill"].forEach(id=>$(id).classList.remove("on"));let m={select:"tSelect",brush:"tBrush",erase:"tErase",crop:"tCrop",fill:"tFill"};$(m[t]).classList.add("on");$("statusTool").textContent=t[0].toUpperCase()+t.slice(1);drawOverlay()}
-document.querySelectorAll(".item").forEach(x=>x.onclick=()=>setTool(x.dataset.tool));$("tSelect").onclick=()=>setTool("select");$("tBrush").onclick=()=>setTool("brush");$("tErase").onclick=()=>setTool("erase");$("tCrop").onclick=()=>setTool("crop");$("tFill").onclick=()=>setTool("fill");
-function fit(){if(!imgCanvas.width)return;let r=Math.min(($("wrap").clientWidth-30)/imgCanvas.width,($("wrap").clientHeight-30)/imgCanvas.height);zoom=Math.max(.05,Math.min(12,r));render()}
-function zoomBy(k){zoom=Math.max(.05,Math.min(16,zoom*k));render()}
-$("zoomVal").onclick=fit;
-function render(){let w=Math.max(1,Math.round(imgCanvas.width*zoom)),h=Math.max(1,Math.round(imgCanvas.height*zoom));$("board").style.width=w+"px";$("board").style.height=h+"px";view.width=overlay.width=imgCanvas.width;view.height=overlay.height=imgCanvas.height;view.style.width=overlay.style.width=w+"px";view.style.height=overlay.style.height=h+"px";v.clearRect(0,0,view.width,view.height);v.imageSmoothingEnabled=false;v.drawImage(imgCanvas,0,0);$("zoomVal").textContent=Math.round(zoom*100)+"%";$("statusZoom").textContent=Math.round(zoom*100)+"%";drawOverlay();sync()}
-function sync(){$("cw").value=imgCanvas.width;$("ch").value=imgCanvas.height;$("statusSize").textContent=imgCanvas.width+"×"+imgCanvas.height}
-function pos(e){let r=view.getBoundingClientRect();return{x:Math.max(0,Math.min(imgCanvas.width,(e.clientX-r.left)*imgCanvas.width/r.width)),y:Math.max(0,Math.min(imgCanvas.height,(e.clientY-r.top)*imgCanvas.height/r.height))}}
-function pointer(e){e.preventDefault();view.setPointerCapture?.(e.pointerId);let p=pos(e);if(!down){down=true;start=p;last=p;if(tool==="crop"){crop={x:p.x,y:p.y,w:0,h:0};drawOverlay();return}if(tool==="brush"||tool==="erase"){snapshot();paint(p,p)}if(tool==="fill"){snapshot();fillAt(p.x|0,p.y|0)}return}if(tool==="crop"){crop={x:start.x,y:start.y,w:p.x-start.x,h:p.y-start.y};drawOverlay();return}if(tool==="brush"||tool==="erase"){paint(last,p);last=p}}
-function end(){down=false;if(tool==="crop")drawOverlay()}
-view.onpointerdown=pointer;view.onpointermove=pointer;view.onpointerup=end;view.onpointercancel=end;
-function paint(a,b){c.save();c.globalAlpha=+$("opacity").value/100;c.lineWidth=+$("size").value;c.lineCap="round";c.lineJoin="round";c.globalCompositeOperation=tool==="erase"?"destination-out":"source-over";c.strokeStyle=$("color").value;c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();c.restore();render()}
-function fillAt(x,y){let w=imgCanvas.width,h=imgCanvas.height;if(x<0||y<0||x>=w||y>=h)return;let d=c.getImageData(0,0,w,h),i=(y*w+x)*4,target=[d.data[i],d.data[i+1],d.data[i+2],d.data[i+3]],col=hex($("color").value);if(target.join()==col.join())return;let q=[[x,y]],seen=new Uint8Array(w*h);while(q.length){let [px,py]=q.pop(),idx=py*w+px;if(seen[idx])continue;seen[idx]=1;let j=idx*4;if(Math.abs(d.data[j]-target[0])>0||Math.abs(d.data[j+1]-target[1])>0||Math.abs(d.data[j+2]-target[2])>0||Math.abs(d.data[j+3]-target[3])>0)continue;d.data[j]=col[0];d.data[j+1]=col[1];d.data[j+2]=col[2];d.data[j+3]=col[3];if(px)q.push([px-1,py]);if(px<w-1)q.push([px+1,py]);if(py)q.push([px,py-1]);if(py<h-1)q.push([px,py+1])}c.putImageData(d,0,0);render()}
-function hex(s){let n=parseInt(s.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255,255]}
-function drawOverlay(){o.clearRect(0,0,overlay.width,overlay.height);if(crop){let x=Math.min(crop.x,crop.x+crop.w),y=Math.min(crop.y,crop.y+crop.h),w=Math.abs(crop.w),h=Math.abs(crop.h);o.fillStyle="rgba(0,0,0,.45)";o.fillRect(0,0,imgCanvas.width,imgCanvas.height);o.clearRect(x,y,w,h);o.strokeStyle="#5ee27a";o.lineWidth=1;o.setLineDash([5,3]);o.strokeRect(x+.5,y+.5,w,h);o.setLineDash([])}}
-function applyCrop(){if(!crop||Math.abs(crop.w)<1||Math.abs(crop.h)<1)return;let x=Math.max(0,Math.floor(Math.min(crop.x,crop.x+crop.w))),y=Math.max(0,Math.floor(Math.min(crop.y,crop.y+crop.h))),w=Math.min(imgCanvas.width-x,Math.ceil(Math.abs(crop.w))),h=Math.min(imgCanvas.height-y,Math.ceil(Math.abs(crop.h)));snapshot();let t=document.createElement("canvas");t.width=w;t.height=h;t.getContext("2d").drawImage(imgCanvas,x,y,w,h,0,0,w,h);imgCanvas.width=w;imgCanvas.height=h;c.clearRect(0,0,w,h);c.drawImage(t,0,0);crop=null;fit();sync()}
-function cancelCrop(){crop=null;drawOverlay()}
-function resizeCanvas(){let w=+$("cw").value,h=+$("ch").value;if(!w||!h)return;snapshot();let t=document.createElement("canvas");t.width=w;t.height=h;t.getContext("2d").drawImage(imgCanvas,0,0);imgCanvas.width=w;imgCanvas.height=h;c.clearRect(0,0,w,h);c.drawImage(t,0,0);render()}
-function trim(){let d=c.getImageData(0,0,imgCanvas.width,imgCanvas.height),x0=imgCanvas.width,y0=imgCanvas.height,x1=-1,y1=-1;for(let y=0;y<imgCanvas.height;y++)for(let x=0;x<imgCanvas.width;x++)if(d.data[(y*imgCanvas.width+x)*4+3]){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y)}if(x1<0)return;crop={x:x0,y:y0,w:x1-x0+1,h:y1-y0+1};applyCrop()}
-function transform(fn){snapshot();let t=document.createElement("canvas");t.width=imgCanvas.width;t.height=imgCanvas.height;fn(t.getContext("2d"),t.width,t.height);imgCanvas.width=t.width;imgCanvas.height=t.height;c.clearRect(0,0,t.width,t.height);c.drawImage(t,0,0);render()}
-function flipX(){transform((x,w,h)=>{x.translate(w,0);x.scale(-1,1);x.drawImage(imgCanvas,0,0)})}function flipY(){transform((x,w,h)=>{x.translate(0,h);x.scale(1,-1);x.drawImage(imgCanvas,0,0)})}function rotate(){let ow=imgCanvas.width,oh=imgCanvas.height;transform((x)=>{x.canvas.width=oh;x.canvas.height=ow;x.translate(oh,0);x.rotate(Math.PI/2);x.drawImage(imgCanvas,0,0)})}
-function savePNG(){imgCanvas.toBlob(b=>download(b,"sprite.png"),"image/png")}
-function saveJSON(){download(new Blob([JSON.stringify({format:"dh-image-editor",version:2,width:imgCanvas.width,height:imgCanvas.height,exportedAt:new Date().toISOString()},null,2)],{type:"application/json"}),"sprite-edit.json")}
-function download(b,n){let u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-window.addEventListener("resize",()=>{if(imgCanvas.width)fit()});document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key==="z"){e.preventDefault();undo()}if(e.ctrlKey&&(e.key==="y"||e.key==="Y")){e.preventDefault();redo()}});
-fit();
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  sprites: new Map(),
+  currentId: null,
+  zoom: 1,
+  tool: 'select',
+  snap: true,
+  showGrid: false,
+  cell: null,
+  drag: null,
+  cellMoveOffset: { x: 0, y: 0 },
+  cellOriginal: null,
+  resizeAnchor: 'mc',
+  bgColor: { r: 255, g: 255, b: 255 },
+  manualAnchor: false,
+  previewPlaying: false,
+  previewTime: 0,
+  previewFrame: 0,
+  previewRAF: null,
+  loadedProjectModels: new Set(),
+  projectJson: null,
+  history: [],
+  historyIdx: -1,
+  maxHistory: 40,
+  pan: { active: false, startX: 0, startY: 0, scrollL: 0, scrollT: 0, mouseActive: false },
+  hoverLine: null,
+  _pendingLoadFile: null
+};
+
+const $ = id => document.getElementById(id);
+const fileInput = $('fileInput');
+const jsonInput = $('jsonInput');
+const mainCanvas = $('mainCanvas');
+const overlayCanvas = $('overlayCanvas');
+const canvasHolder = $('canvasHolder');
+const stageCanvas = $('stageCanvas');
+const emptyState = $('emptyState');
+const currentSprite = () => state.currentId ? state.sprites.get(state.currentId) : null;
+
+/* ============================================================
+   UI HELPERS
+   ============================================================ */
+function toast(msg, type){
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = 'show ' + (type || 'ok');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+function setStatus(msg, isErr){
+  const el = $('statMsg');
+  el.textContent = msg;
+  el.className = 'msg' + (isErr ? ' err' : '');
+}
+
+/* ============================================================
+   UNDO / REDO
+   ============================================================ */
+function pushHistory(label){
+  const s = currentSprite();
+  if (!s) return;
+  const snap = {
+    spriteId: s.id,
+    vLines: [...s.vLines],
+    hLines: [...s.hLines],
+    anchors: JSON.parse(JSON.stringify(s.anchors)),
+    stableAnchor: s.stableAnchor ? { ...s.stableAnchor } : null,
+    label: label || 'action'
+  };
+  state.history = state.history.slice(0, state.historyIdx + 1);
+  state.history.push(snap);
+  if (state.history.length > state.maxHistory) state.history.shift();
+  state.historyIdx = state.history.length - 1;
+  updateHistoryButtons();
+}
+function undo(){
+  if (state.historyIdx <= 0) return;
+  state.historyIdx--;
+  applyHistorySnap();
+}
+function redo(){
+  if (state.historyIdx >= state.history.length - 1) return;
+  state.historyIdx++;
+  applyHistorySnap();
+}
+function applyHistorySnap(){
+  const snap = state.history[state.historyIdx];
+  if (!snap) return;
+  const s = state.sprites.get(snap.spriteId);
+  if (!s) return;
+  s.vLines = [...snap.vLines];
+  s.hLines = [...snap.hLines];
+  s.anchors = JSON.parse(JSON.stringify(snap.anchors));
+  s.stableAnchor = snap.stableAnchor ? { ...snap.stableAnchor } : null;
+  if (state.currentId !== snap.spriteId) selectSprite(snap.spriteId, true);
+  else renderAll();
+  toast('↶ ' + snap.label, 'ok');
+}
+function updateHistoryButtons(){
+  $('undoBtn').disabled = state.historyIdx <= 0;
+  $('redoBtn').disabled = state.historyIdx >= state.history.length - 1;
+}
+
+/* ============================================================
+   FILENAME HELPERS
+   ============================================================ */
+const MODEL_PREFIXES = ['player', 'weapon', 'skill', 'enemy', 'npc', 'boss', 'effect', 'item'];
+
+function ensureUniqueFilename(baseName){
+  const names = new Set([...state.sprites.values()].map(s => s.fileName));
+  if (!names.has(baseName)) return baseName;
+  let i = 2;
+  while (names.has(baseName + '_' + i)) i++;
+  return baseName + '_' + i;
+}
+function renameWithPrefix(fileName, model){
+  const parts = fileName.split('_');
+  if (parts.length > 1 && MODEL_PREFIXES.includes(parts[0].toLowerCase())) parts.shift();
+  const base = parts.join('_') || 'sprite';
+  return model + '_' + base;
+}
+
+/* ============================================================
+   METADATA
+   ============================================================ */
+function decodeMetadata(img){
+  try {
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = 1;
+    const cx = c.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(img, 0, img.height - 1, img.width, 1, 0, 0, img.width, 1);
+    const d = cx.getImageData(0, 0, img.width, 1).data;
+    if (d[0] !== 0x44 || d[1] !== 0x48 || d[2] !== 0x55 || d[3] !== 0x4E) return null;
+    const len = d[6] | (d[7] << 8) | (d[8] << 16) | (d[9] << 24);
+    if (len <= 0 || len > 300000) return null;
+    const bytes = [];
+    for (let i = 0; i < len; i++){
+      const pos = 10 + i;
+      const p = Math.floor(pos/3), ch = pos%3;
+      if (p*4+ch >= d.length) break;
+      bytes.push(d[p*4+ch]);
+    }
+    return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
+  } catch(e){ return null; }
+}
+function encodeMetadata(obj){
+  const magic = [0x44, 0x48, 0x55, 0x4E];
+  const ver = 0x0003;
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
+  const len = bytes.length;
+  return [...magic, ver & 0xFF, (ver>>8)&0xFF,
+    len & 0xFF, (len>>8)&0xFF, (len>>16)&0xFF, (len>>24)&0xFF, ...bytes];
+}
+function writeMetaRow(canvas, y, bytes){
+  const cx = canvas.getContext('2d', { willReadFrequently: true });
+  if (bytes.length > canvas.width * 3) {
+    throw new Error('Metadata vượt dung lượng PNG (' + bytes.length + '/' + (canvas.width * 3) + ' bytes). Hãy giảm metadata hoặc tăng chiều rộng sprite.');
+  }
+  const imgData = cx.createImageData(canvas.width, 1);
+  const d = imgData.data;
+  for (let i = 0; i < bytes.length; i++){
+    const p = Math.floor(i/3), ch = i%3;
+    if (p >= canvas.width) break;
+    d[p*4+ch] = bytes[i];
+    d[p*4+3] = 255;
+  }
+  cx.putImageData(imgData, 0, y);
+}
+
+/* ============================================================
+   AUTO DETECT
+   ============================================================ */
+function autoDetectFrameLines(canvas, expectedFrames){
+  const W = canvas.width, H = canvas.height;
+  const cx = canvas.getContext('2d', { willReadFrequently: true });
+  const data = cx.getImageData(0, 0, W, H).data;
+  const empty = new Uint8Array(W);
+  for (let x = 0; x < W; x++){
+    let has = 0;
+    for (let y = 0; y < H; y++){
+      if (data[(y*W+x)*4+3] > 5){ has = 1; break; }
+    }
+    empty[x] = has ? 0 : 1;
+  }
+  const gaps = [];
+  let i = 0;
+  while (i < W && empty[i]) i++;
+  while (i < W){
+    while (i < W && !empty[i]) i++;
+    const start = i;
+    while (i < W && empty[i]) i++;
+    const end = i;
+    if (end - start >= 2) gaps.push({ start, end, size: end - start });
+  }
+  const need = expectedFrames ? expectedFrames - 1 : gaps.length;
+  let chosen;
+  if (expectedFrames && gaps.length >= need){
+    const sorted = [...gaps].sort((a,b) => b.size - a.size);
+    chosen = sorted.slice(0, need).sort((a,b) => a.start - b.start);
+  } else chosen = gaps;
+  const lines = [0];
+  for (const g of chosen) lines.push(Math.round((g.start + g.end) / 2));
+  lines.push(W);
+  return lines.length >= 3 ? lines : null;
+}
+function detectBBox(canvas, x1, y1, x2, y2){
+  const W = canvas.width;
+  const cx = canvas.getContext('2d', { willReadFrequently: true });
+  const d = cx.getImageData(x1, y1, x2-x1, y2-y1).data;
+  const w = x2-x1, h = y2-y1;
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++){
+    for (let x = 0; x < w; x++){
+      if (d[(y*w+x)*4+3] > 10){
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) return null;
+  return { x: x1+minX, y: y1+minY, w: maxX-minX+1, h: maxY-minY+1 };
+}
+
+/* ============================================================
+   SPRITE MGMT
+   ============================================================ */
+function genId(){ return 's' + Date.now() + '_' + Math.floor(Math.random()*10000); }
+
+const MODEL_KEYWORDS = {
+  player: ['player', 'hero', 'char', 'hunter'],
+  weapon: ['weapon', 'sword', 'blade', 'katana', 'bow', 'staff', 'axe', 'spear', 'dagger', 'shield', 'gun', 'wand'],
+  skill:  ['skill', 'spell', 'magic', 'cast', 'aura', 'buff', 'debuff', 'burst', 'beam', 'projectile'],
+  enemy:  ['enemy', 'monster', 'mob', 'slime', 'goblin', 'skeleton', 'zombie', 'orc'],
+  npc:    ['npc', 'villager', 'merchant', 'shop', 'blacksmith', 'guard'],
+  boss:   ['boss', 'dragon', 'demon', 'titan', 'lord', 'king'],
+  effect: ['effect', 'slash', 'impact', 'hit', 'explosion', 'spark', 'smoke', 'dust', 'trail'],
+  item:   ['item', 'pickup', 'coin', 'gem', 'potion', 'chest', 'key']
+};
+
+const ANIM_PRESETS = {
+  idle:   { anim:'idle',   fps:6,  loop:true  },
+  walk:   { anim:'walk',   fps:10, loop:true  },
+  run:    { anim:'run',    fps:14, loop:true  },
+  sprint: { anim:'run',    fps:18, loop:true  },
+  jump:   { anim:'jump',   fps:12, loop:false },
+  fall:   { anim:'jump',   fps:12, loop:false },
+  land:   { anim:'land',   fps:14, loop:false },
+  dash:   { anim:'dash',   fps:20, loop:false },
+  roll:   { anim:'dash',   fps:18, loop:false },
+  attack: { anim:'attack', fps:16, loop:false },
+  atk:    { anim:'attack', fps:16, loop:false },
+  slash:  { anim:'attack', fps:18, loop:false },
+  swing:  { anim:'attack', fps:18, loop:false },
+  hit:    { anim:'hurt',   fps:12, loop:false },
+  hurt:   { anim:'hurt',   fps:12, loop:false },
+  damage: { anim:'hurt',   fps:12, loop:false },
+  block:  { anim:'block',  fps:10, loop:false },
+  shield: { anim:'block',  fps:10, loop:false },
+  parry:  { anim:'block',  fps:14, loop:false },
+  cast:   { anim:'cast',   fps:14, loop:false },
+  spell:  { anim:'cast',   fps:14, loop:false },
+  skill:  { anim:'cast',   fps:14, loop:false },
+  sit:    { anim:'sit',    fps:6,  loop:true  },
+  sleep:  { anim:'sit',    fps:4,  loop:true  },
+  taunt:  { anim:'taunt',  fps:10, loop:false },
+  dance:  { anim:'taunt',  fps:12, loop:true  },
+  death:  { anim:'death',  fps:10, loop:false },
+  dead:   { anim:'death',  fps:10, loop:false },
+  die:    { anim:'death',  fps:10, loop:false },
+  ko:     { anim:'death',  fps:8,  loop:false }
+};
+
+function getFpsForAnim(anim, model){
+  if (model === 'weapon'){
+    const map = { idle:6, walk:10, run:14, jump:12, attack:16, block:10, hurt:12, dash:20, cast:14, sit:6, death:10, taunt:10 };
+    return map[anim] || 10;
+  }
+  if (model === 'skill' || model === 'effect'){
+    const map = { cast:14, attack:20, skill:16, impact:24, explosion:20, beam:16 };
+    return map[anim] || 16;
+  }
+  for (const key in ANIM_PRESETS){
+    if (ANIM_PRESETS[key].anim === anim) return ANIM_PRESETS[key].fps;
+  }
+  return 10;
+}
+function detectModelFromFilename(fn){
+  const lower = fn.toLowerCase();
+  const priority = ['weapon', 'skill', 'effect', 'item', 'boss', 'enemy', 'npc', 'player'];
+  for (const model of priority){
+    const keywords = MODEL_KEYWORDS[model] || [];
+    for (const kw of keywords){
+      if (lower.includes(kw)) return model;
+    }
+  }
+  return null;
+}
+function detectAnimFromFilename(fn){
+  const lower = fn.toLowerCase();
+  const sortedKeys = Object.keys(ANIM_PRESETS).sort((a,b) => b.length - a.length);
+  for (const key of sortedKeys){
+    if (lower.includes(key)) return ANIM_PRESETS[key];
+  }
+  return null;
+}
+
+function addSpriteFromFile(file, forceModel){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const meta = decodeMetadata(img);
+        const fn = file.name.toLowerCase();
+        const detectedModel = detectModelFromFilename(fn);
+        const detectedAnim = detectAnimFromFilename(fn);
+
+        let finalModel;
+        if (meta && meta.model) finalModel = meta.model;
+        else if (forceModel && forceModel !== 'auto') finalModel = forceModel;
+        else if (detectedModel) finalModel = detectedModel;
+        else finalModel = 'player';
+
+        let fileName = file.name.replace(/\.[^.]+$/, '');
+        if (finalModel !== 'player'){
+          const hasCorrectPrefix = fileName.toLowerCase().startsWith(finalModel.toLowerCase() + '_');
+          if (!hasCorrectPrefix) fileName = renameWithPrefix(fileName, finalModel);
+        } else {
+          const parts = fileName.split('_');
+          if (!(parts.length > 1 && MODEL_PREFIXES.includes(parts[0].toLowerCase()))){
+            fileName = 'player_' + fileName;
+          }
+        }
+        fileName = ensureUniqueFilename(fileName);
+
+        const sprite = {
+          id: genId(),
+          fileName: fileName,
+          model: finalModel,
+          anim: meta && meta.label ? meta.label : (detectedAnim ? detectedAnim.anim : 'idle'),
+          img, loaded: true,
+          canvas: null, ctx: null,
+          spriteH: meta ? (meta.spriteH || img.height - 1) : img.height,
+          vLines: meta ? (meta.vLines || [0, img.width]) : [0, img.width],
+          hLines: meta ? (meta.hLines || [0, img.height - 1]) : [0, img.height],
+          anchors: [],
+          stableAnchor: null,
+          anchorMode: meta ? (meta.anchorMode || 'stable-x') : 'stable-x',
+          fps: meta && meta.fps ? meta.fps :
+               (detectedAnim ? detectedAnim.fps : getFpsForAnim('idle', finalModel)),
+          loop: meta && meta.loop !== undefined ? meta.loop :
+                (detectedAnim ? detectedAnim.loop : true),
+          version: meta ? (meta.v || 1) : 0,
+          autoDetected: {
+            model: detectedModel,
+            anim: detectedAnim ? detectedAnim.anim : null,
+            fps: detectedAnim ? detectedAnim.fps : null,
+            renamedFrom: (fileName !== file.name.replace(/\.[^.]+$/, '')) ? file.name.replace(/\.[^.]+$/, '') : null
+          }
+        };
+
+        const cnv = document.createElement('canvas');
+        cnv.width = img.width;
+        cnv.height = sprite.spriteH;
+        const cc = cnv.getContext('2d', { willReadFrequently: true });
+        cc.imageSmoothingEnabled = false;
+        cc.drawImage(img, 0, 0, img.width, sprite.spriteH, 0, 0, img.width, sprite.spriteH);
+        sprite.canvas = cnv;
+        sprite.ctx = cc;
+
+        if (meta && meta.anchors && meta.anchors.length){
+          sprite.anchors = meta.anchors.map(a => {
+            if (Array.isArray(a)) return { x: a[0], y: a[1] };
+            if (a && typeof a === 'object') return { x: a.x, y: a.y };
+            return null;
+          });
+        }
+        if (meta && meta.stableAnchor){
+          sprite.stableAnchor = { x: meta.stableAnchor[0], y: meta.stableAnchor[1] };
+        }
+        if (!sprite.anchors.length || sprite.anchors.every(a => !a) || !sprite.stableAnchor){
+          computeAnchorsForSprite(sprite, false);
+        }
+        resolve(sprite);
+      };
+      img.onerror = () => reject(new Error('Load fail'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Read fail'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function computeAnchorsForSprite(sprite, verbose){
+  const s = sprite;
+  const lines = s.vLines;
+  if (!lines || lines.length < 2) return;
+  const anchors = [];
+  for (let r = 0; r < s.hLines.length - 1; r++){
+    for (let c = 0; c < lines.length - 1; c++){
+      const x1 = lines[c], x2 = lines[c+1];
+      const y1 = s.hLines[r], y2 = s.hLines[r+1];
+      const bbox = detectBBox(s.canvas, x1, y1, x2, y2);
+      if (!bbox){ anchors.push(null); continue; }
+      let ax, ay;
+      switch (s.anchorMode){
+        case 'bottom-left':  ax = bbox.x; ay = bbox.y + bbox.h; break;
+        case 'bottom-right': ax = bbox.x + bbox.w; ay = bbox.y + bbox.h; break;
+        case 'center':       ax = bbox.x + bbox.w/2; ay = bbox.y + bbox.h/2; break;
+        case 'top-center':   ax = bbox.x + bbox.w/2; ay = bbox.y; break;
+        default:
+          ax = bbox.x + bbox.w/2;
+          ay = bbox.y + bbox.h;
+      }
+      anchors.push({ x: Math.round(ax), y: Math.round(ay) });
+    }
+  }
+  s.anchors = anchors;
+
+  let sumLocalX = 0, sumY = 0, count = 0;
+  for (let i = 0; i < anchors.length; i++){
+    if (!anchors[i]) continue;
+    sumLocalX += anchors[i].x - lines[i];
+    sumY += anchors[i].y;
+    count++;
+  }
+  if (count > 0){
+    s.stableAnchor = {
+      x: Math.round(sumLocalX / count),
+      y: Math.round(sumY / count)
+    };
+  } else {
+    s.stableAnchor = null;
+  }
+  if (verbose) toast('🎯 ' + anchors.filter(a=>a).length + ' anchors', 'ok');
+}
+
+/* ============================================================
+   EXPAND & ALIGN
+   ============================================================ */
+function expandAndAlignFrames(sprite, padding, gap){
+  const s = sprite;
+  if (!s || !s.vLines || s.vLines.length < 2){
+    return { ok: false, msg: 'No frames' };
+  }
+  const frames = s.vLines.length - 1;
+  const bboxes = [];
+  let maxW = 0, maxH = 0;
+  for (let i = 0; i < frames; i++){
+    const bb = detectBBox(s.canvas, s.vLines[i], 0, s.vLines[i+1], s.canvas.height);
+    bboxes.push(bb);
+    if (bb){
+      if (bb.w > maxW) maxW = bb.w;
+      if (bb.h > maxH) maxH = bb.h;
+    }
+  }
+  if (maxW === 0 || maxH === 0){
+    return { ok: false, msg: 'No content detected' };
+  }
+  const contentW = maxW;
+  const contentH = maxH;
+  const newFrameW = contentW + padding * 2;
+  const newFrameH = contentH + padding * 2;
+  const newCanvasW = frames * newFrameW + (frames - 1) * gap;
+  const newCanvasH = newFrameH;
+
+  const targetAnchorLocalX = padding + Math.floor(contentW / 2);
+  const targetAnchorLocalY = padding + contentH;
+
+  const newCanvas = document.createElement('canvas');
+  newCanvas.width = newCanvasW;
+  newCanvas.height = newCanvasH;
+  const nctx = newCanvas.getContext('2d', { willReadFrequently: true });
+  nctx.imageSmoothingEnabled = false;
+
+  const newVLines = [];
+  const newAnchors = [];
+  let movedCount = 0;
+
+  for (let i = 0; i < frames; i++){
+    const cellX = i * (newFrameW + gap);
+    newVLines.push(cellX);
+    const bb = bboxes[i];
+    if (!bb){ newAnchors.push(null); continue; }
+
+    const bbCenterOffset = Math.floor(bb.w / 2);
+    const destBBoxX = cellX + targetAnchorLocalX - bbCenterOffset;
+    const destBBoxY = targetAnchorLocalY - bb.h;
+
+    nctx.drawImage(s.canvas, bb.x, bb.y, bb.w, bb.h, destBBoxX, destBBoxY, bb.w, bb.h);
+    newAnchors.push({ x: cellX + targetAnchorLocalX, y: targetAnchorLocalY });
+    if (bb.x !== destBBoxX - cellX || bb.y !== destBBoxY) movedCount++;
+  }
+  newVLines.push(newCanvasW);
+
+  s.canvas.width = newCanvasW;
+  s.canvas.height = newCanvasH;
+  s.ctx = s.canvas.getContext('2d', { willReadFrequently: true });
+  s.ctx.imageSmoothingEnabled = false;
+  s.ctx.drawImage(newCanvas, 0, 0);
+
+  s.vLines = newVLines;
+  s.hLines = [0, newCanvasH];
+  s.anchors = newAnchors;
+  s.stableAnchor = { x: targetAnchorLocalX, y: targetAnchorLocalY };
+
+  return { ok: true, movedCount, frames, padding, gap, newW: newCanvasW, newH: newCanvasH };
+}
+
+/* ============================================================
+   LIBRARY RENDER
+   ============================================================ */
+function renderLibrary(){
+  const body = $('libraryBody');
+  const sprites = [...state.sprites.values()];
+  $('libCount').textContent = sprites.length;
+  $('statSprites').textContent = sprites.length;
+
+  if (sprites.length === 0){
+    body.innerHTML = `<div class="lib-empty">
+      <div style="font-size:36px;opacity:.3;margin-bottom:12px">📁</div>
+      Chưa có sprite<br><br>
+      <kbd>📂 Load</kbd> hoặc <kbd>📁 Upload</kbd>
+    </div>`;
+    updateProjDisplay();
+    return;
+  }
+
+  const seen = new Map();
+  const dupIds = new Set();
+  for (const s of sprites){
+    const key = s.model + '/' + s.anim;
+    if (seen.has(key)){ dupIds.add(s.id); dupIds.add(seen.get(key)); }
+    else seen.set(key, s.id);
+  }
+
+  const byModel = {};
+  for (const s of sprites){
+    if (!byModel[s.model]) byModel[s.model] = [];
+    byModel[s.model].push(s);
+  }
+  body.innerHTML = '';
+  for (const model in byModel){
+    const group = document.createElement('div');
+    group.className = 'model-group';
+    const items = byModel[model];
+
+    const modelIcons = {
+      player: '🎮', weapon: '⚔️', skill: '✨', effect: '💥',
+      enemy: '👹', npc: '🧑', boss: '🐉', item: '💎'
+    };
+    const icon = modelIcons[model] || '📦';
+
+    const header = document.createElement('div');
+    header.className = 'model-header';
+    header.dataset.model = model;
+    header.innerHTML = `<span class="arrow">▼</span><span>${icon} ${model}</span><span class="count">${items.length}</span>`;
+    header.addEventListener('click', () => {
+      header.classList.toggle('collapsed');
+      group.querySelector('.model-body').classList.toggle('hidden');
+    });
+    group.appendChild(header);
+
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'model-body';
+    for (const s of items){
+      const item = document.createElement('div');
+      item.className = 'anim-item' + (s.id === state.currentId ? ' active' : '');
+      if (dupIds.has(s.id)) item.classList.add('dup-warn');
+      item.innerHTML = `<span class="dot"></span><span class="name">${s.anim}</span><span class="meta">${s.vLines.length - 1}f · ${s.fps}</span>`;
+      item.title = s.fileName + '.png' + (dupIds.has(s.id) ? ' (TRÙNG model+anim!)' : '');
+      item.addEventListener('click', () => selectSprite(s.id));
+      bodyEl.appendChild(item);
+    }
+    group.appendChild(bodyEl);
+    body.appendChild(group);
+  }
+  updateProjDisplay();
+}
+
+function updateProjDisplay(){
+  const item = $('projItem');
+  const cnt = $('statProj');
+  if (!item) return;
+  if (state.projectJson){
+    let total = 0;
+    for (const m in state.projectJson.models){
+      total += Object.keys(state.projectJson.models[m].animations).length;
+    }
+    item.style.display = 'flex';
+    cnt.textContent = total;
+  } else {
+    item.style.display = 'none';
+  }
+}
+
+/* ============================================================
+   SELECT SPRITE
+   ============================================================ */
+function selectSprite(id, noHistory){
+  state.currentId = id;
+  const s = currentSprite();
+  if (!s) return;
+
+  mainCanvas.width = s.canvas.width;
+  mainCanvas.height = s.canvas.height;
+  overlayCanvas.width = s.canvas.width;
+  overlayCanvas.height = s.canvas.height;
+  const mc = mainCanvas.getContext('2d');
+  const oc = overlayCanvas.getContext('2d');
+  mc.imageSmoothingEnabled = false;
+  oc.imageSmoothingEnabled = false;
+  mc.drawImage(s.canvas, 0, 0);
+
+  canvasHolder.style.display = 'inline-block';
+  emptyState.style.display = 'none';
+
+  $('canvasW').value = s.canvas.width;
+  $('canvasH').value = s.canvas.height;
+
+  const knownModels = ['player', 'weapon', 'skill', 'enemy', 'npc', 'boss', 'effect', 'item'];
+  if (knownModels.includes(s.model)){
+    $('metaModel').value = s.model;
+    $('customModelRow').style.display = 'none';
+  } else {
+    $('metaModel').value = 'custom';
+    $('customModelRow').style.display = 'flex';
+    $('metaModelCustom').value = s.model;
+  }
+  updateModelBadge(s.model);
+
+  const knownAnims = ['idle', 'run', 'walk', 'jump', 'attack', 'block', 'hurt', 'dash', 'cast', 'sit', 'death'];
+  $('metaAnim').value = knownAnims.includes(s.anim) ? s.anim : 'custom';
+  if ($('metaAnim').value === 'custom'){
+    $('customAnimRow').style.display = 'flex';
+    $('metaAnimCustom').value = s.anim;
+  } else {
+    $('customAnimRow').style.display = 'none';
+  }
+  $('metaFps').value = s.fps;
+  $('metaLoop').value = s.loop ? '1' : '0';
+  $('metaFile').value = s.fileName;
+  $('anchorMode').value = s.anchorMode;
+  state.manualAnchor = s.anchorMode === 'manual';
+
+  updateMetaHint(s.model);
+  renderAll();
+  renderLibrary();
+  $('exportBtn').disabled = false;
+  setStatus('Editing: ' + s.model + '/' + s.anim);
+
+  if (!noHistory){
+    state.history = [];
+    state.historyIdx = -1;
+    pushHistory('load ' + s.model + '/' + s.anim);
+  }
+}
+
+function updateModelBadge(model){
+  const b = $('modelBadge');
+  b.textContent = model;
+  b.className = 'badge';
+  if (model === 'weapon') b.classList.add('weapon');
+  else if (model === 'skill') b.classList.add('skill');
+}
+
+function updateMetaHint(model){
+  const el = $('metaHint');
+  el.className = 'info-box';
+  if (model === 'weapon'){
+    el.classList.add('weapon');
+    el.innerHTML = '<b>⚔️ Weapon:</b> sprite gắn vào tay nhân vật. FPS khớp player.';
+  } else if (model === 'skill'){
+    el.classList.add('skill');
+    el.innerHTML = '<b>✨ Skill:</b> effect phép thuật. FPS 16-24, Loop = No.';
+  } else if (model === 'effect'){
+    el.classList.add('skill');
+    el.innerHTML = '<b>💥 Effect:</b> slash/impact/explosion. FPS 20-30, Loop = No.';
+  } else {
+    el.innerHTML = '<b>Auto-detect:</b> filename có <kbd>weapon</kbd>/<kbd>skill</kbd> tự chọn model.';
+  }
+}
+
+/* ============================================================
+   RENDER OVERLAY
+   ============================================================ */
+function renderOverlay(){
+  const s = currentSprite();
+  if (!s) return;
+  const oc = overlayCanvas.getContext('2d');
+  oc.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+  if (state.showGrid){
+    oc.strokeStyle = 'rgba(63,185,80,.08)';
+    oc.lineWidth = 1;
+    const step = 16;
+    for (let x = 0; x < overlayCanvas.width; x += step){
+      oc.beginPath(); oc.moveTo(x+.5, 0); oc.lineTo(x+.5, overlayCanvas.height); oc.stroke();
+    }
+    for (let y = 0; y < overlayCanvas.height; y += step){
+      oc.beginPath(); oc.moveTo(0, y+.5); oc.lineTo(overlayCanvas.width, y+.5); oc.stroke();
+    }
+  }
+
+  /* Vertical lines */
+  s.vLines.forEach((x, i) => {
+    const isEdge = (i === 0 || i === s.vLines.length - 1);
+    const isHover = state.hoverLine && state.hoverLine.type === 'v' && state.hoverLine.idx === i;
+    const isDrag = state.drag && state.drag.type === 'v' && state.drag.idx === i;
+    oc.strokeStyle = isEdge ? 'rgba(248,81,73,.8)' :
+                     isDrag ? '#56d364' :
+                     isHover ? '#d29922' : 'rgba(248,81,73,.55)';
+    oc.lineWidth = (isDrag || isHover) ? 2 : 1;
+    oc.beginPath();
+    oc.moveTo(Math.round(x)+0.5, 0);
+    oc.lineTo(Math.round(x)+0.5, overlayCanvas.height);
+    oc.stroke();
+
+    if (!isEdge){
+      const hSize = isDrag ? 7 : (isHover ? 6 : 5);
+      oc.fillStyle = isDrag ? '#56d364' : (isHover ? '#d29922' : '#58a6ff');
+      oc.beginPath();
+      oc.arc(Math.round(x)+0.5, 8, hSize, 0, Math.PI*2);
+      oc.fill();
+      oc.strokeStyle = 'rgba(0,0,0,.8)';
+      oc.lineWidth = 1;
+      oc.stroke();
+    }
+  });
+
+  /* Horizontal lines */
+  s.hLines.forEach((y, i) => {
+    const isEdge = (i === 0 || i === s.hLines.length - 1);
+    const isHover = state.hoverLine && state.hoverLine.type === 'h' && state.hoverLine.idx === i;
+    const isDrag = state.drag && state.drag.type === 'h' && state.drag.idx === i;
+    oc.strokeStyle = isEdge ? 'rgba(248,81,73,.8)' :
+                     isDrag ? '#56d364' :
+                     isHover ? '#d29922' : 'rgba(248,81,73,.55)';
+    oc.lineWidth = (isDrag || isHover) ? 2 : 1;
+    oc.beginPath();
+    oc.moveTo(0, Math.round(y)+0.5);
+    oc.lineTo(overlayCanvas.width, Math.round(y)+0.5);
+    oc.stroke();
+
+    if (!isEdge){
+      const hSize = isDrag ? 7 : (isHover ? 6 : 5);
+      oc.fillStyle = isDrag ? '#56d364' : (isHover ? '#d29922' : '#58a6ff');
+      oc.beginPath();
+      oc.arc(8, Math.round(y)+0.5, hSize, 0, Math.PI*2);
+      oc.fill();
+      oc.strokeStyle = 'rgba(0,0,0,.8)';
+      oc.lineWidth = 1;
+      oc.stroke();
+    }
+  });
+
+  /* Frame numbers */
+  oc.font = 'bold 11px ' + getComputedStyle(document.documentElement).getPropertyValue('--font-mono');
+  oc.fillStyle = '#56d364';
+  oc.strokeStyle = 'rgba(0,0,0,.9)';
+  oc.lineWidth = 3;
+  let idx = 0;
+  for (let r = 0; r < s.hLines.length - 1; r++){
+    for (let c = 0; c < s.vLines.length - 1; c++){
+      const x = s.vLines[c] + 5;
+      const y = s.hLines[r] + 16;
+      oc.strokeText(idx, x, y);
+      oc.fillText(idx, x, y);
+      idx++;
+    }
+  }
+
+  /* Anchors */
+  s.anchors.forEach(a => {
+    if (!a) return;
+    const ax = a.x != null ? a.x : 0;
+    const ay = a.y != null ? a.y : 0;
+    oc.strokeStyle = 'rgba(0,0,0,.9)';
+    oc.lineWidth = 3;
+    oc.beginPath(); oc.arc(ax, ay, 5, 0, Math.PI*2); oc.stroke();
+    oc.fillStyle = '#f85149';
+    oc.strokeStyle = '#fff';
+    oc.lineWidth = 2;
+    oc.beginPath(); oc.arc(ax, ay, 4, 0, Math.PI*2); oc.fill(); oc.stroke();
+  });
+
+  /* Stable anchor */
+  if (s.stableAnchor && s.anchorMode !== 'per-frame'){
+    const sa = s.stableAnchor;
+    oc.strokeStyle = '#58a6ff';
+    oc.lineWidth = 1.5;
+    oc.setLineDash([5, 4]);
+    for (let i = 0; i < s.vLines.length - 1; i++){
+      const x = s.vLines[i] + sa.x;
+      if (x < 0 || x > overlayCanvas.width) continue;
+      oc.beginPath();
+      oc.moveTo(x, 0); oc.lineTo(x, overlayCanvas.height);
+      oc.stroke();
+    }
+    oc.beginPath();
+    oc.moveTo(0, sa.y); oc.lineTo(overlayCanvas.width, sa.y);
+    oc.stroke();
+    oc.setLineDash([]);
+    for (let i = 0; i < s.vLines.length - 1; i++){
+      const cx = s.vLines[i] + sa.x;
+      const cy = sa.y;
+      oc.fillStyle = '#58a6ff';
+      oc.strokeStyle = '#fff';
+      oc.lineWidth = 2;
+      oc.beginPath(); oc.arc(cx, cy, 4, 0, Math.PI*2); oc.fill(); oc.stroke();
+    }
+  }
+
+  /* Selected cell */
+  if (state.cell){
+    oc.strokeStyle = 'rgba(63,185,80,.95)';
+    oc.lineWidth = 2;
+    oc.setLineDash([6,4]);
+    oc.strokeRect(state.cell.x1+1, state.cell.y1+1,
+      state.cell.x2-state.cell.x1-2, state.cell.y2-state.cell.y1-2);
+    oc.setLineDash([]);
+  }
+}
+
+/* ============================================================
+   RENDER LINE LISTS
+   ============================================================ */
+function renderLineLists(){
+  const s = currentSprite();
+  if (!s) return;
+  const vl = $('vList'); vl.innerHTML = '';
+  s.vLines.forEach((x, i) => {
+    const isEdge = (i === 0 || i === s.vLines.length - 1);
+    const row = document.createElement('div');
+    row.className = 'line-row' +
+      (state.hoverLine && state.hoverLine.type === 'v' && state.hoverLine.idx === i ? ' cur' : '');
+    row.innerHTML = `<span class="handle">${isEdge ? '▣' : '⋮'}</span><span class="idx">#${i}</span>`;
+    const inp = document.createElement('input');
+    inp.type = 'number'; inp.value = Math.round(x);
+    inp.disabled = isEdge;
+    inp.addEventListener('change', () => {
+      const v = parseInt(inp.value);
+      if (!isNaN(v)){
+        pushHistory('set vLine #' + i);
+        s.vLines[i] = Math.max(0, Math.min(s.canvas.width, v));
+        s.vLines.sort((a,b)=>a-b);
+        computeAnchorsForSprite(s, false);
+        renderAll();
+      }
+    });
+    inp.addEventListener('focus', () => { state.hoverLine = { type: 'v', idx: i }; renderOverlay(); });
+    row.appendChild(inp);
+    const del = document.createElement('button');
+    del.className = 'del'; del.textContent = '✕';
+    if (isEdge) del.disabled = true;
+    del.addEventListener('click', () => {
+      if (s.vLines.length > 2){
+        pushHistory('del vLine #' + i);
+        s.vLines.splice(i, 1);
+        computeAnchorsForSprite(s, false);
+        renderAll();
+      }
+    });
+    row.appendChild(del);
+    row.addEventListener('mouseenter', () => {
+      state.hoverLine = { type: 'v', idx: i };
+      renderOverlay();
+    });
+    row.addEventListener('mouseleave', () => {
+      state.hoverLine = null;
+      renderOverlay();
+    });
+    vl.appendChild(row);
+  });
+
+  const hl = $('hList'); hl.innerHTML = '';
+  s.hLines.forEach((y, i) => {
+    const isEdge = (i === 0 || i === s.hLines.length - 1);
+    const row = document.createElement('div');
+    row.className = 'line-row' +
+      (state.hoverLine && state.hoverLine.type === 'h' && state.hoverLine.idx === i ? ' cur' : '');
+    row.innerHTML = `<span class="handle">${isEdge ? '▣' : '⋮'}</span><span class="idx">#${i}</span>`;
+    const inp = document.createElement('input');
+    inp.type = 'number'; inp.value = Math.round(y);
+    inp.disabled = isEdge;
+    inp.addEventListener('change', () => {
+      const v = parseInt(inp.value);
+      if (!isNaN(v)){
+        pushHistory('set hLine #' + i);
+        s.hLines[i] = Math.max(0, Math.min(s.canvas.height, v));
+        s.hLines.sort((a,b)=>a-b);
+        computeAnchorsForSprite(s, false);
+        renderAll();
+      }
+    });
+    inp.addEventListener('focus', () => { state.hoverLine = { type: 'h', idx: i }; renderOverlay(); });
+    row.appendChild(inp);
+    const del = document.createElement('button');
+    del.className = 'del'; del.textContent = '✕';
+    if (isEdge) del.disabled = true;
+    del.addEventListener('click', () => {
+      if (s.hLines.length > 2){
+        pushHistory('del hLine #' + i);
+        s.hLines.splice(i, 1);
+        computeAnchorsForSprite(s, false);
+        renderAll();
+      }
+    });
+    row.appendChild(del);
+    row.addEventListener('mouseenter', () => {
+      state.hoverLine = { type: 'h', idx: i };
+      renderOverlay();
+    });
+    row.addEventListener('mouseleave', () => {
+      state.hoverLine = null;
+      renderOverlay();
+    });
+    hl.appendChild(row);
+  });
+
+  $('statLines').textContent = (s.vLines.length + s.hLines.length);
+}
+
+function renderAnchorList(){
+  const s = currentSprite();
+  if (!s) return;
+  const el = $('anchorList'); el.innerHTML = '';
+  s.anchors.forEach((a, i) => {
+    const row = document.createElement('div');
+    row.className = 'line-row';
+    row.innerHTML = `<span class="idx">#${i}</span>`;
+    const txt = document.createElement('span');
+    txt.style.cssText = 'flex:1;color:var(--accent);font-family:var(--font-mono);font-size:10px';
+    if (a) txt.textContent = `x=${a.x} y=${a.y}`;
+    else { txt.textContent = 'empty'; txt.style.color = 'var(--warning)'; }
+    row.appendChild(txt);
+    el.appendChild(row);
+  });
+}
+
+function renderAll(){
+  renderOverlay();
+  renderLineLists();
+  renderAnchorList();
+  updateBadges();
+  renderPreviewInfo();
+}
+
+function updateBadges(){
+  const s = currentSprite();
+  if (!s) return;
+  $('gridBadge').textContent = (s.vLines.length-1) + '×' + (s.hLines.length-1);
+  $('anchorBadge').textContent = s.anchors.filter(a=>a).length + '/' + s.anchors.length;
+  $('statCurrent').textContent = s.model + '/' + s.anim;
+  $('statSize').textContent = s.canvas.width + '×' + s.canvas.height;
+
+  const el = $('statCurrent');
+  el.className = 'val';
+  if (s.model === 'weapon') el.classList.add('weapon');
+  else if (s.model === 'skill' || s.model === 'effect') el.classList.add('skill');
+  else el.classList.add('ok');
+}
+
+/* ============================================================
+   MERGE PROJECT JSON
+   ============================================================ */
+function mergeProjectJson(newJson){
+  const report = {
+    newAnims: [],
+    updatedAnims: [],
+    keptAnims: [],
+    totalNew: 0,
+    totalUpdated: 0,
+    totalKept: 0
+  };
+
+  if (!state.projectJson){
+    state.projectJson = JSON.parse(JSON.stringify(newJson));
+    for (const m in newJson.models){
+      for (const a in newJson.models[m].animations){
+        report.newAnims.push(m + '/' + a);
+        report.totalNew++;
+      }
+    }
+    return report;
+  }
+
+  for (const modelName in newJson.models){
+    const srcModel = newJson.models[modelName];
+    const srcAnims = srcModel.animations;
+
+    if (!state.projectJson.models[modelName]){
+      state.projectJson.models[modelName] = JSON.parse(JSON.stringify(srcModel));
+      for (const a in srcAnims){
+        report.newAnims.push(modelName + '/' + a);
+        report.totalNew++;
+      }
+      state.loadedProjectModels.add(modelName);
+    } else {
+      const dstModel = state.projectJson.models[modelName];
+      for (const animName in srcAnims){
+        const key = modelName + '/' + animName;
+        if (dstModel.animations[animName]){
+          dstModel.animations[animName] = JSON.parse(JSON.stringify(srcAnims[animName]));
+          report.updatedAnims.push(key);
+          report.totalUpdated++;
+        } else {
+          dstModel.animations[animName] = JSON.parse(JSON.stringify(srcAnims[animName]));
+          report.newAnims.push(key);
+          report.totalNew++;
+        }
+      }
+    }
+  }
+
+  for (const modelName in state.projectJson.models){
+    const dstModel = state.projectJson.models[modelName];
+    for (const animName in dstModel.animations){
+      const key = modelName + '/' + animName;
+      if (!report.updatedAnims.includes(key) && !report.newAnims.includes(key)){
+        report.keptAnims.push(key);
+        report.totalKept++;
+      }
+    }
+  }
+  return report;
+}
+
+/* ============================================================
+   LOAD PROJECT — Modal + Tabs
+   ============================================================ */
+$('loadProjectBtn').addEventListener('click', () => {
+  $('loadModal').classList.add('show');
+  setTimeout(() => $('loadUrlInput').select(), 100);
+});
+
+document.querySelectorAll('.load-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.load-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const target = tab.dataset.loadTab;
+    $('loadTabUrl').style.display = target === 'url' ? 'block' : 'none';
+    $('loadTabFile').style.display = target === 'file' ? 'block' : 'none';
+    if (target === 'file'){
+      $('loadFileInfo').style.display = 'none';
+      $('loadFileConfirmBtn').disabled = true;
+      state._pendingLoadFile = null;
+    }
+  });
+});
+
+$('loadCancelBtn').addEventListener('click', () => $('loadModal').classList.remove('show'));
+$('loadFileCancelBtn').addEventListener('click', () => $('loadModal').classList.remove('show'));
+$('loadUrlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter'){ e.preventDefault(); doLoadProjectUrl(); }
+});
+
+$('loadConfirmBtn').addEventListener('click', doLoadProjectUrl);
+$('loadFileDrop').addEventListener('click', () => $('loadFileInput').click());
+$('loadFileConfirmBtn').addEventListener('click', doMergeFileJson);
+
+$('loadFileDrop').addEventListener('dragover', e => {
+  e.preventDefault();
+  $('loadFileDrop').classList.add('dragover');
+});
+$('loadFileDrop').addEventListener('dragleave', () => {
+  $('loadFileDrop').classList.remove('dragover');
+});
+$('loadFileDrop').addEventListener('drop', e => {
+  e.preventDefault();
+  $('loadFileDrop').classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f) previewLoadFile(f);
+});
+$('loadFileInput').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) previewLoadFile(f);
+  e.target.value = '';
+});
+
+async function previewLoadFile(file){
+  if (!file.name.endsWith('.json')){
+    toast('❌ Chỉ nhận file .json', 'err');
+    return;
+  }
+  try {
+    const text = await file.text();
+    const json = JSON.parse(text);
+    if (json.format !== 'dh-studio-project' || !json.models){
+      toast('❌ File sai định dạng', 'err');
+      return;
+    }
+    state._pendingLoadFile = { file, json };
+
+    let total = 0;
+    const info = [];
+    for (const m in json.models){
+      const n = Object.keys(json.models[m].animations).length;
+      total += n;
+      info.push(`${m}(${n})`);
+    }
+
+    const merged = state.projectJson ? 'sẽ merge' : 'khởi tạo mới';
+    $('loadFileInfo').innerHTML =
+      `📄 <b>${file.name}</b> · ${(file.size/1024).toFixed(1)} KB<br>` +
+      `📦 Models: <b>${info.join(', ')}</b><br>` +
+      `🎞️ Tổng anim: <b>${total}</b><br>` +
+      `🔄 ${merged}`;
+    $('loadFileInfo').style.display = 'block';
+    $('loadFileConfirmBtn').disabled = false;
+    toast('✓ Đã đọc ' + file.name, 'ok');
+  } catch(e){
+    toast('❌ Parse fail: ' + e.message, 'err');
+    $('loadFileInfo').style.display = 'none';
+    $('loadFileConfirmBtn').disabled = true;
+    state._pendingLoadFile = null;
+  }
+}
+
+function doMergeFileJson(){
+  const pending = state._pendingLoadFile;
+  if (!pending){ toast('❌ Chưa có file', 'err'); return; }
+
+  const report = mergeProjectJson(pending.json);
+  $('loadModal').classList.remove('show');
+  state._pendingLoadFile = null;
+  renderLibrary();
+
+  const parts = [];
+  if (report.totalNew) parts.push('➕' + report.totalNew);
+  if (report.totalUpdated) parts.push('🔄' + report.totalUpdated);
+  if (report.totalKept) parts.push('✓' + report.totalKept);
+  toast('📂 Merge ' + pending.file.name + ': ' + parts.join(' · '), 'ok');
+  console.log('📂 Merge report:', report);
+  setStatus('Merged ' + pending.file.name + ' · Models: ' + Object.keys(state.projectJson.models).join(', '), false);
+}
+
+async function doLoadProjectUrl(){
+  const url = $('loadUrlInput').value.trim();
+  if (!url){ toast('URL trống', 'err'); return; }
+  localStorage.setItem('dh_editor_load_url', url);
+
+  $('loadConfirmBtn').innerHTML = '<span class="spinner"></span> Loading...';
+  $('loadConfirmBtn').disabled = true;
+
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const project = await res.json();
+    if (project.format !== 'dh-studio-project' || !project.models){
+      throw new Error('Invalid JSON format');
+    }
+
+    const report = mergeProjectJson(project);
+
+    const baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
+    const assetsPath = baseUrl + 'assets/';
+
+    let loaded = 0;
+    const promises = [];
+    for (const modelName in project.models){
+      const model = project.models[modelName];
+      state.loadedProjectModels.add(modelName);
+      for (const animName in model.animations){
+        const cfg = model.animations[animName];
+        promises.push(loadSpriteFromProject(assetsPath, cfg.fileName, modelName, animName, cfg)
+          .then(ok => { if (ok) loaded++; }));
+      }
+    }
+    await Promise.all(promises);
+
+    $('loadModal').classList.remove('show');
+    renderLibrary();
+    toast('✓ Loaded ' + loaded + ' sprites', 'ok');
+    setStatus('Loaded ' + loaded + ' sprites', false);
+  } catch(e){
+    console.error(e);
+    toast('❌ Load fail: ' + e.message, 'err');
+    setStatus('Load fail: ' + e.message, true);
+  } finally {
+    $('loadConfirmBtn').innerHTML = '📂 Load URL';
+    $('loadConfirmBtn').disabled = false;
+  }
+}
+
+function loadSpriteFromProject(assetsPath, fileName, modelName, animName, cfg){
+  return new Promise(resolve => {
+    for (const s of state.sprites.values()){
+      if (s.model === modelName && s.anim === animName){ resolve(false); return; }
+    }
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const meta = decodeMetadata(img);
+      let spriteH, vLines, anchors, stableAnchor, anchorMode, fps, loop;
+
+      if (meta && meta.vLines && meta.vLines.length >= 2){
+        spriteH = meta.spriteH || (img.height - 1);
+        vLines = meta.vLines;
+        anchors = meta.anchors ? meta.anchors.map(x =>
+          Array.isArray(x) ? { x: x[0], y: x[1] } : (x ? { x: x.x, y: x.y } : null)) : [];
+        stableAnchor = meta.stableAnchor ? { x: meta.stableAnchor[0], y: meta.stableAnchor[1] } : null;
+        anchorMode = meta.anchorMode || 'stable-x';
+        fps = meta.fps || cfg.fps || 10;
+        loop = meta.loop !== undefined ? meta.loop : (cfg.loop !== false);
+      } else {
+        spriteH = cfg.spriteH || img.height;
+        vLines = cfg.vLines && cfg.vLines.length >= 2 ? cfg.vLines : [0, img.width];
+        anchors = (cfg.anchors || []).map(x =>
+          Array.isArray(x) ? { x: x[0], y: x[1] } : (x ? { x: x.x, y: x.y } : null));
+        stableAnchor = cfg.stableAnchor ? { x: cfg.stableAnchor[0], y: cfg.stableAnchor[1] } : null;
+        anchorMode = cfg.anchorMode || 'stable-x';
+        fps = cfg.fps || 10;
+        loop = cfg.loop !== false;
+      }
+
+      const cnv = document.createElement('canvas');
+      cnv.width = img.width;
+      cnv.height = spriteH;
+      const cc = cnv.getContext('2d', { willReadFrequently: true });
+      cc.imageSmoothingEnabled = false;
+      cc.drawImage(img, 0, 0, img.width, spriteH, 0, 0, img.width, spriteH);
+
+      const sprite = {
+        id: genId(),
+        fileName: fileName,
+        model: modelName,
+        anim: animName,
+        img, loaded: true,
+        canvas: cnv, ctx: cc,
+        spriteH, vLines, hLines: cfg.hLines || [0, spriteH],
+        anchors, stableAnchor, anchorMode,
+        fps, loop,
+        version: meta ? (meta.v || 1) : 0,
+        fromProject: true
+      };
+
+      if (!sprite.anchors.length || sprite.anchors.every(a => !a) || !sprite.stableAnchor){
+        computeAnchorsForSprite(sprite, false);
+      }
+      state.sprites.set(sprite.id, sprite);
+      resolve(true);
+    };
+    img.onerror = () => resolve(false);
+    img.src = assetsPath + fileName + '.png';
+  });
+}
+
+/* ============================================================
+   UPLOAD FILES
+   ============================================================ */
+$('uploadBtn').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => {
+  handleFiles([...e.target.files]);
+  fileInput.value = '';
+});
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  const files = [...e.dataTransfer.files];
+  if (files.length) handleFiles(files);
+});
+document.addEventListener('paste', e => {
+  const files = [];
+  for (const item of e.clipboardData.items){
+    if (item.type.startsWith('image/')) files.push(item.getAsFile());
+  }
+  if (files.length) handleFiles(files);
+});
+
+async function handleFiles(files){
+  const preset = $('uploadModelPreset').value || 'auto';
+  const jsonFiles = files.filter(f => f.name.endsWith('.json') || f.type === 'application/json');
+  const imageFiles = files.filter(f => f.type.startsWith('image/'));
+
+  if (jsonFiles.length > 0){
+    for (const jf of jsonFiles){
+      try {
+        const text = await jf.text();
+        const json = JSON.parse(text);
+        if (json.format !== 'dh-studio-project' || !json.models){
+          toast('❌ ' + jf.name + ' sai định dạng', 'err');
+          continue;
+        }
+        const report = mergeProjectJson(json);
+        toast('📂 ' + jf.name + ': ➕' + report.totalNew + ' 🔄' + report.totalUpdated, 'ok');
+        console.log('📂 Merge report:', report);
+      } catch(e){ toast('❌ Parse fail: ' + e.message, 'err'); }
+    }
+  }
+
+  if (imageFiles.length > 0){
+    setStatus('Loading ' + imageFiles.length + ' images...');
+    let loaded = 0;
+    for (const f of imageFiles){
+      try {
+        const sprite = await addSpriteFromFile(f, preset);
+        state.sprites.set(sprite.id, sprite);
+        loaded++;
+      } catch(e){ console.error(e); }
+    }
+    renderLibrary();
+    if (loaded > 0){
+      if (!state.currentId){
+        const first = [...state.sprites.values()][0];
+        selectSprite(first.id);
+      }
+      toast('✓ Loaded ' + loaded + ' images', 'ok');
+      setStatus('Loaded ' + loaded + ' images', false);
+    }
+  } else if (jsonFiles.length > 0){
+    setStatus('Merged JSON. Upload PNG next.', false);
+    renderLibrary();
+  }
+}
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function buildProjectJson(){
+  let project;
+  if (state.projectJson){
+    project = JSON.parse(JSON.stringify(state.projectJson));
+    project.version = 3;
+    project.exportedAt = new Date().toISOString();
+  } else {
+    project = {
+      format: 'dh-studio-project',
+      version: 3,
+      exportedAt: new Date().toISOString(),
+      models: {}
+    };
+  }
+
+  for (const s of state.sprites.values()){
+    if (!project.models[s.model]) project.models[s.model] = { animations: {} };
+    project.models[s.model].animations[s.anim] = {
+      fileName: s.fileName,
+      frames: s.vLines.length - 1,
+      spriteH: s.canvas.height,
+      vLines: s.vLines.map(v => Math.round(v)),
+      hLines: s.hLines.map(v => Math.round(v)),
+      anchors: s.anchors.map(a => a ? [a.x, a.y] : null),
+      stableAnchor: s.stableAnchor ? [s.stableAnchor.x, s.stableAnchor.y] : null,
+      anchorMode: s.anchorMode || 'stable-x',
+      fps: s.fps,
+      loop: s.loop
+    };
+  }
+  return project;
+}
+
+function exportSpritePNG(s, withMeta){
+  return new Promise((resolve, reject) => {
+    const out = document.createElement('canvas');
+    out.width = s.canvas.width;
+    out.height = s.canvas.height + (withMeta ? 1 : 0);
+    const oc = out.getContext('2d', { willReadFrequently: true });
+    oc.imageSmoothingEnabled = false;
+    oc.drawImage(s.canvas, 0, 0);
+    if (withMeta){
+      const meta = {
+        v: 3, label: s.anim, model: s.model,
+        fps: s.fps, loop: s.loop,
+        frames: s.vLines.length - 1,
+        spriteH: s.canvas.height,
+        vLines: s.vLines.map(v => Math.round(v)),
+        hLines: s.hLines.map(v => Math.round(v)),
+        anchors: s.anchors.map(a => a ? [a.x, a.y] : null),
+        stableAnchor: s.stableAnchor ? [s.stableAnchor.x, s.stableAnchor.y] : null,
+        anchorMode: s.anchorMode || 'stable-x'
+      };
+      try { writeMetaRow(out, s.canvas.height, encodeMetadata(meta)); }
+      catch (error) { reject(error); return; }
+    }
+    out.toBlob(blob => {
+      if (!blob) { reject(new Error('Không thể tạo PNG')); return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = s.fileName + '.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 15000);
+      resolve();
+    }, 'image/png');
+  });
+}
+
+$('exportBtn').addEventListener('click', async () => {
+  const s = currentSprite();
+  if (!s) return;
+  try {
+    await exportSpritePNG(s, true);
+    toast('💾 Saved ' + s.fileName + '.png', 'ok');
+  } catch (error) { toast('❌ ' + error.message, 'err'); }
+});
+
+$('exportAllBtn').addEventListener('click', showExportPreview);
+$('exportCancelBtn').addEventListener('click', () => $('exportModal').classList.remove('show'));
+$('exportConfirmBtn').addEventListener('click', doExportAll);
+
+function showExportPreview(){
+  const sprites = [...state.sprites.values()];
+  if (!sprites.length){ toast('Chưa có sprite', 'warn'); return; }
+
+  const byModel = {};
+  for (const s of sprites){
+    if (!byModel[s.model]) byModel[s.model] = [];
+    byModel[s.model].push(s);
+  }
+
+  let html = '';
+  for (const model in byModel){
+    html += `<div class="model-group">📦 ${model} (${byModel[model].length})</div>`;
+    for (const s of byModel[model]){
+      html += `<div class="anim-item">· ${s.anim}<span class="fn">→ ${s.fileName}.png</span></div>`;
+    }
+  }
+  $('exportList').innerHTML = html;
+  $('exportCount').textContent = sprites.length;
+
+  const exportModels = new Set(Object.keys(byModel));
+  const missing = [];
+  for (const m of state.loadedProjectModels){
+    if (!exportModels.has(m)) missing.push(m);
+  }
+  if (missing.length > 0){
+    $('exportWarn').style.display = 'block';
+    $('exportWarn').innerHTML = '⚠️ <b>CẢNH BÁO:</b> Đang thiếu model: <b>' + missing.join(', ') + '</b>.<br>' +
+      'Upload đè sprites.json cũ có thể MẤT các model này!<br><br>' +
+      '<b>Khuyến nghị:</b> Bấm 📂 Load để load lại file cũ trước.';
+  } else {
+    $('exportWarn').style.display = 'none';
+  }
+  $('exportModal').classList.add('show');
+}
+
+async function doExportAll(){
+  $('exportModal').classList.remove('show');
+  const sprites = [...state.sprites.values()];
+  toast('📦 Downloading ' + sprites.length + ' files...', 'ok');
+  try {
+    for (let i = 0; i < sprites.length; i++){
+      await exportSpritePNG(sprites[i], true);
+      await new Promise(r => setTimeout(r, 250));
+    }
+  } catch (error) {
+    toast('❌ Export dừng: ' + error.message, 'err');
+    return;
+  }
+  const project = buildProjectJson();
+  const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'sprites.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
+  toast('📦 Exported ' + sprites.length + ' PNG + sprites.json', 'ok');
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector(`.panel[data-panel="${tab.dataset.tab}"]`).classList.add('active');
+    if (tab.dataset.tab === 'preview') renderPreviewInfo();
+  });
+});
+
+/* ============================================================
+   TOOLS
+   ============================================================ */
+function setTool(tool){
+  state.tool = tool;
+  document.querySelectorAll('.tool-btn').forEach(el => el.classList.remove('active'));
+  const map = { select:'toolSelect', addv:'toolAddV', addh:'toolAddH', pick:'toolPick', pan:'toolPan' };
+  if (map[tool]) $(map[tool]).classList.add('active');
+  overlayCanvas.style.cursor = tool === 'pick' ? 'crosshair' :
+    tool === 'pan' ? 'grab' : 'default';
+}
+$('toolSelect').addEventListener('click', () => setTool('select'));
+$('toolAddV').addEventListener('click', () => setTool('addv'));
+$('toolAddH').addEventListener('click', () => setTool('addh'));
+$('toolPick').addEventListener('click', () => setTool('pick'));
+$('toolPan').addEventListener('click', () => setTool('pan'));
+setTool('select');
+
+$('snapChk').addEventListener('change', e => state.snap = e.target.checked);
+$('gridChk').addEventListener('change', e => { state.showGrid = e.target.checked; renderOverlay(); });
+
+$('autoDetect').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  pushHistory('auto detect');
+  let lines = autoDetectFrameLines(s.canvas, null);
+  if (!lines || lines.length < 4){
+    const userFrames = parseInt(prompt(
+      'Detected ' + (lines ? lines.length - 1 : 0) + ' frames.\nEnter correct count:', '10'));
+    if (userFrames && userFrames > 1){
+      lines = autoDetectFrameLines(s.canvas, userFrames);
+    }
+  }
+  if (!lines || lines.length < 3){ toast('Không tách được frame', 'err'); return; }
+  s.vLines = lines;
+  s.hLines = [0, s.canvas.height];
+  computeAnchorsForSprite(s, false);
+  renderAll();
+  toast('🤖 ' + (lines.length - 1) + ' frames detected', 'ok');
+});
+
+$('computeAnchors').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  pushHistory('recompute anchors');
+  computeAnchorsForSprite(s, true);
+  renderAll();
+});
+
+$('mirrorBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  pushHistory('mirror');
+  const tmp = document.createElement('canvas');
+  tmp.width = s.canvas.width;
+  tmp.height = s.canvas.height;
+  const tc = tmp.getContext('2d');
+  tc.translate(tmp.width, 0);
+  tc.scale(-1, 1);
+  tc.drawImage(s.canvas, 0, 0);
+  s.ctx.clearRect(0, 0, s.canvas.width, s.canvas.height);
+  s.ctx.drawImage(tmp, 0, 0);
+  const mc = mainCanvas.getContext('2d');
+  mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+  mc.drawImage(s.canvas, 0, 0);
+  computeAnchorsForSprite(s, false);
+  renderAll();
+  toast('↔ Mirrored', 'ok');
+});
+
+$('alignFramesBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s) return;
+  if (s.vLines.length < 3){ toast('Chưa có frame', 'warn'); return; }
+  pushHistory('align frames');
+  const padding = Math.max(0, Math.min(64, parseInt($('padXInput').value) || 12));
+  const gap     = Math.max(0, Math.min(64, parseInt($('gapXInput').value) || 6));
+  $('padXInput').value = padding;
+  $('gapXInput').value = gap;
+  const res = expandAndAlignFrames(s, padding, gap);
+  if (!res.ok){ toast('❌ ' + res.msg, 'err'); return; }
+  selectSprite(s.id, true);
+  toast(`🎯 Expanded + aligned ${res.frames} frames`, 'ok');
+});
+
+/* ============================================================
+   CANVAS INTERACTION
+   ============================================================ */
+function getCanvasCoords(e){
+  const rect = mainCanvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) / state.zoom,
+    y: (e.clientY - rect.top) / state.zoom
+  };
+}
+function findLineAt(x, y){
+  const s = currentSprite();
+  if (!s) return null;
+  const tol = 8 / state.zoom;
+  for (let i = 1; i < s.vLines.length - 1; i++){
+    if (Math.abs(s.vLines[i] - x) < tol) return { type: 'v', idx: i };
+  }
+  for (let i = 1; i < s.hLines.length - 1; i++){
+    if (Math.abs(s.hLines[i] - y) < tol) return { type: 'h', idx: i };
+  }
+  return null;
+}
+function findCellAt(x, y){
+  const s = currentSprite();
+  if (!s) return null;
+  let ci = -1, ri = -1;
+  for (let i = 0; i < s.vLines.length - 1; i++){
+    if (x >= s.vLines[i] && x < s.vLines[i+1]){ ci = i; break; }
+  }
+  for (let i = 0; i < s.hLines.length - 1; i++){
+    if (y >= s.hLines[i] && y < s.hLines[i+1]){ ri = i; break; }
+  }
+  if (ci < 0 || ri < 0) return null;
+  return {
+    x1: s.vLines[ci], y1: s.hLines[ri],
+    x2: s.vLines[ci+1], y2: s.hLines[ri+1],
+    _idx: ri * (s.vLines.length - 1) + ci
+  };
+}
+function pickColorAt(x, y){
+  const s = currentSprite();
+  if (!s) return;
+  if (x < 0 || y < 0 || x >= s.canvas.width || y >= s.canvas.height) return;
+  const d = s.ctx.getImageData(x, y, 1, 1).data;
+  state.bgColor = { r: d[0], g: d[1], b: d[2] };
+  $('bgFill').style.background = `rgb(${d[0]},${d[1]},${d[2]})`;
+  toast('💧 RGB(' + d[0] + ',' + d[1] + ',' + d[2] + ')', 'ok');
+  setTool('select');
+}
+
+overlayCanvas.addEventListener('mousemove', e => {
+  const s = currentSprite();
+  if (!s) return;
+  if (state.drag) return;
+  const { x, y } = getCanvasCoords(e);
+  const line = findLineAt(x, y);
+  if (line !== state.hoverLine &&
+      (!line || !state.hoverLine || line.type !== state.hoverLine.type || line.idx !== state.hoverLine.idx)){
+    state.hoverLine = line;
+    renderOverlay();
+  }
+  if (line) overlayCanvas.style.cursor = line.type === 'v' ? 'ew-resize' : 'ns-resize';
+  else overlayCanvas.style.cursor = state.tool === 'pick' ? 'crosshair' :
+    state.tool === 'pan' ? 'grab' : 'default';
+});
+
+overlayCanvas.addEventListener('mousedown', e => {
+  const s = currentSprite();
+  if (!s) return;
+  const { x, y } = getCanvasCoords(e);
+
+  if (e.altKey || state.tool === 'pick'){ pickColorAt(Math.floor(x), Math.floor(y)); return; }
+
+  if (state.tool === 'pan' || e.button === 1){
+    state.pan.active = true;
+    state.pan.startX = e.clientX;
+    state.pan.startY = e.clientY;
+    state.pan.scrollL = stageCanvas.scrollLeft;
+    state.pan.scrollT = stageCanvas.scrollTop;
+    overlayCanvas.style.cursor = 'grabbing';
+    e.preventDefault();
+    return;
+  }
+
+  if (e.button === 2){
+    const line = findLineAt(x, y);
+    if (line){
+      pushHistory('delete line');
+      if (line.type === 'v' && s.vLines.length > 2) s.vLines.splice(line.idx, 1);
+      else if (line.type === 'h' && s.hLines.length > 2) s.hLines.splice(line.idx, 1);
+      computeAnchorsForSprite(s, false);
+      renderAll();
+      toast('🗑 Line deleted', 'ok');
+    }
+    return;
+  }
+
+  if (state.tool === 'addv'){
+    pushHistory('add vLine');
+    s.vLines.push(Math.round(x));
+    s.vLines.sort((a,b) => a-b);
+    computeAnchorsForSprite(s, false);
+    renderAll();
+    return;
+  }
+  if (state.tool === 'addh'){
+    pushHistory('add hLine');
+    s.hLines.push(Math.round(y));
+    s.hLines.sort((a,b) => a-b);
+    computeAnchorsForSprite(s, false);
+    renderAll();
+    return;
+  }
+
+  if (state.manualAnchor && state.cell && e.button === 0){
+    pushHistory('set anchor');
+    s.anchors[state.cell._idx] = { x: Math.round(x), y: Math.round(y) };
+    renderOverlay();
+    renderAnchorList();
+    toast('🎯 Anchor set', 'ok');
+    return;
+  }
+
+  const line = findLineAt(x, y);
+  if (line){
+    pushHistory('drag ' + line.type);
+    state.drag = { type: line.type, idx: line.idx };
+    renderOverlay();
+    return;
+  }
+
+  const cell = findCellAt(x, y);
+  if (cell){
+    state.cell = cell;
+    state.cellMoveOffset = { x: 0, y: 0 };
+    state.cellOriginal = null;
+    state.drag = { type: 'cell', startX: Math.floor(x), startY: Math.floor(y), cell: { ...cell } };
+    renderOverlay();
+    return;
+  }
+
+  state.cell = null;
+  renderOverlay();
+});
+overlayCanvas.addEventListener('contextmenu', e => e.preventDefault());
+
+document.addEventListener('mousemove', e => {
+  if (state.pan.active){
+    const dx = e.clientX - state.pan.startX;
+    const dy = e.clientY - state.pan.startY;
+    stageCanvas.scrollLeft = state.pan.scrollL - dx;
+    stageCanvas.scrollTop = state.pan.scrollT - dy;
+    return;
+  }
+  const s = currentSprite();
+  if (!s || !state.drag) return;
+  const { x, y } = getCanvasCoords(e);
+
+  if (state.drag.type === 'v'){
+    let nx = x;
+    if (state.snap) nx = Math.round(nx);
+    nx = Math.max(s.vLines[state.drag.idx-1]+5, Math.min(s.vLines[state.drag.idx+1]-5, nx));
+    s.vLines[state.drag.idx] = Math.round(nx);
+    renderLineLists();
+    renderOverlay();
+  } else if (state.drag.type === 'h'){
+    let ny = y;
+    if (state.snap) ny = Math.round(ny);
+    ny = Math.max(s.hLines[state.drag.idx-1]+5, Math.min(s.hLines[state.drag.idx+1]-5, ny));
+    s.hLines[state.drag.idx] = Math.round(ny);
+    renderLineLists();
+    renderOverlay();
+  } else if (state.drag.type === 'cell'){
+    const dx = Math.floor(x) - state.drag.startX;
+    const dy = Math.floor(y) - state.drag.startY;
+    state.cellMoveOffset.x = dx;
+    state.cellMoveOffset.y = dy;
+    previewCellMove();
+    renderOverlay();
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  if (state.pan.active){
+    state.pan.active = false;
+    overlayCanvas.style.cursor = state.tool === 'pan' ? 'grab' : 'default';
+    return;
+  }
+  const s = currentSprite();
+  if (!state.drag || !s) return;
+  if (state.drag.type === 'v' || state.drag.type === 'h'){
+    s.vLines.sort((a,b) => a-b);
+    s.hLines.sort((a,b) => a-b);
+    computeAnchorsForSprite(s, false);
+    renderAll();
+  } else if (state.drag.type === 'cell'){
+    if (state.cellMoveOffset.x !== 0 || state.cellMoveOffset.y !== 0){
+      state.cellOriginal = null;
+      state.cellMoveOffset = { x: 0, y: 0 };
+      const mc = mainCanvas.getContext('2d');
+      mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+      mc.drawImage(s.canvas, 0, 0);
+      computeAnchorsForSprite(s, false);
+      renderAll();
+    }
+  }
+  state.drag = null;
+});
+
+function previewCellMove(){
+  const s = currentSprite();
+  if (!s || !state.cell) return;
+  if (!state.cellOriginal){
+    const w = state.cell.x2 - state.cell.x1;
+    const h = state.cell.y2 - state.cell.y1;
+    const data = s.ctx.getImageData(state.cell.x1, state.cell.y1, w, h);
+    state.cellOriginal = { x1: state.cell.x1, y1: state.cell.y1, w, h, imageData: data };
+  }
+  const o = state.cellOriginal;
+  s.ctx.clearRect(o.x1, o.y1, o.w, o.h);
+  const tmp = document.createElement('canvas');
+  tmp.width = o.w; tmp.height = o.h;
+  tmp.getContext('2d').putImageData(o.imageData, 0, 0);
+  s.ctx.drawImage(tmp, o.x1 + state.cellMoveOffset.x, o.y1 + state.cellMoveOffset.y);
+  const mc = mainCanvas.getContext('2d');
+  mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+  mc.drawImage(s.canvas, 0, 0);
+}
+
+stageCanvas.addEventListener('wheel', e => {
+  if (!currentSprite()) return;
+  e.preventDefault();
+  const factor = e.deltaY > 0 ? 0.9 : 1.1;
+  state.zoom = Math.max(0.1, Math.min(8, state.zoom * factor));
+  applyZoom();
+}, { passive: false });
+
+function applyZoom(){
+  mainCanvas.style.transform = `scale(${state.zoom})`;
+  mainCanvas.style.transformOrigin = 'top left';
+  overlayCanvas.style.transform = `scale(${state.zoom})`;
+  overlayCanvas.style.transformOrigin = 'top left';
+  const pct = Math.round(state.zoom * 100) + '%';
+  $('zoomLabel').textContent = pct;
+  $('statZoom').textContent = pct;
+  $('zoomVal').textContent = pct;
+}
+
+$('zoomInBtn').addEventListener('click', () => { state.zoom = Math.min(8, state.zoom * 1.25); applyZoom(); });
+$('zoomOutBtn').addEventListener('click', () => { state.zoom = Math.max(0.1, state.zoom / 1.25); applyZoom(); });
+$('zoomFitBtn').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s){ state.zoom = 1; applyZoom(); return; }
+  const cw = stageCanvas.clientWidth - 100;
+  const ch = stageCanvas.clientHeight - 100;
+  state.zoom = Math.max(0.1, Math.min(cw / s.canvas.width, ch / s.canvas.height, 8));
+  applyZoom();
+});
+
+/* ============================================================
+   INSPECTOR CONTROLS
+   ============================================================ */
+$('autoVBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  const n = parseInt(prompt('Number of columns:', s.vLines.length - 1 || 10)) || 10;
+  pushHistory('auto V');
+  s.vLines = [0];
+  for (let i = 1; i < n; i++) s.vLines.push(Math.round(i * s.canvas.width / n));
+  s.vLines.push(s.canvas.width);
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('autoHBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  const n = parseInt(prompt('Number of rows:', s.hLines.length - 1 || 1)) || 1;
+  pushHistory('auto H');
+  s.hLines = [0];
+  for (let i = 1; i < n; i++) s.hLines.push(Math.round(i * s.canvas.height / n));
+  s.hLines.push(s.canvas.height);
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('addVBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  pushHistory('add V');
+  const mid = s.vLines.length > 1 ? (s.vLines[s.vLines.length-2] + s.vLines[s.vLines.length-1])/2 : s.canvas.width/2;
+  s.vLines.push(Math.round(mid));
+  s.vLines.sort((a,b) => a-b);
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('addHBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  pushHistory('add H');
+  const mid = s.hLines.length > 1 ? (s.hLines[s.hLines.length-2] + s.hLines[s.hLines.length-1])/2 : s.canvas.height/2;
+  s.hLines.push(Math.round(mid));
+  s.hLines.sort((a,b) => a-b);
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('clearVBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  pushHistory('reset V');
+  s.vLines = [0, s.canvas.width];
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('clearHBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  pushHistory('reset H');
+  s.hLines = [0, s.canvas.height];
+  computeAnchorsForSprite(s, false);
+  renderAll();
+});
+
+document.querySelectorAll('#resizeAnchorGrid .anchor-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#resizeAnchorGrid .anchor-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    state.resizeAnchor = btn.dataset.a;
+  });
+});
+$('resizeBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  const nW = parseInt($('canvasW').value);
+  const nH = parseInt($('canvasH').value);
+  if (!nW || !nH) return;
+  pushHistory('resize');
+  const oW = s.canvas.width, oH = s.canvas.height;
+  const tmp = document.createElement('canvas');
+  tmp.width = oW; tmp.height = oH;
+  tmp.getContext('2d').drawImage(s.canvas, 0, 0);
+  s.canvas.width = nW; s.canvas.height = nH;
+  s.ctx = s.canvas.getContext('2d', { willReadFrequently: true });
+  s.ctx.imageSmoothingEnabled = false;
+  let dx = 0, dy = 0;
+  const a = state.resizeAnchor;
+  if (a[1] === 'c') dx = (nW-oW)/2; else if (a[1] === 'r') dx = nW-oW;
+  if (a[0] === 'm') dy = (nH-oH)/2; else if (a[0] === 'b') dy = nH-oH;
+  s.ctx.drawImage(tmp, Math.round(dx), Math.round(dy));
+  s.vLines[0] = 0; s.vLines[s.vLines.length-1] = nW;
+  s.hLines[0] = 0; s.hLines[s.hLines.length-1] = nH;
+  computeAnchorsForSprite(s, false);
+  selectSprite(s.id, true);
+});
+$('cropBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  const bbox = detectBBox(s.canvas, 0, 0, s.canvas.width, s.canvas.height);
+  if (!bbox){ toast('Empty image', 'warn'); return; }
+  pushHistory('crop');
+  const tmp = document.createElement('canvas');
+  tmp.width = bbox.w; tmp.height = bbox.h;
+  tmp.getContext('2d').drawImage(s.canvas, -bbox.x, -bbox.y);
+  s.canvas.width = bbox.w; s.canvas.height = bbox.h;
+  s.ctx = s.canvas.getContext('2d', { willReadFrequently: true });
+  s.ctx.imageSmoothingEnabled = false;
+  s.ctx.drawImage(tmp, 0, 0);
+  s.vLines = [0, bbox.w];
+  s.hLines = [0, bbox.h];
+  computeAnchorsForSprite(s, false);
+  selectSprite(s.id, true);
+  toast('✂ ' + bbox.w + '×' + bbox.h, 'ok');
+});
+
+$('anchorMode').addEventListener('change', e => {
+  const s = currentSprite(); if (!s) return;
+  s.anchorMode = e.target.value;
+  state.manualAnchor = s.anchorMode === 'manual';
+  if (!state.manualAnchor) computeAnchorsForSprite(s, false);
+  renderAll();
+});
+$('anchorRecompute').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  pushHistory('recompute anchors');
+  computeAnchorsForSprite(s, true);
+  renderAll();
+});
+$('anchorClear').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  pushHistory('clear anchors');
+  s.anchors = [];
+  s.stableAnchor = null;
+  renderAll();
+});
+
+$('pickBtn').addEventListener('click', () => setTool('pick'));
+$('bgTol').addEventListener('input', e => $('bgTolVal').textContent = e.target.value);
+$('bgMode').addEventListener('change', e => {
+  $('bgColorRow').style.display = e.target.value === 'color' ? 'flex' : 'none';
+});
+$('bgApplyAll').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  pushHistory('bg all');
+  applyBg(s, 0, 0, s.canvas.width, s.canvas.height);
+});
+$('bgApplyCell').addEventListener('click', () => {
+  const s = currentSprite();
+  if (!s || !state.cell) return;
+  pushHistory('bg cell');
+  applyBg(s, state.cell.x1, state.cell.y1,
+    state.cell.x2-state.cell.x1, state.cell.y2-state.cell.y1);
+});
+function applyBg(s, x, y, w, h){
+  const imgData = s.ctx.getImageData(x, y, w, h);
+  const d = imgData.data;
+  const bg = state.bgColor;
+  const tol = parseInt($('bgTol').value);
+  const mode = $('bgMode').value;
+  let nc = null;
+  if (mode === 'white') nc = { r:255, g:255, b:255 };
+  else if (mode === 'black') nc = { r:0, g:0, b:0 };
+  else if (mode === 'color'){
+    const c = $('bgNewColor').value;
+    nc = { r: parseInt(c.substr(1,2),16), g: parseInt(c.substr(3,2),16), b: parseInt(c.substr(5,2),16) };
+  }
+  let count = 0;
+  for (let i = 0; i < d.length; i += 4){
+    if (Math.abs(d[i]-bg.r) <= tol && Math.abs(d[i+1]-bg.g) <= tol && Math.abs(d[i+2]-bg.b) <= tol){
+      if (mode === 'alpha') d[i+3] = 0;
+      else { d[i]=nc.r; d[i+1]=nc.g; d[i+2]=nc.b; d[i+3]=255; }
+      count++;
+    }
+  }
+  s.ctx.putImageData(imgData, x, y);
+  const mc = mainCanvas.getContext('2d');
+  mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+  mc.drawImage(s.canvas, 0, 0);
+  computeAnchorsForSprite(s, false);
+  renderAll();
+  toast('✓ ' + count + ' pixels', 'ok');
+}
+
+$('metaModel').addEventListener('change', e => {
+  const s = currentSprite(); if (!s) return;
+  if (e.target.value === 'custom'){
+    $('customModelRow').style.display = 'flex';
+    $('metaModelCustom').focus();
+    return;
+  }
+  const newModel = e.target.value;
+  const oldModel = s.model;
+  $('customModelRow').style.display = 'none';
+
+  if (oldModel !== newModel){
+    const oldFileName = s.fileName;
+    let newFileName;
+    if (newModel === 'player'){
+      const parts = oldFileName.split('_');
+      if (parts.length > 1 && MODEL_PREFIXES.includes(parts[0].toLowerCase())){
+        parts[0] = 'player';
+        newFileName = parts.join('_');
+      } else newFileName = 'player_' + oldFileName;
+    } else newFileName = renameWithPrefix(oldFileName, newModel);
+    newFileName = ensureUniqueFilename(newFileName);
+    if (newFileName !== oldFileName){
+      s.fileName = newFileName;
+      $('metaFile').value = newFileName;
+      toast('📝 ' + oldFileName + ' → ' + newFileName, 'warn');
+    }
+  }
+  s.model = newModel;
+  s.fps = getFpsForAnim(s.anim, s.model);
+  $('metaFps').value = s.fps;
+  updateModelBadge(s.model);
+  updateMetaHint(s.model);
+  renderLibrary(); updateBadges();
+});
+$('metaModelCustom').addEventListener('change', e => {
+  const s = currentSprite(); if (!s) return;
+  s.model = e.target.value.trim() || 'custom';
+  updateModelBadge(s.model);
+  renderLibrary(); updateBadges();
+});
+$('renameFileBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  const oldName = s.fileName;
+  let newName = renameWithPrefix(oldName, s.model);
+  newName = ensureUniqueFilename(newName);
+  if (newName === oldName){ toast('✓ Already correct', 'ok'); return; }
+  s.fileName = newName;
+  $('metaFile').value = newName;
+  renderLibrary();
+  toast('📝 ' + oldName + ' → ' + newName, 'ok');
+});
+$('metaAnim').addEventListener('change', e => {
+  const s = currentSprite(); if (!s) return;
+  if (e.target.value === 'custom') $('customAnimRow').style.display = 'flex';
+  else {
+    $('customAnimRow').style.display = 'none';
+    s.anim = e.target.value;
+    s.fps = getFpsForAnim(s.anim, s.model);
+    $('metaFps').value = s.fps;
+    renderLibrary(); updateBadges();
+  }
+});
+$('metaAnimCustom').addEventListener('change', e => {
+  const s = currentSprite(); if (!s) return;
+  s.anim = e.target.value.trim() || 'custom';
+  renderLibrary(); updateBadges();
+});
+$('autoFpsBtn').addEventListener('click', () => {
+  const s = currentSprite(); if (!s) return;
+  s.fps = getFpsForAnim(s.anim, s.model);
+  $('metaFps').value = s.fps;
+  toast('⚡ FPS: ' + s.fps, 'ok');
+});
+$('metaFile').addEventListener('change', e => {
+  const s = currentSprite(); if (!s) return;
+  let newName = e.target.value.trim() || s.fileName;
+  newName = ensureUniqueFilename(newName);
+  if (newName !== e.target.value.trim()){
+    e.target.value = newName;
+    toast('📝 ' + newName, 'warn');
+  }
+  s.fileName = newName;
+  renderLibrary();
+});
+$('metaFps').addEventListener('change', e => {
+  const s = currentSprite(); if (!s) return;
+  s.fps = Math.max(1, Math.min(60, parseInt(e.target.value) || 10));
+});
+$('metaLoop').addEventListener('change', e => {
+  const s = currentSprite(); if (!s) return;
+  s.loop = e.target.value === '1';
+});
+
+/* ============================================================
+   PREVIEW
+   ============================================================ */
+const previewCanvas = $('previewCanvas');
+const pctx = previewCanvas.getContext('2d');
+
+function renderPreviewInfo(){
+  const s = currentSprite();
+  if (!s){ $('previewInfo').textContent = 'Chọn sprite để xem info.'; return; }
+  const frames = s.vLines.length - 1;
+  const anchors = s.anchors.filter(a=>a).length;
+  let saText = '—';
+  if (s.stableAnchor) saText = `(${s.stableAnchor.x}, ${s.stableAnchor.y})`;
+  $('previewInfo').innerHTML =
+    `<b>${s.model}/${s.anim}</b><br>` +
+    `File: ${s.fileName}.png<br>` +
+    `Size: ${s.canvas.width}×${s.canvas.height}<br>` +
+    `Frames: <b>${frames}</b><br>` +
+    `FPS: ${s.fps} · ${s.loop ? 'loop' : 'once'}<br>` +
+    `Anchors: ${anchors}/${frames}<br>` +
+    `Mode: ${s.anchorMode}<br>` +
+    `Stable: ${saText}`;
+  const slider = $('previewFrameSlider');
+  slider.max = Math.max(0, frames - 1);
+  slider.value = state.previewFrame;
+  $('previewFrameVal').textContent = state.previewFrame;
+}
+$('previewFrameSlider').addEventListener('input', e => {
+  state.previewFrame = parseInt(e.target.value);
+  $('previewFrameVal').textContent = state.previewFrame;
+  drawPreview();
+});
+function drawPreview(){
+  const s = currentSprite(); if (!s) return;
+  const frames = s.vLines.length - 1; if (frames < 1) return;
+  const idx = Math.max(0, Math.min(frames - 1, state.previewFrame));
+  pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+  pctx.fillStyle = '#010409';
+  pctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+  pctx.imageSmoothingEnabled = false;
+  const sx = s.vLines[idx];
+  const sw = s.vLines[idx+1] - sx;
+  const sh = s.canvas.height;
+  const scale = Math.min((previewCanvas.width - 24) / sw, (previewCanvas.height - 24) / sh, 3);
+  const dw = sw * scale, dh = sh * scale;
+  const dx = (previewCanvas.width - dw) / 2;
+  const dy = (previewCanvas.height - dh) / 2;
+  pctx.drawImage(s.canvas, sx, 0, sw, sh, dx, dy, dw, dh);
+  const a = s.anchors[idx];
+  if (a){
+    const ax = dx + ((a.x - sx) / sw) * dw;
+    const ay = dy + (a.y / sh) * dh;
+    pctx.strokeStyle = '#f85149';
+    pctx.lineWidth = 2;
+    pctx.beginPath(); pctx.arc(ax, ay, 4, 0, Math.PI*2); pctx.stroke();
+    pctx.fillStyle = '#f85149';
+    pctx.beginPath(); pctx.arc(ax, ay, 2, 0, Math.PI*2); pctx.fill();
+  }
+  if (s.stableAnchor && s.anchorMode !== 'per-frame'){
+    const sa = s.stableAnchor;
+    const ax = dx + (sa.x / sw) * dw;
+    const ay = dy + (sa.y / sh) * dh;
+    pctx.strokeStyle = '#58a6ff';
+    pctx.lineWidth = 2;
+    pctx.beginPath(); pctx.arc(ax, ay, 5, 0, Math.PI*2); pctx.stroke();
+    pctx.fillStyle = '#58a6ff';
+    pctx.beginPath(); pctx.arc(ax, ay, 2, 0, Math.PI*2); pctx.fill();
+  }
+}
+$('previewPlayBtn').addEventListener('click', () => {
+  if (state.previewPlaying) return;
+  state.previewPlaying = true;
+  state.previewTime = 0;
+  const loop = () => {
+    if (!state.previewPlaying) return;
+    const s = currentSprite();
+    if (!s){ state.previewPlaying = false; return; }
+    const frames = s.vLines.length - 1;
+    if (frames < 1){ state.previewPlaying = false; return; }
+    state.previewTime += 1/60;
+    state.previewFrame = Math.floor(state.previewTime * s.fps) % frames;
+    if (!s.loop && state.previewTime * s.fps >= frames){
+      state.previewPlaying = false;
+      state.previewFrame = frames - 1;
+    }
+    $('previewFrameSlider').value = state.previewFrame;
+    $('previewFrameVal').textContent = state.previewFrame;
+    drawPreview();
+    if (state.previewPlaying) state.previewRAF = requestAnimationFrame(loop);
+  };
+  state.previewRAF = requestAnimationFrame(loop);
+});
+$('previewStopBtn').addEventListener('click', () => {
+  state.previewPlaying = false;
+  if (state.previewRAF) cancelAnimationFrame(state.previewRAF);
+});
+
+/* ============================================================
+   HELP
+   ============================================================ */
+$('helpBtn').addEventListener('click', () => {
+  alert(
+    'HƯỚNG DẪN DH STUDIO v5.0\n\n' +
+    '━━━ DRAG LINE ━━━\n' +
+    '• Click trực tiếp vào line dọc/ngang → kéo\n' +
+    '• Handle xanh ở đầu line = điểm kéo\n' +
+    '• Right-click line = xóa\n' +
+    '• Hover line = highlight vàng\n\n' +
+    '━━━ TOOLS ━━━\n' +
+    '• 🖱 Select — kéo line, chọn cell\n' +
+    '• ┃ +V / ━ +H — thêm line\n' +
+    '• 💧 Pick — pick màu nền\n' +
+    '• ✋ Pan — kéo canvas\n\n' +
+    '━━━ KEYBOARD ━━━\n' +
+    '• Ctrl+Z / Ctrl+Y = Undo / Redo\n' +
+    '• Ctrl+0 = Reset zoom\n' +
+    '• Ctrl+= / Ctrl+- = Zoom in/out\n' +
+    '• Space + drag = Pan canvas\n' +
+    '• Alt+Click = Pick màu\n' +
+    '• Scroll = Zoom\n' +
+    '• Delete = Xóa cell\n\n' +
+    '━━━ WORKFLOW ━━━\n' +
+    '1. 📂 Load → chọn file sprites.json cũ\n' +
+    '2. Chọn model preset → 📁 Upload PNG mới\n' +
+    '3. Chỉnh line bằng kéo trực tiếp\n' +
+    '4. 🎯 Expand & Align để fix trôi frame\n' +
+    '5. 📦 Export All → tải về\n\n' +
+    'Editor luôn merge — KHÔNG mất model cũ!'
+  );
+});
+
+/* ============================================================
+   KEYBOARD
+   ============================================================ */
+document.addEventListener('keydown', e => {
+  if (e.target.closest('input, textarea, select, [contenteditable=true]')) return;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey){
+    e.preventDefault(); undo(); return;
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))){
+    e.preventDefault(); redo(); return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 's'){
+    e.preventDefault();
+    if (currentSprite()) $('exportBtn').click();
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === '0'){
+    e.preventDefault(); state.zoom = 1; applyZoom(); return;
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')){
+    e.preventDefault(); state.zoom = Math.min(8, state.zoom * 1.25); applyZoom(); return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === '-'){
+    e.preventDefault(); state.zoom = Math.max(0.1, state.zoom / 1.25); applyZoom(); return;
+  }
+  if (e.code === 'Space' && !state.pan.active && !e.repeat){
+    state.pan.active = true;
+    state.pan.startX = 0; state.pan.startY = 0;
+    state.pan.scrollL = stageCanvas.scrollLeft;
+    state.pan.scrollT = stageCanvas.scrollTop;
+    state.pan.mouseActive = false;
+    overlayCanvas.style.cursor = 'grab';
+    e.preventDefault();
+    return;
+  }
+  if (e.key === 'Escape'){
+    state.cell = null;
+    renderOverlay();
+    setTool('select');
+    $('loadModal').classList.remove('show');
+    $('exportModal').classList.remove('show');
+  }
+  if (e.key === 'Delete' && state.cell){
+    const s = currentSprite(); if (!s) return;
+    pushHistory('delete cell');
+    s.ctx.clearRect(state.cell.x1, state.cell.y1,
+      state.cell.x2-state.cell.x1, state.cell.y2-state.cell.y1);
+    const mc = mainCanvas.getContext('2d');
+    mc.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+    mc.drawImage(s.canvas, 0, 0);
+    computeAnchorsForSprite(s, false);
+    renderAll();
+  }
+});
+document.addEventListener('keyup', e => {
+  if (e.code === 'Space' && state.pan.active && !state.pan.mouseActive){
+    state.pan.active = false;
+    overlayCanvas.style.cursor = state.tool === 'pan' ? 'grab' : 'default';
+  }
+});
+
+/* Init */
+setTool('select');
+applyZoom();
+updateHistoryButtons();
 </script>
 </body>
-</html>
+  </html>
+
