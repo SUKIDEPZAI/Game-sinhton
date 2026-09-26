@@ -87,7 +87,7 @@ a{color:inherit;text-decoration:none}
 #userHud .status{font-size:11px}
 #userHud .status.saving{color:var(--gold);animation:pulse 1s infinite}
 #userHud .status.saved{color:var(--success)}
-#userHud .status.error{color:var(--danger)}
+#userHud .status.error{color:var(--danger)}\n#professionBtn{border:1px solid var(--border);background:rgba(8,12,20,.78);color:var(--primary);border-radius:8px;padding:5px 8px;font:700 10px 'JetBrains Mono',monospace;cursor:pointer}\n#professionModal{z-index:80}\n.prof-panel{background:linear-gradient(180deg,var(--bg-2),var(--bg-1));border:1px solid var(--border);border-radius:var(--r-xl);padding:22px;max-width:720px;width:min(94vw,720px);box-shadow:var(--shadow-lg),0 0 80px rgba(94,234,212,.10);animation:modal-in .25s}\n.prof-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}.prof-head h2{margin:0;font-family:'JetBrains Mono',Consolas,monospace;font-size:18px;letter-spacing:2px}.prof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.prof-card{padding:12px;border:1px solid var(--border);border-radius:12px;background:rgba(7,11,18,.72);cursor:pointer;transition:.15s;min-height:126px}.prof-card:hover{border-color:var(--primary);transform:translateY(-1px)}.prof-card.active{border-color:var(--primary);background:rgba(94,234,212,.10);box-shadow:0 0 0 1px rgba(94,234,212,.18)}.prof-icon{font-size:25px}.prof-name{font-weight:800;margin-top:5px}.prof-desc{font-size:10px;color:var(--text-dim);line-height:1.45;margin-top:4px}.prof-stats{font-size:9px;color:var(--gold);margin-top:7px;font-family:'JetBrains Mono',monospace}.prof-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:14px}\n@media(max-width:700px){.prof-grid{grid-template-columns:repeat(2,1fr)}.prof-panel{padding:15px}.prof-card{min-height:112px;padding:9px}}\n@media(max-width:430px){.prof-grid{grid-template-columns:1fr 1fr}.prof-card{min-height:100px}.prof-desc{font-size:9px}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 #settingsBtn{position:fixed;top:10px;right:10px;z-index:11;width:36px;height:36px;
   background:var(--bg-glass);backdrop-filter:blur(12px);
@@ -124,6 +124,16 @@ a{color:inherit;text-decoration:none}
 .bar-text{min-width:52px;text-align:right;font-weight:700}
 .bar-text.hp{color:#fca5a5}
 .bar-text.xp{color:var(--primary)}
+#skillBar{display:flex;gap:5px;align-items:center;justify-content:center;pointer-events:auto}
+.skill-slot{position:relative;width:54px;height:54px;border:1px solid rgba(94,234,212,.25);border-radius:11px;background:rgba(9,14,22,.92);box-shadow:0 6px 18px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden}
+.skill-slot:hover{border-color:var(--primary)}.skill-slot.locked{filter:grayscale(1);opacity:.45;cursor:not-allowed}.skill-slot.ready{border-color:rgba(74,222,128,.75);box-shadow:0 0 16px rgba(74,222,128,.18)}.skill-slot .sicon{font-size:20px;line-height:20px}.skill-slot .skey{position:absolute;left:4px;top:3px;font:800 9px 'JetBrains Mono',monospace;color:var(--gold)}.skill-slot .scd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 14px 'JetBrains Mono',monospace;color:#fff;text-shadow:0 2px 5px #000;background:rgba(0,0,0,.42)}.skill-slot .sname{max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:7px;color:var(--text-dim);margin-top:2px}.skill-slot .smana{position:absolute;right:3px;bottom:3px;font-size:7px;color:#8fc8ff}
+.skill-hint{font-size:8px;color:var(--text-dim);text-align:center;font-family:'JetBrains Mono',monospace}
+@media(max-width:600px){#skillBar{gap:3px}.skill-slot{width:47px;height:47px;border-radius:9px}.skill-slot .sicon{font-size:17px}.skill-slot .sname{font-size:6px}.skill-slot .smana{font-size:6px}.skill-slot .scd{font-size:12px}}
+@media(pointer:fine){#touchSkills{display:none!important}}
+#touchSkills{position:fixed;right:16px;bottom:90px;z-index:9;display:none;grid-template-columns:repeat(5,44px);gap:4px;pointer-events:auto}
+.touch-skill{width:44px;height:44px;border-radius:12px;background:rgba(10,15,22,.86);border:1px solid rgba(94,234,212,.32);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 5px 15px #0008}.touch-skill .key{position:absolute;left:4px;top:2px;font-size:8px;color:var(--gold);font-weight:900}.touch-skill .cd{position:absolute;inset:0;border-radius:12px;background:#0008;color:#fff;display:flex;align-items:center;justify-content:center;font:900 12px monospace}.touch-skill.locked{opacity:.38;filter:grayscale(1)}
+@media(pointer:coarse){#touchSkills{display:grid}#skillBar,.skill-hint{display:none}}
+@media(max-width:700px) and (orientation:landscape){#touchSkills{right:12px;bottom:72px;grid-template-columns:repeat(5,38px)}.touch-skill{width:38px;height:38px;border-radius:10px}.touch-skill .sicon{font-size:15px}}
 #hotbar{display:flex;gap:3px;padding:5px;
   background:var(--bg-glass);backdrop-filter:blur(14px);
   border:1px solid var(--border);border-radius:var(--r);
@@ -498,6 +508,8 @@ body.edit-btn-mode #editOverlay{display:flex}
     </div>
   </div>
   <div id="hotbar"></div>
+  <div id="skillBar" aria-label="Kỹ năng"></div>
+  <div class="skill-hint">PC: Q W E R T · Mobile: chạm nút kỹ năng</div>
 </div>
 
 <div id="touchUI">
@@ -511,6 +523,7 @@ body.edit-btn-mode #editOverlay{display:flex}
   </div>
   <button id="btnJump" class="circle-button jump-button">⤒</button>
   <button id="btnSit" class="circle-button action-button">🪑</button>
+  <div id="touchSkills"></div>
 </div>
 
 <div id="editOverlay">
@@ -526,10 +539,19 @@ body.edit-btn-mode #editOverlay{display:flex}
   <div class="avatar" id="userAvatar">H</div>
   <div class="name" id="userName">Hunter</div>
   <div class="level" id="userLevel">Lv.1</div>
+  <button id="professionBtn" title="Chọn chức nghiệp">⚔ Chiến binh</button>
   <div class="status" id="userStatus"></div>
 </div>
 
 <div id="loadStatus" class="hidden"></div>
+<div id="professionModal" class="modal hidden">
+  <div class="prof-panel">
+    <div class="prof-head"><div style="font-size:26px">🏆</div><div><h2>CHỌN CHỨC NGHIỆP</h2><div style="font-size:10px;color:var(--text-dim)">6 nghề · có thể đổi khi đang ở ngoài combat</div></div></div>
+    <div id="professionGrid" class="prof-grid"></div>
+    <div class="prof-actions"><button class="mbtn" onclick="closeProfessionModal()">Hủy</button><button class="mbtn primary" onclick="confirmProfession()">✓ Chọn nghề</button></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <div id="pause" class="modal hidden">
@@ -739,7 +761,70 @@ function updateConnBadge(text, cls){
 /* CONFIG */
 const MAX_PLAYERS = 5;
 const DEATH_RESPAWN_DELAY = 0.8;
-const SAVE_VERSION = 2;
+const SAVE_VERSION = 4;
+const MAX_LEVEL = 100;
+
+const PROFESSIONS = {
+  warrior:{name:'Chiến binh',icon:'⚔️',desc:'Cận chiến bền bỉ, nhiều HP và sát thương ổn định.',hp:1.25,mana:.9,speed:.95,damage:1.15,cooldown:1},
+  archer:{name:'Cung thủ',icon:'🏹',desc:'Nhanh nhẹn, di chuyển tốt và đánh chính xác.',hp:1,mana:1,speed:1.12,damage:1.05,cooldown:.95},
+  mage:{name:'Pháp sư',icon:'🔮',desc:'Năng lượng lớn, sát thương cao, thiên về kỹ năng.',hp:.9,mana:1.5,speed:.95,damage:1.25,cooldown:1,},
+  assassin:{name:'Sát thủ',icon:'🗡️',desc:'Cơ động và ra đòn nhanh, HP thấp hơn.',hp:.9,mana:1,speed:1.2,damage:1.1,cooldown:.82},
+  beastmaster:{name:'Ngự thú sư',icon:'🐺',desc:'Cân bằng, thiên về sinh tồn và sức mạnh đồng hành.',hp:1.15,mana:1.1,speed:1.05,damage:1.05,cooldown:.98},
+  madscientist:{name:'Tiến sĩ điên',icon:'🧪',desc:'Thử nghiệm nguy hiểm, năng lượng và sát thương cao.',hp:.95,mana:1.3,speed:1,damage:1.3,cooldown:.9}
+ };
+
+/* ============================================================
+   PROFESSION SKILLS — 6 nghề × 5 skill
+   Skill 1 có ngay từ Lv.1. Skill 2..5 mở ở Lv.10/20/30/40.
+   Skill 1 được nâng cấp mỗi 10 level tới Lv.100.
+   ============================================================ */
+const PROFESSION_SKILLS = {
+  warrior:[
+    {name:'Chấn Địa',icon:'🌋',key:'Q',unlock:1,cooldown:5,mana:12,type:'aoe',power:16,radius:78},
+    {name:'Xung Phong',icon:'💥',key:'W',unlock:10,cooldown:7,mana:16,type:'dash',power:24,distance:105},
+    {name:'Thiết Giáp',icon:'🛡️',key:'E',unlock:20,cooldown:14,mana:22,type:'shield',power:0,duration:5},
+    {name:'Cuồng Kiếm',icon:'🌀',key:'R',unlock:30,cooldown:11,mana:28,type:'aoe',power:32,radius:115},
+    {name:'Berserk',icon:'🔥',key:'T',unlock:40,cooldown:28,mana:36,type:'buff',power:1.55,duration:7}
+  ],
+  archer:[
+    {name:'Mũi Tên Xuyên',icon:'🏹',key:'Q',unlock:1,cooldown:4,mana:10,type:'nearest',power:18,range:330},
+    {name:'Liên Tiễn',icon:'🏹',key:'W',unlock:10,cooldown:8,mana:18,type:'multi',power:13,range:360,count:3},
+    {name:'Mưa Tên',icon:'🌧️',key:'E',unlock:20,cooldown:13,mana:24,type:'aoe',power:27,radius:120},
+    {name:'Bẫy Săn',icon:'🪤',key:'R',unlock:30,cooldown:12,mana:20,type:'aoe',power:34,radius:95},
+    {name:'Tâm Nhãn',icon:'🎯',key:'T',unlock:40,cooldown:26,mana:32,type:'buff',power:1.4,duration:8}
+  ],
+  mage:[
+    {name:'Cầu Lửa',icon:'🔥',key:'Q',unlock:1,cooldown:4,mana:14,type:'nearest',power:25,range:360},
+    {name:'Băng Nổ',icon:'❄️',key:'W',unlock:10,cooldown:8,mana:20,type:'aoe',power:30,radius:88},
+    {name:'Sét Đánh',icon:'⚡',key:'E',unlock:20,cooldown:11,mana:30,type:'multi',power:38,range:420,count:2},
+    {name:'Thiên Thạch',icon:'☄️',key:'R',unlock:30,cooldown:18,mana:42,type:'aoe',power:62,radius:145},
+    {name:'Arcane Surge',icon:'🔮',key:'T',unlock:40,cooldown:30,mana:45,type:'buff',power:1.8,duration:7}
+  ],
+  assassin:[
+    {name:'Ảnh Kích',icon:'🌑',key:'Q',unlock:1,cooldown:4,mana:10,type:'dash',power:22,distance:125},
+    {name:'Độc Nhẫn',icon:'☠️',key:'W',unlock:10,cooldown:7,mana:15,type:'nearest',power:34,range:130},
+    {name:'Bom Khói',icon:'💨',key:'E',unlock:20,cooldown:13,mana:22,type:'shield',power:0,duration:4},
+    {name:'Ảnh Loạn',icon:'🗡️',key:'R',unlock:30,cooldown:10,mana:26,type:'aoe',power:46,radius:100},
+    {name:'Sát Tâm',icon:'🩸',key:'T',unlock:40,cooldown:25,mana:34,type:'buff',power:1.7,duration:6}
+  ],
+  beastmaster:[
+    {name:'Vuốt Sói',icon:'🐺',key:'Q',unlock:1,cooldown:5,mana:10,type:'nearest',power:20,range:145},
+    {name:'Lang Hống',icon:'🐾',key:'W',unlock:10,cooldown:9,mana:18,type:'aoe',power:25,radius:100},
+    {name:'Thú Hộ',icon:'🦊',key:'E',unlock:20,cooldown:15,mana:22,type:'heal',power:20},
+    {name:'Bầy Thú',icon:'🐺',key:'R',unlock:30,cooldown:12,mana:28,type:'multi',power:22,range:260,count:4},
+    {name:'Cuồng Thú',icon:'🐾',key:'T',unlock:40,cooldown:27,mana:35,type:'buff',power:1.5,duration:8}
+  ],
+  madscientist:[
+    {name:'Bom Điên',icon:'💣',key:'Q',unlock:1,cooldown:5,mana:12,type:'aoe',power:22,radius:85},
+    {name:'Ống Tiêm',icon:'🧪',key:'W',unlock:10,cooldown:8,mana:16,type:'heal',power:28},
+    {name:'Tesla',icon:'⚡',key:'E',unlock:20,cooldown:12,mana:26,type:'multi',power:32,range:400,count:3},
+    {name:'Độc Khí',icon:'☣️',key:'R',unlock:30,cooldown:15,mana:30,type:'aoe',power:40,radius:135},
+    {name:'Quá Tải',icon:'🧬',key:'T',unlock:40,cooldown:29,mana:40,type:'buff',power:1.9,duration:7}
+  ]
+};
+const SKILL_KEYS=['KeyQ','KeyW','KeyE','KeyR','KeyT'];
+let selectedProfession = localStorage.getItem('dh_profession') || 'warrior';
+let pendingProfession = selectedProfession;
 
 const buzz = ms => { if (navigator.vibrate) try{ navigator.vibrate(ms||6); }catch(e){} };
 const isTouchDevice = matchMedia('(pointer:coarse)').matches ||
@@ -794,6 +879,17 @@ function migrateSaveData(data){
     d.stats.damageTaken = d.stats.damageTaken ?? 0;
     d.achievements = d.achievements || {};
     d.version = 2;
+  }
+  if ((d.version || 1) < 3){
+    d.player = d.player || {};
+    d.player.profession = PROFESSIONS[d.player.profession] ? d.player.profession : 'warrior';
+    d.version = 3;
+  }
+  if ((d.version || 1) < 4){
+    d.player = d.player || {};
+    d.player.level = Math.max(1, Math.min(MAX_LEVEL, Number(d.player.level)||1));
+    d.player.exp = Math.max(0, Number(d.player.exp)||0);
+    d.version = 4;
   }
   if (fromVersion < SAVE_VERSION) console.log(`[Save] Migrated v${fromVersion} → v${SAVE_VERSION}`);
   return d;
@@ -895,11 +991,13 @@ function collectSaveData(){
     version: SAVE_VERSION,
     savedAt: new Date().toISOString(),
     player: {
-      level: player.level||1, exp: player.exp||0,
+      level: Math.max(1, Math.min(MAX_LEVEL, player.level||1)), exp: Math.max(0, player.exp||0),
+      skillCooldowns: (player.skillCooldowns||[]).map(v => Math.max(0, Number(v)||0)),
       hp: player.hp, maxHp: player.maxHp,
       mana: player.mana, maxMana: player.maxMana,
       x: Math.round(player.x), y: Math.round(player.y),
       selected: player.selected,
+      profession: player.profession,
       stamina: player.stamina ?? 100,
       maxStamina: player.maxStamina ?? 100
     },
@@ -917,13 +1015,15 @@ function applySaveData(rawData){
   const data = migrateSaveData(rawData);
   if (!data || !data.player) return;
   const p = data.player;
-  player.level = p.level||1;
-  player.exp = p.exp||0;
+  player.level = Math.max(1, Math.min(MAX_LEVEL, Number(p.level)||1));
+  player.exp = Math.max(0, Number(p.exp)||0);
+  player.skillCooldowns = Array.isArray(p.skillCooldowns) ? p.skillCooldowns.slice(0,5).map(v=>Math.max(0,Number(v)||0)) : [0,0,0,0,0];
   player.hp = p.hp||20;
   player.maxHp = p.maxHp||20;
   player.maxMana = Math.max(1, Number(p.maxMana) || 60);
   player.mana = Math.max(0, Math.min(player.maxMana, Number(p.mana ?? player.maxMana)));
   player.selected = p.selected||0;
+  if (PROFESSIONS[p.profession]) { selectedProfession = p.profession; player.profession = p.profession; }
   player.stamina = p.stamina ?? 100;
   player.maxStamina = p.maxStamina ?? 100;
   if (p.x != null && p.y != null && !net.active){ player.x = p.x; player.y = p.y; }
@@ -943,6 +1043,7 @@ function applySaveData(rawData){
   }
   player._achievements = data.achievements || {};
   updateUserHud();
+  renderSkillBar();
 }
 
 function updateUserHud(){
@@ -953,6 +1054,9 @@ function updateUserHud(){
   $('userAvatar').textContent = name.charAt(0).toUpperCase();
   $('userName').textContent = name;
   $('userLevel').textContent = 'Lv.' + (player.level||1);
+  const pd = PROFESSIONS[player.profession] || PROFESSIONS.warrior;
+  $('professionBtn').textContent = pd.icon + ' ' + pd.name;
+  renderSkillBar();
 }
 
 function showAuthModal(show = true){ $('authModal').classList.toggle('hidden', !show); }
@@ -1174,6 +1278,9 @@ const net = {
         this.players.delete(msg.id);
         toast('👋 ' + (msg.name||'Player') + ' rời phòng', 'warning');
         updateNetHud(); break;
+      case 'profession':
+        if (msg.id !== this.myId){ const ex=this.players.get(msg.id); if(ex) ex.profession=msg.profession; }
+        break;
       case 'player_update': {
         let ex = this.players.get(msg.id);
         if (ex){
@@ -1192,6 +1299,9 @@ const net = {
         break;
       }
       case 'attack': break;
+      case 'skill':
+        if (msg.id !== this.myId) { const ex=this.players.get(msg.id); if(ex) { ex.lastSkill=msg.skill; ex.lastSkillAt=Date.now(); } }
+        break;
       case 'hit':
         player.hp = msg.hp;
         player.hurtT = DEATH_DURATION;
@@ -1242,7 +1352,7 @@ const net = {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => { this.onRoomCreated = null; reject(new Error('Timeout')); }, 10000);
       this.onRoomCreated = (msg) => { clearTimeout(timer); this.onRoomCreated = null; resolve(msg.code); };
-      this.send({ t:'create_room', name, x:player.x, y:player.y, level:player.level||1 });
+      this.send({ t:'create_room', name, x:player.x, y:player.y, level:player.level||1, profession:player.profession||'warrior' });
     });
   },
 
@@ -1266,7 +1376,7 @@ const net = {
         clearTimeout(timer); this.onWorldReady = null; this.onError = null;
         reject(new Error(errMsg));
       };
-      this.send({ t:'join_room', code, name, x:player.x, y:player.y, level:player.level||1 });
+      this.send({ t:'join_room', code, name, x:player.x, y:player.y, level:player.level||1, profession:player.profession||'warrior' });
     });
   },
 
@@ -1280,6 +1390,8 @@ const net = {
     });
   },
   attack(angle, dmg){ if (this.active) this.send({ t:'attack', angle, dmg }); },
+  skill(index){ if (this.active) this.send({ t:'skill', skill:index }); },
+  setProfession(id){ if (this.active) this.send({ t:'profession', profession:id }); },
   chat(text){ if (this.active) this.send({ t:'chat', text }); },
 
   disconnect(){
@@ -1762,9 +1874,46 @@ const player = {
   animT:0, currentAnim:'idle', animTime:0,
   _stepAcc:0, attackT:0, hurtT:0, jumpT:0, jumpY:0,
   sitting:false, deathT:0,
-  level:1, exp:0, _kills:0, _deaths:0, _saveAcc:0,
+  level:1, exp:0, profession:selectedProfession, _kills:0, _deaths:0, _saveAcc:0,
+  skillCooldowns:[0,0,0,0,0], _skillBuff:null, _skillShield:0, _skillUiAcc:0,
   _dmgDealt:0, _dmgTaken:0, _achievements:{}
 };
+
+function applyProfession(id, preserveRatio=true){
+  if (!PROFESSIONS[id]) id='warrior';
+  const oldHp = Math.max(1, player.maxHp||20), oldMana = Math.max(1, player.maxMana||60);
+  const hpRatio = preserveRatio ? Math.max(0, Math.min(1, (player.hp||oldHp)/oldHp)) : 1;
+  const manaRatio = preserveRatio ? Math.max(0, Math.min(1, (player.mana||oldMana)/oldMana)) : 1;
+  const d=PROFESSIONS[id];
+  selectedProfession=id; player.profession=id;
+  player.maxHp=Math.round(20*d.hp); player.maxMana=Math.round(60*d.mana); player.speed=160*d.speed;
+  player.hp=Math.max(1,Math.min(player.maxHp,Math.round(player.maxHp*hpRatio)));
+  player.mana=Math.max(0,Math.min(player.maxMana,Math.round(player.maxMana*manaRatio)));
+  localStorage.setItem('dh_profession',id);
+  updateUserHud(); updateHpBar();
+  if (AUTH.token) AUTH.triggerSave();
+}
+function professionDamageMultiplier(){ return (PROFESSIONS[player.profession]||PROFESSIONS.warrior).damage; }
+function professionCooldownMultiplier(){ return (PROFESSIONS[player.profession]||PROFESSIONS.warrior).cooldown; }
+function openProfessionModal(){
+  pendingProfession=player.profession||selectedProfession||'warrior';
+  const grid=$('professionGrid'); grid.innerHTML='';
+  Object.entries(PROFESSIONS).forEach(([id,d])=>{
+    const el=document.createElement('div'); el.className='prof-card'+(id===pendingProfession?' active':'');
+    el.innerHTML=`<div class="prof-icon">${d.icon}</div><div class="prof-name">${d.name}</div><div class="prof-desc">${d.desc}</div><div class="prof-stats">HP ×${d.hp} · MP ×${d.mana}<br>SPD ×${d.speed} · DMG ×${d.damage}</div>`;
+    el.onclick=()=>{pendingProfession=id;grid.querySelectorAll('.prof-card').forEach(x=>x.classList.remove('active'));el.classList.add('active')}; grid.appendChild(el);
+  });
+  $('professionModal').classList.remove('hidden');
+}
+function closeProfessionModal(){ $('professionModal').classList.add('hidden'); }
+function confirmProfession(){
+  if (net.active && player.hp>0 && player.attackT>0){ toast('Không thể đổi nghề giữa đòn đánh','warning'); return; }
+  applyProfession(pendingProfession,true); closeProfessionModal(); toast('🏆 Nghề: '+PROFESSIONS[pendingProfession].name,'success');
+  if (net.active) net.setProfession(pendingProfession);
+}
+$('professionBtn').addEventListener('click',openProfessionModal);
+applyProfession(selectedProfession, false);
+renderSkillBar();
 
 const cam = { x:0, y:0 };
 const cv = $('cv');
@@ -1931,11 +2080,97 @@ function trySit(){
   net.broadcastPos();
 }
 let lastAttackT = 0;
+function skillsForPlayer(){ return PROFESSION_SKILLS[player.profession] || PROFESSION_SKILLS.warrior; }
+function skillRank(skill){
+  if (!skill) return 0;
+  if (player.level < skill.unlock) return 0;
+  return skill === skillsForPlayer()[0] ? Math.max(1, 1 + Math.floor((player.level-1)/10)) : 1;
+}
+function skillDamage(skill){
+  const rank=skillRank(skill); if(!rank) return 0;
+  return Math.round(skill.power * (skill===skillsForPlayer()[0] ? (1 + (rank-1)*0.16) : (1 + Math.max(0,Math.floor((player.level-skill.unlock)/20))*0.08)) * professionDamageMultiplier() * (player._skillBuff?.damage||1));
+}
+function addXP(amount){
+  let gain=Math.max(0,Number(amount)||0);
+  if(player.level>=MAX_LEVEL){player.level=MAX_LEVEL;player.exp=0;updateHpBar();updateUserHud();return;}
+  player.exp=(player.exp||0)+gain;
+  let leveled=false;
+  while(player.level<MAX_LEVEL && player.exp>=100){
+    player.exp-=100; player.level++; leveled=true;
+  }
+  if(player.level>=MAX_LEVEL) player.exp=0;
+  if(leveled){
+    player.hp=player.maxHp; player.mana=player.maxMana;
+    Audio2D.sfx.click(); toast('⭐ LÊN CẤP! Lv.'+player.level,'success');
+    if(player.level%10===0) toast('✨ Kỹ năng khởi đầu được nâng cấp!','success');
+    if([10,20,30,40].includes(player.level)) toast('🔓 Mở khóa kỹ năng mới!','success');
+    if(AUTH.token) AUTH.triggerSave();
+  }
+  updateHpBar(); updateUserHud();
+}
+function skillTargets(range=350){
+  return Wraiths.monsters.filter(m=>m.hp>0 && Math.hypot(m.x-player.x,m.y-player.y)<=range).sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y));
+}
+function skillDamageMonster(m,damage){
+  if(!m||m.hp<=0)return false; const before=m.hp; m.hp=Math.max(0,m.hp-Math.max(1,damage));
+  if(before>0&&m.hp<=0){m.respawn=12;addXP(15);}
+  return true;
+}
+function skillDamageRadius(radius,damage){
+  let hits=0; for(const m of Wraiths.monsters){if(m.hp>0&&Math.hypot(m.x-player.x,m.y-player.y)<=radius){skillDamageMonster(m,damage);hits++;}} return hits;
+}
+function skillDamageMulti(count,range,damage){let hits=0;for(const m of skillTargets(range).slice(0,count)){skillDamageMonster(m,damage);hits++;}return hits;}
+function dashPlayer(distance){const a=aim.angle;player.x=Math.max(player.radius,Math.min(WORLD_W*TILE-player.radius,player.x+Math.cos(a)*distance));player.y=Math.max(player.radius,Math.min(WORLD_H*TILE-player.radius,player.y+Math.sin(a)*distance));player.facing=Math.cos(a)>=0?1:-1;player.attackT=.12;if(net.active)net.broadcastPos();}
+function useSkill(index){
+  if(!gameStarted||paused||player.hp<=0)return false;
+  const skills=skillsForPlayer(),skill=skills[index]; if(!skill)return false;
+  if(player.level<skill.unlock){toast('🔒 Mở ở Lv.'+skill.unlock,'warning');return false;}
+  const cd=player.skillCooldowns[index]||0;
+  if(cd>0){toast('⏳ '+skill.name+' còn '+cd.toFixed(1)+'s','warning');return false;}
+  if(player.mana<skill.mana){toast('🔮 Không đủ mana','warning');return false;}
+  player.mana-=skill.mana;
+  player.skillCooldowns[index]=skill.cooldown*professionCooldownMultiplier();
+  const dmg=skillDamage(skill); let hits=0;
+  switch(skill.type){
+    case 'aoe': hits=skillDamageRadius(skill.radius,dmg); break;
+    case 'nearest': {const m=skillTargets(skill.range)[0];if(m){skillDamageMonster(m,dmg);hits=1;}break;}
+    case 'multi': hits=skillDamageMulti(skill.count,skill.range,dmg);break;
+    case 'dash': dashPlayer(skill.distance); hits=skillDamageRadius(62,dmg);break;
+    case 'heal': player.hp=Math.min(player.maxHp,player.hp+Math.round(skill.power*(1+Math.floor(player.level/10)*.08)));break;
+    case 'shield': player._skillShield=Math.max(player._skillShield,skill.duration); break;
+    case 'buff': player._skillBuff={damage:skill.power,expires:performance.now()/1000+skill.duration}; break;
+  }
+  player.currentAnim='attack';player.animTime=0;
+  if(index===0) toast(skillsForPlayer()[0].icon+' '+skill.name+' Lv.'+skillRank(skill)+(hits?' · '+hits+' mục tiêu':''),'success');
+  else toast(skill.icon+' '+skill.name+(hits?' · '+hits+' mục tiêu':''),'success');
+  buzz(12); Audio2D.sfx.swordSwing();
+  if(net.active) net.skill(index);
+  if(AUTH.token) AUTH.triggerSave();
+  updateHpBar();renderSkillBar();return true;
+}
+function updateSkills(dt){
+  for(let i=0;i<5;i++)player.skillCooldowns[i]=Math.max(0,(player.skillCooldowns[i]||0)-dt);
+  if(player._skillBuff && performance.now()/1000>=player._skillBuff.expires)player._skillBuff=null;
+  if(player._skillShield>0)player._skillShield=Math.max(0,player._skillShield-dt);
+  player._skillUiAcc=(player._skillUiAcc||0)+dt;
+  if(player._skillUiAcc>.08){player._skillUiAcc=0;renderSkillBar();}
+}
+function skillLabel(i){const sk=skillsForPlayer()[i];if(!sk)return '';return sk.name+' · Lv.'+sk.unlock;}
+function renderSkillBar(){
+  const bar=$('skillBar'),touch=$('touchSkills'); if(!bar||!touch)return;
+  const skills=skillsForPlayer();bar.innerHTML='';touch.innerHTML='';
+  skills.forEach((sk,i)=>{
+    const unlocked=player.level>=sk.unlock,cd=player.skillCooldowns[i]||0,ready=unlocked&&cd<=0&&player.mana>=sk.mana;
+    const rank=skillRank(sk); const b=document.createElement('button');b.className='skill-slot '+(!unlocked?'locked ':'')+(ready?'ready':'');b.title=skillLabel(i);b.innerHTML=`<span class="skey">${sk.key}</span><span class="sicon">${sk.icon}</span><span class="sname">${sk.name}${i===0?' R'+rank:''}</span><span class="smana">${sk.mana} MP</span>${cd>0?`<span class="scd">${cd.toFixed(1)}</span>`:''}`;b.onclick=()=>useSkill(i);bar.appendChild(b);
+    const tb=document.createElement('button');tb.className='touch-skill '+(!unlocked?'locked':'');tb.title=skillLabel(i);tb.innerHTML=`<span class="key">${sk.key}</span><span class="sicon">${sk.icon}</span>${cd>0?`<span class="cd">${cd.toFixed(1)}</span>`:''}`;tb.onclick=()=>useSkill(i);touch.appendChild(tb);
+  });
+}
+SKILL_KEYS.forEach((code,i)=>addEventListener('keydown',e=>{if(e.code===code&&!e.repeat){e.preventDefault();useSkill(i)}}));
 function tryAttack(){
   if (!gameStarted || paused || player.hp <= 0) return;
   if (player.sitting) player.sitting = false;
   const now = performance.now();
-  if (now - lastAttackT < ATTACK_DURATION*1000) return;
+  if (now - lastAttackT < ATTACK_DURATION*1000*professionCooldownMultiplier()) return;
   lastAttackT = now;
   player.attackT = ATTACK_DURATION;
   Audio2D.sfx.swordSwing();
@@ -1946,7 +2181,8 @@ function tryAttack(){
   if (net.active){
     const held = inv.hotbar[player.selected];
     const heldDef = held ? defOf(held.id) : null;
-    const dmg = (heldDef && heldDef.tool === 'sword') ? (heldDef.dmg||1) : 1;
+    const baseDmg = (heldDef && heldDef.tool === 'sword') ? (heldDef.dmg||1) : 1;
+    const dmg = Math.max(1, Math.round(baseDmg * professionDamageMultiplier()));
     net.attack(angle, dmg);
     player._dmgDealt = (player._dmgDealt||0) + dmg;
   }
@@ -1963,6 +2199,7 @@ function updatePlayer(dt){
     if (player.deathT >= DEATH_RESPAWN_DELAY) respawnPlayer();
     return;
   }
+  updateSkills(dt);
   let dx=0, dy=0;
   if (joy.id !== null && Math.hypot(joy.x, joy.y) > 0.15){ dx=joy.x; dy=joy.y; }
   else {
@@ -2064,15 +2301,10 @@ function updateNetHud(){
    Random crop 32×32 từ ảnh gốc → mỗi vị trí có texture khác nhau
    ============================================================ */
 const GrassTiles = (() => {
-  /* Performance: keep a small variant cache and a camera-area layer.
-     Grass is static, so we should not issue hundreds of drawImage() calls every frame. */
-  const VARIANTS = 32;
+  const VARIANTS = 64;
   const cache = new Map();
   let img = null;
   let loaded = false;
-  let layer = null;
-  let layerKey = '';
-  let layerX = 0, layerY = 0;
 
   function mulberry32(a){
     return function(){
@@ -2116,7 +2348,7 @@ const GrassTiles = (() => {
     const cnv = document.createElement('canvas');
     cnv.width = TILE;
     cnv.height = TILE;
-    const cx = cnv.getContext('2d', { alpha:false });
+    const cx = cnv.getContext('2d');
     cx.imageSmoothingEnabled = false;
     cx.drawImage(img, cropX, cropY, TILE, TILE, 0, 0, TILE, TILE);
 
@@ -2130,40 +2362,10 @@ const GrassTiles = (() => {
     console.log('[GrassTiles] ✓ Preloaded ' + VARIANTS + ' variants');
   }
 
-  /* Build one static canvas for the currently visible grass area.
-     It is rebuilt only when the camera crosses a tile boundary or the viewport changes. */
-  function drawLayer(cx0, cy0, cx1, cy1, camX, camY){
-    const w = Math.max(TILE, (cx1-cx0)*TILE);
-    const h = Math.max(TILE, (cy1-cy0)*TILE);
-    const key = cx0+':'+cy0+':'+cx1+':'+cy1+':'+w+':'+h;
-    if (!layer || layer.width !== w || layer.height !== h || layerKey !== key){
-      layer = document.createElement('canvas');
-      layer.width = w; layer.height = h;
-      const lc = layer.getContext('2d', { alpha:false });
-      lc.imageSmoothingEnabled = false;
-      lc.fillStyle = '#4a8a32';
-      lc.fillRect(0, 0, w, h);
-      for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
-        const hash = (x * 73856093 ^ y * 19349663) >>> 0;
-        const tile = get(hash);
-        if (!tile) continue;
-        /* 1px overlap hides hairline seams / square tile borders. */
-        lc.drawImage(tile, (x-cx0)*TILE-1, (y-cy0)*TILE-1, TILE+2, TILE+2);
-      }
-      layerKey = key;
-      layerX = cx0*TILE; layerY = cy0*TILE;
-    }
-    ctx.drawImage(layer, Math.round(layerX-camX), Math.round(layerY-camY));
-  }
-
-  function invalidate(){ layerKey=''; layer=null; }
-
   return {
     load,
     get,
     preload,
-    drawLayer,
-    invalidate,
     isLoaded: () => loaded,
     VARIANTS
   };
@@ -2182,24 +2384,15 @@ function drawEntityBars(x,y,hp,maxHp,mana,maxMana,width=46){
 }
 const Wraiths = (() => {
   const image = new Image(); image.src='assets/monster_wraith.png';
-  /* Attack sheet is separate so the base Wraith sheet stays backward-compatible. */
-  const attackImage = new Image(); attackImage.src='assets/monster_wraith_attack.png';
   const monsters=[]; const projectiles=[];
   let elapsed=0;
   const MAX_PROJECTILES=30;
-  const ATTACK_FRAMES=8;
-  const ATTACK_DURATION=.8;
   function spawnAround(x,y){
     if(monsters.length) return;
     [[160,110],[-220,80],[90,-190]].forEach(([ox,oy],i)=>{
       const px=Math.max(32,Math.min(WORLD_W*TILE-32,x+ox));
       const py=Math.max(32,Math.min(WORLD_H*TILE-32,y+oy));
-      monsters.push({
-        x:px,y:py,homeX:px,homeY:py,dir:i*2.1,phase:i,
-        hp:45,maxHp:45,mana:80,maxMana:80,
-        castCooldown:1+i*.6,respawn:0,
-        attackT:0
-      });
+      monsters.push({x:px,y:py,homeX:px,homeY:py,dir:i*2.1,phase:i, hp:45,maxHp:45,mana:80,maxMana:80,castCooldown:1+i*.6,respawn:0});
     });
   }
   function hitByPlayer(angle){
@@ -2211,9 +2404,9 @@ const Wraiths = (() => {
       diff=Math.atan2(Math.sin(diff),Math.cos(diff));
       if(dist<85 && Math.abs(diff)<.85){
         const held=inv.hotbar[player.selected],def=held?defOf(held.id):null;
-        const damage=Math.max(1,Math.min(20,Number(def?.dmg)||4));
+        const damage=Math.max(1,Math.min(30,Math.round((Number(def?.dmg)||4)*professionDamageMultiplier())));
         m.hp=Math.max(0,m.hp-damage);
-        if(m.hp===0){m.respawn=12;player.exp=(player.exp||0)+15;toast('Đã tiêu diệt Wraith +15 XP','success');}
+        if(m.hp===0){m.respawn=12;addXP(15);toast('Đã tiêu diệt Wraith +15 XP','success');}
         break;
       }
     }
@@ -2221,17 +2414,9 @@ const Wraiths = (() => {
   function update(dt){
     elapsed+=dt;
     for(const m of monsters){
-      if(m.hp<=0){
-        m.respawn-=dt;
-        if(m.respawn<=0){
-          m.hp=m.maxHp;m.mana=m.maxMana;
-          m.x=m.homeX;m.y=m.homeY;m.attackT=0;
-        }
-        continue;
-      }
+      if(m.hp<=0){m.respawn-=dt;if(m.respawn<=0){m.hp=m.maxHp;m.mana=m.maxMana;m.x=m.homeX;m.y=m.homeY;}continue;}
       m.mana=Math.min(m.maxMana,m.mana+4*dt);
       m.castCooldown-=dt;
-      m.attackT=Math.max(0,(m.attackT||0)-dt);
       const dx=player.x-m.x,dy=player.y-m.y,dist=Math.hypot(dx,dy)||1;
       if(player.hp>0 && dist<420){
         // Ranged caster keeps distance rather than walking into melee.
@@ -2239,15 +2424,9 @@ const Wraiths = (() => {
         m.x=Math.max(32,Math.min(WORLD_W*TILE-32,m.x+dx/dist*desired*48*dt));
         m.y=Math.max(32,Math.min(WORLD_H*TILE-32,m.y+dy/dist*desired*48*dt));
         if(dist<340 && m.castCooldown<=0 && m.mana>=20 && projectiles.length<MAX_PROJECTILES){
-          m.mana-=20;
-          m.castCooldown=2.8;
-          m.attackT=ATTACK_DURATION;
+          m.mana-=20;m.castCooldown=2.8;
           const angle=Math.atan2(player.y-m.y,player.x-m.x);
-          projectiles.push({
-            x:m.x,y:m.y-20,
-            vx:Math.cos(angle)*175,vy:Math.sin(angle)*175,
-            life:2.6,damage:4
-          });
+          projectiles.push({x:m.x,y:m.y-20,vx:Math.cos(angle)*175,vy:Math.sin(angle)*175,life:2.6,damage:4});
         }
       } else {
         m.phase+=dt;
@@ -2260,8 +2439,8 @@ const Wraiths = (() => {
       const q=projectiles[i];q.x+=q.vx*dt;q.y+=q.vy*dt;q.life-=dt;
       if(q.life<=0){projectiles.splice(i,1);continue;}
       if(player.hp>0 && player.jumpT<=0 && Math.hypot(q.x-player.x,q.y-player.y)<17){
-        player.hp=Math.max(0,player.hp-q.damage);player.hurtT=.3;
-        player._dmgTaken=(player._dmgTaken||0)+q.damage;
+        const finalDamage=player._skillShield>0?Math.max(1,Math.ceil(q.damage*.45)):q.damage; player.hp=Math.max(0,player.hp-finalDamage);player.hurtT=.3;
+        player._dmgTaken=(player._dmgTaken||0)+finalDamage;
         flashDamage();projectiles.splice(i,1);
       }
     }
@@ -2270,20 +2449,10 @@ const Wraiths = (() => {
     if(m.hp<=0)return;
     const sx=Math.round(m.x-cam.x),sy=Math.round(m.y-cam.y);
     if(sx < -100 || sx>VW+100 || sy< -110 || sy>VH+100)return;
-    const useAttack = (m.attackT||0) > 0 && attackImage.complete && attackImage.naturalWidth;
-    if(useAttack || (image.complete && image.naturalWidth)){
-      const src = useAttack ? attackImage : image;
-      let frame;
-      if(useAttack){
-        const progress = 1 - (m.attackT / ATTACK_DURATION);
-        frame = Math.max(0, Math.min(ATTACK_FRAMES-1, Math.floor(progress * ATTACK_FRAMES)));
-      } else {
-        frame = Math.floor(elapsed*10)%16;
-      }
-      ctx.save();
-      ctx.imageSmoothingEnabled=false;
-      ctx.drawImage(src,frame*128,0,128,128,sx-40,sy-68,80,80);
-      ctx.restore();
+    if(image.complete && image.naturalWidth){
+      const frame=Math.floor(elapsed*10)%16;
+      ctx.save();ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(image,frame*128,0,128,128,sx-40,sy-68,80,80);ctx.restore();
     }
     ctx.save();ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.fillStyle='#d8b4fe';ctx.fillText('WRAITH',sx,sy-75);ctx.restore();
     drawEntityBars(sx,sy-71,m.hp,m.maxHp,m.mana,m.maxMana,50);
@@ -2568,13 +2737,8 @@ function render(){
   const cy1 = Math.min(WORLD_H, Math.ceil((cam.y+VH)/TILE));
   ctx.fillStyle = nightFactor > 0.6 ? '#0a0a14' : '#0f180f';
   ctx.fillRect(0, 0, VW, VH);
-  if (GrassTiles.isLoaded()) {
-    /* The current world is grass-only; render it as one cached layer. */
-    GrassTiles.drawLayer(cx0, cy0, cx1, cy1, cam.x, cam.y);
-  } else {
-    for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
-      drawTile(x, y, wGet(x, y), x*TILE-cam.x, y*TILE-cam.y);
-    }
+  for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
+    drawTile(x, y, wGet(x, y), x*TILE-cam.x, y*TILE-cam.y);
   }
   const ents = [];
   for (const [id, p] of net.players) ents.push({ y:p.y, draw:() => drawRemotePlayer(p) });
@@ -2655,7 +2819,7 @@ function updateHpBar(){
   $('manaText').textContent = Math.ceil(player.mana) + '/' + player.maxMana;
   const xpPct = Math.max(0, Math.min(100, (player.exp||0) % 100));
   $('xpFillInner').style.width = xpPct + '%';
-  $('xpText').textContent = 'Lv.' + (player.level||1);
+  $('xpText').textContent = 'Lv.' + Math.min(MAX_LEVEL,player.level||1) + (player.level>=MAX_LEVEL?' MAX':'');
 }
 function flashDamage(){
   const el = $('statusRow');
@@ -3463,5 +3627,4 @@ console.log('%c📄 Prompt Manager: ' + location.origin + '/prompt-manager.html'
 </script>
 </body>
   </html>
-
 

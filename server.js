@@ -24,6 +24,7 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 10000;
 const MAX_PLAYERS = 5;
 const ROOM_TTL = 30 * 60 * 1000;
+const PROFESSIONS = new Set(['warrior','archer','mage','assassin','beastmaster','madscientist']);
 const TOKEN_TTL_DAYS = 30;
 
 let SEED = Date.now() & 0x7fffffff;
@@ -543,7 +544,8 @@ function playerToJson(p){
     facing: p.facing,
     anim: p.anim,
     sitting: p.sitting,
-    level: p.level
+    level: p.level,
+    profession: p.profession || 'warrior'
   };
 }
 
@@ -560,6 +562,8 @@ function createPlayer(ws, name, msg){
     anim: 'idle',
     sitting: false,
     level: 1, // Do not trust unverified client progression
+    profession: PROFESSIONS.has(String(msg.profession)) ? String(msg.profession) : 'warrior',
+    skillAt: [0,0,0,0,0],
     lastSeen: Date.now(),
     lastMoveTime: Date.now()
   };
@@ -676,12 +680,46 @@ function handleMessage(ws, msg){
     case 'attack':
       handleAttack(ws, msg);
       break;
+    case 'profession':
+      handleProfession(ws, msg);
+      break;
+    case 'skill':
+      handleSkill(ws, msg);
+      break;
     case 'chat':
       handleChat(ws, msg);
       break;
     default:
       console.warn('[WS] Unknown type:', msg.t);
   }
+}
+
+function handleSkill(ws, msg){
+  if (!ws.roomCode) return;
+  const room = rooms.get(ws.roomCode);
+  if (!room) return;
+  const p = room.players.get(ws.id);
+  const skill = Number(msg.skill);
+  if (!p || !Number.isInteger(skill) || skill < 0 || skill > 4) return send(ws, { t:'error', msg:'Kỹ năng không hợp lệ' });
+  const now = Date.now();
+  p.skillAt = p.skillAt || [0,0,0,0,0];
+  // Server-side rate guard. Client still owns the local visual/cooldown.
+  if (now - (p.skillAt[skill] || 0) < 250) return;
+  p.skillAt[skill] = now;
+  room.lastActivity = now;
+  room.broadcast({ t:'skill', id:p.id, skill, time:now });
+}
+
+function handleProfession(ws, msg){
+  if (!ws.roomCode) return;
+  const room = rooms.get(ws.roomCode);
+  if (!room) return;
+  const p = room.players.get(ws.id);
+  const profession = String(msg.profession || '');
+  if (!p || !PROFESSIONS.has(profession)) return send(ws, { t:'error', msg:'Chức nghiệp không hợp lệ' });
+  p.profession = profession;
+  room.lastActivity = Date.now();
+  room.broadcast({ t:'profession', id:p.id, profession:p.profession });
 }
 
 async function handleCreateRoom(ws, msg){
