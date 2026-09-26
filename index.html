@@ -2064,10 +2064,15 @@ function updateNetHud(){
    Random crop 32×32 từ ảnh gốc → mỗi vị trí có texture khác nhau
    ============================================================ */
 const GrassTiles = (() => {
-  const VARIANTS = 64;
+  /* Performance: keep a small variant cache and a camera-area layer.
+     Grass is static, so we should not issue hundreds of drawImage() calls every frame. */
+  const VARIANTS = 32;
   const cache = new Map();
   let img = null;
   let loaded = false;
+  let layer = null;
+  let layerKey = '';
+  let layerX = 0, layerY = 0;
 
   function mulberry32(a){
     return function(){
@@ -2111,7 +2116,7 @@ const GrassTiles = (() => {
     const cnv = document.createElement('canvas');
     cnv.width = TILE;
     cnv.height = TILE;
-    const cx = cnv.getContext('2d');
+    const cx = cnv.getContext('2d', { alpha:false });
     cx.imageSmoothingEnabled = false;
     cx.drawImage(img, cropX, cropY, TILE, TILE, 0, 0, TILE, TILE);
 
@@ -2125,10 +2130,40 @@ const GrassTiles = (() => {
     console.log('[GrassTiles] ✓ Preloaded ' + VARIANTS + ' variants');
   }
 
+  /* Build one static canvas for the currently visible grass area.
+     It is rebuilt only when the camera crosses a tile boundary or the viewport changes. */
+  function drawLayer(cx0, cy0, cx1, cy1, camX, camY){
+    const w = Math.max(TILE, (cx1-cx0)*TILE);
+    const h = Math.max(TILE, (cy1-cy0)*TILE);
+    const key = cx0+':'+cy0+':'+cx1+':'+cy1+':'+w+':'+h;
+    if (!layer || layer.width !== w || layer.height !== h || layerKey !== key){
+      layer = document.createElement('canvas');
+      layer.width = w; layer.height = h;
+      const lc = layer.getContext('2d', { alpha:false });
+      lc.imageSmoothingEnabled = false;
+      lc.fillStyle = '#4a8a32';
+      lc.fillRect(0, 0, w, h);
+      for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
+        const hash = (x * 73856093 ^ y * 19349663) >>> 0;
+        const tile = get(hash);
+        if (!tile) continue;
+        /* 1px overlap hides hairline seams / square tile borders. */
+        lc.drawImage(tile, (x-cx0)*TILE-1, (y-cy0)*TILE-1, TILE+2, TILE+2);
+      }
+      layerKey = key;
+      layerX = cx0*TILE; layerY = cy0*TILE;
+    }
+    ctx.drawImage(layer, Math.round(layerX-camX), Math.round(layerY-camY));
+  }
+
+  function invalidate(){ layerKey=''; layer=null; }
+
   return {
     load,
     get,
     preload,
+    drawLayer,
+    invalidate,
     isLoaded: () => loaded,
     VARIANTS
   };
@@ -2147,15 +2182,24 @@ function drawEntityBars(x,y,hp,maxHp,mana,maxMana,width=46){
 }
 const Wraiths = (() => {
   const image = new Image(); image.src='assets/monster_wraith.png';
+  /* Attack sheet is separate so the base Wraith sheet stays backward-compatible. */
+  const attackImage = new Image(); attackImage.src='assets/monster_wraith_attack.png';
   const monsters=[]; const projectiles=[];
   let elapsed=0;
   const MAX_PROJECTILES=30;
+  const ATTACK_FRAMES=8;
+  const ATTACK_DURATION=.8;
   function spawnAround(x,y){
     if(monsters.length) return;
     [[160,110],[-220,80],[90,-190]].forEach(([ox,oy],i)=>{
       const px=Math.max(32,Math.min(WORLD_W*TILE-32,x+ox));
       const py=Math.max(32,Math.min(WORLD_H*TILE-32,y+oy));
-      monsters.push({x:px,y:py,homeX:px,homeY:py,dir:i*2.1,phase:i, hp:45,maxHp:45,mana:80,maxMana:80,castCooldown:1+i*.6,respawn:0});
+      monsters.push({
+        x:px,y:py,homeX:px,homeY:py,dir:i*2.1,phase:i,
+        hp:45,maxHp:45,mana:80,maxMana:80,
+        castCooldown:1+i*.6,respawn:0,
+        attackT:0
+      });
     });
   }
   function hitByPlayer(angle){
@@ -2177,9 +2221,17 @@ const Wraiths = (() => {
   function update(dt){
     elapsed+=dt;
     for(const m of monsters){
-      if(m.hp<=0){m.respawn-=dt;if(m.respawn<=0){m.hp=m.maxHp;m.mana=m.maxMana;m.x=m.homeX;m.y=m.homeY;}continue;}
+      if(m.hp<=0){
+        m.respawn-=dt;
+        if(m.respawn<=0){
+          m.hp=m.maxHp;m.mana=m.maxMana;
+          m.x=m.homeX;m.y=m.homeY;m.attackT=0;
+        }
+        continue;
+      }
       m.mana=Math.min(m.maxMana,m.mana+4*dt);
       m.castCooldown-=dt;
+      m.attackT=Math.max(0,(m.attackT||0)-dt);
       const dx=player.x-m.x,dy=player.y-m.y,dist=Math.hypot(dx,dy)||1;
       if(player.hp>0 && dist<420){
         // Ranged caster keeps distance rather than walking into melee.
@@ -2187,9 +2239,15 @@ const Wraiths = (() => {
         m.x=Math.max(32,Math.min(WORLD_W*TILE-32,m.x+dx/dist*desired*48*dt));
         m.y=Math.max(32,Math.min(WORLD_H*TILE-32,m.y+dy/dist*desired*48*dt));
         if(dist<340 && m.castCooldown<=0 && m.mana>=20 && projectiles.length<MAX_PROJECTILES){
-          m.mana-=20;m.castCooldown=2.8;
+          m.mana-=20;
+          m.castCooldown=2.8;
+          m.attackT=ATTACK_DURATION;
           const angle=Math.atan2(player.y-m.y,player.x-m.x);
-          projectiles.push({x:m.x,y:m.y-20,vx:Math.cos(angle)*175,vy:Math.sin(angle)*175,life:2.6,damage:4});
+          projectiles.push({
+            x:m.x,y:m.y-20,
+            vx:Math.cos(angle)*175,vy:Math.sin(angle)*175,
+            life:2.6,damage:4
+          });
         }
       } else {
         m.phase+=dt;
@@ -2212,10 +2270,20 @@ const Wraiths = (() => {
     if(m.hp<=0)return;
     const sx=Math.round(m.x-cam.x),sy=Math.round(m.y-cam.y);
     if(sx < -100 || sx>VW+100 || sy< -110 || sy>VH+100)return;
-    if(image.complete && image.naturalWidth){
-      const frame=Math.floor(elapsed*10)%16;
-      ctx.save();ctx.imageSmoothingEnabled=false;
-      ctx.drawImage(image,frame*128,0,128,128,sx-40,sy-68,80,80);ctx.restore();
+    const useAttack = (m.attackT||0) > 0 && attackImage.complete && attackImage.naturalWidth;
+    if(useAttack || (image.complete && image.naturalWidth)){
+      const src = useAttack ? attackImage : image;
+      let frame;
+      if(useAttack){
+        const progress = 1 - (m.attackT / ATTACK_DURATION);
+        frame = Math.max(0, Math.min(ATTACK_FRAMES-1, Math.floor(progress * ATTACK_FRAMES)));
+      } else {
+        frame = Math.floor(elapsed*10)%16;
+      }
+      ctx.save();
+      ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(src,frame*128,0,128,128,sx-40,sy-68,80,80);
+      ctx.restore();
     }
     ctx.save();ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.fillStyle='#d8b4fe';ctx.fillText('WRAITH',sx,sy-75);ctx.restore();
     drawEntityBars(sx,sy-71,m.hp,m.maxHp,m.mana,m.maxMana,50);
@@ -2500,8 +2568,13 @@ function render(){
   const cy1 = Math.min(WORLD_H, Math.ceil((cam.y+VH)/TILE));
   ctx.fillStyle = nightFactor > 0.6 ? '#0a0a14' : '#0f180f';
   ctx.fillRect(0, 0, VW, VH);
-  for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
-    drawTile(x, y, wGet(x, y), x*TILE-cam.x, y*TILE-cam.y);
+  if (GrassTiles.isLoaded()) {
+    /* The current world is grass-only; render it as one cached layer. */
+    GrassTiles.drawLayer(cx0, cy0, cx1, cy1, cam.x, cam.y);
+  } else {
+    for (let y=cy0; y<cy1; y++) for (let x=cx0; x<cx1; x++){
+      drawTile(x, y, wGet(x, y), x*TILE-cam.x, y*TILE-cam.y);
+    }
   }
   const ents = [];
   for (const [id, p] of net.players) ents.push({ y:p.y, draw:() => drawRemotePlayer(p) });
@@ -3390,4 +3463,5 @@ console.log('%c📄 Prompt Manager: ' + location.origin + '/prompt-manager.html'
 </script>
 </body>
   </html>
+
 
