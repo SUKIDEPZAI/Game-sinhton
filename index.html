@@ -116,6 +116,7 @@ a{color:inherit;text-decoration:none}
 .bar-fill::after{content:'';position:absolute;top:0;left:0;right:0;height:50%;
   background:linear-gradient(180deg,rgba(255,255,255,.35),transparent);
   border-radius:999px}
+#manaFillInner{background:linear-gradient(90deg,#60a5fa,#7c3aed);box-shadow:0 0 8px #60a5fa88}
 #hpFillInner{background:linear-gradient(90deg,#f87171,#dc2626);
   box-shadow:0 0 8px rgba(248,113,113,.6)}
 #xpFillInner{background:linear-gradient(90deg,var(--primary),var(--primary-2));
@@ -484,6 +485,11 @@ body.edit-btn-mode #editOverlay{display:flex}
       <span class="lbl">❤️</span>
       <div class="bar-track"><div class="bar-fill" id="hpFillInner" style="width:100%"></div></div>
       <span class="bar-text hp" id="hpText">20/20</span>
+    </div>
+    <div class="bar-row">
+      <span class="lbl">🔮</span>
+      <div class="bar-track"><div class="bar-fill" id="manaFillInner" style="width:100%"></div></div>
+      <span class="bar-text xp" id="manaText">60/60</span>
     </div>
     <div class="bar-row">
       <span class="lbl">⭐</span>
@@ -891,6 +897,7 @@ function collectSaveData(){
     player: {
       level: player.level||1, exp: player.exp||0,
       hp: player.hp, maxHp: player.maxHp,
+      mana: player.mana, maxMana: player.maxMana,
       x: Math.round(player.x), y: Math.round(player.y),
       selected: player.selected,
       stamina: player.stamina ?? 100,
@@ -914,6 +921,8 @@ function applySaveData(rawData){
   player.exp = p.exp||0;
   player.hp = p.hp||20;
   player.maxHp = p.maxHp||20;
+  player.maxMana = Math.max(1, Number(p.maxMana) || 60);
+  player.mana = Math.max(0, Math.min(player.maxMana, Number(p.mana ?? player.maxMana)));
   player.selected = p.selected||0;
   player.stamina = p.stamina ?? 100;
   player.maxStamina = p.maxStamina ?? 100;
@@ -1746,7 +1755,7 @@ function initInv(){
 
 const player = {
   x:WORLD_W*TILE/2, y:WORLD_H*TILE/2,
-  hp:20, maxHp:20,
+  hp:20, maxHp:20, mana:60, maxMana:60,
   stamina:100, maxStamina:100,
   radius:8, speed:160,
   facing:1, selected:0,
@@ -1933,6 +1942,7 @@ function tryAttack(){
   const angle = aim.angle;
   const cosA = Math.cos(angle);
   if (Math.abs(cosA) > 0.15) player.facing = cosA > 0 ? 1 : -1;
+  Wraiths.hitByPlayer(angle);
   if (net.active){
     const held = inv.hotbar[player.selected];
     const heldDef = held ? defOf(held.id) : null;
@@ -1985,6 +1995,7 @@ function updatePlayer(dt){
   const nr = player.radius;
   player.x = Math.max(nr, Math.min(WORLD_W*TILE - nr, player.x));
   player.y = Math.max(nr, Math.min(WORLD_H*TILE - nr, player.y));
+  player.mana = Math.min(player.maxMana, player.mana + 3*dt);
   player.animT += dt;
   if (player.attackT > 0) player.attackT -= dt;
   if (player.hurtT > 0) player.hurtT -= dt;
@@ -2018,7 +2029,7 @@ function updatePlayer(dt){
   }
 }
 function respawnPlayer(){
-  player.hp = player.maxHp;
+  player.hp = player.maxHp; player.mana = player.maxMana;
   toast('💀 Bạn đã bị hạ. Hồi sinh!', 'warning');
   player.x = WORLD_W*TILE/2; player.y = WORLD_H*TILE/2;
   player.jumpT = 0; player.jumpY = 0;
@@ -2121,6 +2132,103 @@ const GrassTiles = (() => {
     isLoaded: () => loaded,
     VARIANTS
   };
+})();
+
+/* WRAITH V1.4 — local PvE simulation; multiplayer monster sync requires server support. */
+function drawEntityBars(x,y,hp,maxHp,mana,maxMana,width=46){
+  ctx.save();
+  const bar=(top,value,max,color)=>{
+    const ratio=Math.max(0,Math.min(1,(Number(value)||0)/Math.max(1,Number(max)||1)));
+    ctx.fillStyle='rgba(4,7,17,.88)';ctx.fillRect(Math.round(x-width/2)-1,Math.round(top)-1,width+2,6);
+    ctx.fillStyle=color;ctx.fillRect(Math.round(x-width/2),Math.round(top),Math.round(width*ratio),4);
+  };
+  bar(y,hp,maxHp,'#4ade80');bar(y+7,mana,maxMana,'#60a5fa');
+  ctx.restore();
+}
+const Wraiths = (() => {
+  const image = new Image(); image.src='assets/monster_wraith.png';
+  const monsters=[]; const projectiles=[];
+  let elapsed=0;
+  const MAX_PROJECTILES=30;
+  function spawnAround(x,y){
+    if(monsters.length) return;
+    [[160,110],[-220,80],[90,-190]].forEach(([ox,oy],i)=>{
+      const px=Math.max(32,Math.min(WORLD_W*TILE-32,x+ox));
+      const py=Math.max(32,Math.min(WORLD_H*TILE-32,y+oy));
+      monsters.push({x:px,y:py,homeX:px,homeY:py,dir:i*2.1,phase:i, hp:45,maxHp:45,mana:80,maxMana:80,castCooldown:1+i*.6,respawn:0});
+    });
+  }
+  function hitByPlayer(angle){
+    if(!gameStarted || paused || player.hp<=0) return;
+    for(const m of monsters){
+      if(m.hp<=0) continue;
+      const dx=m.x-player.x,dy=m.y-player.y,dist=Math.hypot(dx,dy);
+      let diff=Math.atan2(dy,dx)-angle;
+      diff=Math.atan2(Math.sin(diff),Math.cos(diff));
+      if(dist<85 && Math.abs(diff)<.85){
+        const held=inv.hotbar[player.selected],def=held?defOf(held.id):null;
+        const damage=Math.max(1,Math.min(20,Number(def?.dmg)||4));
+        m.hp=Math.max(0,m.hp-damage);
+        if(m.hp===0){m.respawn=12;player.exp=(player.exp||0)+15;toast('Đã tiêu diệt Wraith +15 XP','success');}
+        break;
+      }
+    }
+  }
+  function update(dt){
+    elapsed+=dt;
+    for(const m of monsters){
+      if(m.hp<=0){m.respawn-=dt;if(m.respawn<=0){m.hp=m.maxHp;m.mana=m.maxMana;m.x=m.homeX;m.y=m.homeY;}continue;}
+      m.mana=Math.min(m.maxMana,m.mana+4*dt);
+      m.castCooldown-=dt;
+      const dx=player.x-m.x,dy=player.y-m.y,dist=Math.hypot(dx,dy)||1;
+      if(player.hp>0 && dist<420){
+        // Ranged caster keeps distance rather than walking into melee.
+        const desired=dist<155?-1:dist>235?1:0;
+        m.x=Math.max(32,Math.min(WORLD_W*TILE-32,m.x+dx/dist*desired*48*dt));
+        m.y=Math.max(32,Math.min(WORLD_H*TILE-32,m.y+dy/dist*desired*48*dt));
+        if(dist<340 && m.castCooldown<=0 && m.mana>=20 && projectiles.length<MAX_PROJECTILES){
+          m.mana-=20;m.castCooldown=2.8;
+          const angle=Math.atan2(player.y-m.y,player.x-m.x);
+          projectiles.push({x:m.x,y:m.y-20,vx:Math.cos(angle)*175,vy:Math.sin(angle)*175,life:2.6,damage:4});
+        }
+      } else {
+        m.phase+=dt;
+        if(m.phase>3){m.phase=0;m.dir+=1.7;}
+        m.x+=(m.homeX+Math.cos(m.dir)*35-m.x)*Math.min(1,dt*.65);
+        m.y+=(m.homeY+Math.sin(m.dir)*35-m.y)*Math.min(1,dt*.65);
+      }
+    }
+    for(let i=projectiles.length-1;i>=0;i--){
+      const q=projectiles[i];q.x+=q.vx*dt;q.y+=q.vy*dt;q.life-=dt;
+      if(q.life<=0){projectiles.splice(i,1);continue;}
+      if(player.hp>0 && player.jumpT<=0 && Math.hypot(q.x-player.x,q.y-player.y)<17){
+        player.hp=Math.max(0,player.hp-q.damage);player.hurtT=.3;
+        player._dmgTaken=(player._dmgTaken||0)+q.damage;
+        flashDamage();projectiles.splice(i,1);
+      }
+    }
+  }
+  function draw(m){
+    if(m.hp<=0)return;
+    const sx=Math.round(m.x-cam.x),sy=Math.round(m.y-cam.y);
+    if(sx < -100 || sx>VW+100 || sy< -110 || sy>VH+100)return;
+    if(image.complete && image.naturalWidth){
+      const frame=Math.floor(elapsed*10)%16;
+      ctx.save();ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(image,frame*128,0,128,128,sx-40,sy-68,80,80);ctx.restore();
+    }
+    ctx.save();ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.fillStyle='#d8b4fe';ctx.fillText('WRAITH',sx,sy-75);ctx.restore();
+    drawEntityBars(sx,sy-71,m.hp,m.maxHp,m.mana,m.maxMana,50);
+  }
+  function drawProjectiles(){
+    for(const q of projectiles){
+      const x=q.x-cam.x,y=q.y-cam.y;
+      ctx.save();ctx.shadowBlur=17;ctx.shadowColor='#a855f7';ctx.fillStyle='#581c87';
+      ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#d8b4fe';ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();ctx.restore();
+    }
+  }
+  return {monsters,spawnAround,update,draw,drawProjectiles,hitByPlayer};
 })();
 
 /* RENDER */
@@ -2256,6 +2364,7 @@ function drawPlayer(){
   const sprite = getPlayerSprite(player.currentAnim);
   if (!sprite){
     drawFallbackBody(sx, sySprite, player.animT, player.currentAnim, player.facing, LOCAL_COLORS);
+    drawEntityBars(sx,sySprite-51,player.hp,player.maxHp,player.mana,player.maxMana,48);
     return;
   }
   const rawIdx = Math.floor(player.animTime * sprite.fps);
@@ -2267,6 +2376,7 @@ function drawPlayer(){
   drawSpriteAt(sprite, idx, sx, sySprite, player.facing);
   const weaponAnim = player.hp <= 0 ? 'death' : player.currentAnim;
   drawWeapon(weaponAnim, idx, total, sx, sySprite, player.facing);
+  drawEntityBars(sx,sySprite-51,player.hp,player.maxHp,player.mana,player.maxMana,48);
 }
 const LOCAL_COLORS = { body:'#3a5a9a', skin:'#f0c8a0' };
 function drawFallbackBody(sx, sy, animT, animName, facing, colors){
@@ -2313,6 +2423,7 @@ function drawRemotePlayer(p){
   ctx.fillRect(sx - bw/2 - 1, sy - 22, bw + 2, 5);
   ctx.fillStyle = hpPct > 0.5 ? '#4ade80' : hpPct > 0.25 ? '#fbbf24' : '#f87171';
   ctx.fillRect(sx - bw/2, sy - 21, bw * hpPct, 3);
+  drawEntityBars(sx,sy-49,p.hp,p.maxHp||20,p.mana??60,p.maxMana||60,42);
   ctx.textAlign = 'left';
 }
 function drawAimArrow(){
@@ -2394,9 +2505,11 @@ function render(){
   }
   const ents = [];
   for (const [id, p] of net.players) ents.push({ y:p.y, draw:() => drawRemotePlayer(p) });
+  for (const m of Wraiths.monsters) ents.push({ y:m.y, draw:() => Wraiths.draw(m) });
   ents.push({ y:player.y, draw:() => drawPlayer() });
   ents.sort((a,b) => a.y - b.y);
   for (const e of ents) e.draw();
+  Wraiths.drawProjectiles();
   drawAimArrow();
   for (const p of G.particles){
     const a = p.life / p.maxLife;
@@ -2464,7 +2577,9 @@ function renderHotbar(){
 function updateHpBar(){
   const pct = Math.max(0, player.hp/player.maxHp*100);
   $('hpFillInner').style.width = pct + '%';
-  $('hpText').textContent = Math.max(0, player.hp) + '/' + player.maxHp;
+  $('hpText').textContent = Math.max(0, Math.ceil(player.hp)) + '/' + player.maxHp;
+  $('manaFillInner').style.width = Math.max(0,Math.min(100,player.mana/player.maxMana*100)) + '%';
+  $('manaText').textContent = Math.ceil(player.mana) + '/' + player.maxMana;
   const xpPct = Math.max(0, Math.min(100, (player.exp||0) % 100));
   $('xpFillInner').style.width = xpPct + '%';
   $('xpText').textContent = 'Lv.' + (player.level||1);
@@ -3217,7 +3332,7 @@ function backToMenu(){
   if (AUTH.token) AUTH.save(collectSaveData());
 }
 function resetPlayerPosition(){
-  player.hp = player.maxHp;
+  player.hp = player.maxHp; player.mana = player.maxMana;
   player.x = WORLD_W*TILE/2; player.y = WORLD_H*TILE/2;
   player.jumpT = 0; player.jumpY = 0;
   player.attackT = 0; player.hurtT = 0;
@@ -3234,6 +3349,8 @@ function loop(now){
     lastT = now;
     if (gameStarted && !paused){
       updatePlayer(dt); updateDayNight(dt);
+      Wraiths.spawnAround(player.x,player.y);
+      Wraiths.update(dt);
     }
     for (const [id, p] of net.players) p.animT = (p.animT||0) + dt;
     for (const p of G.particles){
